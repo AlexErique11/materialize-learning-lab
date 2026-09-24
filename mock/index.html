@@ -6,7 +6,7 @@
     <meta name="description" content="A guided Materialize SQL tutorial for seeing source data, maintained results, logical time, and subscription changes together." />
     <title>Materialize Systems Lab | Time in Materialize</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23171717'/%3E%3Cpath d='M7 23V9h4.2l4.8 7.4L20.8 9H25v14h-4v-7.7L16 22.7l-5-7.4V23z' fill='white'/%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="./styles.css?v=19" />
+    <link rel="stylesheet" href="./styles.css?v=20" />
   </head>
   <body>
     <div class="product-shell">
@@ -338,6 +338,18 @@ WHERE p.order_id IS NULL
             <div class="chapter-visualization-toolbar"><button class="button secondary" id="chapter10Back" type="button">← Chapter 10</button><h1 id="chapter10VisualizationTitle">Visualization</h1></div>
             <iframe id="chapter10Frame" title="Chapter 10 visualization" src="about:blank"></iframe>
           </section>
+          <section class="chapter-hub" id="chapter11Hub" aria-labelledby="chapter11HubTitle" hidden>
+            <div class="chapter-hub-heading"><p>Chapter 11</p><h1 id="chapter11HubTitle">Building Live Applications with SUBSCRIBE</h1></div>
+            <div class="chapter-visualization-cards three-up">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-11/client-state.html?embed=1" data-title="Server/client state comparison"><span class="chapter-card-number">1</span><strong>Server/client state comparison</strong></button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-11/progress-reconnect.html?embed=1" data-title="Progress and reconnect timeline"><span class="chapter-card-number">2</span><strong>Progress and reconnect timeline</strong></button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-11/envelope-switcher.html?embed=1" data-title="Envelope output switcher"><span class="chapter-card-number">3</span><strong>Envelope output switcher</strong></button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapter11Visualization" aria-labelledby="chapter11VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar"><button class="button secondary" id="chapter11Back" type="button">← Chapter 11</button><h1 id="chapter11VisualizationTitle">Visualization</h1></div>
+            <iframe id="chapter11Frame" title="Chapter 11 visualization" src="about:blank"></iframe>
+          </section>
           <section class="coachmark" id="coachmark" role="dialog" aria-labelledby="coachTitle" hidden>
             <div class="coach-main">
               <div class="coach-progress"><span id="coachStep">Moment 1 of 4</span><span id="coachTime">+20 seconds</span></div>
@@ -361,6 +373,6 @@ WHERE p.order_id IS NULL
       <div id="featureContent"></div>
     </dialog>
 
-    <script src="./app.js?v=19"></script>
+    <script src="./app.js?v=20"></script>
   </body>
 </html>
