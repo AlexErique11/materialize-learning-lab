@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Readable-time intersection</title><link rel="stylesheet" href="./chapter-07.css?v=1" /></head>
+<body>
+  <main class="page">
+    <h1>Readable-time intersection</h1>
+    <p class="subtitle">A query over multiple inputs needs one timestamp they can all serve.</p>
+    <section class="panel">
+      <div class="controls">
+        <label class="control">Input A retained from <strong><output id="retainAValue"></output></strong><input id="retainA" type="range" min="0" max="12" value="3" /></label>
+        <label class="control">Input A frontier <strong><output id="frontierAValue"></output></strong><input id="frontierA" type="range" min="1" max="20" value="10" /></label>
+        <label class="control">Input B retained from <strong><output id="retainBValue"></output></strong><input id="retainB" type="range" min="0" max="12" value="5" /></label>
+        <label class="control">Input B frontier <strong><output id="frontierBValue"></output></strong><input id="frontierB" type="range" min="1" max="20" value="8" /></label>
+        <label class="control">Policy <select id="policy"><option value="requested">Serve requested timestamp</option><option value="bounded">Bounded staleness</option></select></label>
+        <label class="control" id="requestedControl">Requested timestamp <strong><output id="requestedValue"></output></strong><input id="requested" type="range" min="0" max="20" value="7" /></label>
+        <label class="control" id="boundControl" hidden>Maximum staleness <strong><output id="boundValue"></output> time units</strong><input id="bound" type="range" min="1" max="15" value="5" /></label>
+      </div>
+      <div class="axis"><span>0</span><span>5</span><span>10</span><span>15</span><span>20 logical time</span></div>
+      <div id="lanes"></div>
+      <div class="result" id="result"></div>
+      <p class="explain">The shared readable interval begins at the later retention boundary and ends at the earlier write frontier. A frontier at <strong>t</strong> means times strictly before <strong>t</strong> are complete. This is a timestamp-selection model, not arbitrary time-travel SQL syntax.</p>
+    </section>
+  </main>
+  <script src="./readable-time.js?v=1"></script>
+</body>
+</html>

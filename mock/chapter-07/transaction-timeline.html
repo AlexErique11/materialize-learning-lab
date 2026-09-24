@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Transaction timeline</title><link rel="stylesheet" href="./chapter-07.css?v=1" /></head>
+<body>
+  <main class="page">
+    <h1>Transaction timeline</h1>
+    <p class="subtitle">A later read can preserve ordering by waiting—or trade freshness for a snapshot.</p>
+    <section class="panel">
+      <div class="controls">
+        <label class="control">Base table frontier <strong><output id="baseValue"></output></strong><input id="baseFrontier" type="range" min="1" max="20" value="12" /></label>
+        <label class="control">Derived view frontier <strong><output id="viewValue"></output></strong><input id="viewFrontier" type="range" min="1" max="20" value="6" /></label>
+        <label class="control">Bounded-staleness limit <strong><output id="boundValue"></output> units</strong><input id="stalenessBound" type="range" min="1" max="20" value="5" /></label>
+        <label class="control">Isolation policy <select id="isolation"><option value="strict">Strict Serializable</option><option value="serializable">Serializable</option><option value="bounded">Bounded Staleness</option></select></label>
+      </div>
+      <div class="timeline" id="timeline"></div>
+      <div class="result" id="outcome"></div>
+      <div class="caveat">A strict-serializable transaction orders reads inside Materialize. It does not by itself guarantee that a write in an upstream database has already been ingested.</div>
+      <p class="explain">Illustrative model: transaction A reads a base row at time 8 and commits; transaction B then queries a derived view that includes the row only after its frontier advances beyond 8. Bounded staleness never waits for that progress and errors if no sufficiently fresh shared time is available.</p>
+    </section>
+  </main>
+  <script src="./transaction-timeline.js?v=1"></script>
+</body>
+</html>
