@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Output versus state scale</title><link rel="stylesheet" href="./chapter-08.css?v=1"/></head>
+<body>
+<main class="page"><h1>Output versus state scale</h1><p class="subtitle">Both queries return ten rows. Adjust what each one must retain to stay current.</p>
+<section class="panel">
+  <div class="controls">
+    <label class="control">Fixture A retained rows<strong><output id="rowsAValue"></output></strong><input id="rowsA" type="range" min="100" max="10000" step="100" value="1000"/></label>
+    <label class="control">Fixture A row width<strong><output id="widthAValue"></output> units</strong><input id="widthA" type="range" min="1" max="10" value="2"/></label>
+    <label class="control">Fixture B retained rows<strong><output id="rowsBValue"></output></strong><input id="rowsB" type="range" min="100" max="10000" step="100" value="5000"/></label>
+    <label class="control">Fixture B row width<strong><output id="widthBValue"></output> units</strong><input id="widthB" type="range" min="1" max="10" value="6"/></label>
+  </div>
+  <h2 class="scale-heading">Maintained-state proxy · retained rows × width</h2><div class="scales" id="stateScales"></div>
+  <h2 class="scale-heading">Row-count comparison · returned versus retained rows</h2><div class="scales" id="rowScales"></div>
+  <p class="note">This is a relative illustration, not a byte or memory estimator. Real memory also depends on keys, arrangements, intermediate state, update patterns, and the query plan.</p>
+</section></main><script src="./output-vs-state.js?v=1"></script></body></html>

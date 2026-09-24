@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>Key-distribution heatmap</title><link rel="stylesheet" href="./chapter-08.css?v=1"/></head>
+<body>
+<main class="page"><h1>Key-distribution heatmap</h1><p class="subtitle">Redistribute the same records and spot the worker that carries the hot key.</p>
+<section class="panel">
+  <div class="controls">
+    <label class="control">Input records<strong><output id="rowsValue"></output></strong><input id="rows" type="range" min="40" max="240" step="20" value="120"/></label>
+    <label class="control">Records on hot key<strong><output id="skewValue"></output>%</strong><input id="skew" type="range" min="0" max="90" step="5" value="60"/></label>
+    <label class="control">Workers<strong><output id="workersValue"></output></strong><input id="workers" type="range" min="2" max="6" value="4"/></label>
+  </div>
+  <div class="table-wrap" id="heatmap"></div><div class="worker-loads" id="loads"></div>
+  <div class="legend"><span><i class="swatch" style="background:#eee"></i>few rows</span><span><i class="swatch" style="background:#aaa4e1"></i>more rows</span><span><i class="swatch" style="background:#bb8b32"></i>hot-key concentration</span></div>
+  <p class="note" id="note"></p>
+</section></main><script src="./key-heatmap.js?v=1"></script></body></html>

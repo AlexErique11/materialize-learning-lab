@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>State inventory</title><link rel="stylesheet" href="./chapter-08.css?v=1"/></head>
+<body>
+<main class="page"><h1>State inventory</h1><p class="subtitle">Compare what arrives, what must remain available, and what the query returns.</p>
+<section class="panel">
+  <div class="controls">
+    <label class="control">Maintained operation<select id="operation"><option value="topk">Top-K: keep the three largest</option><option value="distinct">Distinct regions</option><option value="join">Join, then aggregate</option></select></label>
+    <label class="control" id="sizeControl">Candidate orders<strong><output id="sizeValue"></output></strong><input id="size" type="range" min="3" max="12" value="8"/></label>
+    <label class="control" id="groupsControl" hidden>Distinct regions<strong><output id="groupsValue"></output></strong><input id="groups" type="range" min="1" max="8" value="4"/></label>
+    <label class="control" id="ordersControl" hidden>Orders<strong><output id="ordersValue"></output></strong><input id="orders" type="range" min="1" max="8" value="3"/></label>
+    <label class="control" id="promosControl" hidden>Matching promotions<strong><output id="promosValue"></output></strong><input id="promos" type="range" min="1" max="8" value="4"/></label>
+  </div>
+  <div class="inventory" id="inventory"></div><p class="caption" id="caption"></p>
+</section></main><script src="./state-inventory.js?v=1"></script></body></html>
