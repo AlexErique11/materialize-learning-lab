@@ -24,7 +24,7 @@ function render() {
   $("#answerBody").innerHTML = [...totals.entries()].map(([category, amount]) => `<tr><td>${category}</td><td>$${amount}</td></tr>`).join("");
   nodes.forEach((node, index) => node.classList.toggle("changed", trace === "amount" ? index < 5 : trace === "note" && index === 0));
   if (trace === "amount") $("#traceNote").textContent = "Order 101 crosses the filter. Its product match sends the change into the Books aggregate, so Books revenue updates from $60 to $130.";
-  else if (trace === "note") $("#traceNote").textContent = "Only an unused note changed on order 102. The query does not read that column, so no change reaches the filter, join result, aggregate, or output.";
+  else if (trace === "note") $("#traceNote").textContent = "Order 101's unused note changed from rush to wrapped. The query does not read that column, so no change reaches the filter, join result, aggregate, or output.";
   else $("#traceNote").textContent = "Choose a source change to see which operators are affected.";
 }
 
@@ -36,7 +36,7 @@ $("#thresholdButton").addEventListener("click", () => {
 });
 $("#unusedButton").addEventListener("click", () => {
   orders = originalOrders.map((order) => ({ ...order }));
-  orders[1].note = "wrapped";
+  orders[0].note = "wrapped";
   trace = "note";
   render();
 });
