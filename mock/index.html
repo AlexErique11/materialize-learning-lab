@@ -6,7 +6,7 @@
     <meta name="description" content="A guided Materialize SQL tutorial for seeing source data, maintained results, logical time, and subscription changes together." />
     <title>Materialize Systems Lab | Time in Materialize</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23171717'/%3E%3Cpath d='M7 23V9h4.2l4.8 7.4L20.8 9H25v14h-4v-7.7L16 22.7l-5-7.4V23z' fill='white'/%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="./styles.css?v=11" />
+    <link rel="stylesheet" href="./styles.css?v=12" />
   </head>
   <body>
     <div class="product-shell">
@@ -161,6 +161,29 @@ WHERE p.order_id IS NULL
             </div>
             <iframe id="chapter2Frame" title="Chapter 2 visualization" src="about:blank"></iframe>
           </section>
+          <section class="chapter-hub" id="chapter3Hub" aria-labelledby="chapter3HubTitle" hidden>
+            <div class="chapter-hub-heading">
+              <p>Chapter 03</p>
+              <h1 id="chapter3HubTitle">Views, Indexes, and Materialized Views</h1>
+            </div>
+            <div class="chapter-visualization-cards">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-03/state-map.html?embed=1" data-title="State-location map">
+                <span class="chapter-card-number">1</span>
+                <strong>State-location map</strong>
+              </button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-03/query-path.html?embed=1" data-title="Query-path explorer">
+                <span class="chapter-card-number">2</span>
+                <strong>Query-path explorer</strong>
+              </button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapter3Visualization" aria-labelledby="chapter3VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar">
+              <button class="button secondary" id="chapter3Back" type="button">← Chapter 3</button>
+              <h1 id="chapter3VisualizationTitle">Visualization</h1>
+            </div>
+            <iframe id="chapter3Frame" title="Chapter 3 visualization" src="about:blank"></iframe>
+          </section>
           <section class="coachmark" id="coachmark" role="dialog" aria-labelledby="coachTitle" hidden>
             <div class="coach-main">
               <div class="coach-progress"><span id="coachStep">Moment 1 of 4</span><span id="coachTime">+20 seconds</span></div>
@@ -184,6 +207,6 @@ WHERE p.order_id IS NULL
       <div id="featureContent"></div>
     </dialog>
 
-    <script src="./app.js?v=11"></script>
+    <script src="./app.js?v=12"></script>
   </body>
 </html>

@@ -114,6 +114,11 @@ const els = {
   chapter2Frame: document.querySelector("#chapter2Frame"),
   chapter2VisualizationTitle: document.querySelector("#chapter2VisualizationTitle"),
   chapter2Back: document.querySelector("#chapter2Back"),
+  chapter3Hub: document.querySelector("#chapter3Hub"),
+  chapter3Visualization: document.querySelector("#chapter3Visualization"),
+  chapter3Frame: document.querySelector("#chapter3Frame"),
+  chapter3VisualizationTitle: document.querySelector("#chapter3VisualizationTitle"),
+  chapter3Back: document.querySelector("#chapter3Back"),
 };
 
 const learningCatalog = {
@@ -123,7 +128,7 @@ const learningCatalog = {
     items: [
       { number: "01", name: "Changing Relations — Rows, Updates, and Diffs", navLabel: "Changing Relations", description: "Reconstruct a changing relation from additions, retractions, and updates.", chapterHub: "01" },
       { number: "02", name: "Incremental Maintenance — How One Change Travels Through SQL", navLabel: "Incremental Maintenance", description: "Trace one input change through filters, joins, and aggregates.", chapterHub: "02" },
-      { number: "03", name: "Views, Indexes, and Materialized Views", description: "Choose where to save SQL, maintain results in memory, or persist them." },
+      { number: "03", name: "Views, Indexes, and Materialized Views", description: "Choose where to save SQL, maintain results in memory, or persist them.", chapterHub: "03" },
       { number: "04", name: "Getting Data In — Sources, Snapshots, and CDC", navLabel: "Getting Data In", description: "Turn initial snapshots and incoming changes into the right relation." },
       { number: "05", name: "Time in Materialize — Temporal Filters", navLabel: "Time in Materialize", description: "See logical time add and retract rows without a new source event.", current: true },
       { number: "06", name: "Progress and Freshness — Why Is the System Behind?", navLabel: "Progress and Freshness", description: "Find what progress proves and where a delayed result falls behind." },
@@ -505,6 +510,10 @@ els.chapter2Hub.addEventListener("click", (event) => {
   openChapterVisualization(event, els.chapter2Hub, els.chapter2Visualization, els.chapter2Frame, els.chapter2VisualizationTitle);
 });
 els.chapter2Back.addEventListener("click", showChapter2Hub);
+els.chapter3Hub.addEventListener("click", (event) => {
+  openChapterVisualization(event, els.chapter3Hub, els.chapter3Visualization, els.chapter3Frame, els.chapter3VisualizationTitle);
+});
+els.chapter3Back.addEventListener("click", showChapter3Hub);
 els.libraryButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const section = button.dataset.library;
@@ -528,6 +537,10 @@ els.labList.addEventListener("click", (event) => {
   }
   if (button.dataset.chapterHub === "02") {
     showChapter2Hub();
+    return;
+  }
+  if (button.dataset.chapterHub === "03") {
+    showChapter3Hub();
     return;
   }
   if (button.dataset.current === "true") {
@@ -645,6 +658,8 @@ function hideChapterPages() {
   els.chapterVisualization.hidden = true;
   els.chapter2Hub.hidden = true;
   els.chapter2Visualization.hidden = true;
+  els.chapter3Hub.hidden = true;
+  els.chapter3Visualization.hidden = true;
 }
 
 function showChapterHub() {
@@ -653,6 +668,8 @@ function showChapterHub() {
   els.chapterVisualization.hidden = true;
   els.chapter2Hub.hidden = true;
   els.chapter2Visualization.hidden = true;
+  els.chapter3Hub.hidden = true;
+  els.chapter3Visualization.hidden = true;
   els.chapterHub.hidden = false;
 }
 
@@ -662,7 +679,20 @@ function showChapter2Hub() {
   els.chapterHub.hidden = true;
   els.chapterVisualization.hidden = true;
   els.chapter2Visualization.hidden = true;
+  els.chapter3Hub.hidden = true;
+  els.chapter3Visualization.hidden = true;
   els.chapter2Hub.hidden = false;
+}
+
+function showChapter3Hub() {
+  hideCheckpoint();
+  els.coreWorkspace.hidden = true;
+  els.chapterHub.hidden = true;
+  els.chapterVisualization.hidden = true;
+  els.chapter2Hub.hidden = true;
+  els.chapter2Visualization.hidden = true;
+  els.chapter3Visualization.hidden = true;
+  els.chapter3Hub.hidden = false;
 }
 
 function openChapterVisualization(event, hub, visualization, frame, titleElement) {

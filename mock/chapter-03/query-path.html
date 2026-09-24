@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Query-path Explorer | Chapter 3</title>
+    <link rel="stylesheet" href="./chapter-03.css?v=1" />
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <p class="eyebrow">Chapter 03 · Visualization 02</p>
+        <h1>Query-path explorer</h1>
+        <p class="intro">Run the same query from two clusters. Toggle local indexes and see whether the query reads memory, durable results, or computes a view.</p>
+      </header>
+      <div class="query-controls">
+        <label class="field" for="objectSelect">Query object<select id="objectSelect"><option value="view">orders_view · regular view</option><option value="materialized">daily_revenue · materialized view</option></select></label>
+        <button class="control" id="runQuery" type="button">Run in both clusters</button>
+      </div>
+      <div class="cluster-grid">
+        <section class="cluster-card" data-cluster="serving_a">
+          <div class="cluster-heading"><h2>Serving A</h2><span>independent index state</span></div>
+          <div class="index-toggles">
+            <label><input type="checkbox" data-index="view" checked /> orders_view index</label>
+            <label><input type="checkbox" data-index="materialized" checked /> daily_revenue index</label>
+          </div>
+          <div class="path-box"><strong>Query path</strong><span data-path>Run the query to see its path.</span></div>
+        </section>
+        <section class="cluster-card" data-cluster="serving_b">
+          <div class="cluster-heading"><h2>Serving B</h2><span>independent index state</span></div>
+          <div class="index-toggles">
+            <label><input type="checkbox" data-index="view" /> orders_view index</label>
+            <label><input type="checkbox" data-index="materialized" /> daily_revenue index</label>
+          </div>
+          <div class="path-box"><strong>Query path</strong><span data-path>Run the query to see its path.</span></div>
+        </section>
+      </div>
+      <div class="result-strip" aria-label="Example query result">
+        <strong>Same answer:</strong><span>Books $125</span><span>Games $80</span><span>Tools $70</span>
+      </div>
+    </main>
+    <script src="./query-path.js?v=1"></script>
+  </body>
+</html>
