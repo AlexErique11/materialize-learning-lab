@@ -625,6 +625,10 @@ els.libraryButtons.forEach((button) => {
 els.labList.addEventListener("click", (event) => {
   const button = event.target instanceof Element ? event.target.closest("[data-sidebar-lab]") : null;
   if (!button) return;
+  if (button.dataset.chapterHub) {
+    try { sessionStorage.setItem("materialize-learning-lab-active-chapter", button.dataset.chapterHub); }
+    catch { /* Keep navigation usable when browser storage is unavailable. */ }
+  }
   if (playing) pause();
   els.labList.querySelectorAll("[data-sidebar-lab]").forEach((lab) => {
     lab.closest("li")?.classList.toggle("active", lab === button);
@@ -1097,3 +1101,9 @@ function registerWebMcpTools() {
 
 registerWebMcpTools();
 render();
+let startupChapter = "01";
+try { startupChapter = sessionStorage.getItem("materialize-learning-lab-active-chapter") || "01"; }
+catch { /* Start on the first chapter when browser storage is unavailable. */ }
+const startupButton = els.labList.querySelector(`[data-chapter-hub="${startupChapter}"]`)
+  ?? els.labList.querySelector('[data-chapter-hub="01"]');
+startupButton?.click();
