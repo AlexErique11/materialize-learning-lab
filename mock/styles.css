@@ -63,8 +63,9 @@ code, pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospac
 .library-switcher .nav-button.active { color: var(--ink); border-color: var(--line); background: var(--paper); box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
 .library-switcher .nav-button.active small { color: #4d4d4d; }
 
-.lab-list { list-style: none; margin: 0; padding: 0; display: grid; }
+.lab-list { min-height: 0; overflow-y: auto; list-style: none; margin: 0; padding: 0; display: grid; scrollbar-width: thin; }
 .lab-list li { border-bottom: 1px solid var(--line); }
+.lab-list li.optional { margin-top: 8px; border-top: 1px solid var(--line-strong); }
 .lab-link { width: 100%; min-height: 36px; display: grid; grid-template-columns: 25px minmax(0, 1fr); gap: 7px; align-items: center; padding: 5px 6px; border: 0; background: transparent; color: var(--muted); cursor: pointer; text-align: left; }
 .lab-link:hover { color: var(--ink); background: var(--panel-soft); }
 .lab-link > span:first-child { width: 22px; height: 22px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 2px; font-size: 0.64rem; font-weight: 720; }
@@ -313,8 +314,9 @@ td.empty-cell { color: var(--muted-2); font-style: italic; white-space: normal; 
   .lesson-shell { height: auto; display: block; }
   .lesson-sidebar { border-right: 0; border-bottom: 1px solid var(--line); max-height: none; }
   .lesson-sidebar { display: block; overflow-x: auto; padding: 8px 10px; }
-  .lab-list { width: max-content; grid-template-columns: repeat(12, 150px); border-left: 1px solid var(--line); }
+  .lab-list { width: max-content; overflow: visible; grid-auto-flow: column; grid-auto-columns: 160px; grid-template-columns: none; border-left: 1px solid var(--line); }
   .lab-list li { border-right: 1px solid var(--line); }
+  .lab-list li.optional { margin-top: 0; border-top: 0; }
   .lab-link { grid-template-columns: 27px minmax(0, 1fr); justify-items: stretch; padding: 8px; }
   .lab-link > strong, .lab-link > span:not(:first-child) { display: block; }
   .engine-note, .sidebar-context { display: none; }

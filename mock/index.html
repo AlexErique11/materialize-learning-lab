@@ -14,32 +14,19 @@
         <aside class="lesson-sidebar" aria-label="Guided labs">
           <div class="sidebar-context">
             <div><span>Learning path</span><strong>Guided labs</strong></div>
-            <p><b>12</b><small>labs</small></p>
+            <p><b id="labCount">12</b><small>core labs</small></p>
           </div>
           <nav class="library-switcher" aria-label="Learning areas">
             <button class="nav-button active" data-library="labs" type="button">
               <span>Guided labs</span>
-              <small id="labsCompletion" aria-live="polite">0/12 completed</small>
+              <small id="labsCompletion" aria-live="polite">0/12 core completed</small>
             </button>
             <button class="nav-button" data-library="challenges" type="button">
-              <span>Challenges</span>
+              <span>Capstones</span>
               <small>0/3 completed</small>
             </button>
           </nav>
-          <ol class="lab-list" id="labList">
-            <li><button class="lab-link" data-sidebar-lab data-feature="Changing Relations" type="button" title="01 · Changing Relations"><span>01</span><strong>Changing Relations</strong></button></li>
-            <li><button class="lab-link" data-sidebar-lab data-feature="Incremental Maintenance" type="button" title="02 · Incremental Maintenance"><span>02</span><strong>Incremental Maintenance</strong></button></li>
-            <li><button class="lab-link" data-sidebar-lab data-feature="Views, Indexes &amp; Materialized Views" type="button" title="03 · Views, Indexes &amp; Materialized Views"><span>03</span><strong>Views, Indexes &amp; Materialized Views</strong></button></li>
-            <li class="active"><button class="lab-link" data-sidebar-lab data-current="true" type="button" aria-current="page" title="04 · Time in Materialize"><span>04</span><span><strong>Time in Materialize</strong><small id="activeLabStatus">Current lab</small></span></button></li>
-            <li><button class="lab-link" data-sidebar-lab data-feature="Frontiers &amp; Freshness" type="button" title="05 · Frontiers &amp; Freshness"><span>05</span><strong>Frontiers &amp; Freshness</strong></button></li>
-            <li><button class="lab-link" data-sidebar-lab data-feature="CDC &amp; Envelopes" type="button" title="06 · CDC &amp; Envelopes"><span>06</span><strong>CDC &amp; Envelopes</strong></button></li>
-            <li><button class="lab-link" data-sidebar-lab data-feature="Stateful Query Costs" type="button" title="07 · Stateful Query Costs"><span>07</span><strong>Stateful Query Costs</strong></button></li>
-            <li><button class="lab-link" data-sidebar-lab data-feature="Query Optimization" type="button" title="08 · Query Optimization"><span>08</span><strong>Query Optimization</strong></button></li>
-            <li><button class="lab-link" data-sidebar-lab data-feature="Hydration &amp; Recovery" type="button" title="09 · Hydration &amp; Recovery"><span>09</span><strong>Hydration &amp; Recovery</strong></button></li>
-            <li><button class="lab-link" data-sidebar-lab data-feature="Consistency Policies" type="button" title="10 · Consistency Policies"><span>10</span><strong>Consistency Policies</strong></button></li>
-            <li><button class="lab-link" data-sidebar-lab data-feature="Sinks &amp; Delivery" type="button" title="11 · Sinks &amp; Delivery"><span>11</span><strong>Sinks &amp; Delivery</strong></button></li>
-            <li><button class="lab-link" data-sidebar-lab data-feature="Advanced Computation" type="button" title="12 · Advanced Computation"><span>12</span><strong>Advanced Computation</strong></button></li>
-          </ol>
+          <ol class="lab-list" id="labList"></ol>
 
           <p class="engine-note"><span></span>Concept simulation<br />Designed for the Materialize Emulator</p>
         </aside>
@@ -53,7 +40,7 @@
                   <details class="reference-details">
                     <summary class="button secondary">SQL &amp; Objectives</summary>
                     <div class="reference-panel">
-                      <div class="reference-heading"><span>Lab 04 reference</span><strong>Time-driven unpaid-order alerts</strong></div>
+                      <div class="reference-heading"><span>Chapter 5 reference</span><strong>Time-driven unpaid-order alerts</strong></div>
                       <section class="reference-objective" aria-labelledby="objectiveTitle">
                         <h2 id="objectiveTitle">Learning objective</h2>
                         <p>Explain whether each result change was caused by new source data or by <code>mz_now()</code> advancing logical time.</p>

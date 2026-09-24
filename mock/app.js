@@ -76,8 +76,10 @@ const els = {
   changeStream: document.querySelector("#changeStream"),
   progressLabel: document.querySelector("#progressLabel"),
   progressBar: document.querySelector("#progressBar"),
+  labCount: document.querySelector("#labCount"),
   labsCompletion: document.querySelector("#labsCompletion"),
   activeLabStatus: document.querySelector("#activeLabStatus"),
+  labList: document.querySelector("#labList"),
   referenceDetails: document.querySelector(".reference-details"),
   play: document.querySelector("#playButton"),
   playLabel: document.querySelector("#playLabel"),
@@ -94,7 +96,6 @@ const els = {
   coachCopy: document.querySelector("#coachCopy"),
   coachWatch: document.querySelector("#coachWatch"),
   continueButton: document.querySelector("#continueButton"),
-  sidebarLabs: [...document.querySelectorAll("[data-sidebar-lab]")],
   labMain: document.querySelector(".lab-main"),
   libraryButtons: [...document.querySelectorAll("[data-library]")],
   featureDialog: document.querySelector("#featureDialog"),
@@ -108,32 +109,46 @@ const els = {
 const learningCatalog = {
   labs: {
     eyebrow: "Guided labs",
-    title: "Choose a guided lab",
+    title: "Choose a chapter",
     items: [
-      { number: "01", name: "Changing Relations", description: "See how inserts, updates, and deletes reshape a relation." },
-      { number: "02", name: "Incremental Maintenance", description: "Compare changed inputs with continuously maintained results." },
-      { number: "03", name: "Views, Indexes & Materialized Views", description: "Understand what is computed, stored, and accelerated." },
-      { number: "04", name: "Time in Materialize", description: "Observe logical time creating and retracting query results.", current: true },
-      { number: "05", name: "Frontiers & Freshness", description: "Read progress and determine how current a result is." },
-      { number: "06", name: "CDC & Envelopes", description: "Decode change events into relation updates." },
-      { number: "07", name: "Stateful Query Costs", description: "See where retained state and memory costs accumulate." },
-      { number: "08", name: "Query Optimization", description: "Compare plans and the dataflow work they require." },
-      { number: "09", name: "Hydration & Recovery", description: "Watch indexes rebuild and become queryable." },
-      { number: "10", name: "Consistency Policies", description: "Control when fresh data becomes visible." },
-      { number: "11", name: "Sinks & Delivery", description: "Follow maintained changes into downstream systems." },
-      { number: "12", name: "Advanced Computation", description: "Explore complex and recursive dataflows." },
+      { number: "01", name: "Changing Relations — Rows, Updates, and Diffs", navLabel: "Changing Relations", description: "Reconstruct a changing relation from additions, retractions, and updates." },
+      { number: "02", name: "Incremental Maintenance — How One Change Travels Through SQL", navLabel: "Incremental Maintenance", description: "Trace one input change through filters, joins, and aggregates." },
+      { number: "03", name: "Views, Indexes, and Materialized Views", description: "Choose where to save SQL, maintain results in memory, or persist them." },
+      { number: "04", name: "Getting Data In — Sources, Snapshots, and CDC", navLabel: "Getting Data In", description: "Turn initial snapshots and incoming changes into the right relation." },
+      { number: "05", name: "Time in Materialize — Temporal Filters", navLabel: "Time in Materialize", description: "See logical time add and retract rows without a new source event.", current: true },
+      { number: "06", name: "Progress and Freshness — Why Is the System Behind?", navLabel: "Progress and Freshness", description: "Find what progress proves and where a delayed result falls behind." },
+      { number: "07", name: "Consistent Reads — Which Moment Does a Query See?", navLabel: "Consistent Reads", description: "Choose a readable moment and compare freshness with waiting." },
+      { number: "08", name: "Maintained State — Why Small Results Can Be Expensive", navLabel: "Maintained State", description: "Find the state that joins, aggregates, and Top-K results retain." },
+      { number: "09", name: "Query Optimization — Change the Plan, Preserve the Answer", navLabel: "Query Optimization", description: "Use indexes and plan inspection to improve a query without changing its result." },
+      { number: "10", name: "Clusters, Replicas, and Recovery", description: "Place workloads and follow a replica through hydration and catch-up." },
+      { number: "11", name: "Building Live Applications with SUBSCRIBE", navLabel: "Live Applications with SUBSCRIBE", description: "Apply snapshots, diffs, and progress safely in a live client." },
+      { number: "12", name: "Sinks and Reliable Downstream Delivery", navLabel: "Sinks and Delivery", description: "Export changing results and reason about downstream processing." },
+      { number: "13", name: "Recursive Queries and Changing Graphs", navLabel: "Recursive Queries", description: "Follow recursive results to a fixed point as graph edges change.", optional: true },
     ],
   },
   challenges: {
-    eyebrow: "Challenges",
-    title: "Choose a challenge",
+    eyebrow: "Capstones",
+    title: "Choose a capstone",
     items: [
-      { number: "01", name: "Predict the next diff", description: "Decide what SUBSCRIBE emits before time advances." },
-      { number: "02", name: "Repair the time window", description: "Fix a temporal filter with the wrong boundaries." },
-      { number: "03", name: "Trace a join retraction", description: "Find the input event that removes a result row." },
+      { number: "01", name: "Live Order Operations", description: "Build a recent-orders result with updates, cancellations, and expiration." },
+      { number: "02", name: "The Dashboard Is Fresh but Expensive", description: "Redesign a costly dashboard under a fixed resource budget." },
+      { number: "03", name: "Recover Without Corrupting Delivery", description: "Handle recovery and reconnection without losing or duplicating effects." },
     ],
   },
 };
+
+function renderLabNavigation() {
+  els.labList.innerHTML = learningCatalog.labs.items.map((item) => `
+    <li${item.current ? ' class="active"' : item.optional ? ' class="optional"' : ""}>
+      <button class="lab-link" data-sidebar-lab type="button" title="${item.number} · ${item.name}"${item.current ? ' data-current="true" aria-current="page"' : ""}>
+        <span>${item.number}</span>
+        <span><strong>${item.navLabel ?? item.name}</strong>${item.current ? '<small id="activeLabStatus">Current lab</small>' : item.optional ? "<small>Optional</small>" : ""}</span>
+      </button>
+    </li>`).join("");
+  els.activeLabStatus = document.querySelector("#activeLabStatus");
+}
+
+renderLabNavigation();
 
 let currentTime = 0;
 let playing = false;
@@ -320,9 +335,11 @@ function renderStream() {
 
 function renderProgress() {
   const count = completedCheckpoints.size;
+  const coreLabCount = learningCatalog.labs.items.filter((item) => !item.optional).length;
   els.progressLabel.textContent = `Progress ${count}/${checkpoints.length}`;
   els.progressBar.style.width = `${(count / checkpoints.length) * 100}%`;
-  els.labsCompletion.textContent = `${labCompleted ? 1 : 0}/${learningCatalog.labs.items.length} completed`;
+  els.labCount.textContent = String(coreLabCount);
+  els.labsCompletion.textContent = `${labCompleted ? 1 : 0}/${coreLabCount} core completed`;
   els.activeLabStatus.textContent = labCompleted ? "Completed" : "Current lab";
 }
 
@@ -478,20 +495,17 @@ els.libraryButtons.forEach((button) => {
     else showCatalog(section);
   });
 });
-els.sidebarLabs.forEach((button) => {
-  button.addEventListener("click", () => {
-    if (playing) pause();
-    if (button.dataset.current === "true") {
-      els.coreWorkspace.hidden = false;
-      return;
-    }
-    els.sidebarLabs.forEach((lab) => {
-      lab.closest("li")?.classList.toggle("active", lab === button);
-      lab.removeAttribute("aria-current");
-    });
-    button.setAttribute("aria-current", "page");
-    showNotReady();
+els.labList.addEventListener("click", (event) => {
+  const button = event.target instanceof Element ? event.target.closest("[data-sidebar-lab]") : null;
+  if (!button) return;
+  if (playing) pause();
+  els.labList.querySelectorAll("[data-sidebar-lab]").forEach((lab) => {
+    lab.closest("li")?.classList.toggle("active", lab === button);
+    if (lab === button) lab.setAttribute("aria-current", "page");
+    else lab.removeAttribute("aria-current");
   });
+  if (button.dataset.current === "true") els.coreWorkspace.hidden = false;
+  else showNotReady();
 });
 let draggingTimelinePointer = null;
 let timelineDragBounds = null;
@@ -575,7 +589,7 @@ function showCatalog(section) {
     <button class="catalog-item${item.current ? " current" : ""}" type="button" data-feature="${item.name}"${item.current ? " data-current=\"true\"" : ""}>
       <span>${item.number}</span>
       <span><strong>${item.name}</strong><small>${item.description}</small></span>
-      <span class="catalog-status">${item.current ? "Current" : "Coming soon"}</span>
+      <span class="catalog-status">${item.current ? "Current" : item.optional ? "Optional · coming soon" : "Coming soon"}</span>
     </button>`).join("")}</div>`;
   els.featureContent.querySelectorAll(".catalog-item").forEach((item) => {
     item.addEventListener("click", () => {
