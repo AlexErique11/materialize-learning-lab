@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Row Lifetime Bands | Chapter 5</title>
+    <link rel="stylesheet" href="./chapter-05.css?v=1" />
+  </head>
+  <body>
+    <main class="page">
+      <header><p class="eyebrow">Chapter 05 · Visualization 02</p><h1>Row lifetime bands</h1><p class="intro">Move event times, the window length, and logical time. A row is included when its event time has arrived and its lifetime has not expired.</p></header>
+      <section class="controls" aria-label="Timeline controls">
+        <label class="field" for="logicalTime">Logical time · mz_now()<output id="logicalOutput" for="logicalTime">+20s</output><input id="logicalTime" type="range" min="0" max="60" value="20" /></label>
+        <label class="field" for="windowLength">Window length<output id="windowOutput" for="windowLength">15s</output><input id="windowLength" type="range" min="5" max="30" value="15" /></label>
+      </section>
+      <section class="panel" aria-label="Rows with temporal lifetimes">
+        <div class="axis"><span>0s</span><span>15s</span><span>30s</span><span>45s</span><span>60s</span></div>
+        <div id="lanes"></div>
+        <div class="legend"><span><i></i>eligible lifetime</span><span><i class="event"></i>event time</span><span><i class="expiry"></i>expiration</span><span><i class="logical"></i>logical time</span></div>
+      </section>
+      <p class="status">Predicate: <code>event_time &lt;= mz_now() AND mz_now() &lt; event_time + window</code></p>
+    </main>
+    <script src="./lifetime-bands.js?v=1"></script>
+  </body>
+</html>
