@@ -161,6 +161,11 @@ const els = {
   chapter11Frame: document.querySelector("#chapter11Frame"),
   chapter11VisualizationTitle: document.querySelector("#chapter11VisualizationTitle"),
   chapter11Back: document.querySelector("#chapter11Back"),
+  chapter12Hub: document.querySelector("#chapter12Hub"),
+  chapter12Visualization: document.querySelector("#chapter12Visualization"),
+  chapter12Frame: document.querySelector("#chapter12Frame"),
+  chapter12VisualizationTitle: document.querySelector("#chapter12VisualizationTitle"),
+  chapter12Back: document.querySelector("#chapter12Back"),
 };
 
 const learningCatalog = {
@@ -179,7 +184,7 @@ const learningCatalog = {
       { number: "09", name: "Query Optimization — Change the Plan, Preserve the Answer", navLabel: "Query Optimization", description: "Use indexes and plan inspection to improve a query without changing its result.", chapterHub: "09" },
       { number: "10", name: "Clusters, Replicas, and Recovery", description: "Place workloads and follow a replica through hydration and catch-up.", chapterHub: "10" },
       { number: "11", name: "Building Live Applications with SUBSCRIBE", navLabel: "Live Applications with SUBSCRIBE", description: "Apply snapshots, diffs, and progress safely in a live client.", chapterHub: "11" },
-      { number: "12", name: "Sinks and Reliable Downstream Delivery", navLabel: "Sinks and Delivery", description: "Export changing results and reason about downstream processing." },
+      { number: "12", name: "Sinks and Reliable Downstream Delivery", navLabel: "Sinks and Delivery", description: "Export changing results and reason about downstream processing.", chapterHub: "12" },
       { number: "13", name: "Recursive Queries and Changing Graphs", navLabel: "Recursive Queries", description: "Follow recursive results to a fixed point as graph edges change.", optional: true },
     ],
   },
@@ -596,6 +601,10 @@ els.chapter11Hub.addEventListener("click", (event) => {
   openChapterVisualization(event, els.chapter11Hub, els.chapter11Visualization, els.chapter11Frame, els.chapter11VisualizationTitle);
 });
 els.chapter11Back.addEventListener("click", showChapter11Hub);
+els.chapter12Hub.addEventListener("click", (event) => {
+  openChapterVisualization(event, els.chapter12Hub, els.chapter12Visualization, els.chapter12Frame, els.chapter12VisualizationTitle);
+});
+els.chapter12Back.addEventListener("click", showChapter12Hub);
 els.libraryButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const section = button.dataset.library;
@@ -655,6 +664,10 @@ els.labList.addEventListener("click", (event) => {
   }
   if (button.dataset.chapterHub === "11") {
     showChapter11Hub();
+    return;
+  }
+  if (button.dataset.chapterHub === "12") {
+    showChapter12Hub();
     return;
   }
   if (button.dataset.current === "true") {
@@ -791,6 +804,8 @@ function hideChapterPages() {
   els.chapter10Visualization.hidden = true;
   els.chapter11Hub.hidden = true;
   els.chapter11Visualization.hidden = true;
+  els.chapter12Hub.hidden = true;
+  els.chapter12Visualization.hidden = true;
 }
 
 function showChapterHub() {
@@ -818,6 +833,8 @@ function showChapterHub() {
   els.chapter10Visualization.hidden = true;
   els.chapter11Hub.hidden = true;
   els.chapter11Visualization.hidden = true;
+  els.chapter12Hub.hidden = true;
+  els.chapter12Visualization.hidden = true;
   els.chapterHub.hidden = false;
 }
 
@@ -846,6 +863,8 @@ function showChapter2Hub() {
   els.chapter10Visualization.hidden = true;
   els.chapter11Hub.hidden = true;
   els.chapter11Visualization.hidden = true;
+  els.chapter12Hub.hidden = true;
+  els.chapter12Visualization.hidden = true;
   els.chapter2Hub.hidden = false;
 }
 
@@ -874,6 +893,8 @@ function showChapter3Hub() {
   els.chapter10Visualization.hidden = true;
   els.chapter11Hub.hidden = true;
   els.chapter11Visualization.hidden = true;
+  els.chapter12Hub.hidden = true;
+  els.chapter12Visualization.hidden = true;
   els.chapter3Hub.hidden = false;
 }
 
@@ -902,6 +923,8 @@ function showChapter4Hub() {
   els.chapter10Visualization.hidden = true;
   els.chapter11Hub.hidden = true;
   els.chapter11Visualization.hidden = true;
+  els.chapter12Hub.hidden = true;
+  els.chapter12Visualization.hidden = true;
   els.chapter4Hub.hidden = false;
 }
 
@@ -930,6 +953,8 @@ function showChapter5Hub() {
   els.chapter10Visualization.hidden = true;
   els.chapter11Hub.hidden = true;
   els.chapter11Visualization.hidden = true;
+  els.chapter12Hub.hidden = true;
+  els.chapter12Visualization.hidden = true;
   els.chapter5Hub.hidden = false;
 }
 
@@ -973,6 +998,13 @@ function showChapter11Hub() {
   hideChapterPages();
   els.coreWorkspace.hidden = true;
   els.chapter11Hub.hidden = false;
+}
+
+function showChapter12Hub() {
+  hideCheckpoint();
+  hideChapterPages();
+  els.coreWorkspace.hidden = true;
+  els.chapter12Hub.hidden = false;
 }
 
 function openChapterVisualization(event, hub, visualization, frame, titleElement) {
