@@ -146,6 +146,11 @@ const els = {
   chapter8Frame: document.querySelector("#chapter8Frame"),
   chapter8VisualizationTitle: document.querySelector("#chapter8VisualizationTitle"),
   chapter8Back: document.querySelector("#chapter8Back"),
+  chapter9Hub: document.querySelector("#chapter9Hub"),
+  chapter9Visualization: document.querySelector("#chapter9Visualization"),
+  chapter9Frame: document.querySelector("#chapter9Frame"),
+  chapter9VisualizationTitle: document.querySelector("#chapter9VisualizationTitle"),
+  chapter9Back: document.querySelector("#chapter9Back"),
 };
 
 const learningCatalog = {
@@ -161,7 +166,7 @@ const learningCatalog = {
       { number: "06", name: "Progress and Freshness — Why Is the System Behind?", navLabel: "Progress and Freshness", description: "Trace write frontiers, bottlenecks, and freshness through a dataflow.", chapterHub: "06" },
       { number: "07", name: "Consistent Reads — Which Moment Does a Query See?", navLabel: "Consistent Reads", description: "Choose a readable moment and compare freshness with waiting.", chapterHub: "07" },
       { number: "08", name: "Maintained State — Why Small Results Can Be Expensive", navLabel: "Maintained State", description: "Find the state that joins, aggregates, and Top-K results retain.", chapterHub: "08" },
-      { number: "09", name: "Query Optimization — Change the Plan, Preserve the Answer", navLabel: "Query Optimization", description: "Use indexes and plan inspection to improve a query without changing its result." },
+      { number: "09", name: "Query Optimization — Change the Plan, Preserve the Answer", navLabel: "Query Optimization", description: "Use indexes and plan inspection to improve a query without changing its result.", chapterHub: "09" },
       { number: "10", name: "Clusters, Replicas, and Recovery", description: "Place workloads and follow a replica through hydration and catch-up." },
       { number: "11", name: "Building Live Applications with SUBSCRIBE", navLabel: "Live Applications with SUBSCRIBE", description: "Apply snapshots, diffs, and progress safely in a live client." },
       { number: "12", name: "Sinks and Reliable Downstream Delivery", navLabel: "Sinks and Delivery", description: "Export changing results and reason about downstream processing." },
@@ -569,6 +574,10 @@ els.chapter8Hub.addEventListener("click", (event) => {
   openChapterVisualization(event, els.chapter8Hub, els.chapter8Visualization, els.chapter8Frame, els.chapter8VisualizationTitle);
 });
 els.chapter8Back.addEventListener("click", showChapter8Hub);
+els.chapter9Hub.addEventListener("click", (event) => {
+  openChapterVisualization(event, els.chapter9Hub, els.chapter9Visualization, els.chapter9Frame, els.chapter9VisualizationTitle);
+});
+els.chapter9Back.addEventListener("click", showChapter9Hub);
 els.libraryButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const section = button.dataset.library;
@@ -616,6 +625,10 @@ els.labList.addEventListener("click", (event) => {
   }
   if (button.dataset.chapterHub === "08") {
     showChapter8Hub();
+    return;
+  }
+  if (button.dataset.chapterHub === "09") {
+    showChapter9Hub();
     return;
   }
   if (button.dataset.current === "true") {
@@ -746,6 +759,8 @@ function hideChapterPages() {
   els.chapter7Visualization.hidden = true;
   els.chapter8Hub.hidden = true;
   els.chapter8Visualization.hidden = true;
+  els.chapter9Hub.hidden = true;
+  els.chapter9Visualization.hidden = true;
 }
 
 function showChapterHub() {
@@ -767,6 +782,8 @@ function showChapterHub() {
   els.chapter7Visualization.hidden = true;
   els.chapter8Hub.hidden = true;
   els.chapter8Visualization.hidden = true;
+  els.chapter9Hub.hidden = true;
+  els.chapter9Visualization.hidden = true;
   els.chapterHub.hidden = false;
 }
 
@@ -789,6 +806,8 @@ function showChapter2Hub() {
   els.chapter7Visualization.hidden = true;
   els.chapter8Hub.hidden = true;
   els.chapter8Visualization.hidden = true;
+  els.chapter9Hub.hidden = true;
+  els.chapter9Visualization.hidden = true;
   els.chapter2Hub.hidden = false;
 }
 
@@ -811,6 +830,8 @@ function showChapter3Hub() {
   els.chapter7Visualization.hidden = true;
   els.chapter8Hub.hidden = true;
   els.chapter8Visualization.hidden = true;
+  els.chapter9Hub.hidden = true;
+  els.chapter9Visualization.hidden = true;
   els.chapter3Hub.hidden = false;
 }
 
@@ -833,6 +854,8 @@ function showChapter4Hub() {
   els.chapter7Visualization.hidden = true;
   els.chapter8Hub.hidden = true;
   els.chapter8Visualization.hidden = true;
+  els.chapter9Hub.hidden = true;
+  els.chapter9Visualization.hidden = true;
   els.chapter4Hub.hidden = false;
 }
 
@@ -855,6 +878,8 @@ function showChapter5Hub() {
   els.chapter7Visualization.hidden = true;
   els.chapter8Hub.hidden = true;
   els.chapter8Visualization.hidden = true;
+  els.chapter9Hub.hidden = true;
+  els.chapter9Visualization.hidden = true;
   els.chapter5Hub.hidden = false;
 }
 
@@ -877,6 +902,13 @@ function showChapter8Hub() {
   hideChapterPages();
   els.coreWorkspace.hidden = true;
   els.chapter8Hub.hidden = false;
+}
+
+function showChapter9Hub() {
+  hideCheckpoint();
+  hideChapterPages();
+  els.coreWorkspace.hidden = true;
+  els.chapter9Hub.hidden = false;
 }
 
 function openChapterVisualization(event, hub, visualization, frame, titleElement) {

@@ -1,0 +1,6 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Memory/speed budget board</title><link rel="stylesheet" href="./chapter-09.css?v=1"/></head>
+<body><main class="page"><h1>Memory/speed budget board</h1><p class="subtitle">Choose a useful set of indexes without exceeding the illustrative memory budget.</p><section class="panel">
+<div class="budget"><label for="budget">Cluster budget</label><input id="budget" type="range" min="8" max="30" value="18"/><strong><output id="budgetValue"></output> units</strong></div>
+<div class="choices" id="choices"></div><div class="bench-result"><div class="readout"><small>Selected index state</small><strong id="cost"></strong></div><div class="readout"><small>Budget left</small><strong id="remaining"></strong></div><div class="readout"><small>Patterns helped</small><strong id="covered"></strong></div></div><div class="patterns" id="patterns"></div><p class="note">Costs are illustrative relative units, not measured bytes. Indexes can be shared by consumers in the same cluster; each still adds maintenance and memory work.</p>
+</section></main><script src="./budget-board.js?v=1"></script></body></html>
