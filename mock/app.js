@@ -111,7 +111,7 @@ const learningCatalog = {
     eyebrow: "Guided labs",
     title: "Choose a chapter",
     items: [
-      { number: "01", name: "Changing Relations — Rows, Updates, and Diffs", navLabel: "Changing Relations", description: "Reconstruct a changing relation from additions, retractions, and updates." },
+      { number: "01", name: "Changing Relations — Rows, Updates, and Diffs", navLabel: "Changing Relations", description: "Reconstruct a changing relation from additions, retractions, and updates.", href: "./chapter-01/index.html" },
       { number: "02", name: "Incremental Maintenance — How One Change Travels Through SQL", navLabel: "Incremental Maintenance", description: "Trace one input change through filters, joins, and aggregates." },
       { number: "03", name: "Views, Indexes, and Materialized Views", description: "Choose where to save SQL, maintain results in memory, or persist them." },
       { number: "04", name: "Getting Data In — Sources, Snapshots, and CDC", navLabel: "Getting Data In", description: "Turn initial snapshots and incoming changes into the right relation." },
@@ -140,7 +140,7 @@ const learningCatalog = {
 function renderLabNavigation() {
   els.labList.innerHTML = learningCatalog.labs.items.map((item) => `
     <li${item.current ? ' class="active"' : item.optional ? ' class="optional"' : ""}>
-      <button class="lab-link" data-sidebar-lab type="button" title="${item.number} · ${item.name}"${item.current ? ' data-current="true" aria-current="page"' : ""}>
+      <button class="lab-link" data-sidebar-lab type="button" title="${item.number} · ${item.name}"${item.href ? ` data-href="${item.href}"` : ""}${item.current ? ' data-current="true" aria-current="page"' : ""}>
         <span>${item.number}</span>
         <span><strong>${item.navLabel ?? item.name}</strong>${item.current ? '<small id="activeLabStatus">Current lab</small>' : item.optional ? "<small>Optional</small>" : ""}</span>
       </button>
@@ -499,6 +499,10 @@ els.labList.addEventListener("click", (event) => {
   const button = event.target instanceof Element ? event.target.closest("[data-sidebar-lab]") : null;
   if (!button) return;
   if (playing) pause();
+  if (button.dataset.href) {
+    window.location.href = button.dataset.href;
+    return;
+  }
   els.labList.querySelectorAll("[data-sidebar-lab]").forEach((lab) => {
     lab.closest("li")?.classList.toggle("active", lab === button);
     if (lab === button) lab.setAttribute("aria-current", "page");

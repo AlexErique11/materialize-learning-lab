@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Update Decomposition | Chapter 1</title>
+    <link rel="stylesheet" href="./chapter.css" />
+  </head>
+  <body>
+    <main class="page-shell visualization-page">
+      <a class="back-link" href="./index.html">← Chapter 1 visualizations</a>
+      <header class="page-header">
+        <p class="eyebrow">Chapter 01 · Visualization 02</p>
+        <h1>An update is two diffs</h1>
+        <p>Change the product's price. The old full row is retracted and the new full row is inserted at one logical timestamp.</p>
+      </header>
+      <section class="panel" aria-labelledby="editTitle">
+        <div class="panel-heading"><h2 id="editTitle">Edit the business record</h2><span>Product ID 7 · Widget</span></div>
+        <div class="edit-form">
+          <label class="field" for="priceInput">New price<input id="priceInput" type="number" min="0" step="1" value="25" /></label>
+          <button class="action-button" id="applyButton" type="button">Apply update</button>
+          <button class="action-button" id="resetButton" type="button">Reset</button>
+        </div>
+        <div class="record-card"><strong>Current relation</strong><span class="record-row" id="currentRow">(7, Widget, $20)</span><span id="multiplicityLabel">multiplicity 1</span></div>
+        <p class="status-line" id="statusMessage" role="status" aria-live="polite">Edit the price and apply the update.</p>
+      </section>
+      <section class="visualization-grid">
+        <div class="panel">
+          <div class="panel-heading"><h2>Change records</h2><span>(data, time, diff)</span></div>
+          <div id="changeRecords"><p class="ledger-empty">Apply an edit to reveal its two changes.</p></div>
+        </div>
+        <div class="panel">
+          <div class="panel-heading"><h2>Current answer</h2><span id="timeLabel">time 0</span></div>
+          <div class="change-result" id="resultMessage" hidden><span aria-hidden="true">✓</span><span>The relation now contains the new row with multiplicity 1.</span></div>
+          <p class="explanation">Both change records share the same timestamp. Together they replace one row value; they do not leave both prices in the relation.</p>
+        </div>
+      </section>
+    </main>
+    <script src="./update-decomposition.js"></script>
+  </body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diff Ledger | Chapter 1</title>
+    <link rel="stylesheet" href="./chapter.css" />
+  </head>
+  <body>
+    <main class="page-shell visualization-page">
+      <a class="back-link" href="./index.html">← Chapter 1 visualizations</a>
+      <header class="page-header">
+        <p class="eyebrow">Chapter 01 · Visualization 01</p>
+        <h1>Diff ledger</h1>
+        <p>Apply one change at a time. The ledger records each signed diff; the relation shows how many copies of every row exist now.</p>
+      </header>
+      <section class="lesson-toolbar" aria-label="Apply a row change">
+        <span class="toolbar-label">Apply a change</span>
+        <div>
+          <button class="action-button" type="button" data-row="widget" data-diff="1">+1 Widget · $20</button>
+          <button class="action-button" type="button" data-row="widget" data-diff="2">+2 Widget · $20</button>
+          <button class="action-button" type="button" data-row="widget" data-diff="-1">−1 Widget · $20</button>
+          <button class="action-button" type="button" data-row="mug" data-diff="1">+1 Mug · $12</button>
+          <button class="action-button" id="resetButton" type="button">Reset</button>
+        </div>
+      </section>
+      <div class="visualization-grid">
+        <section class="panel" aria-labelledby="relationTitle">
+          <div class="panel-heading"><h2 id="relationTitle">Current relation</h2><span id="relationCount">0 row copies</span></div>
+          <table class="relation-table"><thead><tr><th>Product ID</th><th>Product</th><th>Price</th><th>Copies</th></tr></thead><tbody id="relationBody"></tbody></table>
+          <p class="explanation">Identical rows combine into one displayed row. Its multiplicity tells you how many copies are present.</p>
+        </section>
+        <section class="panel" aria-labelledby="ledgerTitle">
+          <div class="panel-heading"><h2 id="ledgerTitle">Diff ledger</h2><span>(row, time, diff)</span></div>
+          <div class="ledger-list" id="ledgerList" aria-live="polite"></div>
+          <p class="explanation">Positive diffs add copies. Negative diffs retract copies. Try retracting more copies than exist.</p>
+          <p class="status-line" id="statusMessage" role="status" aria-live="polite">No changes yet.</p>
+        </section>
+      </div>
+    </main>
+    <script src="./diff-ledger.js"></script>
+  </body>
+</html>
