@@ -166,6 +166,11 @@ const els = {
   chapter12Frame: document.querySelector("#chapter12Frame"),
   chapter12VisualizationTitle: document.querySelector("#chapter12VisualizationTitle"),
   chapter12Back: document.querySelector("#chapter12Back"),
+  chapter13Hub: document.querySelector("#chapter13Hub"),
+  chapter13Visualization: document.querySelector("#chapter13Visualization"),
+  chapter13Frame: document.querySelector("#chapter13Frame"),
+  chapter13VisualizationTitle: document.querySelector("#chapter13VisualizationTitle"),
+  chapter13Back: document.querySelector("#chapter13Back"),
 };
 
 const learningCatalog = {
@@ -185,7 +190,7 @@ const learningCatalog = {
       { number: "10", name: "Clusters, Replicas, and Recovery", description: "Place workloads and follow a replica through hydration and catch-up.", chapterHub: "10" },
       { number: "11", name: "Building Live Applications with SUBSCRIBE", navLabel: "Live Applications with SUBSCRIBE", description: "Apply snapshots, diffs, and progress safely in a live client.", chapterHub: "11" },
       { number: "12", name: "Sinks and Reliable Downstream Delivery", navLabel: "Sinks and Delivery", description: "Export changing results and reason about downstream processing.", chapterHub: "12" },
-      { number: "13", name: "Recursive Queries and Changing Graphs", navLabel: "Recursive Queries", description: "Follow recursive results to a fixed point as graph edges change.", optional: true },
+      { number: "13", name: "Recursive Queries and Changing Graphs", navLabel: "Recursive Queries", description: "Follow recursive results to a fixed point as graph edges change.", optional: true, chapterHub: "13" },
     ],
   },
   challenges: {
@@ -605,6 +610,10 @@ els.chapter12Hub.addEventListener("click", (event) => {
   openChapterVisualization(event, els.chapter12Hub, els.chapter12Visualization, els.chapter12Frame, els.chapter12VisualizationTitle);
 });
 els.chapter12Back.addEventListener("click", showChapter12Hub);
+els.chapter13Hub.addEventListener("click", (event) => {
+  openChapterVisualization(event, els.chapter13Hub, els.chapter13Visualization, els.chapter13Frame, els.chapter13VisualizationTitle);
+});
+els.chapter13Back.addEventListener("click", showChapter13Hub);
 els.libraryButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const section = button.dataset.library;
@@ -668,6 +677,10 @@ els.labList.addEventListener("click", (event) => {
   }
   if (button.dataset.chapterHub === "12") {
     showChapter12Hub();
+    return;
+  }
+  if (button.dataset.chapterHub === "13") {
+    showChapter13Hub();
     return;
   }
   if (button.dataset.current === "true") {
@@ -806,6 +819,8 @@ function hideChapterPages() {
   els.chapter11Visualization.hidden = true;
   els.chapter12Hub.hidden = true;
   els.chapter12Visualization.hidden = true;
+  els.chapter13Hub.hidden = true;
+  els.chapter13Visualization.hidden = true;
 }
 
 function showChapterHub() {
@@ -835,6 +850,8 @@ function showChapterHub() {
   els.chapter11Visualization.hidden = true;
   els.chapter12Hub.hidden = true;
   els.chapter12Visualization.hidden = true;
+  els.chapter13Hub.hidden = true;
+  els.chapter13Visualization.hidden = true;
   els.chapterHub.hidden = false;
 }
 
@@ -865,6 +882,8 @@ function showChapter2Hub() {
   els.chapter11Visualization.hidden = true;
   els.chapter12Hub.hidden = true;
   els.chapter12Visualization.hidden = true;
+  els.chapter13Hub.hidden = true;
+  els.chapter13Visualization.hidden = true;
   els.chapter2Hub.hidden = false;
 }
 
@@ -895,6 +914,8 @@ function showChapter3Hub() {
   els.chapter11Visualization.hidden = true;
   els.chapter12Hub.hidden = true;
   els.chapter12Visualization.hidden = true;
+  els.chapter13Hub.hidden = true;
+  els.chapter13Visualization.hidden = true;
   els.chapter3Hub.hidden = false;
 }
 
@@ -925,6 +946,8 @@ function showChapter4Hub() {
   els.chapter11Visualization.hidden = true;
   els.chapter12Hub.hidden = true;
   els.chapter12Visualization.hidden = true;
+  els.chapter13Hub.hidden = true;
+  els.chapter13Visualization.hidden = true;
   els.chapter4Hub.hidden = false;
 }
 
@@ -955,6 +978,8 @@ function showChapter5Hub() {
   els.chapter11Visualization.hidden = true;
   els.chapter12Hub.hidden = true;
   els.chapter12Visualization.hidden = true;
+  els.chapter13Hub.hidden = true;
+  els.chapter13Visualization.hidden = true;
   els.chapter5Hub.hidden = false;
 }
 
@@ -1005,6 +1030,13 @@ function showChapter12Hub() {
   hideChapterPages();
   els.coreWorkspace.hidden = true;
   els.chapter12Hub.hidden = false;
+}
+
+function showChapter13Hub() {
+  hideCheckpoint();
+  hideChapterPages();
+  els.coreWorkspace.hidden = true;
+  els.chapter13Hub.hidden = false;
 }
 
 function openChapterVisualization(event, hub, visualization, frame, titleElement) {
