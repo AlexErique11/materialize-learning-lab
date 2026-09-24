@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Parallel progress lanes</title>
+  <link rel="stylesheet" href="./chapter-06.css?v=1" />
+</head>
+<body>
+  <main class="page">
+    <h1>Parallel progress lanes</h1>
+    <p class="subtitle">The output can complete only as far as its slowest input and its own processing.</p>
+    <section class="panel">
+      <div class="controls">
+        <label class="control">Input A frontier <strong><output id="frontierAValue"></output></strong><input id="frontierA" type="range" min="0" max="20" value="14" /></label>
+        <label class="control">Input B frontier <strong><output id="frontierBValue"></output></strong><input id="frontierB" type="range" min="0" max="20" value="8" /></label>
+        <label class="control">Compute frontier <strong><output id="computeValue"></output></strong><input id="computeFrontier" type="range" min="0" max="20" value="12" /></label>
+      </div>
+      <div class="axis"><span>0</span><span>5</span><span>10</span><span>15</span><span>20 logical time</span></div>
+      <div id="lanes"></div>
+      <div class="summary"><span>Limiting input: <strong id="limiting"></strong></span><span>Input bound: <strong id="inputBound"></strong></span><span>Output frontier: <strong id="outputFrontier"></strong></span></div>
+      <p class="explain">A frontier at <strong>t</strong> means times strictly before <strong>t</strong> are complete; time <strong>t</strong> itself is not yet complete. The amber dot is a high timestamp observed in the input—it does not move the frontier by itself.</p>
+    </section>
+  </main>
+  <script src="./progress-lanes.js?v=1"></script>
+</body>
+</html>

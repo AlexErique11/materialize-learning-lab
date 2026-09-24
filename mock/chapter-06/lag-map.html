@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lag dependency map</title>
+  <link rel="stylesheet" href="./chapter-06.css?v=1" />
+</head>
+<body>
+  <main class="page">
+    <h1>Lag dependency map</h1>
+    <p class="subtitle">Move the bottleneck and trace how delay reaches a selected output.</p>
+    <section class="panel">
+      <div class="controls">
+        <label class="control">Source lag <strong><output id="sourceLagValue"></output> sec</strong><input id="sourceLag" type="range" min="0" max="30" value="5" /></label>
+        <label class="control">Transform delay <strong><output id="transformDelayValue"></output> sec</strong><input id="transformDelay" type="range" min="0" max="20" value="2" /></label>
+        <label class="control">Join delay <strong><output id="joinDelayValue"></output> sec</strong><input id="joinDelay" type="range" min="0" max="20" value="4" /></label>
+        <label class="control">Serving query <strong><output id="queryDelayValue"></output> ms</strong><input id="queryDelay" type="range" min="0" max="5000" step="250" value="500" /></label>
+        <label class="control">Trace output <select id="target"><option value="clean">Clean orders</option><option value="joined">Joined dashboard</option><option value="served">Dashboard response</option></select></label>
+      </div>
+      <div class="graph" id="graph"></div>
+      <div class="trace">
+        <div class="trace-item"><small>Inherited data lag</small><strong id="inheritedLag"></strong></div>
+        <div class="trace-item"><small>Locally introduced lag</small><strong id="localLag"></strong></div>
+      </div>
+      <div class="query-readout" id="queryReadout"></div>
+      <p class="explain">Each maintained step can inherit upstream delay and add its own. Serving-query time affects response latency, but does not make the maintained data less current.</p>
+    </section>
+  </main>
+  <script src="./lag-map.js?v=1"></script>
+</body>
+</html>
