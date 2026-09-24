@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Dataflow Graph | Chapter 2</title>
+    <link rel="stylesheet" href="./chapter-02.css?v=1" />
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <p class="eyebrow">Chapter 02 · Visualization 01</p>
+        <h1>Interactive dataflow graph</h1>
+        <p class="intro">Choose a source change and follow it through the query. The output changes only if the edit affects the answer.</p>
+      </header>
+      <div class="toolbar" aria-label="Choose a source change">
+        <button class="control" id="thresholdButton" type="button">Order 101: $40 → $70</button>
+        <button class="control" id="unusedButton" type="button">Edit unused note</button>
+        <button class="control" id="resetButton" type="button">Reset</button>
+      </div>
+      <div class="graph" aria-label="Query dataflow">
+        <article class="node" id="sourceNode"><span class="node-label">Source</span><strong id="sourceValue">Order 101 · $40</strong><small id="sourceDetail">note: rush</small></article>
+        <article class="node" id="filterNode"><span class="node-label">Filter</span><strong>amount ≥ $50</strong><small id="filterValue">2 orders pass</small></article>
+        <article class="node" id="joinNode"><span class="node-label">Join</span><strong>Orders × Products</strong><small id="joinValue">3 products matched</small></article>
+        <article class="node" id="aggregateNode"><span class="node-label">Aggregate</span><strong>SUM(amount)</strong><small id="aggregateValue">Group by category</small></article>
+        <article class="node" id="outputNode"><span class="node-label">Output</span><strong>Revenue by category</strong><small>Maintained result</small></article>
+      </div>
+      <p class="query">SELECT category, SUM(amount) FROM orders JOIN products USING (product_id) WHERE amount &gt;= 50 GROUP BY category</p>
+      <div class="bottom-grid">
+        <section class="panel">
+          <h2>Current output</h2>
+          <table class="answer-table"><thead><tr><th>Category</th><th>Revenue</th></tr></thead><tbody id="answerBody"></tbody></table>
+        </section>
+        <section class="panel">
+          <h2>Change trace</h2>
+          <p class="trace-note" id="traceNote" aria-live="polite">Choose a source change to see which operators are affected.</p>
+        </section>
+      </div>
+    </main>
+    <script src="./dataflow.js?v=1"></script>
+  </body>
+</html>

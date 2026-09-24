@@ -6,7 +6,7 @@
     <meta name="description" content="A guided Materialize SQL tutorial for seeing source data, maintained results, logical time, and subscription changes together." />
     <title>Materialize Systems Lab | Time in Materialize</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23171717'/%3E%3Cpath d='M7 23V9h4.2l4.8 7.4L20.8 9H25v14h-4v-7.7L16 22.7l-5-7.4V23z' fill='white'/%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="./styles.css?v=10" />
+    <link rel="stylesheet" href="./styles.css?v=11" />
   </head>
   <body>
     <div class="product-shell">
@@ -131,12 +131,35 @@ WHERE p.order_id IS NULL
               </button>
             </div>
           </section>
+          <section class="chapter-hub" id="chapter2Hub" aria-labelledby="chapter2HubTitle" hidden>
+            <div class="chapter-hub-heading">
+              <p>Chapter 02</p>
+              <h1 id="chapter2HubTitle">Incremental Maintenance</h1>
+            </div>
+            <div class="chapter-visualization-cards">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-02/dataflow.html?embed=1" data-title="Interactive dataflow graph">
+                <span class="chapter-card-number">1</span>
+                <strong>Interactive dataflow graph</strong>
+              </button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-02/recomputation.html?embed=1" data-title="Recomputation comparison">
+                <span class="chapter-card-number">2</span>
+                <strong>Recomputation comparison</strong>
+              </button>
+            </div>
+          </section>
           <section class="chapter-visualization" id="chapterVisualization" aria-labelledby="chapterVisualizationTitle" hidden>
             <div class="chapter-visualization-toolbar">
               <button class="button secondary" id="chapterBack" type="button">← Chapter 1</button>
               <h1 id="chapterVisualizationTitle">Visualization</h1>
             </div>
             <iframe id="chapterFrame" title="Chapter 1 visualization" src="about:blank"></iframe>
+          </section>
+          <section class="chapter-visualization" id="chapter2Visualization" aria-labelledby="chapter2VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar">
+              <button class="button secondary" id="chapter2Back" type="button">← Chapter 2</button>
+              <h1 id="chapter2VisualizationTitle">Visualization</h1>
+            </div>
+            <iframe id="chapter2Frame" title="Chapter 2 visualization" src="about:blank"></iframe>
           </section>
           <section class="coachmark" id="coachmark" role="dialog" aria-labelledby="coachTitle" hidden>
             <div class="coach-main">
@@ -161,6 +184,6 @@ WHERE p.order_id IS NULL
       <div id="featureContent"></div>
     </dialog>
 
-    <script src="./app.js?v=10"></script>
+    <script src="./app.js?v=11"></script>
   </body>
 </html>

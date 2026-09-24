@@ -109,6 +109,11 @@ const els = {
   chapterFrame: document.querySelector("#chapterFrame"),
   chapterVisualizationTitle: document.querySelector("#chapterVisualizationTitle"),
   chapterBack: document.querySelector("#chapterBack"),
+  chapter2Hub: document.querySelector("#chapter2Hub"),
+  chapter2Visualization: document.querySelector("#chapter2Visualization"),
+  chapter2Frame: document.querySelector("#chapter2Frame"),
+  chapter2VisualizationTitle: document.querySelector("#chapter2VisualizationTitle"),
+  chapter2Back: document.querySelector("#chapter2Back"),
 };
 
 const learningCatalog = {
@@ -116,8 +121,8 @@ const learningCatalog = {
     eyebrow: "Guided labs",
     title: "Choose a chapter",
     items: [
-      { number: "01", name: "Changing Relations — Rows, Updates, and Diffs", navLabel: "Changing Relations", description: "Reconstruct a changing relation from additions, retractions, and updates.", chapterHub: true },
-      { number: "02", name: "Incremental Maintenance — How One Change Travels Through SQL", navLabel: "Incremental Maintenance", description: "Trace one input change through filters, joins, and aggregates." },
+      { number: "01", name: "Changing Relations — Rows, Updates, and Diffs", navLabel: "Changing Relations", description: "Reconstruct a changing relation from additions, retractions, and updates.", chapterHub: "01" },
+      { number: "02", name: "Incremental Maintenance — How One Change Travels Through SQL", navLabel: "Incremental Maintenance", description: "Trace one input change through filters, joins, and aggregates.", chapterHub: "02" },
       { number: "03", name: "Views, Indexes, and Materialized Views", description: "Choose where to save SQL, maintain results in memory, or persist them." },
       { number: "04", name: "Getting Data In — Sources, Snapshots, and CDC", navLabel: "Getting Data In", description: "Turn initial snapshots and incoming changes into the right relation." },
       { number: "05", name: "Time in Materialize — Temporal Filters", navLabel: "Time in Materialize", description: "See logical time add and retract rows without a new source event.", current: true },
@@ -145,7 +150,7 @@ const learningCatalog = {
 function renderLabNavigation() {
   els.labList.innerHTML = learningCatalog.labs.items.map((item) => `
     <li${item.current ? ' class="active"' : item.optional ? ' class="optional"' : ""}>
-      <button class="lab-link" data-sidebar-lab type="button" title="${item.number} · ${item.name}"${item.chapterHub ? ' data-chapter-hub="true"' : ""}${item.current ? ' data-current="true" aria-current="page"' : ""}>
+      <button class="lab-link" data-sidebar-lab type="button" title="${item.number} · ${item.name}"${item.chapterHub ? ` data-chapter-hub="${item.chapterHub}"` : ""}${item.current ? ' data-current="true" aria-current="page"' : ""}>
         <span>${item.number}</span>
         <span><strong>${item.navLabel ?? item.name}</strong>${item.current ? '<small id="activeLabStatus">Current lab</small>' : item.optional ? "<small>Optional</small>" : ""}</span>
       </button>
@@ -494,14 +499,12 @@ els.continueButton.addEventListener("click", continueTutorial);
 els.dialogClose.addEventListener("click", () => els.featureDialog.close());
 els.chapterBack.addEventListener("click", showChapterHub);
 els.chapterHub.addEventListener("click", (event) => {
-  const card = event.target instanceof Element ? event.target.closest("[data-visualization]") : null;
-  if (!card) return;
-  els.chapterVisualizationTitle.textContent = card.dataset.title;
-  els.chapterFrame.title = card.dataset.title;
-  els.chapterFrame.src = card.dataset.visualization;
-  els.chapterHub.hidden = true;
-  els.chapterVisualization.hidden = false;
+  openChapterVisualization(event, els.chapterHub, els.chapterVisualization, els.chapterFrame, els.chapterVisualizationTitle);
 });
+els.chapter2Hub.addEventListener("click", (event) => {
+  openChapterVisualization(event, els.chapter2Hub, els.chapter2Visualization, els.chapter2Frame, els.chapter2VisualizationTitle);
+});
+els.chapter2Back.addEventListener("click", showChapter2Hub);
 els.libraryButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const section = button.dataset.library;
@@ -519,8 +522,12 @@ els.labList.addEventListener("click", (event) => {
     if (lab === button) lab.setAttribute("aria-current", "page");
     else lab.removeAttribute("aria-current");
   });
-  if (button.dataset.chapterHub === "true") {
+  if (button.dataset.chapterHub === "01") {
     showChapterHub();
+    return;
+  }
+  if (button.dataset.chapterHub === "02") {
+    showChapter2Hub();
     return;
   }
   if (button.dataset.current === "true") {
@@ -636,13 +643,36 @@ function showNotReady() {
 function hideChapterPages() {
   els.chapterHub.hidden = true;
   els.chapterVisualization.hidden = true;
+  els.chapter2Hub.hidden = true;
+  els.chapter2Visualization.hidden = true;
 }
 
 function showChapterHub() {
   hideCheckpoint();
   els.coreWorkspace.hidden = true;
   els.chapterVisualization.hidden = true;
+  els.chapter2Hub.hidden = true;
+  els.chapter2Visualization.hidden = true;
   els.chapterHub.hidden = false;
+}
+
+function showChapter2Hub() {
+  hideCheckpoint();
+  els.coreWorkspace.hidden = true;
+  els.chapterHub.hidden = true;
+  els.chapterVisualization.hidden = true;
+  els.chapter2Visualization.hidden = true;
+  els.chapter2Hub.hidden = false;
+}
+
+function openChapterVisualization(event, hub, visualization, frame, titleElement) {
+  const card = event.target instanceof Element ? event.target.closest("[data-visualization]") : null;
+  if (!card) return;
+  titleElement.textContent = card.dataset.title;
+  frame.title = card.dataset.title;
+  frame.src = card.dataset.visualization;
+  hub.hidden = true;
+  visualization.hidden = false;
 }
 
 function currentLabState() {
