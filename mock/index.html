@@ -6,7 +6,7 @@
     <meta name="description" content="A guided Materialize SQL tutorial for seeing source data, maintained results, logical time, and subscription changes together." />
     <title>Materialize Systems Lab | Time in Materialize</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23171717'/%3E%3Cpath d='M7 23V9h4.2l4.8 7.4L20.8 9H25v14h-4v-7.7L16 22.7l-5-7.4V23z' fill='white'/%3E%3C/svg%3E" />
-    <link rel="stylesheet" href="./styles.css?v=18" />
+    <link rel="stylesheet" href="./styles.css?v=19" />
   </head>
   <body>
     <div class="product-shell">
@@ -326,6 +326,18 @@ WHERE p.order_id IS NULL
             <div class="chapter-visualization-toolbar"><button class="button secondary" id="chapter9Back" type="button">← Chapter 9</button><h1 id="chapter9VisualizationTitle">Visualization</h1></div>
             <iframe id="chapter9Frame" title="Chapter 9 visualization" src="about:blank"></iframe>
           </section>
+          <section class="chapter-hub" id="chapter10Hub" aria-labelledby="chapter10HubTitle" hidden>
+            <div class="chapter-hub-heading"><p>Chapter 10</p><h1 id="chapter10HubTitle">Clusters, Replicas, and Recovery</h1></div>
+            <div class="chapter-visualization-cards three-up">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-10/deployment-map.html?embed=1" data-title="Interactive deployment map"><span class="chapter-card-number">1</span><strong>Interactive deployment map</strong></button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-10/recovery-timeline.html?embed=1" data-title="Failure-and-recovery timeline"><span class="chapter-card-number">2</span><strong>Failure-and-recovery timeline</strong></button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-10/resource-profile.html?embed=1" data-title="Resource profile over time"><span class="chapter-card-number">3</span><strong>Resource profile over time</strong></button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapter10Visualization" aria-labelledby="chapter10VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar"><button class="button secondary" id="chapter10Back" type="button">← Chapter 10</button><h1 id="chapter10VisualizationTitle">Visualization</h1></div>
+            <iframe id="chapter10Frame" title="Chapter 10 visualization" src="about:blank"></iframe>
+          </section>
           <section class="coachmark" id="coachmark" role="dialog" aria-labelledby="coachTitle" hidden>
             <div class="coach-main">
               <div class="coach-progress"><span id="coachStep">Moment 1 of 4</span><span id="coachTime">+20 seconds</span></div>
@@ -349,6 +361,6 @@ WHERE p.order_id IS NULL
       <div id="featureContent"></div>
     </dialog>
 
-    <script src="./app.js?v=18"></script>
+    <script src="./app.js?v=19"></script>
   </body>
 </html>
