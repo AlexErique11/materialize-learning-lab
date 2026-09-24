@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A guided Materialize SQL tutorial for seeing source data, maintained results, logical time, and subscription changes together." />
+    <title>Materialize Systems Lab | Time in Materialize</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23171717'/%3E%3Cpath d='M7 23V9h4.2l4.8 7.4L20.8 9H25v14h-4v-7.7L16 22.7l-5-7.4V23z' fill='white'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css?v=9" />
+  </head>
+  <body>
+    <div class="product-shell">
+      <div class="lesson-shell" id="lesson">
+        <aside class="lesson-sidebar" aria-label="Guided labs">
+          <div class="sidebar-context">
+            <div><span>Learning path</span><strong>Guided labs</strong></div>
+            <p><b>12</b><small>labs</small></p>
+          </div>
+          <nav class="library-switcher" aria-label="Learning areas">
+            <button class="nav-button active" data-library="labs" type="button">
+              <span>Guided labs</span>
+              <small id="labsCompletion" aria-live="polite">0/12 completed</small>
+            </button>
+            <button class="nav-button" data-library="challenges" type="button">
+              <span>Challenges</span>
+              <small>0/3 completed</small>
+            </button>
+          </nav>
+          <ol class="lab-list" id="labList">
+            <li><button class="lab-link" data-sidebar-lab data-feature="Changing Relations" type="button" title="01 · Changing Relations"><span>01</span><strong>Changing Relations</strong></button></li>
+            <li><button class="lab-link" data-sidebar-lab data-feature="Incremental Maintenance" type="button" title="02 · Incremental Maintenance"><span>02</span><strong>Incremental Maintenance</strong></button></li>
+            <li><button class="lab-link" data-sidebar-lab data-feature="Views, Indexes &amp; Materialized Views" type="button" title="03 · Views, Indexes &amp; Materialized Views"><span>03</span><strong>Views, Indexes &amp; Materialized Views</strong></button></li>
+            <li class="active"><button class="lab-link" data-sidebar-lab data-current="true" type="button" aria-current="page" title="04 · Time in Materialize"><span>04</span><span><strong>Time in Materialize</strong><small id="activeLabStatus">Current lab</small></span></button></li>
+            <li><button class="lab-link" data-sidebar-lab data-feature="Frontiers &amp; Freshness" type="button" title="05 · Frontiers &amp; Freshness"><span>05</span><strong>Frontiers &amp; Freshness</strong></button></li>
+            <li><button class="lab-link" data-sidebar-lab data-feature="CDC &amp; Envelopes" type="button" title="06 · CDC &amp; Envelopes"><span>06</span><strong>CDC &amp; Envelopes</strong></button></li>
+            <li><button class="lab-link" data-sidebar-lab data-feature="Stateful Query Costs" type="button" title="07 · Stateful Query Costs"><span>07</span><strong>Stateful Query Costs</strong></button></li>
+            <li><button class="lab-link" data-sidebar-lab data-feature="Query Optimization" type="button" title="08 · Query Optimization"><span>08</span><strong>Query Optimization</strong></button></li>
+            <li><button class="lab-link" data-sidebar-lab data-feature="Hydration &amp; Recovery" type="button" title="09 · Hydration &amp; Recovery"><span>09</span><strong>Hydration &amp; Recovery</strong></button></li>
+            <li><button class="lab-link" data-sidebar-lab data-feature="Consistency Policies" type="button" title="10 · Consistency Policies"><span>10</span><strong>Consistency Policies</strong></button></li>
+            <li><button class="lab-link" data-sidebar-lab data-feature="Sinks &amp; Delivery" type="button" title="11 · Sinks &amp; Delivery"><span>11</span><strong>Sinks &amp; Delivery</strong></button></li>
+            <li><button class="lab-link" data-sidebar-lab data-feature="Advanced Computation" type="button" title="12 · Advanced Computation"><span>12</span><strong>Advanced Computation</strong></button></li>
+          </ol>
+
+          <p class="engine-note"><span></span>Concept simulation<br />Designed for the Materialize Emulator</p>
+        </aside>
+
+        <main class="lab-main">
+          <section class="core-workspace" aria-label="Live tutorial workspace">
+            <article class="metric-panel timeline-panel" id="timelinePanel" data-focus="timeline">
+              <div class="panel-heading compact timeline-heading">
+                <div><span class="panel-number">01</span><div><p>Scenario timeline</p><h2>Order lifecycles</h2></div></div>
+                <div class="timeline-actions" aria-label="Tutorial controls">
+                  <details class="reference-details">
+                    <summary class="button secondary">SQL &amp; Objectives</summary>
+                    <div class="reference-panel">
+                      <div class="reference-heading"><span>Lab 04 reference</span><strong>Time-driven unpaid-order alerts</strong></div>
+                      <section class="reference-objective" aria-labelledby="objectiveTitle">
+                        <h2 id="objectiveTitle">Learning objective</h2>
+                        <p>Explain whether each result change was caused by new source data or by <code>mz_now()</code> advancing logical time.</p>
+                      </section>
+                      <section class="reference-query" aria-labelledby="queryTitle">
+                        <h2 id="queryTitle">SQL used in this lab</h2>
+                        <pre><code>CREATE MATERIALIZED VIEW order_alerts AS
+SELECT o.order_id, o.customer
+FROM orders AS o
+LEFT JOIN payments AS p
+  ON p.order_id = o.order_id
+WHERE p.order_id IS NULL
+  AND mz_now() &gt;= o.created_at
+      + INTERVAL '20 seconds'
+  AND mz_now() &lt; o.created_at
+      + INTERVAL '75 seconds';</code></pre>
+                      </section>
+                    </div>
+                  </details>
+                  <div class="progress-copy" aria-live="polite">
+                    <span id="progressLabel">Progress 0/4</span>
+                    <div class="progress-track"><i id="progressBar"></i></div>
+                  </div>
+                  <button class="button secondary" id="resetButton" type="button">Reset</button>
+                  <button class="button secondary" id="runButton" type="button"><span id="runIcon" aria-hidden="true">▶</span><span id="runLabel">Run</span></button>
+                  <button class="button primary" id="playButton" type="button"><span id="playIcon" aria-hidden="true">▶</span><span id="playLabel">Start guided run</span></button>
+                </div>
+              </div>
+              <div class="timeline-body">
+                <div class="timeline-readout"><span>Logical time</span><strong id="clock">12:00:00</strong></div>
+                <div class="timeline-track" id="timelineTrack" role="slider" tabindex="0" aria-label="Logical time from zero to one hundred seconds" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                <div class="timeline-scrubber"><label for="timeSlider">Move through time</label><input id="timeSlider" type="range" min="0" max="100" value="0" step="1" /><output id="timeSliderOutput" for="timeSlider">+0s</output></div>
+                <div class="timeline-legend" aria-label="Timeline legend"><span><i class="event-key arrival"></i>arrival</span><span><i class="event-key entry"></i>enters result</span><span><i class="event-key exit"></i>exit</span></div>
+              </div>
+            </article>
+            <div class="metric-grid">
+              <article class="metric-panel source-panel" id="sourcePanel" data-focus="source">
+                <div class="panel-heading compact"><div><span class="panel-number">02</span><div><p>Original tables</p><h2>Source data</h2></div></div><span class="state-tag neutral" id="sourceCount">1 row</span></div>
+                <div class="table-block">
+                  <div class="table-label"><span>orders</span><small>rows persist</small></div>
+                  <div class="table-wrap"><table><thead><tr><th>ID</th><th>Customer</th><th>Created</th><th>Status</th></tr></thead><tbody id="ordersBody"></tbody></table></div>
+                </div>
+                <div class="table-block payment-block">
+                  <div class="table-label"><span>payments</span><small>arriving input</small></div>
+                  <div class="table-wrap"><table><thead><tr><th>Order</th><th>Arrived</th></tr></thead><tbody id="paymentsBody"></tbody></table></div>
+                </div>
+              </article>
+
+              <article class="metric-panel event-panel" id="eventPanel" data-focus="event">
+                <div class="panel-heading compact"><div><span class="panel-number">03</span><div><p>Current moment</p><h2>What just happened?</h2></div></div><span class="cause-tag" id="causeTag">Starting state</span></div>
+                <div class="event-visual" id="eventVisual" aria-hidden="true"><span class="event-time" id="eventTime">+0s</span><span class="event-glyph" id="eventGlyph">○</span></div>
+                <h3 id="eventTitle">The first order arrives</h3>
+                <p id="eventCopy">Order 101 exists in the source table, but it is not old enough to satisfy the alert query.</p>
+                <div class="condition-list" id="conditionList"></div>
+              </article>
+
+              <article class="metric-panel result-panel" id="resultPanel" data-focus="result">
+                <div class="panel-heading compact"><div><span class="panel-number">04</span><div><p>Maintained result</p><h2>order_alerts</h2></div></div><span class="state-tag live"><i></i>Current answer</span></div>
+                <div class="result-summary"><strong id="viewCount">0</strong><span>alert rows now</span></div>
+                <div class="table-wrap result-table-wrap">
+                  <table id="resultTable"><thead><tr><th>Order</th><th>Customer</th><th>Age</th></tr></thead><tbody id="resultBody"></tbody></table>
+                  <div class="empty-result" id="resultEmpty"><span>∅</span><p>No row satisfies every condition yet.</p></div>
+                </div>
+                <p class="panel-footnote">This is the current answer. Original rows stay in their source tables.</p>
+              </article>
+
+              <article class="metric-panel stream-panel" id="streamPanel" data-focus="stream">
+                <div class="panel-heading compact"><div><span class="panel-number">05</span><div><p>Subscription</p><h2>Change stream</h2></div></div><span class="state-tag neutral">Newest first</span></div>
+                <div class="stream-list" id="changeStream" aria-live="polite"></div>
+                <div class="stream-key"><span class="plus">+1</span> inserted into the answer <span class="minus">−1</span> retracted from it</div>
+              </article>
+            </div>
+            <div class="focus-overlay" id="focusOverlay" hidden></div>
+          </section>
+          <section class="coachmark" id="coachmark" role="dialog" aria-labelledby="coachTitle" hidden>
+            <div class="coach-main">
+              <div class="coach-progress"><span id="coachStep">Moment 1 of 4</span><span id="coachTime">+20 seconds</span></div>
+              <h2 id="coachTitle">Time alone added a row</h2>
+              <p id="coachCopy"></p>
+            </div>
+            <div class="coach-actions">
+              <div class="watch-list"><span>Pay attention to</span><strong id="coachWatch"></strong></div>
+              <button class="button primary coach-continue" id="continueButton" type="button">Continue simulation <span aria-hidden="true">→</span></button>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <dialog class="feature-dialog" id="featureDialog" aria-labelledby="featureTitle">
+      <div class="dialog-heading">
+        <div><p id="featureEyebrow">Learning library</p><h2 id="featureTitle">Choose an experience</h2></div>
+        <button class="dialog-close" id="dialogClose" type="button" aria-label="Close popup">×</button>
+      </div>
+      <div id="featureContent"></div>
+    </dialog>
+
+    <script src="./app.js?v=9"></script>
+  </body>
+</html>
