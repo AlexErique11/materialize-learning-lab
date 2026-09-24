@@ -119,6 +119,11 @@ const els = {
   chapter3Frame: document.querySelector("#chapter3Frame"),
   chapter3VisualizationTitle: document.querySelector("#chapter3VisualizationTitle"),
   chapter3Back: document.querySelector("#chapter3Back"),
+  chapter4Hub: document.querySelector("#chapter4Hub"),
+  chapter4Visualization: document.querySelector("#chapter4Visualization"),
+  chapter4Frame: document.querySelector("#chapter4Frame"),
+  chapter4VisualizationTitle: document.querySelector("#chapter4VisualizationTitle"),
+  chapter4Back: document.querySelector("#chapter4Back"),
 };
 
 const learningCatalog = {
@@ -129,7 +134,7 @@ const learningCatalog = {
       { number: "01", name: "Changing Relations — Rows, Updates, and Diffs", navLabel: "Changing Relations", description: "Reconstruct a changing relation from additions, retractions, and updates.", chapterHub: "01" },
       { number: "02", name: "Incremental Maintenance — How One Change Travels Through SQL", navLabel: "Incremental Maintenance", description: "Trace one input change through filters, joins, and aggregates.", chapterHub: "02" },
       { number: "03", name: "Views, Indexes, and Materialized Views", description: "Choose where to save SQL, maintain results in memory, or persist them.", chapterHub: "03" },
-      { number: "04", name: "Getting Data In — Sources, Snapshots, and CDC", navLabel: "Getting Data In", description: "Turn initial snapshots and incoming changes into the right relation." },
+      { number: "04", name: "Getting Data In — Sources, Snapshots, and CDC", navLabel: "Getting Data In", description: "Turn initial snapshots and incoming changes into the right relation.", chapterHub: "04" },
       { number: "05", name: "Time in Materialize — Temporal Filters", navLabel: "Time in Materialize", description: "See logical time add and retract rows without a new source event.", current: true },
       { number: "06", name: "Progress and Freshness — Why Is the System Behind?", navLabel: "Progress and Freshness", description: "Find what progress proves and where a delayed result falls behind." },
       { number: "07", name: "Consistent Reads — Which Moment Does a Query See?", navLabel: "Consistent Reads", description: "Choose a readable moment and compare freshness with waiting." },
@@ -514,6 +519,10 @@ els.chapter3Hub.addEventListener("click", (event) => {
   openChapterVisualization(event, els.chapter3Hub, els.chapter3Visualization, els.chapter3Frame, els.chapter3VisualizationTitle);
 });
 els.chapter3Back.addEventListener("click", showChapter3Hub);
+els.chapter4Hub.addEventListener("click", (event) => {
+  openChapterVisualization(event, els.chapter4Hub, els.chapter4Visualization, els.chapter4Frame, els.chapter4VisualizationTitle);
+});
+els.chapter4Back.addEventListener("click", showChapter4Hub);
 els.libraryButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const section = button.dataset.library;
@@ -541,6 +550,10 @@ els.labList.addEventListener("click", (event) => {
   }
   if (button.dataset.chapterHub === "03") {
     showChapter3Hub();
+    return;
+  }
+  if (button.dataset.chapterHub === "04") {
+    showChapter4Hub();
     return;
   }
   if (button.dataset.current === "true") {
@@ -660,6 +673,8 @@ function hideChapterPages() {
   els.chapter2Visualization.hidden = true;
   els.chapter3Hub.hidden = true;
   els.chapter3Visualization.hidden = true;
+  els.chapter4Hub.hidden = true;
+  els.chapter4Visualization.hidden = true;
 }
 
 function showChapterHub() {
@@ -670,6 +685,8 @@ function showChapterHub() {
   els.chapter2Visualization.hidden = true;
   els.chapter3Hub.hidden = true;
   els.chapter3Visualization.hidden = true;
+  els.chapter4Hub.hidden = true;
+  els.chapter4Visualization.hidden = true;
   els.chapterHub.hidden = false;
 }
 
@@ -681,6 +698,8 @@ function showChapter2Hub() {
   els.chapter2Visualization.hidden = true;
   els.chapter3Hub.hidden = true;
   els.chapter3Visualization.hidden = true;
+  els.chapter4Hub.hidden = true;
+  els.chapter4Visualization.hidden = true;
   els.chapter2Hub.hidden = false;
 }
 
@@ -692,7 +711,22 @@ function showChapter3Hub() {
   els.chapter2Hub.hidden = true;
   els.chapter2Visualization.hidden = true;
   els.chapter3Visualization.hidden = true;
+  els.chapter4Hub.hidden = true;
+  els.chapter4Visualization.hidden = true;
   els.chapter3Hub.hidden = false;
+}
+
+function showChapter4Hub() {
+  hideCheckpoint();
+  els.coreWorkspace.hidden = true;
+  els.chapterHub.hidden = true;
+  els.chapterVisualization.hidden = true;
+  els.chapter2Hub.hidden = true;
+  els.chapter2Visualization.hidden = true;
+  els.chapter3Hub.hidden = true;
+  els.chapter3Visualization.hidden = true;
+  els.chapter4Visualization.hidden = true;
+  els.chapter4Hub.hidden = false;
 }
 
 function openChapterVisualization(event, hub, visualization, frame, titleElement) {

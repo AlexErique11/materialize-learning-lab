@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Envelope Interpreter | Chapter 4</title>
+    <link rel="stylesheet" href="./chapter-04.css?v=1" />
+  </head>
+  <body>
+    <main class="page">
+      <header><p class="eyebrow">Chapter 04 · Visualization 02</p><h1>Envelope interpreter</h1><p class="intro">Step through the same business intent—insert, update, delete—encoded for each envelope.</p></header>
+      <div class="envelope-tabs" role="group" aria-label="Choose an envelope">
+        <button class="control" type="button" data-envelope="append" aria-pressed="true">Append-only</button>
+        <button class="control" type="button" data-envelope="upsert" aria-pressed="false">Upsert</button>
+        <button class="control" type="button" data-envelope="debezium" aria-pressed="false">Debezium</button>
+        <button class="control" id="nextMessage" type="button">Next message</button>
+        <button class="control" id="resetMessages" type="button">Reset</button>
+      </div>
+      <div class="interpreter-grid">
+        <section class="message-box"><h2 id="messageHeading">Message 1 of 3</h2><pre id="messageBody" aria-live="polite">Press “Next message” to apply the insert.</pre></section>
+        <section class="relation-panel"><h2>Current relation <span id="rowCount"></span></h2><div class="relation-list" id="relationList"></div></section>
+      </div>
+      <p class="status" id="interpretation" role="status" aria-live="polite">Append-only treats each received record as an insert.</p>
+      <p class="status">Debezium messages are shown as decoded before/after fields; the Kafka source must use a format supported by Materialize.</p>
+    </main>
+    <script src="./envelope-interpreter.js?v=1"></script>
+  </body>
+</html>

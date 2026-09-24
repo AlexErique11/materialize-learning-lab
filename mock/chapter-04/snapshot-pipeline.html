@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Snapshot-to-live Pipeline | Chapter 4</title>
+    <link rel="stylesheet" href="./chapter-04.css?v=1" />
+  </head>
+  <body>
+    <main class="page">
+      <header><p class="eyebrow">Chapter 04 · Visualization 01</p><h1>Snapshot-to-live pipeline</h1><p class="intro">Capture an initial database snapshot, commit it atomically, then apply the changes that arrived while it was loading.</p></header>
+      <div class="toolbar" aria-label="Snapshot simulation controls">
+        <button class="control" id="startSnapshot" type="button">Start snapshot</button>
+        <button class="control" id="sourceChanges" type="button" disabled>Update Apple + delete Plum</button>
+        <button class="control" id="commitSnapshot" type="button" disabled>Commit snapshot</button>
+        <button class="control" id="applyChange" type="button" disabled>Apply next change</button>
+        <button class="control" id="reset" type="button">Reset</button>
+      </div>
+      <div class="pipeline">
+        <section class="panel">
+          <div class="panel-heading"><h2>Upstream database</h2><span>Current rows</span></div>
+          <table class="relation-table"><thead><tr><th>ID</th><th>Product</th><th>Price</th></tr></thead><tbody id="upstreamBody"></tbody></table>
+        </section>
+        <section class="panel">
+          <div class="panel-heading"><h2>Snapshot + CDC</h2><span class="state-pill" id="snapshotState">Not started</span></div>
+          <p class="status" id="snapshotNote">The initial relation is not queryable until the snapshot commits.</p>
+          <div class="event-list" id="eventList"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-heading"><h2>Materialize table</h2><span class="state-pill" id="tableState">Unavailable</span></div>
+          <table class="relation-table"><thead><tr><th>ID</th><th>Product</th><th>Price</th></tr></thead><tbody id="relationBody"></tbody></table>
+        </section>
+      </div>
+      <p class="status" id="actionStatus" role="status" aria-live="polite">Start the snapshot to capture the initial rows.</p>
+    </main>
+    <script src="./snapshot-pipeline.js?v=1"></script>
+  </body>
+</html>
