@@ -80,6 +80,19 @@ code, pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospac
 .engine-note span { display: inline-block; width: 7px; height: 7px; margin-right: 7px; border-radius: 50%; background: var(--amber); }
 
 .lab-main { min-width: 0; min-height: 0; position: relative; }
+.chapter-hub, .chapter-visualization { height: 100%; overflow: auto; padding: clamp(20px, 4vw, 54px); background: #f7f7f7; }
+.chapter-hub-heading { max-width: 780px; margin: 0 auto 28px; }
+.chapter-hub-heading p { margin: 0 0 8px; color: var(--muted); font-size: .72rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+.chapter-hub-heading h1 { margin: 0; font-size: clamp(1.6rem, 3vw, 2.35rem); font-weight: 620; letter-spacing: -.045em; }
+.chapter-visualization-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 780px; margin: 0 auto; }
+.chapter-visualization-card { min-height: 170px; display: flex; flex-direction: column; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 20px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); cursor: pointer; text-align: left; }
+.chapter-visualization-card:hover { border-color: #999; background: white; }
+.chapter-visualization-card:focus-visible, #chapterBack:focus-visible { outline: 3px solid rgba(25, 25, 25, .24); outline-offset: 2px; }
+.chapter-card-number { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid var(--line-strong); border-radius: 4px; color: var(--muted); font-family: ui-monospace, monospace; }
+.chapter-visualization-card strong { max-width: 26ch; font-size: 1rem; font-weight: 650; line-height: 1.4; }
+.chapter-visualization-toolbar { display: flex; align-items: center; gap: 16px; max-width: 1200px; margin: 0 auto 10px; }
+.chapter-visualization-toolbar h1 { margin: 0; overflow: hidden; font-size: .95rem; font-weight: 650; text-overflow: ellipsis; white-space: nowrap; }
+.chapter-visualization iframe { display: block; width: min(1200px, 100%); height: calc(100% - 50px); min-height: 440px; margin: 0 auto; border: 1px solid var(--line); border-radius: 6px; background: #fafafa; }
 .progress-copy { width: 138px; margin-right: 3px; }
 .progress-copy > span { display: block; margin-bottom: 6px; color: var(--muted); font-size: 0.7rem; text-align: right; }
 .progress-track { height: 4px; overflow: hidden; background: var(--line); }
@@ -328,6 +341,10 @@ td.empty-cell { color: var(--muted-2); font-style: italic; white-space: normal; 
   .reference-details { order: 4; }
   .reference-panel { position: fixed; top: 76px; left: 14px; right: 14px; width: auto; max-height: calc(100vh - 92px); }
   .core-workspace { display: block; padding: 10px; }
+  .chapter-hub, .chapter-visualization { min-height: calc(100vh - 140px); height: auto; padding: 24px 14px; }
+  .chapter-visualization-cards { grid-template-columns: 1fr; }
+  .chapter-visualization-card { min-height: 125px; }
+  .chapter-visualization iframe { height: 72vh; min-height: 590px; }
   .timeline-panel { min-height: 190px; }
   .metric-grid { display: grid; grid-template-columns: 1fr; margin-top: 10px; overflow: visible; }
   .metric-grid > .metric-panel { min-height: 285px; }

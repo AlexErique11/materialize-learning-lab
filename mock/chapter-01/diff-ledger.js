@@ -52,3 +52,8 @@ document.querySelector("#resetButton").addEventListener("click", () => {
 });
 
 render();
+
+if (new URLSearchParams(window.location.search).has("embed")) {
+  document.querySelector(".back-link").hidden = true;
+  document.body.classList.add("embedded");
+}

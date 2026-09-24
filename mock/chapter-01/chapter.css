@@ -73,6 +73,9 @@ h1 { margin: 0; font-size: clamp(2rem, 6vw, 3.2rem); font-weight: 620; letter-sp
 .same-time-rows { display: flex; flex-wrap: wrap; gap: 7px; }
 .change-result { display: flex; align-items: center; gap: 10px; margin-top: 16px; padding: 12px; border-radius: 4px; background: var(--green-soft); color: #155a39; font-size: .84rem; }
 .change-result[hidden] { display: none; }
+body.embedded { min-height: 100%; background: #f7f7f7; }
+body.embedded .page-shell { width: min(1040px, 100% - 32px); padding-top: 18px; }
+body.embedded .page-header { padding: 18px 0 20px; }
 @media (max-width: 680px) {
   .page-shell, .visualization-page { width: min(100% - 28px, 920px); padding-top: 18px; }
   .page-header { padding: 38px 0 24px; }

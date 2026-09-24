@@ -104,6 +104,11 @@ const els = {
   featureContent: document.querySelector("#featureContent"),
   dialogClose: document.querySelector("#dialogClose"),
   coreWorkspace: document.querySelector(".core-workspace"),
+  chapterHub: document.querySelector("#chapterHub"),
+  chapterVisualization: document.querySelector("#chapterVisualization"),
+  chapterFrame: document.querySelector("#chapterFrame"),
+  chapterVisualizationTitle: document.querySelector("#chapterVisualizationTitle"),
+  chapterBack: document.querySelector("#chapterBack"),
 };
 
 const learningCatalog = {
@@ -111,7 +116,7 @@ const learningCatalog = {
     eyebrow: "Guided labs",
     title: "Choose a chapter",
     items: [
-      { number: "01", name: "Changing Relations — Rows, Updates, and Diffs", navLabel: "Changing Relations", description: "Reconstruct a changing relation from additions, retractions, and updates.", href: "./chapter-01/index.html" },
+      { number: "01", name: "Changing Relations — Rows, Updates, and Diffs", navLabel: "Changing Relations", description: "Reconstruct a changing relation from additions, retractions, and updates.", chapterHub: true },
       { number: "02", name: "Incremental Maintenance — How One Change Travels Through SQL", navLabel: "Incremental Maintenance", description: "Trace one input change through filters, joins, and aggregates." },
       { number: "03", name: "Views, Indexes, and Materialized Views", description: "Choose where to save SQL, maintain results in memory, or persist them." },
       { number: "04", name: "Getting Data In — Sources, Snapshots, and CDC", navLabel: "Getting Data In", description: "Turn initial snapshots and incoming changes into the right relation." },
@@ -140,7 +145,7 @@ const learningCatalog = {
 function renderLabNavigation() {
   els.labList.innerHTML = learningCatalog.labs.items.map((item) => `
     <li${item.current ? ' class="active"' : item.optional ? ' class="optional"' : ""}>
-      <button class="lab-link" data-sidebar-lab type="button" title="${item.number} · ${item.name}"${item.href ? ` data-href="${item.href}"` : ""}${item.current ? ' data-current="true" aria-current="page"' : ""}>
+      <button class="lab-link" data-sidebar-lab type="button" title="${item.number} · ${item.name}"${item.chapterHub ? ' data-chapter-hub="true"' : ""}${item.current ? ' data-current="true" aria-current="page"' : ""}>
         <span>${item.number}</span>
         <span><strong>${item.navLabel ?? item.name}</strong>${item.current ? '<small id="activeLabStatus">Current lab</small>' : item.optional ? "<small>Optional</small>" : ""}</span>
       </button>
@@ -487,6 +492,16 @@ els.run.addEventListener("click", runUninterrupted);
 els.reset.addEventListener("click", reset);
 els.continueButton.addEventListener("click", continueTutorial);
 els.dialogClose.addEventListener("click", () => els.featureDialog.close());
+els.chapterBack.addEventListener("click", showChapterHub);
+els.chapterHub.addEventListener("click", (event) => {
+  const card = event.target instanceof Element ? event.target.closest("[data-visualization]") : null;
+  if (!card) return;
+  els.chapterVisualizationTitle.textContent = card.dataset.title;
+  els.chapterFrame.title = card.dataset.title;
+  els.chapterFrame.src = card.dataset.visualization;
+  els.chapterHub.hidden = true;
+  els.chapterVisualization.hidden = false;
+});
 els.libraryButtons.forEach((button) => {
   button.addEventListener("click", () => {
     const section = button.dataset.library;
@@ -499,16 +514,19 @@ els.labList.addEventListener("click", (event) => {
   const button = event.target instanceof Element ? event.target.closest("[data-sidebar-lab]") : null;
   if (!button) return;
   if (playing) pause();
-  if (button.dataset.href) {
-    window.location.href = button.dataset.href;
-    return;
-  }
   els.labList.querySelectorAll("[data-sidebar-lab]").forEach((lab) => {
     lab.closest("li")?.classList.toggle("active", lab === button);
     if (lab === button) lab.setAttribute("aria-current", "page");
     else lab.removeAttribute("aria-current");
   });
-  if (button.dataset.current === "true") els.coreWorkspace.hidden = false;
+  if (button.dataset.chapterHub === "true") {
+    showChapterHub();
+    return;
+  }
+  if (button.dataset.current === "true") {
+    hideChapterPages();
+    els.coreWorkspace.hidden = false;
+  }
   else showNotReady();
 });
 let draggingTimelinePointer = null;
@@ -598,6 +616,7 @@ function showCatalog(section) {
   els.featureContent.querySelectorAll(".catalog-item").forEach((item) => {
     item.addEventListener("click", () => {
       if (item.dataset.current === "true") {
+        hideChapterPages();
         els.coreWorkspace.hidden = false;
         els.featureDialog.close();
       }
@@ -610,7 +629,20 @@ function showCatalog(section) {
 function showNotReady() {
   if (els.featureDialog.open) els.featureDialog.close();
   hideCheckpoint();
+  hideChapterPages();
   els.coreWorkspace.hidden = true;
+}
+
+function hideChapterPages() {
+  els.chapterHub.hidden = true;
+  els.chapterVisualization.hidden = true;
+}
+
+function showChapterHub() {
+  hideCheckpoint();
+  els.coreWorkspace.hidden = true;
+  els.chapterVisualization.hidden = true;
+  els.chapterHub.hidden = false;
 }
 
 function currentLabState() {
