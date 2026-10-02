@@ -1,0 +1,6 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/><title>Before-and-after plan graph</title><link rel="stylesheet" href="./chapter-09.css?v=1"/></head>
+<body><main class="page"><h1>Before-and-after plan graph</h1><p class="subtitle">Reorder safe work earlier and compare the shape of equivalent plans.</p><section class="panel">
+<div class="controls"><label class="control">Input size<strong><output id="rowsValue"></output> rows</strong><input id="rows" type="range" min="100" max="5000" step="100" value="1000"/></label><label class="control">Shared join index<select id="reuse"><option value="yes">Available before plan creation</option><option value="no">No reusable index</option></select></label></div>
+<div class="comparison" id="plans"></div><div class="message" id="summary"></div><p class="note">Simplified plan sketch: the optimizer may already produce an equivalent shape. Use EXPLAIN to verify a real plan; operator names and exact state depend on the query and version.</p>
+</section></main><script src="./plan-compare.js?v=1"></script></body></html>

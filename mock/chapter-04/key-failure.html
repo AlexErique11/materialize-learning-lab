@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Key Failure Simulator | Chapter 4</title>
+    <link rel="stylesheet" href="./chapter-04.css?v=1" />
+  </head>
+  <body>
+    <main class="page">
+      <header><p class="eyebrow">Chapter 04 · Visualization 03</p><h1>Key failure simulator</h1><p class="intro">Rename a product under a mutable key, switch to a stable ID, or send a null key.</p></header>
+      <div class="key-panel"><div><h2>Kafka upsert source</h2><p>Current key: <strong id="keyRule">product name</strong></p></div><span class="state-pill ready" id="sourceState">Running</span></div>
+      <div class="key-grid">
+        <section class="panel">
+          <h2>Current relation</h2>
+          <div class="relation-list" id="keyedRows"></div>
+          <p class="status" id="keyStatus" role="status" aria-live="polite">One key identifies the product row.</p>
+        </section>
+        <section class="key-controls" aria-label="Simulate key changes">
+          <button class="control" id="renameName" type="button">Rename with name key</button>
+          <button class="control" id="deleteOld" type="button" disabled>Tombstone old name key</button>
+          <button class="control" id="renameId" type="button">Rename with product ID key</button>
+          <button class="control" id="nullKey" type="button">Send a null key</button>
+          <button class="control" id="reset" type="button">Reset</button>
+        </section>
+      </div>
+    </main>
+    <script src="./key-failure.js?v=1"></script>
+  </body>
+</html>

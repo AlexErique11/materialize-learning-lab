@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Late-arrival Experiment | Chapter 5</title>
+    <link rel="stylesheet" href="./chapter-05.css?v=1" />
+  </head>
+  <body>
+    <main class="page">
+      <header><p class="eyebrow">Chapter 05 · Visualization 03</p><h1>Late-arrival experiment</h1><p class="intro">Both rows have the same event time. Change arrival delay to see whether any of their event-time lifetime remains.</p></header>
+      <section class="controls" aria-label="Event time and window controls">
+        <label class="field" for="logicalTime">Logical time · mz_now()<output id="logicalOutput" for="logicalTime">+20s</output><input id="logicalTime" type="range" min="0" max="90" value="20" /></label>
+        <label class="field" for="eventTime">Event time<output id="eventOutput" for="eventTime">+10s</output><input id="eventTime" type="range" min="0" max="45" value="10" /></label>
+        <label class="field" for="windowLength">Window length<output id="windowOutput" for="windowLength">20s</output><input id="windowLength" type="range" min="5" max="30" value="20" /></label>
+      </section>
+      <section class="panel" aria-label="Compare arrival delays against event-time lifetimes">
+        <div class="axis"><span>0s</span><span>15s</span><span>30s</span><span>45s</span><span>60s</span><span>75s</span><span>90s</span></div>
+        <div id="lanes"></div>
+        <div class="legend"><span><i></i>event-time lifetime</span><span><i class="event"></i>event timestamp</span><span><i class="arrival"></i>arrival time</span><span><i class="expiry"></i>expiration</span><span><i class="logical"></i>logical time</span></div>
+      </section>
+      <p class="status">Included only after arrival, once event time is reached, and before expiration.</p>
+    </main>
+    <script src="./late-arrival.js?v=1"></script>
+  </body>
+</html>

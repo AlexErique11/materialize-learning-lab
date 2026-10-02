@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Interactive visualizations for Chapter 1: changing relations, rows, updates, and diffs." />
+    <title>Chapter 1 — Changing Relations | Materialize Learning Lab</title>
+    <link rel="stylesheet" href="./chapter.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <a class="back-link" href="../index.html">← All chapters</a>
+      <header class="page-header">
+        <p class="eyebrow">Chapter 01 · Rows, updates, and diffs</p>
+        <h1>Changing relations</h1>
+        <p>A relation is a current set of row copies. Materialize describes changes to it with signed diffs.</p>
+      </header>
+      <section class="visualization-list" aria-label="Chapter visualizations">
+        <a class="visualization-card" href="./diff-ledger.html">
+          <span class="card-number">01</span>
+          <span><strong>Diff ledger beside a live relation</strong><small>Apply additions and retractions one at a time; watch row multiplicities change.</small></span>
+          <span class="card-arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="visualization-card" href="./update-decomposition.html">
+          <span class="card-number">02</span>
+          <span><strong>Update decomposition</strong><small>Edit one product and see its old row retract as the new row appears at the same logical time.</small></span>
+          <span class="card-arrow" aria-hidden="true">→</span>
+        </a>
+      </section>
+      <p class="prototype-note">Small interactive prototypes · Changes are simulated locally in this page.</p>
+    </main>
+  </body>
+</html>

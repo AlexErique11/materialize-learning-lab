@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recomputation Comparison | Chapter 2</title>
+    <link rel="stylesheet" href="./chapter-02.css?v=1" />
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <p class="eyebrow">Chapter 02 · Visualization 02</p>
+        <h1>Recomputation comparison</h1>
+        <p class="intro">An order changes from $45 to $65. Compare the fixture rows each approach checks. Counts are illustrative, not Materialize measurements.</p>
+      </header>
+      <div class="method-switch" aria-label="Choose a processing approach">
+        <button class="control" type="button" data-method="full" aria-pressed="true">Full recomputation</button>
+        <button class="control" type="button" data-method="incremental" aria-pressed="false">Incremental maintenance</button>
+      </div>
+      <section class="panel method-panel" aria-live="polite">
+        <h2 id="methodTitle">Full recomputation</h2>
+        <p class="count-note" id="workCount">Illustrative work: inspect all 6 orders and all 3 products.</p>
+        <div class="fixtures">
+          <div>
+            <p class="fixture-title">Orders</p>
+            <table class="record-table"><thead><tr><th>ID</th><th>Product</th><th>Amount</th></tr></thead><tbody id="orderRows"></tbody></table>
+          </div>
+          <div>
+            <p class="fixture-title">Products</p>
+            <div class="product-list" id="productRows"></div>
+            <span class="state-chip" id="groupState">Retained group state · Books</span>
+          </div>
+        </div>
+      </section>
+      <section class="panel method-result">
+        <strong>Same answer after the update:</strong> Books $125 · Games $80 · Tools $70
+      </section>
+    </main>
+    <script src="./recomputation.js?v=1"></script>
+  </body>
+</html>

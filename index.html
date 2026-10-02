@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Build real-time data skills with Materialize Learning Lab. Explore the learning path, guided chapters, and capstones."
+    />
+    <meta name="theme-color" content="#ffffff" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>Materialize Learning Lab</title>
+    <script>
+      // Apply an explicit preference before first paint. Storage may be unavailable.
+      try {
+        if (localStorage.getItem('materialize-learning-lab-theme') === 'dark') {
+          document.documentElement.dataset.theme = 'dark';
+        }
+      } catch {
+        /* Light mode remains the default. */
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

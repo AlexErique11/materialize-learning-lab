@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="A guided Materialize SQL tutorial for seeing source data, maintained results, logical time, and subscription changes together." />
+    <title>Materialize Systems Lab | Time in Materialize</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23171717'/%3E%3Cpath d='M7 23V9h4.2l4.8 7.4L20.8 9H25v14h-4v-7.7L16 22.7l-5-7.4V23z' fill='white'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="./styles.css?v=22" />
+  </head>
+  <body>
+    <div class="product-shell">
+      <div class="lesson-shell" id="lesson">
+        <aside class="lesson-sidebar" aria-label="Guided labs">
+          <div class="sidebar-context">
+            <div><span>Learning path</span><strong>Guided labs</strong></div>
+            <p><b id="labCount">12</b><small>core labs</small></p>
+          </div>
+          <nav class="library-switcher" aria-label="Learning areas">
+            <button class="nav-button active" data-library="labs" type="button">
+              <span>Guided labs</span>
+              <small id="labsCompletion" aria-live="polite">0/12 core completed</small>
+            </button>
+            <button class="nav-button" data-library="challenges" type="button">
+              <span>Capstones</span>
+              <small>0/3 completed</small>
+            </button>
+          </nav>
+          <ol class="lab-list" id="labList"></ol>
+
+          <p class="engine-note"><span></span>Concept simulation<br />Designed for the Materialize Emulator</p>
+        </aside>
+
+        <main class="lab-main">
+          <div class="chapter5-lab-toolbar" id="chapter5LabToolbar" hidden>
+            <button class="button secondary" id="chapter5LabBack" type="button">← Chapter 5</button>
+            <span>Synchronized multi-lane timeline</span>
+          </div>
+          <section class="core-workspace" aria-label="Live tutorial workspace">
+            <article class="metric-panel timeline-panel" id="timelinePanel" data-focus="timeline">
+              <div class="panel-heading compact timeline-heading">
+                <div><span class="panel-number">01</span><div><p>Scenario timeline</p><h2>Order lifecycles</h2></div></div>
+                <div class="timeline-actions" aria-label="Tutorial controls">
+                  <details class="reference-details">
+                    <summary class="button secondary">SQL &amp; Objectives</summary>
+                    <div class="reference-panel">
+                      <div class="reference-heading"><span>Chapter 5 reference</span><strong>Time-driven unpaid-order alerts</strong></div>
+                      <section class="reference-objective" aria-labelledby="objectiveTitle">
+                        <h2 id="objectiveTitle">Learning objective</h2>
+                        <p>Explain whether each result change was caused by new source data or by <code>mz_now()</code> advancing logical time.</p>
+                      </section>
+                      <section class="reference-query" aria-labelledby="queryTitle">
+                        <h2 id="queryTitle">SQL used in this lab</h2>
+                        <pre><code>CREATE MATERIALIZED VIEW order_alerts AS
+SELECT o.order_id, o.customer
+FROM orders AS o
+LEFT JOIN payments AS p
+  ON p.order_id = o.order_id
+WHERE p.order_id IS NULL
+  AND mz_now() &gt;= o.created_at
+      + INTERVAL '20 seconds'
+  AND mz_now() &lt; o.created_at
+      + INTERVAL '75 seconds';</code></pre>
+                      </section>
+                    </div>
+                  </details>
+                  <div class="progress-copy" aria-live="polite">
+                    <span id="progressLabel">Progress 0/4</span>
+                    <div class="progress-track"><i id="progressBar"></i></div>
+                  </div>
+                  <button class="button secondary" id="resetButton" type="button">Reset</button>
+                  <button class="button secondary" id="runButton" type="button"><span id="runIcon" aria-hidden="true">▶</span><span id="runLabel">Run</span></button>
+                  <button class="button primary" id="playButton" type="button"><span id="playIcon" aria-hidden="true">▶</span><span id="playLabel">Start guided run</span></button>
+                </div>
+              </div>
+              <div class="timeline-body">
+                <div class="timeline-readout"><span>Logical time</span><strong id="clock">12:00:00</strong></div>
+                <div class="timeline-track" id="timelineTrack" role="slider" tabindex="0" aria-label="Logical time from zero to one hundred seconds" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></div>
+                <div class="timeline-scrubber"><label for="timeSlider">Move through time</label><input id="timeSlider" type="range" min="0" max="100" value="0" step="1" /><output id="timeSliderOutput" for="timeSlider">+0s</output></div>
+                <div class="timeline-legend" aria-label="Timeline legend"><span><i class="event-key arrival"></i>arrival</span><span><i class="event-key entry"></i>enters result</span><span><i class="event-key exit"></i>exit</span></div>
+              </div>
+            </article>
+            <div class="metric-grid">
+              <article class="metric-panel source-panel" id="sourcePanel" data-focus="source">
+                <div class="panel-heading compact"><div><span class="panel-number">02</span><div><p>Original tables</p><h2>Source data</h2></div></div><span class="state-tag neutral" id="sourceCount">1 row</span></div>
+                <div class="table-block">
+                  <div class="table-label"><span>orders</span><small>rows persist</small></div>
+                  <div class="table-wrap"><table><thead><tr><th>ID</th><th>Customer</th><th>Created</th><th>Status</th></tr></thead><tbody id="ordersBody"></tbody></table></div>
+                </div>
+                <div class="table-block payment-block">
+                  <div class="table-label"><span>payments</span><small>arriving input</small></div>
+                  <div class="table-wrap"><table><thead><tr><th>Order</th><th>Arrived</th></tr></thead><tbody id="paymentsBody"></tbody></table></div>
+                </div>
+              </article>
+
+              <article class="metric-panel event-panel" id="eventPanel" data-focus="event">
+                <div class="panel-heading compact"><div><span class="panel-number">03</span><div><p>Current moment</p><h2>What just happened?</h2></div></div><span class="cause-tag" id="causeTag">Starting state</span></div>
+                <div class="event-visual" id="eventVisual" aria-hidden="true"><span class="event-time" id="eventTime">+0s</span><span class="event-glyph" id="eventGlyph">○</span></div>
+                <h3 id="eventTitle">The first order arrives</h3>
+                <p id="eventCopy">Order 101 exists in the source table, but it is not old enough to satisfy the alert query.</p>
+                <div class="condition-list" id="conditionList"></div>
+              </article>
+
+              <article class="metric-panel result-panel" id="resultPanel" data-focus="result">
+                <div class="panel-heading compact"><div><span class="panel-number">04</span><div><p>Maintained result</p><h2>order_alerts</h2></div></div><span class="state-tag live"><i></i>Current answer</span></div>
+                <div class="result-summary"><strong id="viewCount">0</strong><span>alert rows now</span></div>
+                <div class="table-wrap result-table-wrap">
+                  <table id="resultTable"><thead><tr><th>Order</th><th>Customer</th><th>Age</th></tr></thead><tbody id="resultBody"></tbody></table>
+                  <div class="empty-result" id="resultEmpty"><span>∅</span><p>No row satisfies every condition yet.</p></div>
+                </div>
+                <p class="panel-footnote">This is the current answer. Original rows stay in their source tables.</p>
+              </article>
+
+              <article class="metric-panel stream-panel" id="streamPanel" data-focus="stream">
+                <div class="panel-heading compact"><div><span class="panel-number">05</span><div><p>Subscription</p><h2>Change stream</h2></div></div><span class="state-tag neutral">Newest first</span></div>
+                <div class="stream-list" id="changeStream" aria-live="polite"></div>
+                <div class="stream-key"><span class="plus">+1</span> inserted into the answer <span class="minus">−1</span> retracted from it</div>
+              </article>
+            </div>
+            <div class="focus-overlay" id="focusOverlay" hidden></div>
+          </section>
+          <section class="chapter-hub" id="chapterHub" aria-labelledby="chapterHubTitle" hidden>
+            <div class="chapter-hub-heading">
+              <p>Chapter 01</p>
+              <h1 id="chapterHubTitle">Changing Relations</h1>
+            </div>
+            <div class="chapter-visualization-cards">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-01/diff-ledger.html?embed=1" data-title="Diff ledger beside a live relation">
+                <span class="chapter-card-number">1</span>
+                <strong>Diff ledger beside a live relation</strong>
+              </button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-01/update-decomposition.html?embed=1" data-title="Update decomposition">
+                <span class="chapter-card-number">2</span>
+                <strong>Update decomposition</strong>
+              </button>
+            </div>
+          </section>
+          <section class="chapter-hub" id="chapter2Hub" aria-labelledby="chapter2HubTitle" hidden>
+            <div class="chapter-hub-heading">
+              <p>Chapter 02</p>
+              <h1 id="chapter2HubTitle">Incremental Maintenance</h1>
+            </div>
+            <div class="chapter-visualization-cards">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-02/dataflow.html?embed=1" data-title="Interactive dataflow graph">
+                <span class="chapter-card-number">1</span>
+                <strong>Interactive dataflow graph</strong>
+              </button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-02/recomputation.html?embed=1" data-title="Recomputation comparison">
+                <span class="chapter-card-number">2</span>
+                <strong>Recomputation comparison</strong>
+              </button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapterVisualization" aria-labelledby="chapterVisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar">
+              <button class="button secondary" id="chapterBack" type="button">← Chapter 1</button>
+              <h1 id="chapterVisualizationTitle">Visualization</h1>
+            </div>
+            <iframe id="chapterFrame" title="Chapter 1 visualization" src="about:blank"></iframe>
+          </section>
+          <section class="chapter-visualization" id="chapter2Visualization" aria-labelledby="chapter2VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar">
+              <button class="button secondary" id="chapter2Back" type="button">← Chapter 2</button>
+              <h1 id="chapter2VisualizationTitle">Visualization</h1>
+            </div>
+            <iframe id="chapter2Frame" title="Chapter 2 visualization" src="about:blank"></iframe>
+          </section>
+          <section class="chapter-hub" id="chapter3Hub" aria-labelledby="chapter3HubTitle" hidden>
+            <div class="chapter-hub-heading">
+              <p>Chapter 03</p>
+              <h1 id="chapter3HubTitle">Views, Indexes, and Materialized Views</h1>
+            </div>
+            <div class="chapter-visualization-cards">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-03/state-map.html?embed=1" data-title="State-location map">
+                <span class="chapter-card-number">1</span>
+                <strong>State-location map</strong>
+              </button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-03/query-path.html?embed=1" data-title="Query-path explorer">
+                <span class="chapter-card-number">2</span>
+                <strong>Query-path explorer</strong>
+              </button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapter3Visualization" aria-labelledby="chapter3VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar">
+              <button class="button secondary" id="chapter3Back" type="button">← Chapter 3</button>
+              <h1 id="chapter3VisualizationTitle">Visualization</h1>
+            </div>
+            <iframe id="chapter3Frame" title="Chapter 3 visualization" src="about:blank"></iframe>
+          </section>
+          <section class="chapter-hub" id="chapter4Hub" aria-labelledby="chapter4HubTitle" hidden>
+            <div class="chapter-hub-heading">
+              <p>Chapter 04</p>
+              <h1 id="chapter4HubTitle">Getting Data In</h1>
+            </div>
+            <div class="chapter-visualization-cards">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-04/snapshot-pipeline.html?embed=1" data-title="Snapshot-to-live pipeline">
+                <span class="chapter-card-number">1</span>
+                <strong>Snapshot-to-live pipeline</strong>
+              </button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-04/envelope-interpreter.html?embed=1" data-title="Envelope interpreter">
+                <span class="chapter-card-number">2</span>
+                <strong>Envelope interpreter</strong>
+              </button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-04/key-failure.html?embed=1" data-title="Key failure simulator">
+                <span class="chapter-card-number">3</span>
+                <strong>Key failure simulator</strong>
+              </button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapter4Visualization" aria-labelledby="chapter4VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar">
+              <button class="button secondary" id="chapter4Back" type="button">← Chapter 4</button>
+              <h1 id="chapter4VisualizationTitle">Visualization</h1>
+            </div>
+            <iframe id="chapter4Frame" title="Chapter 4 visualization" src="about:blank"></iframe>
+          </section>
+          <section class="chapter-hub" id="chapter5Hub" aria-labelledby="chapter5HubTitle" hidden>
+            <div class="chapter-hub-heading">
+              <p>Chapter 05</p>
+              <h1 id="chapter5HubTitle">Time in Materialize</h1>
+            </div>
+            <div class="chapter-visualization-cards three-up">
+              <button class="chapter-visualization-card" type="button" data-time-lab="true">
+                <span class="chapter-card-number">1</span>
+                <strong>Synchronized multi-lane timeline</strong>
+              </button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-05/lifetime-bands.html?embed=1" data-title="Row lifetime bands">
+                <span class="chapter-card-number">2</span>
+                <strong>Row lifetime bands</strong>
+              </button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-05/late-arrival.html?embed=1" data-title="Late-arrival experiment">
+                <span class="chapter-card-number">3</span>
+                <strong>Late-arrival experiment</strong>
+              </button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapter5Visualization" aria-labelledby="chapter5VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar">
+              <button class="button secondary" id="chapter5Back" type="button">← Chapter 5</button>
+              <h1 id="chapter5VisualizationTitle">Visualization</h1>
+            </div>
+            <iframe id="chapter5Frame" title="Chapter 5 visualization" src="about:blank"></iframe>
+          </section>
+          <section class="chapter-hub" id="chapter6Hub" aria-labelledby="chapter6HubTitle" hidden>
+            <div class="chapter-hub-heading">
+              <p>Chapter 06</p>
+              <h1 id="chapter6HubTitle">Progress and Freshness</h1>
+            </div>
+            <div class="chapter-visualization-cards">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-06/progress-lanes.html?embed=1" data-title="Parallel progress lanes">
+                <span class="chapter-card-number">1</span>
+                <strong>Parallel progress lanes</strong>
+              </button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-06/lag-map.html?embed=1" data-title="Lag dependency map">
+                <span class="chapter-card-number">2</span>
+                <strong>Lag dependency map</strong>
+              </button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapter6Visualization" aria-labelledby="chapter6VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar">
+              <button class="button secondary" id="chapter6Back" type="button">← Chapter 6</button>
+              <h1 id="chapter6VisualizationTitle">Visualization</h1>
+            </div>
+            <iframe id="chapter6Frame" title="Chapter 6 visualization" src="about:blank"></iframe>
+          </section>
+          <section class="chapter-hub" id="chapter7Hub" aria-labelledby="chapter7HubTitle" hidden>
+            <div class="chapter-hub-heading">
+              <p>Chapter 07</p>
+              <h1 id="chapter7HubTitle">Consistent Reads</h1>
+            </div>
+            <div class="chapter-visualization-cards">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-07/readable-time.html?embed=1" data-title="Readable-time intersection">
+                <span class="chapter-card-number">1</span>
+                <strong>Readable-time intersection</strong>
+              </button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-07/transaction-timeline.html?embed=1" data-title="Transaction timeline">
+                <span class="chapter-card-number">2</span>
+                <strong>Transaction timeline</strong>
+              </button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapter7Visualization" aria-labelledby="chapter7VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar">
+              <button class="button secondary" id="chapter7Back" type="button">← Chapter 7</button>
+              <h1 id="chapter7VisualizationTitle">Visualization</h1>
+            </div>
+            <iframe id="chapter7Frame" title="Chapter 7 visualization" src="about:blank"></iframe>
+          </section>
+          <section class="chapter-hub" id="chapter8Hub" aria-labelledby="chapter8HubTitle" hidden>
+            <div class="chapter-hub-heading">
+              <p>Chapter 08</p>
+              <h1 id="chapter8HubTitle">Maintained State</h1>
+            </div>
+            <div class="chapter-visualization-cards three-up">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-08/state-inventory.html?embed=1" data-title="State inventory">
+                <span class="chapter-card-number">1</span><strong>State inventory</strong>
+              </button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-08/key-heatmap.html?embed=1" data-title="Key-distribution heatmap">
+                <span class="chapter-card-number">2</span><strong>Key-distribution heatmap</strong>
+              </button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-08/output-vs-state.html?embed=1" data-title="Output versus state scale">
+                <span class="chapter-card-number">3</span><strong>Output versus state scale</strong>
+              </button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapter8Visualization" aria-labelledby="chapter8VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar">
+              <button class="button secondary" id="chapter8Back" type="button">← Chapter 8</button>
+              <h1 id="chapter8VisualizationTitle">Visualization</h1>
+            </div>
+            <iframe id="chapter8Frame" title="Chapter 8 visualization" src="about:blank"></iframe>
+          </section>
+          <section class="chapter-hub" id="chapter9Hub" aria-labelledby="chapter9HubTitle" hidden>
+            <div class="chapter-hub-heading">
+              <p>Chapter 09</p><h1 id="chapter9HubTitle">Query Optimization</h1>
+            </div>
+            <div class="chapter-visualization-cards three-up">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-09/plan-compare.html?embed=1" data-title="Before-and-after plan graph"><span class="chapter-card-number">1</span><strong>Before-and-after plan graph</strong></button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-09/index-bench.html?embed=1" data-title="Index experiment bench"><span class="chapter-card-number">2</span><strong>Index experiment bench</strong></button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-09/budget-board.html?embed=1" data-title="Memory/speed budget board"><span class="chapter-card-number">3</span><strong>Memory/speed budget board</strong></button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapter9Visualization" aria-labelledby="chapter9VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar"><button class="button secondary" id="chapter9Back" type="button">← Chapter 9</button><h1 id="chapter9VisualizationTitle">Visualization</h1></div>
+            <iframe id="chapter9Frame" title="Chapter 9 visualization" src="about:blank"></iframe>
+          </section>
+          <section class="chapter-hub" id="chapter10Hub" aria-labelledby="chapter10HubTitle" hidden>
+            <div class="chapter-hub-heading"><p>Chapter 10</p><h1 id="chapter10HubTitle">Clusters, Replicas, and Recovery</h1></div>
+            <div class="chapter-visualization-cards three-up">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-10/deployment-map.html?embed=1" data-title="Interactive deployment map"><span class="chapter-card-number">1</span><strong>Interactive deployment map</strong></button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-10/recovery-timeline.html?embed=1" data-title="Failure-and-recovery timeline"><span class="chapter-card-number">2</span><strong>Failure-and-recovery timeline</strong></button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-10/resource-profile.html?embed=1" data-title="Resource profile over time"><span class="chapter-card-number">3</span><strong>Resource profile over time</strong></button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapter10Visualization" aria-labelledby="chapter10VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar"><button class="button secondary" id="chapter10Back" type="button">← Chapter 10</button><h1 id="chapter10VisualizationTitle">Visualization</h1></div>
+            <iframe id="chapter10Frame" title="Chapter 10 visualization" src="about:blank"></iframe>
+          </section>
+          <section class="chapter-hub" id="chapter11Hub" aria-labelledby="chapter11HubTitle" hidden>
+            <div class="chapter-hub-heading"><p>Chapter 11</p><h1 id="chapter11HubTitle">Building Live Applications with SUBSCRIBE</h1></div>
+            <div class="chapter-visualization-cards three-up">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-11/client-state.html?embed=1" data-title="Server/client state comparison"><span class="chapter-card-number">1</span><strong>Server/client state comparison</strong></button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-11/progress-reconnect.html?embed=1" data-title="Progress and reconnect timeline"><span class="chapter-card-number">2</span><strong>Progress and reconnect timeline</strong></button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-11/envelope-switcher.html?embed=1" data-title="Envelope output switcher"><span class="chapter-card-number">3</span><strong>Envelope output switcher</strong></button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapter11Visualization" aria-labelledby="chapter11VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar"><button class="button secondary" id="chapter11Back" type="button">← Chapter 11</button><h1 id="chapter11VisualizationTitle">Visualization</h1></div>
+            <iframe id="chapter11Frame" title="Chapter 11 visualization" src="about:blank"></iframe>
+          </section>
+          <section class="chapter-hub" id="chapter12Hub" aria-labelledby="chapter12HubTitle" hidden>
+            <div class="chapter-hub-heading"><p>Chapter 12</p><h1 id="chapter12HubTitle">Sinks and Reliable Downstream Delivery</h1></div>
+            <div class="chapter-visualization-cards">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-12/relation-translator.html?embed=1" data-title="Relation-to-message translator"><span class="chapter-card-number">1</span><strong>Relation-to-message translator</strong></button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-12/crash-sequence.html?embed=1" data-title="Crash-point sequence diagram"><span class="chapter-card-number">2</span><strong>Crash-point sequence diagram</strong></button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapter12Visualization" aria-labelledby="chapter12VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar"><button class="button secondary" id="chapter12Back" type="button">← Chapter 12</button><h1 id="chapter12VisualizationTitle">Visualization</h1></div>
+            <iframe id="chapter12Frame" title="Chapter 12 visualization" src="about:blank"></iframe>
+          </section>
+          <section class="chapter-hub" id="chapter13Hub" aria-labelledby="chapter13HubTitle" hidden>
+            <div class="chapter-hub-heading"><p>Optional Chapter 13</p><h1 id="chapter13HubTitle">Recursive Queries and Changing Graphs</h1></div>
+            <div class="chapter-visualization-cards">
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-13/editable-graph.html?embed=1" data-title="Editable graph"><span class="chapter-card-number">1</span><strong>Editable graph</strong></button>
+              <button class="chapter-visualization-card" type="button" data-visualization="./chapter-13/iteration-explorer.html?embed=1" data-title="Iteration explorer"><span class="chapter-card-number">2</span><strong>Iteration explorer</strong></button>
+            </div>
+          </section>
+          <section class="chapter-visualization" id="chapter13Visualization" aria-labelledby="chapter13VisualizationTitle" hidden>
+            <div class="chapter-visualization-toolbar"><button class="button secondary" id="chapter13Back" type="button">← Chapter 13</button><h1 id="chapter13VisualizationTitle">Visualization</h1></div>
+            <iframe id="chapter13Frame" title="Chapter 13 visualization" src="about:blank"></iframe>
+          </section>
+          <section class="coachmark" id="coachmark" role="dialog" aria-labelledby="coachTitle" hidden>
+            <div class="coach-main">
+              <div class="coach-progress"><span id="coachStep">Moment 1 of 4</span><span id="coachTime">+20 seconds</span></div>
+              <h2 id="coachTitle">Time alone added a row</h2>
+              <p id="coachCopy"></p>
+            </div>
+            <div class="coach-actions">
+              <div class="watch-list"><span>Pay attention to</span><strong id="coachWatch"></strong></div>
+              <button class="button primary coach-continue" id="continueButton" type="button">Continue simulation <span aria-hidden="true">→</span></button>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <dialog class="feature-dialog" id="featureDialog" aria-labelledby="featureTitle">
+      <div class="dialog-heading">
+        <div><p id="featureEyebrow">Learning library</p><h2 id="featureTitle">Choose an experience</h2></div>
+        <button class="dialog-close" id="dialogClose" type="button" aria-label="Close popup">×</button>
+      </div>
+      <div id="featureContent"></div>
+    </dialog>
+
+    <script src="./app.js?v=23"></script>
+  </body>
+</html>

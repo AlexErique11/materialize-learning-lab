@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>State-location Map | Chapter 3</title>
+    <link rel="stylesheet" href="./chapter-03.css?v=1" />
+  </head>
+  <body>
+    <main class="page">
+      <header>
+        <p class="eyebrow">Chapter 03 · Visualization 01</p>
+        <h1>State-location map</h1>
+        <p class="intro">Create and remove objects to see where their definitions and maintained results live.</p>
+      </header>
+      <section class="toolbar" aria-label="Create or remove objects">
+        <button class="control" id="createView" type="button">Create regular view</button>
+        <label class="field" for="indexCluster">Index cluster<select id="indexCluster"><option value="serving_a">Serving A</option><option value="serving_b">Serving B</option></select></label>
+        <button class="control" id="createIndex" type="button" disabled>Create view index</button>
+        <button class="control" id="dropIndex" type="button" disabled>Drop selected index</button>
+        <button class="control" id="createMaterialized" type="button">Create materialized view</button>
+        <button class="control" id="dropMaterialized" type="button" disabled>Drop materialized view</button>
+      </section>
+      <section class="map-grid" aria-label="Where Materialize object state lives">
+        <article class="map-zone"><h2 class="zone-title">SQL catalog<small>Object names and saved definitions</small></h2><div id="catalogObjects"></div></article>
+        <article class="map-zone"><h2 class="zone-title">Serving A memory<small>Indexes local to this cluster</small></h2><div id="servingAObjects"></div></article>
+        <article class="map-zone"><h2 class="zone-title">Serving B memory<small>Indexes local to this cluster</small></h2><div id="servingBObjects"></div></article>
+        <article class="map-zone"><h2 class="zone-title">Durable storage<small>Materialized view results</small></h2><div id="durableObjects"></div></article>
+      </section>
+      <p class="state-message" id="stateMessage" role="status" aria-live="polite">Create a view, then add an index or a materialized view.</p>
+    </main>
+    <script src="./state-map.js?v=1"></script>
+  </body>
+</html>
