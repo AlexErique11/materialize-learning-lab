@@ -18,19 +18,21 @@ test('learning path, chapter navigation, and browser history', async ({ page }, 
   await expect(page.getByRole('heading', { name: 'Learning path', exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('learning-path.png'), fullPage: true });
   await page.getByRole('main').getByRole('link', { name: 'Guided labs', exact: true }).click();
-  await expect(page).toHaveURL('/labs');
-  await expect(page.getByRole('heading', { name: 'Core sequence' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: 'Go further' })).toBeVisible();
-  await page.getByRole('link', { name: new RegExp(`01 ${firstChapter.shortTitle}`) }).click();
   await expect(page).toHaveURL(chapterPath(firstChapter));
   await expect(page.getByRole('heading', { name: firstChapter.title, exact: true })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Page navigation' })).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath('chapter-overview.png'), fullPage: true });
   await page.goBack();
-  await expect(page).toHaveURL('/labs');
+  await expect(page).toHaveURL('/');
   await page.goForward();
   await expect(page).toHaveURL(chapterPath(firstChapter));
   await page.reload();
+  await expect(page.getByRole('heading', { name: firstChapter.title, exact: true })).toBeVisible();
+  await page.goto('/');
+  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Guided labs', exact: true }).click();
+  await expect(page).toHaveURL(chapterPath(firstChapter));
+  await page.goto('/labs');
+  await expect(page).toHaveURL(chapterPath(firstChapter));
   await expect(page.getByRole('heading', { name: firstChapter.title, exact: true })).toBeVisible();
 });
 
@@ -280,7 +282,7 @@ test('chapter pages adapt at desktop, laptop, tablet, and mobile widths', async 
   });
 });
 
-test('learning path and content pages fit the viewport without hiding navigation', async ({
+test('learning path and content pages fit desktop viewports without hiding navigation', async ({
   page,
   isMobile,
 }, testInfo) => {
@@ -297,6 +299,7 @@ test('learning path and content pages fit the viewport without hiding navigation
         { width: 1440, height: 900 },
         { width: 1366, height: 768 },
         { width: 1280, height: 720 },
+        { width: 1280, height: 650 },
         { width: 1024, height: 768 },
         { width: 768, height: 1024 },
       ];
@@ -324,18 +327,32 @@ test('learning path and content pages fit the viewport without hiding navigation
       expect(dimensions.width, `${route.path} at ${viewport.width}px`).toBeLessThanOrEqual(
         dimensions.viewportWidth,
       );
-      expect(
-        dimensions.height,
-        `${route.path} at ${viewport.width} × ${viewport.height}`,
-      ).toBeLessThanOrEqual(dimensions.viewportHeight);
-      expect(dimensions.footerBottom).toBeLessThanOrEqual(dimensions.viewportHeight);
       if (route.path !== '/') {
+        expect(
+          dimensions.height,
+          `${route.path} at ${viewport.width} × ${viewport.height}`,
+        ).toBeLessThanOrEqual(dimensions.viewportHeight);
+        expect(dimensions.footerBottom).toBeLessThanOrEqual(dimensions.viewportHeight);
         const navigation = await page
           .getByRole('navigation', { name: 'Page navigation' })
           .boundingBox();
         expect(navigation).not.toBeNull();
         if (navigation)
           expect(navigation.y + navigation.height).toBeLessThanOrEqual(dimensions.viewportHeight);
+      } else {
+        await expect(page.getByRole('contentinfo')).toHaveCount(0);
+        if (!isMobile) {
+          expect(
+            dimensions.height,
+            `Learning path at ${viewport.width} × ${viewport.height}`,
+          ).toBeLessThanOrEqual(dimensions.viewportHeight);
+        }
+        await expect(page.getByRole('link', { name: /Community/ })).toHaveCount(0);
+        const documentation = page
+          .getByRole('region', { name: 'Help & resources' })
+          .getByRole('link', { name: /Documentation/ });
+        await documentation.scrollIntoViewIfNeeded();
+        await expect(documentation).toBeVisible();
       }
       if (viewport.width === 1366 || (isMobile && viewport.height === 844)) {
         await page.screenshot({
@@ -349,8 +366,8 @@ test('learning path and content pages fit the viewport without hiding navigation
     // Stacked cards may scroll on a small screen; all content must remain reachable.
     await page.goto('/');
     const documentation = page
-      .getByRole('region', { name: 'Resources' })
-      .getByRole('link', { name: 'Materialize documentation' });
+      .getByRole('region', { name: 'Help & resources' })
+      .getByRole('link', { name: /Documentation/ });
     await documentation.scrollIntoViewIfNeeded();
     await expect(documentation).toBeVisible();
   }

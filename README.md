@@ -37,7 +37,7 @@ fallback. No backend or persistent server is required.
 | URL                                         | Surface                                                    |
 | ------------------------------------------- | ---------------------------------------------------------- |
 | `/`                                         | Learning path                                              |
-| `/labs`                                     | Guided labs: twelve core chapters and one optional chapter |
+| `/labs`                                     | Opens the first core chapter directly                      |
 | `/labs/:chapterSlug`                        | Validated chapter overview                                 |
 | `/labs/:chapterSlug/:sectionSlug`           | Tutorial or Exercises overview                             |
 | `/labs/:chapterSlug/:sectionSlug/:pageSlug` | Registered lecture or exercise page                        |
@@ -46,6 +46,8 @@ fallback. No backend or persistent server is required.
 | Other locations                             | Accessible not-found page                                  |
 
 The selected chapter expands Tutorial and Exercises in the sidebar.
+Guided labs links enter Chapter 1 directly. The sidebar provides access to all
+twelve core chapters and the optional advanced chapter.
 Desktop chapter navigation can collapse to an expand-button rail; mobile navigation
 uses a keyboard-operable disclosure. Chapter overviews have no bottom pagination.
 Chapter 1 scaffolds Lecture 1, Lecture 2, Exercise 1, and Exercise 2. Next/previous
@@ -101,7 +103,13 @@ mock/                  Preserved exploratory prototype; not application code
   Escape handling, and focus restoration.
 - Theme defaults to light. Only an explicit light/dark choice is persisted under
   `materialize-learning-lab-theme`. Storage failures do not prevent switching.
-- `PageContainer` has a `fitViewport` option for compact landing/lesson pages
+- The learning path follows the supplied reference: guided-lab features, two
+  featured challenge entry points, and Documentation and FAQ resources.
+  All three capstones remain available at `/challenges`. Its styles are scoped in
+  `src/styles/learning-path.css`; the shared navbar is unchanged and the footer is
+  omitted on this route. Compact typography and spacing keep the overview within
+  desktop and laptop viewports. Smaller screens stack the cards and scroll naturally.
+- `PageContainer` has a `fitViewport` option for compact lesson pages
   and a `tone` option for learning (violet) or practice (teal) surfaces. Shared
   CSS tokens account for the header, footer, and collapsed chapter navigation.
   Pages can still grow at small sizes or when real content is added; scrolling
@@ -110,8 +118,7 @@ mock/                  Preserved exploratory prototype; not application code
   small corners, and a subtle shadow. `PanelHeader` adds a small decorative accent
   dot when no icon is supplied. Background and accent colors come from theme
   tokens; there is no top accent stripe or per-page panel variant.
-- The small local brand mark is replaceable. The known official documentation
-  URL is linked; an unverified Community link is deliberately omitted.
+- The small local brand mark is replaceable. Official documentation is linked.
 
 ## Tests
 

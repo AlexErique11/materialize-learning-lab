@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import './tokens.css';
+@import './learning-path.css';
 
 @theme inline {
   --color-background: var(--background);
@@ -201,8 +202,7 @@
     margin: 0 auto;
     padding: 3.25rem 2rem 4rem;
   }
-  .page-container[data-tone='practice'],
-  .pathway-card[data-tone='practice'] {
+  .page-container[data-tone='practice'] {
     --page-accent: var(--practice-accent);
     --page-accent-soft: var(--practice-soft);
   }
@@ -501,27 +501,6 @@
     text-decoration: underline;
   }
 
-  .pathway-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    flex: 1;
-    gap: 1.25rem;
-  }
-  .pathway-card {
-    display: flex;
-    min-width: 0;
-    flex-direction: column;
-    padding: 1.25rem;
-  }
-  .pathway-card:hover {
-    border-color: var(--page-accent);
-  }
-  .pathway-card-header {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-  }
   .pathway-icon {
     display: grid;
     width: 36px;
@@ -532,75 +511,6 @@
     border-radius: 6px;
     color: var(--page-accent);
     background: var(--page-accent-soft);
-  }
-  .pathway-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    letter-spacing: -0.035em;
-  }
-  .pathway-description {
-    margin-top: 0.5rem;
-    color: var(--text-muted);
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-  .capstone-preview {
-    display: grid;
-    gap: 0.5rem;
-    margin-block: 0.75rem;
-    font-size: 0.8rem;
-  }
-  .capstone-preview li {
-    display: flex;
-    align-items: baseline;
-    gap: 0.7rem;
-  }
-  .capstone-preview li > span {
-    color: var(--text-muted);
-    font-family: var(--font-mono);
-    font-size: 0.65rem;
-  }
-  .pathway-action {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: auto;
-    margin-bottom: 1rem;
-    padding-top: 1rem;
-    color: var(--page-accent);
-    font-size: 0.8rem;
-    font-weight: 550;
-  }
-  .pathway-progress {
-    border-top: 1px solid var(--border);
-    padding-top: 0.75rem;
-    color: var(--text-muted);
-    font-size: 0.75rem;
-  }
-  .resources-section {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
-    border: 1px solid var(--border-strong);
-    border-radius: 6px;
-    padding: 0.75rem 1rem;
-    background: var(--surface-muted);
-  }
-  .resources-section h2 {
-    font-size: 0.85rem;
-    font-weight: 550;
-  }
-  .resource-link {
-    display: inline-flex;
-    min-height: 32px;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-  }
-  .resource-link:hover {
-    color: var(--accent);
   }
   .sequence-progress {
     display: flex;
@@ -1067,16 +977,6 @@
   }
   .page-container-fit > .content-placeholder {
     min-height: 160px;
-  }
-  .pathway-grid {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1rem;
-  }
-  .pathway-card {
-    padding: 1rem;
-  }
-  .pathway-title {
-    font-size: 1.125rem;
   }
   .app-footer {
     padding-inline: 1.25rem;
