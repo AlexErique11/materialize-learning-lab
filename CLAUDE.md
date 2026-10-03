@@ -1,5 +1,19 @@
 # CLAUDE.md
 
+## Maintainability Rules
+
+Before changing code, read and follow [MAINTAINABILITY.md](./MAINTAINABILITY.md).
+Its rules and required workflow apply to every code change in this repository.
+Keep that file as the single source of truth for maintainability rules.
+
+@MAINTAINABILITY.md
+
+## Git Workflow
+
+- Work only on `david-ui-changes` unless the user explicitly directs otherwise.
+- Verify the active branch before making changes.
+- Do not create commits unless the user explicitly requests a commit.
+
 ## Project: Materialize Learning Lab
 
 This repository contains an interactive, browser-based learning application for
