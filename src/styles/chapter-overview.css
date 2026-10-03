@@ -96,6 +96,9 @@
 
 .chapter-learn-more {
   --learn-more-muted: #626da8;
+  --learn-more-icon-left: 1.9cqw;
+  --learn-more-icon-size: clamp(52px, 5.2cqw, 85px);
+  --learn-more-link-text-left: max(8.5cqw, calc(var(--learn-more-icon-left) + var(--learn-more-icon-size) + 14px));
   container-type: inline-size;
   overflow: hidden;
   border: 1px solid color-mix(in srgb, var(--overview-accent) 14%, var(--lab-surface));
@@ -127,12 +130,12 @@
 .chapter-learn-more-icon {
   position: absolute;
   top: 50%;
-  left: 1.9cqw;
+  left: var(--learn-more-icon-left);
   transform: translateY(-50%);
   display: grid;
   place-items: center;
-  width: clamp(52px, 5.2cqw, 85px);
-  height: clamp(52px, 5.2cqw, 85px);
+  width: var(--learn-more-icon-size);
+  height: var(--learn-more-icon-size);
   border: 1px solid color-mix(in srgb, var(--overview-accent) 12%, var(--lab-surface));
   border-radius: 50%;
   background: var(--lab-surface);
@@ -149,7 +152,7 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 8.5cqw;
+  left: var(--learn-more-link-text-left);
   width: 15.7cqw;
   overflow: hidden;
   pointer-events: none;
@@ -195,7 +198,7 @@
 
 .chapter-documentation-links {
   margin: 0;
-  padding: 4px 2.8cqw 0;
+  padding: 4px 2.8cqw 0 var(--learn-more-icon-left);
   border-top: 1px solid color-mix(in srgb, var(--overview-accent) 14%, var(--lab-surface));
 }
 
@@ -205,9 +208,9 @@
 
 .chapter-documentation-links a {
   display: grid;
-  grid-template-columns: clamp(46px, 4.2cqw, 68px) minmax(0, 1fr) clamp(22px, 1.84cqw, 30px);
+  grid-template-columns: var(--learn-more-icon-size) minmax(0, 1fr) clamp(22px, 1.84cqw, 30px);
   align-items: center;
-  gap: 3.7cqw;
+  gap: calc(var(--learn-more-link-text-left) - var(--learn-more-icon-left) - var(--learn-more-icon-size));
   min-height: clamp(84px, 7.3cqw, 120px);
   padding: 14px 0;
   color: var(--lab-text);
@@ -216,6 +219,7 @@
 .chapter-documentation-number {
   display: grid;
   place-items: center;
+  justify-self: center;
   width: clamp(46px, 4.2cqw, 68px);
   height: clamp(46px, 4.1cqw, 67px);
   border-radius: clamp(8px, .8cqw, 13px);
@@ -441,6 +445,12 @@
 }
 
 @media (max-width: 767px) {
+  .chapter-learn-more {
+    --learn-more-icon-left: 16px;
+    --learn-more-icon-size: 52px;
+    --learn-more-link-text-left: 86px;
+  }
+
   .chapter-overview {
     padding: 16px 20px 24px;
   }
@@ -470,9 +480,6 @@
   }
 
   .chapter-learn-more-icon {
-    left: 16px;
-    width: 52px;
-    height: 52px;
     z-index: 1;
   }
 
@@ -497,10 +504,6 @@
 
   .chapter-documentation-links {
     padding: 0 16px;
-  }
-
-  .chapter-documentation-links a {
-    gap: 14px;
   }
 
   .chapter-documentation-title {
