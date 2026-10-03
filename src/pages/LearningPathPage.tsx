@@ -4,22 +4,20 @@ import {
 import { Link } from 'react-router';
 import { coreChapters } from '../chapters/chapterRegistry';
 import { findChallenge, challengePath } from '../challenges/challengeRegistry';
-import { DOCUMENTATION_URL } from '../components/layout/AppHeader';
+import { DOCUMENTATION_URL } from '../app/resources';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { ProgressBar } from '../components/ui/ProgressBar';
+import { featuredChallenges, labFeatures } from './learningPathContent';
 
-const labFeatures = [
-  { marker: ChevronsRight, markerClassName: '', title: 'Learn by doing', description: 'Follow interactive, hands-on tutorials with a running environment.' },
-  { marker: ChevronsRight, markerClassName: '', title: 'Build core skills', description: 'From streaming SQL to real-time applications.' },
-  { marker: ChevronsRight, markerClassName: '', title: 'Track your progress', description: 'See what you’ve completed and pick up where you left off.' },
-];
-
-// The reference features two entry points; the full capstone catalog stays at /challenges.
-const featuredChallenges = [
-  { slug: 'fresh-but-expensive', marker: CircleArrowRight, title: 'Challange 1 : Some challange not designed yet', description: 'Lorem ipsum dolor sit amet.' },
-  { slug: 'live-order-operations', marker: CircleArrowRight, title: 'Challange 2 : Some challange not designed yet', description: 'Lorem ipsum dolor sit amet.' },
-];
+function LearningPathProgress({ total, label }: { total: number; label: string }) {
+  return (
+    <div className="learning-path-progress">
+      <div><span>Your progress</span><span>0/{total} completed</span></div>
+      <ProgressBar value={0} total={total} label={label} />
+    </div>
+  );
+}
 
 export function LearningPathPage() {
   return (
@@ -39,17 +37,14 @@ export function LearningPathPage() {
             <ArrowRight className="learning-path-arrow" size={26} aria-hidden="true" />
           </Link>
           <ul className="learning-path-features">
-            {labFeatures.map(({ marker: Marker, markerClassName, title, description }) => (
+            {labFeatures.map(({ title, description }) => (
               <li key={title}>
-                <Marker className={`learning-path-marker${markerClassName}`} size={26} strokeWidth={2.5} aria-hidden="true" />
+                <ChevronsRight className="learning-path-marker" size={26} strokeWidth={2.5} aria-hidden="true" />
                 <div><h3>{title}</h3><p>{description}</p></div>
               </li>
             ))}
           </ul>
-          <div className="learning-path-progress">
-            <div><span>Your progress</span><span>0/{coreChapters.length} completed</span></div>
-            <ProgressBar value={0} total={coreChapters.length} label="Core chapters completed" />
-          </div>
+          <LearningPathProgress total={coreChapters.length} label="Core chapters completed" />
         </section>
         <section className="learning-path-card" aria-labelledby="challenges-title">
           <Link to="/challenges" className="learning-path-card-header" aria-labelledby="challenges-title">
@@ -57,13 +52,13 @@ export function LearningPathPage() {
             <ArrowRight className="learning-path-arrow" size={26} aria-hidden="true" />
           </Link>
           <ul className="learning-path-challenges">
-            {featuredChallenges.map(({ slug, marker: Marker, title, description }) => {
+            {featuredChallenges.map(({ slug, title, description }) => {
               const challenge = findChallenge(slug);
               if (!challenge) return null;
               return (
                 <li key={slug}>
                   <Link to={challengePath(challenge)}>
-                    <Marker className="learning-path-marker" size={26} strokeWidth={2.5} aria-hidden="true" />
+                    <CircleArrowRight className="learning-path-marker" size={26} strokeWidth={2.5} aria-hidden="true" />
                     <div><h3>{title}</h3><p>{description}</p></div>
                     <span className="learning-path-status">Not started</span>
                     <ChevronRight className="learning-path-chevron" size={22} aria-hidden="true" />
@@ -72,10 +67,7 @@ export function LearningPathPage() {
               );
             })}
           </ul>
-          <div className="learning-path-progress">
-            <div><span>Your progress</span><span>0/{featuredChallenges.length} completed</span></div>
-            <ProgressBar value={0} total={featuredChallenges.length} label="Featured challenges completed" />
-          </div>
+          <LearningPathProgress total={featuredChallenges.length} label="Featured challenges completed" />
         </section>
       </div>
       <section className="learning-path-resources" aria-labelledby="resources-title">

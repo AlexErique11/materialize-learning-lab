@@ -50,10 +50,11 @@ Guided labs links enter Chapter 1 directly. The sidebar provides access to all
 twelve core chapters and the optional advanced chapter.
 Desktop chapter navigation can collapse to an expand-button rail; mobile navigation
 uses a keyboard-operable disclosure. Chapter overviews have no bottom pagination.
-Chapter 1 scaffolds Lecture 1, Lecture 2, Exercise 1, and Exercise 2. Next/previous
-navigation follows that sequence across the two groups. Lecture/exercise pages
-omit breadcrumbs. These are empty pages,
-not preview exercises. Other chapters have empty section overviews and no
+Chapter 1 scaffolds Lecture 1, Lecture 2, Exercise 1, and Exercise 2. The Time in
+Materialize chapter also has two tutorial slots and two exercise slots.
+Next/previous navigation follows each chapter's sequence across the two groups.
+Lecture/exercise pages include breadcrumbs and reference controls. These are
+empty content slots. Other chapters have empty section overviews and no
 invented lectures or exercises. Unknown sections/pages show a not-found page;
 the old `/workspace` previews are no longer exposed.
 
@@ -61,7 +62,7 @@ the old `/workspace` previews are no longer exposed.
 
 ```text
 src/
-  app/                 Router, app entry, shared layouts
+  app/                 Router, app entry, shared layouts and resource configuration
   chapters/            Curriculum, navigation outline, overview and content shells
   challenges/          Capstone registry and challenge overview
   pages/               Learning path, libraries, not-found/error pages
@@ -71,8 +72,8 @@ src/
     chapter/           Content placeholders, previous/next navigation
     lab/               Timeline, source, event, result, stream, reference, checkpoint
     ui/                Buttons, badges, progress, empty states, panels, table, dialog
-  hooks/               Theme preference and provider
-  styles/              Tokens and a small Tailwind-backed presentation system
+  hooks/               Theme preference/provider and shared page-title behavior
+  styles/              Tokens, global base rules and styles grouped by responsibility
   domain/              Documented boundary for future pure domain code
 tests/e2e/             Chapter journeys, themes, routing, responsive checks
 mock/                  Preserved exploratory prototype; not application code
@@ -87,6 +88,14 @@ mock/                  Preserved exploratory prototype; not application code
   route validation, section lists, and next/previous links share this outline.
   This is navigation metadata, not a lesson engine. Implement real page content
   in explicit chapter-owned components when it is ready.
+- Keep section labels and overview descriptions in `chapterOutline.ts`, and
+  chapter introductions and documentation links in `chapterRegistry.ts`.
+  `chapterNavigation.ts` derives previous/next destinations from that same outline.
+  Overview documentation, overview sections, sidebar entries, and sidebar groups
+  have focused components under `src/components/chapter/` and `src/components/layout/`.
+- Keep learning-path feature and featured-challenge copy in
+  `src/pages/learningPathContent.ts`. Shared external resources live in
+  `src/app/resources.ts`, rather than being exported by a UI component.
 - Place actual objectives, scenarios, and lab components beside their chapter.
   Keep deterministic simulation functions in the domain layer, not in panels.
 - The lab workspace components remain available for future implementation but
@@ -120,6 +129,15 @@ mock/                  Preserved exploratory prototype; not application code
   tokens; there is no top accent stripe or per-page panel variant.
 - The small local brand mark is replaceable. Official documentation is linked.
 
+`src/styles/globals.css` imports the presentation system and defines only global
+theme mappings, base rules, and reduced-motion behavior. Shared layout, UI
+primitives, chapter navigation, reusable lab workspace, challenges, and FAQ each
+have their own stylesheets. `learning-path.css`, `guided-labs.css`, and
+`chapter-overview.css` own their corresponding page styles; `app-header.css`
+owns the complete header and uses the shared theme tokens. Preserve the existing
+CSS layers and import order when editing styles, since page styles intentionally
+override shared component defaults.
+
 ## Tests
 
 ```sh
@@ -129,8 +147,8 @@ npm run test:e2e
 ```
 
 Vitest protects registry identity/order against the curriculum, core/advanced
-counts, chapter-outline ordering and validation, route helpers, capstone
-prerequisites, and theme storage behavior. Playwright serves a production build
+counts, chapter-outline ordering and validation, pagination boundaries, route
+helpers, capstone prerequisites, and theme storage behavior. Playwright serves a production build
 and checks desktop/mobile learner journeys,
 back/forward and reloads, lecture-to-exercise navigation, keyboard-operable
 sidebar groups, theme persistence, not-found routes, and widths

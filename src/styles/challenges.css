@@ -1,0 +1,54 @@
+@layer components {
+  .pathway-icon {
+    display: grid;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    place-items: center;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--page-accent);
+    background: var(--page-accent-soft);
+  }
+
+  .sequence-progress {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    background: var(--surface);
+  }
+
+  .sequence-progress-bar {
+    max-width: 180px;
+  }
+
+  .challenge-card {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.5rem;
+    background: var(--surface);
+  }
+
+  .challenge-card:hover {
+    border-color: var(--border-strong);
+  }
+}
+
+@media (max-width: 639px) {
+  .sequence-progress {
+    padding: 1.1rem;
+  }
+
+  .sequence-progress-bar {
+    max-width: none;
+  }
+}

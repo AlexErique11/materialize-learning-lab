@@ -1,0 +1,30 @@
+@layer components {
+  .learning-path-faq {
+    margin-top: 24px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 24px;
+    background: var(--surface);
+  }
+
+  .learning-path-faq details {
+    margin-top: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  .learning-path-faq summary {
+    font-weight: 600;
+  }
+
+  .learning-path-faq p {
+    max-width: 75ch;
+    margin-top: 12px;
+    color: var(--text-muted);
+  }
+
+  .learning-path-faq a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+}

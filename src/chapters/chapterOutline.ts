@@ -3,23 +3,43 @@ import { chapterPath, type ChapterDefinition } from './chapterRegistry';
 export type ChapterSectionSlug = 'tutorial' | 'exercises';
 
 interface ContentPageDefinition {
-  slug: string;
-  title: string;
-  description?: string;
-  durationMinutes?: number;
+  readonly slug: string;
+  readonly title: string;
+  readonly description?: string;
+  readonly durationMinutes?: number;
 }
 
 export interface ChapterSectionDefinition {
-  slug: ChapterSectionSlug;
-  title: string;
-  pages: readonly ContentPageDefinition[];
+  readonly slug: ChapterSectionSlug;
+  readonly title: string;
+  readonly listTitle: string;
+  readonly description: string;
+  readonly itemLabel: string;
+  readonly pages: readonly ContentPageDefinition[];
 }
 
 export interface ChapterContentDefinition extends ContentPageDefinition {
-  sectionSlug: ChapterSectionSlug;
+  readonly sectionSlug: ChapterSectionSlug;
 }
 
 type ChapterOutline = Readonly<Record<ChapterSectionSlug, readonly ContentPageDefinition[]>>;
+
+const sectionDefinitions: readonly Omit<ChapterSectionDefinition, 'pages'>[] = [
+  {
+    slug: 'tutorial',
+    title: 'Tutorial',
+    listTitle: 'Tutorials',
+    description: 'Step-by-step guided tutorials to learn the core concepts of this chapter.',
+    itemLabel: 'tutorial',
+  },
+  {
+    slug: 'exercises',
+    title: 'Exercises',
+    listTitle: 'Exercises',
+    description: 'Hands-on exercises to test your understanding.',
+    itemLabel: 'exercise',
+  },
+];
 
 // Navigation slots only. Actual chapter content will live beside its chapter.
 const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
@@ -67,10 +87,10 @@ export function getChapterSections(
   chapter: ChapterDefinition,
 ): readonly ChapterSectionDefinition[] {
   const outline = chapterOutlines[chapter.slug];
-  return [
-    { slug: 'tutorial', title: 'Tutorial', pages: outline?.tutorial ?? [] },
-    { slug: 'exercises', title: 'Exercises', pages: outline?.exercises ?? [] },
-  ];
+  return sectionDefinitions.map((section) => ({
+    ...section,
+    pages: outline?.[section.slug] ?? [],
+  }));
 }
 
 export function getChapterPages(chapter: ChapterDefinition): readonly ChapterContentDefinition[] {

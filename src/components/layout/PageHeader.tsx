@@ -1,4 +1,5 @@
-import { useEffect, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
+import { usePageTitle } from '../../hooks/usePageTitle';
 
 interface PageHeaderProps {
   title: string;
@@ -8,9 +9,7 @@ interface PageHeaderProps {
 }
 
 export function PageHeader({ title, description, eyebrow, trailing }: PageHeaderProps) {
-  useEffect(() => {
-    document.title = `${title} | Materialize Learning Lab`;
-  }, [title]);
+  usePageTitle(title);
 
   return (
     <header className="page-heading">

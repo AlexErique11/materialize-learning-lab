@@ -1,8 +1,7 @@
 import { ArrowUpRight, Moon, Sun } from 'lucide-react';
 import { Link } from 'react-router';
+import { DOCUMENTATION_URL } from '../../app/resources';
 import { useTheme } from '../../hooks/useTheme';
-
-export const DOCUMENTATION_URL = 'https://materialize.com/docs/';
 
 export function AppHeader() {
   const { theme, toggleTheme } = useTheme();

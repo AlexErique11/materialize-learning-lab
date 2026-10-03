@@ -136,13 +136,6 @@
     color: var(--page-accent);
   }
 
-  .learning-path-marker-diamond {
-    width: 22px;
-    height: 22px;
-    margin-left: 2px;
-    fill: currentColor;
-  }
-
   .learning-path-page h3 {
     font-size: 15px;
     font-weight: 650;
@@ -255,35 +248,6 @@
   .learning-path-resource:hover {
     border-color: var(--accent);
     background: var(--accent-soft);
-  }
-
-  .learning-path-faq {
-    margin-top: 24px;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 24px;
-    background: var(--surface);
-  }
-
-  .learning-path-faq details {
-    margin-top: 16px;
-    border-top: 1px solid var(--border);
-    padding-top: 16px;
-  }
-
-  .learning-path-faq summary {
-    font-weight: 600;
-  }
-
-  .learning-path-faq p {
-    max-width: 75ch;
-    margin-top: 12px;
-    color: var(--text-muted);
-  }
-
-  .learning-path-faq a {
-    color: var(--accent);
-    text-decoration: underline;
   }
 
   :root[data-theme='dark'] .app-shell-learning-path .app-main {

@@ -1,14 +1,17 @@
+import type { DocumentationLink } from '../app/resources';
+
 export interface ChapterDefinition {
   readonly number: number;
   readonly slug: string;
   readonly title: string;
   readonly shortTitle: string;
   readonly description: string;
-  readonly documentationLinks?: readonly { readonly title: string; readonly href: string }[];
+  readonly introduction?: string;
+  readonly documentationLinks?: readonly DocumentationLink[];
   readonly optional?: boolean;
 }
 
-// Chapter boundaries and order come from CURRICULUM.md. No exercises are registered yet.
+// Chapter boundaries and order come from CURRICULUM.md; content slots live in chapterOutline.ts.
 export const chapters: readonly ChapterDefinition[] = [
   {
     number: 1,
@@ -44,6 +47,7 @@ export const chapters: readonly ChapterDefinition[] = [
     title: 'Time in Materialize — Temporal Filters',
     shortTitle: 'Time in Materialize',
     description: 'Explore logical time and how maintained results change without new input.',
+    introduction: 'Learn how time and updates flow through Materialize. In this chapter you will explore logical time, order lifecycles, and how Materialize processes and maintains up-to-date results in real time.',
     documentationLinks: [
       { title: 'Temporal filters (time windows)', href: 'https://materialize.com/docs/transform-data/patterns/temporal-filters/' },
       { title: 'now() and mz_now() functions', href: 'https://materialize.com/docs/sql/functions/now_and_mz_now/' },
