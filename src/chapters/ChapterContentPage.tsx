@@ -1,10 +1,7 @@
 import { ArrowRight } from 'lucide-react';
 import { Link, useOutletContext, useParams } from 'react-router';
 import { ChapterPagination } from '../components/chapter/ChapterPagination';
-import { ContentPlaceholder } from '../components/chapter/ContentPlaceholder';
-import { Breadcrumbs } from '../components/layout/Breadcrumbs';
-import { PageContainer } from '../components/layout/PageContainer';
-import { PageHeader } from '../components/layout/PageHeader';
+import { GuidedLabScreen } from '../labs/components/GuidedLabScreen';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import {
   chapterContentPath,
@@ -12,7 +9,7 @@ import {
   findChapterSection,
   getChapterPages,
 } from './chapterOutline';
-import { chapterPath, formatChapterNumber, type ChapterDefinition } from './chapterRegistry';
+import { chapterPath, type ChapterDefinition } from './chapterRegistry';
 
 export function ChapterContentPage() {
   const chapter = useOutletContext<ChapterDefinition>();
@@ -35,29 +32,7 @@ export function ChapterContentPage() {
     : `${section.title} content`;
 
   return (
-    <PageContainer
-      fitViewport={Boolean(page)}
-      tone={section.slug === 'exercises' ? 'practice' : 'learning'}
-    >
-      {!page && (
-        <Breadcrumbs
-          items={[
-            { label: 'Learning path', to: '/' },
-            { label: 'Guided labs', to: '/labs' },
-            { label: chapter.shortTitle, to: chapterPath(chapter) },
-            { label: section.title },
-          ]}
-        />
-      )}
-      <PageHeader
-        title={title}
-        eyebrow={
-          <span className="eyebrow">
-            Chapter {formatChapterNumber(chapter.number)} · {section.title}
-          </span>
-        }
-      />
-      <ContentPlaceholder title={placeholderTitle} />
+    <GuidedLabScreen chapter={chapter} title={title} regionLabel={placeholderTitle}>
       {!page && section.pages.length > 0 && (
         <ol className="chapter-content-list" aria-label={`${section.title} pages`}>
           {section.pages.map((item) => (
@@ -84,6 +59,6 @@ export function ChapterContentPage() {
               : undefined
         }
       />
-    </PageContainer>
+    </GuidedLabScreen>
   );
 }

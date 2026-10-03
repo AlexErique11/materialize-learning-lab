@@ -18,7 +18,7 @@
   --warning: #886014;
   --danger: #b43542;
   --overlay: rgb(22 18 30 / 35%);
-  --header-height: 4.25rem;
+  --header-height: 54px;
   --footer-height: 2.75rem;
   --chapter-nav-height: 3.25rem;
 }
@@ -41,10 +41,4 @@
   --warning: #e3c16f;
   --danger: #f1919c;
   --overlay: rgb(6 4 10 / 65%);
-}
-
-@media (max-width: 767px) {
-  :root {
-    --header-height: 6.5rem;
-  }
 }

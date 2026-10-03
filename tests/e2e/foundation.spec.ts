@@ -19,7 +19,7 @@ test('learning path, chapter navigation, and browser history', async ({ page }, 
   await page.screenshot({ path: testInfo.outputPath('learning-path.png'), fullPage: true });
   await page.getByRole('main').getByRole('link', { name: 'Guided labs', exact: true }).click();
   await expect(page).toHaveURL(chapterPath(firstChapter));
-  await expect(page.getByRole('heading', { name: firstChapter.title, exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: firstChapter.shortTitle, exact: true })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Page navigation' })).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath('chapter-overview.png'), fullPage: true });
   await page.goBack();
@@ -27,21 +27,22 @@ test('learning path, chapter navigation, and browser history', async ({ page }, 
   await page.goForward();
   await expect(page).toHaveURL(chapterPath(firstChapter));
   await page.reload();
-  await expect(page.getByRole('heading', { name: firstChapter.title, exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: firstChapter.shortTitle, exact: true })).toBeVisible();
   await page.goto('/');
-  await page.getByRole('navigation', { name: 'Main navigation' }).getByRole('link', { name: 'Guided labs', exact: true }).click();
-  await expect(page).toHaveURL(chapterPath(firstChapter));
+  await expect(page.getByRole('banner').getByText('Learning Lab', { exact: true })).toBeVisible();
+  await expect(page.getByRole('banner').getByRole('link', { name: 'Community' })).toBeVisible();
   await page.goto('/labs');
   await expect(page).toHaveURL(chapterPath(firstChapter));
-  await expect(page.getByRole('heading', { name: firstChapter.title, exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: firstChapter.shortTitle, exact: true })).toBeVisible();
 });
 
 test('empty lectures and exercises form one next/previous sequence', async ({ page }) => {
   await page.goto(chapterPath(firstChapter));
-  await expect(page.getByRole('heading', { name: "What you'll learn" })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Lab workspace' }).getByText('To be done', { exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: /preview/i })).toHaveCount(0);
   await expect(page.getByRole('navigation', { name: 'Page navigation' })).toHaveCount(0);
-  await page.getByRole('main').getByRole('link', { name: 'Tutorial', exact: true }).click();
+  await page.getByRole('button', { name: 'SQL & Objectives', exact: true }).click();
+  await page.getByRole('dialog', { name: 'SQL & Objectives' }).getByRole('link', { name: 'Tutorial', exact: true }).click();
   const pages = getChapterPages(firstChapter);
   for (const content of pages) {
     await page
@@ -50,14 +51,15 @@ test('empty lectures and exercises form one next/previous sequence', async ({ pa
       .click();
     await expect(page).toHaveURL(chapterContentPath(firstChapter, content));
     await expect(page.getByRole('heading', { name: content.title, exact: true })).toBeVisible();
-    await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toHaveCount(0);
+    await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible();
     await expect(
       page.getByRole('region', {
         name: content.sectionSlug === 'tutorial' ? 'Lecture content' : 'Exercise content',
         exact: true,
       }),
     ).toBeVisible();
-    await expect(page.getByRole('button', { name: /Run|Reset|SQL/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Run', exact: true })).toBeDisabled();
+    await expect(page.getByRole('button', { name: 'SQL & Objectives', exact: true })).toBeEnabled();
   }
   await expect(
     page
@@ -82,7 +84,8 @@ test('empty lectures and exercises form one next/previous sequence', async ({ pa
 
 test('section overviews have their own URLs and only registered pages', async ({ page }) => {
   await page.goto(chapterPath(firstChapter));
-  await page.getByRole('main').getByRole('link', { name: 'Tutorial', exact: true }).click();
+  await page.getByRole('button', { name: 'SQL & Objectives', exact: true }).click();
+  await page.getByRole('dialog', { name: 'SQL & Objectives' }).getByRole('link', { name: 'Tutorial', exact: true }).click();
   await expect(page).toHaveURL(chapterSectionPath(firstChapter, 'tutorial'));
   await expect(page.getByRole('list', { name: 'Tutorial pages' }).getByRole('link')).toHaveCount(2);
   await page
@@ -105,7 +108,7 @@ test('sidebar subsections are keyboard-operable and reflect the active page', as
   page,
   isMobile,
 }) => {
-  await page.goto(chapterPath(firstChapter));
+  await page.goto(chapterSectionPath(firstChapter, 'tutorial'));
   const sidebar = page.getByRole('complementary', { name: 'Guided labs navigation' });
   const mobileToggle = page.locator('.mobile-sidebar > summary');
   if (isMobile) {
@@ -144,6 +147,7 @@ test('chapter navigation remains accessible when the sidebar is collapsed', asyn
 }, testInfo) => {
   await page.goto(chapterPath(firstChapter));
   const sidebar = page.getByRole('complementary', { name: 'Guided labs navigation' });
+  await expect(sidebar.getByText('Current lab', { exact: true })).toHaveCount(0);
   if (isMobile) {
     const navigationToggle = page.locator('summary').filter({ hasText: 'Chapter navigation' });
     await navigationToggle.focus();
@@ -158,20 +162,31 @@ test('chapter navigation remains accessible when the sidebar is collapsed', asyn
     await page.keyboard.press('Enter');
     const expand = sidebar.getByRole('button', { name: 'Expand chapter navigation' });
     await expect(expand).toHaveAttribute('aria-expanded', 'false');
-    await expect(sidebar.getByRole('navigation', { name: 'Chapters' })).not.toBeVisible();
+    await expect(sidebar.getByRole('navigation', { name: 'Chapters' })).toBeVisible();
+    await expect(sidebar.locator('.desktop-sidebar .chapter-link-label')).toHaveCount(0);
+    const compactFirstChapter = sidebar.getByRole('link', { name: `01 ${firstChapter.shortTitle}`, exact: true });
+    await expect(compactFirstChapter).toHaveAttribute('aria-current', 'page');
+    const compactSecondChapter = coreChapters[1];
+    if (!compactSecondChapter) throw new Error('The curriculum must contain a second chapter.');
+    await sidebar.getByRole('link', { name: `02 ${compactSecondChapter.shortTitle}`, exact: true }).click();
+    await expect(page).toHaveURL(chapterPath(compactSecondChapter));
+    await expect(expand).toHaveAttribute('aria-expanded', 'false');
+    await expect(sidebar.getByRole('link', { name: `02 ${compactSecondChapter.shortTitle}`, exact: true })).toHaveAttribute('aria-current', 'page');
+    await compactFirstChapter.click();
     await expect(page).toHaveURL(chapterPath(firstChapter));
     const collapsedBounds = await content.boundingBox();
     expect(collapsedBounds).not.toBeNull();
     if (expandedBounds && collapsedBounds)
       expect(collapsedBounds.width).toBeGreaterThan(expandedBounds.width);
-    await page.getByRole('main').getByRole('link', { name: 'Tutorial', exact: true }).click();
+    await page.getByRole('button', { name: 'SQL & Objectives', exact: true }).click();
+    await page.getByRole('dialog', { name: 'SQL & Objectives' }).getByRole('link', { name: 'Tutorial', exact: true }).click();
     await expect(expand).toHaveAttribute('aria-expanded', 'false');
     await page
       .getByRole('navigation', { name: 'Page navigation' })
       .getByRole('link', { name: /Next\s+Lecture 1/ })
       .click();
     await expect(page.getByRole('heading', { name: 'Lecture 1', exact: true })).toBeVisible();
-    await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toHaveCount(0);
+    await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible();
     await expect(expand).toHaveAttribute('aria-expanded', 'false');
     await page.screenshot({
       path: testInfo.outputPath('lecture-sidebar-collapsed.png'),
@@ -186,7 +201,7 @@ test('chapter navigation remains accessible when the sidebar is collapsed', asyn
   if (!secondChapter) throw new Error('The learning sequence must have a second chapter.');
   await sidebar.getByRole('link', { name: new RegExp(secondChapter.shortTitle) }).click();
   await expect(page).toHaveURL(chapterPath(secondChapter));
-  await expect(page.getByRole('heading', { name: secondChapter.title, exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: secondChapter.shortTitle, exact: true })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Page navigation' })).toHaveCount(0);
   if (isMobile) await expect(page.locator('.mobile-sidebar')).not.toHaveAttribute('open', '');
   else
@@ -205,6 +220,35 @@ test('explicit theme preference survives reload', async ({ page }, testInfo) => 
   await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.screenshot({ path: testInfo.outputPath('learning-path-dark.png'), fullPage: true });
+  await page.getByRole('button', { name: 'Switch to light mode' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
+});
+
+test('every guided lab uses the workspace and its reference controls remain accessible', async ({ page }) => {
+  for (const chapter of coreChapters) {
+    await page.goto(chapterPath(chapter));
+    await expect(page.getByRole('heading', { name: chapter.shortTitle, exact: true })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Lab workspace' }).getByText('To be done', { exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Start guided run', exact: true })).toBeDisabled();
+  }
+
+  await page.goto(chapterPath(firstChapter));
+  const referenceButton = page.getByRole('button', { name: 'SQL & Objectives', exact: true });
+  const tipButton = page.getByRole('button', { name: 'Open SQL & Objectives', exact: true });
+  const dialog = page.getByRole('dialog', { name: 'SQL & Objectives' });
+  for (const trigger of [referenceButton, tipButton]) {
+    await trigger.click();
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('link', { name: 'Tutorial', exact: true })).toHaveAttribute('href', chapterSectionPath(firstChapter, 'tutorial'));
+    await expect(dialog.getByRole('button', { name: 'Close SQL & Objectives' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(dialog).not.toBeVisible();
+    await expect(trigger).toBeFocused();
+  }
+  await page.getByRole('button', { name: 'Switch to dark mode' }).click();
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
+  await page.reload();
+  await expect(page.getByRole('button', { name: 'Switch to dark mode' })).toHaveAttribute('aria-pressed', 'true');
   await page.getByRole('button', { name: 'Switch to light mode' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 });
@@ -261,7 +305,7 @@ test('chapter pages adapt at desktop, laptop, tablet, and mobile widths', async 
     await page.screenshot({ path: testInfo.outputPath(`lecture-${width}.png`), fullPage: true });
   }
   await page.goto(chapterPath(firstChapter));
-  await expect(page.getByRole('heading', { name: "What you'll learn" })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Lab workspace' }).getByText('To be done', { exact: true })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('chapter-mobile.png'), fullPage: true });
   await page.getByRole('button', { name: 'Switch to dark mode' }).click();
   await page.screenshot({
@@ -332,7 +376,7 @@ test('learning path and content pages fit desktop viewports without hiding navig
           dimensions.height,
           `${route.path} at ${viewport.width} × ${viewport.height}`,
         ).toBeLessThanOrEqual(dimensions.viewportHeight);
-        expect(dimensions.footerBottom).toBeLessThanOrEqual(dimensions.viewportHeight);
+        await expect(page.getByRole('contentinfo')).toHaveCount(0);
         const navigation = await page
           .getByRole('navigation', { name: 'Page navigation' })
           .boundingBox();
@@ -347,7 +391,7 @@ test('learning path and content pages fit desktop viewports without hiding navig
             `Learning path at ${viewport.width} × ${viewport.height}`,
           ).toBeLessThanOrEqual(dimensions.viewportHeight);
         }
-        await expect(page.getByRole('link', { name: /Community/ })).toHaveCount(0);
+        await expect(page.getByRole('region', { name: 'Help & resources' }).getByRole('link', { name: /Community/ })).toHaveCount(0);
         const documentation = page
           .getByRole('region', { name: 'Help & resources' })
           .getByRole('link', { name: /Documentation/ });

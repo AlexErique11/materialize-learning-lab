@@ -15,7 +15,7 @@ import {
 import { IconButton } from '../ui/IconButton';
 import { ProgressBar } from '../ui/ProgressBar';
 
-function ChapterLinks({ items }: { items: readonly ChapterDefinition[] }) {
+function ChapterLinks({ items, compact = false }: { items: readonly ChapterDefinition[]; compact?: boolean }) {
   const { chapterSlug } = useParams();
   const { pathname } = useLocation();
   return (
@@ -26,11 +26,13 @@ function ChapterLinks({ items }: { items: readonly ChapterDefinition[] }) {
             to={chapterPath(chapter)}
             end
             className={chapter.slug === chapterSlug ? 'chapter-selected' : undefined}
+            aria-label={compact ? `${formatChapterNumber(chapter.number)} ${chapter.shortTitle}` : undefined}
+            title={compact ? chapter.shortTitle : undefined}
           >
             <span className="chapter-link-number">{formatChapterNumber(chapter.number)}</span>
-            <span>{chapter.shortTitle}</span>
+            {!compact && <span className="chapter-link-label">{chapter.shortTitle}</span>}
           </NavLink>
-          {chapter.slug === chapterSlug && (
+          {!compact && chapter.slug === chapterSlug && pathname !== chapterPath(chapter) && (
             <div className="chapter-sections">
               {getChapterSections(chapter).map((section) => (
                 <details key={`${pathname}/${section.slug}`} className="chapter-section" open>
@@ -69,24 +71,25 @@ function ChapterLinks({ items }: { items: readonly ChapterDefinition[] }) {
   );
 }
 
-function SidebarContent() {
+function SidebarContent({ compact = false }: { compact?: boolean }) {
   return (
-    <div className="sidebar-content">
-      <Link to="/" className="sidebar-back">
+    <div className={`sidebar-content${compact ? ' sidebar-content-compact' : ''}`}>
+      {!compact && <>
+        <Link to="/" className="sidebar-back">
         <ArrowLeft size={14} aria-hidden="true" /> Learning path
       </Link>
-      <Link to="/labs" className="mt-7 flex items-center gap-2 font-semibold">
-        <BookOpen size={17} aria-hidden="true" /> Guided labs
+      <Link to="/labs" className="sidebar-title">
+        Guided labs
       </Link>
-      <div className="mb-5 mt-4">
-        <p className="mb-2 text-xs text-text-muted">0/{coreChapters.length} completed</p>
+      <div className="sidebar-progress">
         <ProgressBar value={0} total={coreChapters.length} label="Core chapters completed" />
+        <p>0/{coreChapters.length} completed</p>
       </div>
+      </>}
       <nav aria-label="Chapters">
-        <p className="eyebrow mb-2">Core chapters</p>
-        <ChapterLinks items={coreChapters} />
-        <p className="eyebrow mb-2 mt-6">Optional · advanced</p>
-        <ChapterLinks items={advancedChapters} />
+        <ChapterLinks items={coreChapters} compact={compact} />
+        {!compact && <p className="eyebrow mb-2 mt-6">Optional · advanced</p>}
+        <ChapterLinks items={advancedChapters} compact={compact} />
       </nav>
     </div>
   );
@@ -101,9 +104,8 @@ export function ChapterSidebar({ collapsed, onToggle }: ChapterSidebarProps) {
   const { pathname } = useLocation();
   return (
     <aside className="chapter-sidebar" aria-label="Guided labs navigation">
-      <div className="desktop-sidebar">
+      <div className="desktop-sidebar" data-collapsed={collapsed}>
         <div className="sidebar-toggle-row">
-          {!collapsed && <span>Chapter navigation</span>}
           <IconButton
             label={collapsed ? 'Expand chapter navigation' : 'Collapse chapter navigation'}
             aria-expanded={!collapsed}
@@ -117,8 +119,8 @@ export function ChapterSidebar({ collapsed, onToggle }: ChapterSidebarProps) {
             )}
           </IconButton>
         </div>
-        <div id="desktop-chapter-navigation" hidden={collapsed}>
-          <SidebarContent />
+        <div id="desktop-chapter-navigation">
+          <SidebarContent compact={collapsed} />
         </div>
       </div>
       <details key={pathname} className="mobile-sidebar">

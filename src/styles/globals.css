@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @import './tokens.css';
 @import './learning-path.css';
+@import './guided-labs.css';
+@import './app-header.css';
 
 @theme inline {
   --color-background: var(--background);
