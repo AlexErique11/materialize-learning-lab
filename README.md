@@ -1,4 +1,4 @@
-# Materialize Learning Lab
+# Materialize Learning Lab   
 
 A static, browser-based learning product for developers and data engineers who
 know SQL and want to understand Materialize. [CLAUDE.md](./CLAUDE.md) defines the
