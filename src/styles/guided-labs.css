@@ -8,6 +8,7 @@
   --lab-border: #e5e7ee;
   --lab-purple: #5631c5;
   --lab-tint: #f1edfc;
+  --lab-tree-line: color-mix(in srgb, var(--lab-muted) 38%, var(--lab-sidebar));
   background: var(--lab-surface);
   color: var(--lab-text);
   font-family: Arial, Helvetica, sans-serif;
@@ -21,7 +22,7 @@
   --lab-purple: #b18bf3;
   --lab-tint: #322744;
 }
-.app-shell-guided-labs .learning-area { grid-template-columns: 244px minmax(0, 1fr); }
+.app-shell-guided-labs .learning-area { grid-template-columns: 318px minmax(0, 1fr); }
 .app-shell-guided-labs .learning-area[data-sidebar-collapsed='true'] { grid-template-columns: 56px minmax(0, 1fr); }
 .app-shell-guided-labs .chapter-sidebar { border-color: var(--lab-border); background: var(--lab-sidebar); scrollbar-width: thin; }
 .app-shell-guided-labs .desktop-sidebar { position: relative; }
@@ -29,22 +30,56 @@
 .app-shell-guided-labs .sidebar-toggle-row .icon-button { width: 25px; height: 25px; min-height: 25px; opacity: .35; }
 .app-shell-guided-labs .sidebar-toggle-row .icon-button:hover,
 .app-shell-guided-labs .sidebar-toggle-row .icon-button:focus-visible { opacity: 1; }
-.app-shell-guided-labs .sidebar-content { padding: 18px 13px 22px; }
-.app-shell-guided-labs .sidebar-back { margin-left: 14px; font-size: 13px; gap: 7px; color: var(--lab-muted); }
-.sidebar-title { display: block; margin: 0 14px; font-size: 18px; font-weight: 700; }
-.sidebar-progress { margin: 13px 6px 17px 14px; }
+.app-shell-guided-labs .sidebar-content { padding: 18px 16px 22px; }
+.app-shell-guided-labs .sidebar-back { margin-left: 16px; font-size: 14px; gap: 7px; color: var(--lab-muted); }
+.sidebar-title { display: block; margin: 0 16px; font-size: 20px; font-weight: 700; line-height: 1.2; }
+.sidebar-progress { margin: 6px 6px 14px 16px; }
 .sidebar-progress .progress-bar { height: 5px; border-radius: 4px; background: var(--lab-border); }
 .sidebar-progress .progress-bar::-webkit-progress-bar { background: var(--lab-border); }
 .sidebar-progress p { margin-top: 5px; font-size: 12px; color: var(--lab-muted); }
 .app-shell-guided-labs .chapter-links { gap: 1px; }
-.app-shell-guided-labs .chapter-links > li > a { position: relative; min-height: 47px; gap: 13px; padding: 7px 7px 7px 14px; border: 0; border-radius: 5px; color: var(--lab-muted); font-size: 13px; line-height: 1.35; }
-.app-shell-guided-labs .chapter-links > li > a:hover { background: var(--lab-tint); }
-.app-shell-guided-labs .chapter-links > li > a.chapter-selected { color: var(--lab-purple); background: var(--lab-tint); }
-.app-shell-guided-labs .chapter-links > li > a.chapter-selected::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 3px; border-radius: 3px; background: var(--lab-purple); }
+.chapter-link-row { display: flex; align-items: center; border-radius: 10px; }
+.chapter-link-row:hover { background: var(--lab-tint); }
+.app-shell-guided-labs .chapter-link-row > a { flex: 1; min-width: 0; min-height: 42px; gap: 16px; padding: 5px 8px 5px 12px; border: 0; border-radius: 5px; color: var(--lab-muted); font-size: 14px; line-height: 1.35; }
+.app-shell-guided-labs .chapter-link-row > a:hover { background: transparent; }
+.app-shell-guided-labs .chapter-link-row > a.chapter-selected { color: var(--lab-purple); background: transparent; }
+.chapter-branch-selected { position: relative; }
+.chapter-branch-selected > .chapter-link-row { position: relative; background: var(--lab-tint); border-radius: 10px; }
+.chapter-branch-selected > .chapter-link-row::before { content: ''; position: absolute; inset: 0 auto 0 0; width: 3px; border-radius: 3px; background: var(--lab-purple); }
+.chapter-branch-toggle-spacer { width: 36px; flex-shrink: 0; }
+.chapter-branch-toggle { display: grid; place-items: center; flex-shrink: 0; width: 32px; min-height: 36px; margin-right: 4px; color: var(--lab-text); border-radius: 4px; }
+.chapter-branch-toggle[aria-expanded='false'] svg { transform: rotate(-90deg); }
 .app-shell-guided-labs .chapter-link-number { display: grid; place-items: center; width: 32px; height: 32px; border: 1px solid var(--lab-border); border-radius: 6px; color: var(--lab-text); background: var(--lab-surface); font-family: inherit; font-size: 12px; font-weight: 600; }
 .app-shell-guided-labs .chapter-selected .chapter-link-number { color: var(--lab-purple); border-color: color-mix(in srgb, var(--lab-purple) 15%, var(--lab-border)); background: transparent; }
-.chapter-selected .chapter-link-label { font-weight: 700; }
-.app-shell-guided-labs .chapter-sections { margin-left: 29px; }
+.chapter-link-label { font-weight: 500; }
+.app-shell-guided-labs .chapter-sections { margin: 4px 8px 10px 36px; padding: 0 0 0 28px; border: 0; }
+.chapter-section { position: relative; display: flow-root; }
+.chapter-section::before,
+.chapter-overview-link::after { content: ''; position: absolute; top: 0; bottom: 0; left: -28px; border-left: 2px solid var(--lab-tree-line); }
+.chapter-section:last-child::before { bottom: auto; height: 18px; }
+.app-shell-guided-labs .chapter-overview-link,
+.app-shell-guided-labs .chapter-section > summary { position: relative; min-height: 36px; padding: 6px 8px; gap: 12px; border: 0; color: var(--lab-muted); font-size: 13px; font-weight: 400; }
+.app-shell-guided-labs .chapter-overview-link { padding-left: 8px; border-radius: 0; }
+.chapter-group-dot { position: absolute; z-index: 1; left: -34px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; border: 2px solid var(--lab-tree-line); border-radius: 50%; background: var(--lab-sidebar); }
+.chapter-overview-link[aria-current='page'] .chapter-group-dot { border-color: var(--lab-purple); background: var(--lab-purple); }
+.chapter-section > summary > svg { flex-shrink: 0; }
+.chapter-section > summary > .chapter-section-chevron { color: var(--lab-text); transform: none; }
+.chapter-section:not([open]) > summary > .chapter-section-chevron { transform: rotate(-90deg); }
+.chapter-section > summary > .chapter-section-forward { transform: none; }
+.chapter-section[open] > summary > .chapter-section-forward { display: none; }
+.app-shell-guided-labs .chapter-pages { margin: 0 0 4px 12px; padding: 0 0 0 16px; border: 0; }
+.chapter-pages > li { position: relative; }
+.chapter-pages > li::after { content: ''; position: absolute; left: -16px; top: 0; bottom: 0; border-left: 2px solid var(--lab-tree-line); }
+.chapter-pages > li:last-child::after { bottom: auto; height: 50%; }
+.app-shell-guided-labs .chapter-pages a { min-height: 32px; padding: 0; gap: 0; border: 0; background: transparent; font-size: 13px; line-height: 1.4; }
+.chapter-page-label { flex: 1; min-width: 0; padding: 6px 10px; border-radius: 0; font-weight: 400; }
+.app-shell-guided-labs .chapter-pages a:hover { background: transparent; }
+.chapter-pages a:hover .chapter-page-label { background: var(--lab-tint); }
+.app-shell-guided-labs .chapter-pages a[aria-current='page'] { color: var(--lab-purple); background: transparent; }
+.chapter-pages a[aria-current='page'] .chapter-page-label,
+.app-shell-guided-labs .chapter-overview-link[aria-current='page'] { color: var(--lab-purple); background: var(--lab-tint); }
+.chapter-page-dot { position: absolute; z-index: 1; left: -22px; top: 50%; transform: translateY(-50%); width: 14px; height: 14px; border: 2px solid var(--lab-tree-line); border-radius: 50%; background: var(--lab-sidebar); }
+.chapter-pages a[aria-current='page'] .chapter-page-dot { border-color: var(--lab-purple); background: var(--lab-purple); }
 .app-shell-guided-labs .sidebar-content > nav > .eyebrow { margin: 12px 14px 5px; font-size: 9px; }
 .app-shell-guided-labs .desktop-sidebar[data-collapsed='true'] .sidebar-toggle-row {
   position: static;
@@ -55,13 +90,12 @@
   opacity: 1;
 }
 .app-shell-guided-labs .sidebar-content-compact { padding: 0 7px 14px; }
-.app-shell-guided-labs .sidebar-content-compact .chapter-links > li > a {
+.app-shell-guided-labs .sidebar-content-compact .chapter-link-row > a {
   min-height: 44px;
   justify-content: center;
   padding: 6px 0;
   background: transparent;
 }
-.app-shell-guided-labs .sidebar-content-compact .chapter-links > li > a.chapter-selected::before { display: none; }
 .app-shell-guided-labs .sidebar-content-compact .chapter-selected .chapter-link-number {
   color: var(--accent-contrast);
   border-color: var(--lab-purple);
@@ -73,7 +107,12 @@
   padding-top: 8px;
 }
 .guided-lab-page { display: flex; flex-direction: column; min-height: calc(100dvh - var(--header-height)); padding: 14px 28px 22px; }
-.guided-lab-page > .breadcrumbs { margin-bottom: 11px; font-size: 13px; color: var(--lab-muted); }
+.guided-lab-top-row { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 11px; }
+.guided-lab-top-row > .breadcrumbs { flex: 1; min-width: 0; margin: 0; font-size: 13px; color: var(--lab-muted); }
+.guided-lab-pagination { display: flex; flex-shrink: 0; align-items: center; gap: 24px; }
+.guided-lab-pagination a { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 32px; padding: 5px 0; color: var(--lab-purple); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.guided-lab-pagination a > svg { flex-shrink: 0; }
+.guided-lab-pagination a:hover > span { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 1.5px; }
 .guided-lab-page .breadcrumbs ol { gap: 17px; }
 .guided-lab-page .breadcrumbs li { gap: 14px; }
 .guided-lab-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; }
@@ -99,7 +138,6 @@
 .guided-lab-tip > button:hover { text-decoration: underline; }
 .guided-lab-reference-links { display: flex; gap: 12px; margin-top: 20px; }
 .guided-lab-reference-links a { display: flex; align-items: center; gap: 12px; border: 1px solid var(--lab-border); border-radius: 5px; padding: 10px 14px; color: var(--lab-purple); }
-.guided-lab-page-navigation .adjacent-chapters { margin: 0 0 14px; padding: 8px 14px; border-color: var(--lab-border); background: var(--lab-sidebar); }
 .guided-lab-page-navigation .chapter-content-list { display: flex; flex-wrap: wrap; gap: 12px; margin: 0 0 14px; }
 .guided-lab-page-navigation .chapter-content-list a { min-height: 40px; padding: 8px 14px; font-size: 13px; }
 @media (max-width: 1350px) {
@@ -115,6 +153,9 @@
 }
 @media (max-width: 639px) {
   .guided-lab-page { padding: 14px 16px 16px; }
+  .guided-lab-top-row { flex-wrap: wrap; gap: 8px; }
+  .guided-lab-top-row > .breadcrumbs { flex-basis: 100%; }
+  .guided-lab-pagination { margin-left: auto; }
   .guided-lab-title h1 { font-size: 28px; }
   .guided-lab-title > p { font-size: 13px; }
   .guided-lab-controls { flex-wrap: wrap; gap: 8px; width: 100%; }

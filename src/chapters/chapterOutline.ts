@@ -5,6 +5,8 @@ export type ChapterSectionSlug = 'tutorial' | 'exercises';
 interface ContentPageDefinition {
   slug: string;
   title: string;
+  description?: string;
+  durationMinutes?: number;
 }
 
 export interface ChapterSectionDefinition {
@@ -29,6 +31,34 @@ const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
     exercises: [
       { slug: 'exercise-1', title: 'Exercise 1' },
       { slug: 'exercise-2', title: 'Exercise 2' },
+    ],
+  },
+  'time-in-materialize': {
+    tutorial: [
+      {
+        slug: 'order-lifecycles',
+        title: 'Order lifecycles',
+        description: 'Explore how time and updates flow through Materialize with a real-time order example.',
+        durationMinutes: 15,
+      },
+      {
+        slug: 'working-with-logical-time',
+        title: 'Working with logical time',
+        description: 'Learn how to query and reason about logical time in Materialize.',
+        durationMinutes: 20,
+      },
+    ],
+    exercises: [
+      {
+        slug: 'query-order-timelines',
+        title: 'Query order timelines',
+        description: 'Write queries to inspect the timeline of orders and their state changes.',
+      },
+      {
+        slug: 'build-a-real-time-dashboard',
+        title: 'Build a real-time dashboard',
+        description: 'Create a live view that tracks orders and their lifecycle using Materialize.',
+      },
     ],
   },
 };

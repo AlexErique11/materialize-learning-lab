@@ -32,20 +32,8 @@ export function ChapterContentPage() {
     : `${section.title} content`;
 
   return (
-    <GuidedLabScreen chapter={chapter} title={title} regionLabel={placeholderTitle}>
-      {!page && section.pages.length > 0 && (
-        <ol className="chapter-content-list" aria-label={`${section.title} pages`}>
-          {section.pages.map((item) => (
-            <li key={item.slug}>
-              <Link to={chapterContentPath(chapter, { ...item, sectionSlug: section.slug })}>
-                {item.title}
-                <ArrowRight size={16} aria-hidden="true" />
-              </Link>
-            </li>
-          ))}
-        </ol>
-      )}
-      <ChapterPagination
+    <GuidedLabScreen chapter={chapter} title={title} regionLabel={placeholderTitle}
+      navigation={<ChapterPagination
         previous={
           previous
             ? { to: chapterContentPath(chapter, previous), title: previous.title }
@@ -58,7 +46,20 @@ export function ChapterContentPage() {
               ? { to: chapterPath(chapter), title: chapter.shortTitle, label: 'Back to chapter' }
               : undefined
         }
-      />
+      />}
+    >
+      {!page && section.pages.length > 0 && (
+        <ol className="chapter-content-list" aria-label={`${section.title} pages`}>
+          {section.pages.map((item) => (
+            <li key={item.slug}>
+              <Link to={chapterContentPath(chapter, { ...item, sectionSlug: section.slug })}>
+                {item.title}
+                <ArrowRight size={16} aria-hidden="true" />
+              </Link>
+            </li>
+          ))}
+        </ol>
+      )}
     </GuidedLabScreen>
   );
 }

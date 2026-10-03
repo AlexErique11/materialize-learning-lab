@@ -1,4 +1,4 @@
-import { Moon, Sun } from 'lucide-react';
+import { ArrowUpRight, Moon, Sun } from 'lucide-react';
 import { Link } from 'react-router';
 import { useTheme } from '../../hooks/useTheme';
 
@@ -12,7 +12,7 @@ export function AppHeader() {
       <div className="app-header-inner">
         <Link to="/" className="brand" aria-label="Materialize Learning Lab home">
           <svg viewBox="27 39 146 122" className="brand-mark" aria-hidden="true">
-            <image href="/materialize-logo.png" width="200" height="200" />
+            <image href="/materialize-logo-transparent.png" width="200" height="200" />
           </svg>
           <span>
             <strong>Materialize</strong>
@@ -20,10 +20,9 @@ export function AppHeader() {
           </span>
         </Link>
         <div className="header-actions">
-          <a href={DOCUMENTATION_URL} className="docs-link">
-            Docs
+          <a href={DOCUMENTATION_URL} className="docs-link" target="_blank" rel="noopener noreferrer">
+            Docs<ArrowUpRight size={15} aria-hidden="true" />
           </a>
-          <a href="https://materialize.com/s/chat" className="docs-link">Community</a>
           <span className="header-divider" aria-hidden="true" />
           <div className="lab-theme-switch" role="group" aria-label="Color theme">
             <button

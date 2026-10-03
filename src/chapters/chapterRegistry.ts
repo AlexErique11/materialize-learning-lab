@@ -4,6 +4,7 @@ export interface ChapterDefinition {
   readonly title: string;
   readonly shortTitle: string;
   readonly description: string;
+  readonly documentationLinks?: readonly { readonly title: string; readonly href: string }[];
   readonly optional?: boolean;
 }
 
@@ -43,6 +44,10 @@ export const chapters: readonly ChapterDefinition[] = [
     title: 'Time in Materialize — Temporal Filters',
     shortTitle: 'Time in Materialize',
     description: 'Explore logical time and how maintained results change without new input.',
+    documentationLinks: [
+      { title: 'Temporal filters (time windows)', href: 'https://materialize.com/docs/transform-data/patterns/temporal-filters/' },
+      { title: 'now() and mz_now() functions', href: 'https://materialize.com/docs/sql/functions/now_and_mz_now/' },
+    ],
   },
   {
     number: 6,

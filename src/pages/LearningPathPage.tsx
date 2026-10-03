@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   ArrowRight, ChevronRight, ChevronsRight, CircleArrowRight, CircleHelp, FileText,
 } from 'lucide-react';
@@ -23,8 +22,6 @@ const featuredChallenges = [
 ];
 
 export function LearningPathPage() {
-  const [faqOpen, setFaqOpen] = useState(false);
-
   return (
     <PageContainer className="learning-path-page">
       <PageHeader
@@ -84,32 +81,17 @@ export function LearningPathPage() {
       <section className="learning-path-resources" aria-labelledby="resources-title">
         <header><h2 id="resources-title">Help &amp; resources</h2><p>Everything you need to succeed on your learning journey.</p></header>
         <div className="learning-path-resource-grid">
-          <a className="learning-path-resource" href={DOCUMENTATION_URL}>
+          <a className="learning-path-resource" href={DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">
             <FileText size={32} aria-hidden="true" />
             <div><h3>Documentation</h3><p>Read the full Materialize docs.</p></div>
             <ArrowRight className="learning-path-arrow" size={23} aria-hidden="true" />
           </a>
-          <button type="button" className="learning-path-resource" aria-expanded={faqOpen} aria-controls="learning-path-faq" onClick={() => setFaqOpen((open) => !open)}>
+          <Link to="/faq" className="learning-path-resource" target="_blank" rel="noopener noreferrer">
             <CircleHelp size={32} aria-hidden="true" />
             <div><h3>FAQ</h3><p>Common questions about labs and challenges.</p></div>
             <ArrowRight className="learning-path-arrow" size={23} aria-hidden="true" />
-          </button>
+          </Link>
         </div>
-        <section id="learning-path-faq" className="learning-path-faq" hidden={!faqOpen} aria-label="Frequently asked questions">
-          <h3>Frequently asked questions</h3>
-          <details>
-            <summary>Where should I start?</summary>
-            <p>Start with <Link to="/labs">Guided labs</Link>. The twelve core chapters follow a learning sequence, with an optional advanced chapter after them.</p>
-          </details>
-          <details>
-            <summary>What is the difference between labs and challenges?</summary>
-            <p>Guided labs introduce concepts through tutorials and exercises. <Link to="/challenges">Challenges</Link> combine those concepts in capstone projects. The challenge library includes all three capstones.</p>
-          </details>
-          <details>
-            <summary>Is my progress saved?</summary>
-            <p>This version provides the course structure. Exercises and completion tracking are still being built, so progress starts at zero.</p>
-          </details>
-        </section>
       </section>
     </PageContainer>
   );

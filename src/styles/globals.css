@@ -2,6 +2,7 @@
 @import './tokens.css';
 @import './learning-path.css';
 @import './guided-labs.css';
+@import './chapter-overview.css';
 @import './app-header.css';
 
 @theme inline {

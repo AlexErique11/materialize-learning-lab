@@ -13,21 +13,25 @@ interface GuidedLabScreenProps {
   chapter: ChapterDefinition;
   title?: string;
   regionLabel?: string;
+  navigation?: ReactNode;
   children?: ReactNode;
 }
 
-export function GuidedLabScreen({ chapter, title = chapter.shortTitle, regionLabel = 'Lab workspace', children }: GuidedLabScreenProps) {
+export function GuidedLabScreen({ chapter, title = chapter.shortTitle, regionLabel = 'Lab workspace', navigation, children }: GuidedLabScreenProps) {
   const [referenceOpen, setReferenceOpen] = useState(false);
   const { pathname } = useLocation();
   useEffect(() => { setReferenceOpen(false); }, [pathname]);
   useEffect(() => { document.title = `${title} | Materialize Learning Lab`; }, [title]);
 
   return <section className="guided-lab-page">
-    <Breadcrumbs items={[
-      { label: 'Guided labs', to: '/labs' },
-      { label: chapter.shortTitle, ...(title !== chapter.shortTitle ? { to: chapterPath(chapter) } : {}) },
-      ...(title !== chapter.shortTitle ? [{ label: title }] : []),
-    ]} />
+    <div className="guided-lab-top-row">
+      <Breadcrumbs items={[
+        { label: 'Guided labs', to: '/labs' },
+        { label: chapter.shortTitle, ...(title !== chapter.shortTitle ? { to: chapterPath(chapter) } : {}) },
+        ...(title !== chapter.shortTitle ? [{ label: title }] : []),
+      ]} />
+      {navigation}
+    </div>
     <div className="guided-lab-heading">
       <div className="guided-lab-title">
         <h1>{title}</h1>

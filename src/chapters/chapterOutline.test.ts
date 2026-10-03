@@ -24,13 +24,30 @@ describe('chapter navigation outline', () => {
     expect(new Set(paths).size).toBe(paths.length);
   });
 
-  it('scaffolds pages only for chapter one, without inventing other chapter content', () => {
-    for (const other of chapters.filter((item) => item.slug !== chapter.slug)) {
+  it('leaves chapters without defined content empty', () => {
+    for (const other of chapters.filter((item) => ![chapter.slug, 'time-in-materialize'].includes(item.slug))) {
       expect(getChapterSections(other).map((section) => section.slug)).toEqual([
         'tutorial',
         'exercises',
       ]);
       expect(getChapterPages(other)).toEqual([]);
+    }
+  });
+
+  it('routes the Time in Materialize overview items into the tutorial and exercise sequence', () => {
+    const time = findChapter('time-in-materialize');
+    if (!time) throw new Error('Time in Materialize must be in the curriculum.');
+    const pages = getChapterPages(time);
+    expect(pages.map((page) => page.title)).toEqual([
+      'Order lifecycles', 'Working with logical time',
+      'Query order timelines', 'Build a real-time dashboard',
+    ]);
+    expect(pages.map((page) => page.sectionSlug)).toEqual([
+      'tutorial', 'tutorial', 'exercises', 'exercises',
+    ]);
+    for (const page of pages) {
+      expect(findChapterContent(time, page.sectionSlug, page.slug)).toEqual(page);
+      expect(chapterContentPath(time, page)).toBe(`/labs/time-in-materialize/${page.sectionSlug}/${page.slug}`);
     }
   });
 

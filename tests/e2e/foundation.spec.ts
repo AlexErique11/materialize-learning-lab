@@ -13,6 +13,82 @@ const firstChallenge = challenges[0];
 if (!firstChapter || !firstChallenge)
   throw new Error('The learning path must have chapters and capstones.');
 
+test('chapter overview lists collapse independently and start their content', async ({ page, isMobile }, testInfo) => {
+  const chapter = coreChapters.find((item) => item.slug === 'time-in-materialize');
+  if (!chapter) throw new Error('Time in Materialize must be in the curriculum.');
+  await page.goto(chapterPath(chapter));
+  await expect(page.getByRole('heading', { name: chapter.shortTitle, exact: true })).toBeVisible();
+  const tutorialList = page.getByRole('list', { name: 'Tutorials list' });
+  const exerciseList = page.getByRole('list', { name: 'Exercises list' });
+  await expect(tutorialList.getByRole('listitem')).toHaveCount(2);
+  await expect(exerciseList.getByRole('listitem')).toHaveCount(2);
+  const resourcesToggle = page.locator('.chapter-learn-more > summary');
+  const resourcesList = page.getByRole('list', { name: 'Documentation links' });
+  await expect(resourcesList).not.toBeVisible();
+  await resourcesToggle.focus();
+  await page.keyboard.press('Enter');
+  await expect(resourcesList).toBeVisible();
+  await expect(resourcesList.getByRole('link')).toHaveCount(3);
+  await expect(resourcesList.getByRole('link', { name: 'Temporal filters (time windows)' })).toHaveAttribute('href', 'https://materialize.com/docs/transform-data/patterns/temporal-filters/');
+  await expect(resourcesList.getByRole('link', { name: 'now() and mz_now() functions' })).toHaveAttribute('href', 'https://materialize.com/docs/sql/functions/now_and_mz_now/');
+  await page.keyboard.press('Enter');
+  await expect(resourcesList).not.toBeVisible();
+  await expect(tutorialList).toBeVisible();
+  await expect(exerciseList).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath('time-chapter-overview.png'), fullPage: true });
+  const tutorialToggle = page.locator('.chapter-overview-section > summary').filter({ hasText: 'Tutorials' });
+  await tutorialToggle.focus();
+  await page.keyboard.press('Enter');
+  await expect(tutorialList).not.toBeVisible();
+  await expect(exerciseList).toBeVisible();
+  await page.keyboard.press('Enter');
+  await expect(tutorialList).toBeVisible();
+  const exerciseToggle = page.locator('.chapter-overview-section > summary').filter({ hasText: 'Exercises' });
+  await exerciseToggle.click();
+  await expect(exerciseList).not.toBeVisible();
+  await expect(tutorialList).toBeVisible();
+  await exerciseToggle.click();
+  await expect(exerciseList).toBeVisible();
+  await page.getByRole('link', { name: 'Start tutorial: Order lifecycles', exact: true }).click();
+  await expect(page).toHaveURL('/labs/time-in-materialize/tutorial/order-lifecycles');
+  await expect(page.getByRole('heading', { name: 'Order lifecycles', exact: true })).toBeVisible();
+  if (isMobile) await page.locator('.mobile-sidebar > summary').click();
+  await page.getByRole('navigation', { name: 'Chapters' }).getByRole('link', { name: 'Time in Materialize overview', exact: true }).click();
+  await expect(page).toHaveURL(chapterPath(chapter));
+  await expect(tutorialList).toBeVisible();
+  await expect(exerciseList).toBeVisible();
+  await page.getByRole('link', { name: 'Start exercise: Query order timelines', exact: true }).click();
+  await expect(page).toHaveURL('/labs/time-in-materialize/exercises/query-order-timelines');
+  await expect(page.getByRole('heading', { name: 'Query order timelines', exact: true })).toBeVisible();
+  const dimensions = await page.evaluate(() => ({ width: document.documentElement.scrollWidth, viewport: innerWidth }));
+  expect(dimensions.width).toBeLessThanOrEqual(dimensions.viewport);
+});
+
+test('overview illustration stays separate from text when sections collapse near the layout breakpoint', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'Desktop verifies the breakpoint where a scrollbar can change the layout.');
+  await page.setViewportSize({ width: 1350, height: 900 });
+  await page.goto('/labs/time-in-materialize');
+  for (const width of [1350, 1351, 1366, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const expanded of [true, false]) {
+      for (const section of await page.locator('.chapter-overview-section').all()) {
+        if (await section.evaluate((el) => el.hasAttribute('open')) !== expanded)
+          await section.locator('summary').click();
+      }
+      const geometry = await page.locator('.chapter-overview-hero').evaluate((hero) => {
+        const text = hero.querySelector('div')!.getBoundingClientRect();
+        const illustration = hero.querySelector('svg')!.getBoundingClientRect();
+        return { textRight: text.right, illustrationLeft: illustration.left,
+          illustrationRight: illustration.right, heroRight: hero.getBoundingClientRect().right,
+          pageHeight: document.documentElement.scrollHeight, viewportHeight: innerHeight };
+      });
+      expect(geometry.illustrationLeft, `Text separation at ${width}px, expanded=${expanded}`).toBeGreaterThanOrEqual(geometry.textRight + 16);
+      expect(geometry.illustrationRight).toBeLessThanOrEqual(geometry.heroRight);
+      if (!expanded) expect(geometry.pageHeight).toBeLessThanOrEqual(geometry.viewportHeight);
+    }
+  }
+});
+
 test('learning path, chapter navigation, and browser history', async ({ page }, testInfo) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'Learning path', exact: true })).toBeVisible();
@@ -30,7 +106,8 @@ test('learning path, chapter navigation, and browser history', async ({ page }, 
   await expect(page.getByRole('heading', { name: firstChapter.shortTitle, exact: true })).toBeVisible();
   await page.goto('/');
   await expect(page.getByRole('banner').getByText('Learning Lab', { exact: true })).toBeVisible();
-  await expect(page.getByRole('banner').getByRole('link', { name: 'Community' })).toBeVisible();
+  await expect(page.getByRole('banner').getByRole('link', { name: 'Community' })).toHaveCount(0);
+  await expect(page.getByRole('banner').getByRole('link', { name: 'Docs', exact: true })).toHaveAttribute('target', '_blank');
   await page.goto('/labs');
   await expect(page).toHaveURL(chapterPath(firstChapter));
   await expect(page.getByRole('heading', { name: firstChapter.shortTitle, exact: true })).toBeVisible();
@@ -38,13 +115,13 @@ test('learning path, chapter navigation, and browser history', async ({ page }, 
 
 test('empty lectures and exercises form one next/previous sequence', async ({ page }) => {
   await page.goto(chapterPath(firstChapter));
-  await expect(page.getByRole('region', { name: 'Lab workspace' }).getByText('To be done', { exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Chapter overview' })).toBeVisible();
   await expect(page.getByRole('link', { name: /preview/i })).toHaveCount(0);
   await expect(page.getByRole('navigation', { name: 'Page navigation' })).toHaveCount(0);
-  await page.getByRole('button', { name: 'SQL & Objectives', exact: true }).click();
-  await page.getByRole('dialog', { name: 'SQL & Objectives' }).getByRole('link', { name: 'Tutorial', exact: true }).click();
+  await page.getByRole('link', { name: 'Start tutorial: Lecture 1', exact: true }).click();
   const pages = getChapterPages(firstChapter);
-  for (const content of pages) {
+  for (const [index, content] of pages.entries()) {
+    if (index > 0)
     await page
       .getByRole('navigation', { name: 'Page navigation' })
       .getByRole('link', { name: new RegExp(`Next\\s+${content.title}`) })
@@ -83,9 +160,7 @@ test('empty lectures and exercises form one next/previous sequence', async ({ pa
 });
 
 test('section overviews have their own URLs and only registered pages', async ({ page }) => {
-  await page.goto(chapterPath(firstChapter));
-  await page.getByRole('button', { name: 'SQL & Objectives', exact: true }).click();
-  await page.getByRole('dialog', { name: 'SQL & Objectives' }).getByRole('link', { name: 'Tutorial', exact: true }).click();
+  await page.goto(chapterSectionPath(firstChapter, 'tutorial'));
   await expect(page).toHaveURL(chapterSectionPath(firstChapter, 'tutorial'));
   await expect(page.getByRole('list', { name: 'Tutorial pages' }).getByRole('link')).toHaveCount(2);
   await page
@@ -137,6 +212,7 @@ test('sidebar subsections are keyboard-operable and reflect the active page', as
     'aria-current',
     'page',
   );
+  await sidebar.getByRole('navigation', { name: 'Chapters' }).locator('.chapter-section > summary').filter({ hasText: 'Exercises' }).click();
   await sidebar.getByRole('link', { name: 'Exercise 1', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Exercise 1', exact: true })).toBeVisible();
 });
@@ -178,13 +254,7 @@ test('chapter navigation remains accessible when the sidebar is collapsed', asyn
     expect(collapsedBounds).not.toBeNull();
     if (expandedBounds && collapsedBounds)
       expect(collapsedBounds.width).toBeGreaterThan(expandedBounds.width);
-    await page.getByRole('button', { name: 'SQL & Objectives', exact: true }).click();
-    await page.getByRole('dialog', { name: 'SQL & Objectives' }).getByRole('link', { name: 'Tutorial', exact: true }).click();
-    await expect(expand).toHaveAttribute('aria-expanded', 'false');
-    await page
-      .getByRole('navigation', { name: 'Page navigation' })
-      .getByRole('link', { name: /Next\s+Lecture 1/ })
-      .click();
+    await page.getByRole('link', { name: 'Start tutorial: Lecture 1', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Lecture 1', exact: true })).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible();
     await expect(expand).toHaveAttribute('aria-expanded', 'false');
@@ -199,15 +269,109 @@ test('chapter navigation remains accessible when the sidebar is collapsed', asyn
   }
   const secondChapter = coreChapters[1];
   if (!secondChapter) throw new Error('The learning sequence must have a second chapter.');
-  await sidebar.getByRole('link', { name: new RegExp(secondChapter.shortTitle) }).click();
+  await sidebar.getByRole('link', { name: `02 ${secondChapter.shortTitle}`, exact: true }).click();
   await expect(page).toHaveURL(chapterPath(secondChapter));
   await expect(page.getByRole('heading', { name: secondChapter.shortTitle, exact: true })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Page navigation' })).toHaveCount(0);
   if (isMobile) await expect(page.locator('.mobile-sidebar')).not.toHaveAttribute('open', '');
   else
     await expect(
-      sidebar.getByRole('link', { name: new RegExp(secondChapter.shortTitle) }),
-    ).toHaveAttribute('aria-current', 'page');
+      sidebar.getByRole('link', { name: `02 ${secondChapter.shortTitle}`, exact: true }),
+    ).toHaveClass(/chapter-selected/);
+});
+
+test('chapter sidebar preserves open groups and toggles from the chapter body', async ({ page, isMobile }) => {
+  await page.goto(chapterPath(firstChapter));
+  const sidebar = page.getByRole('complementary', { name: 'Guided labs navigation' });
+  const revealSidebar = async () => {
+    if (isMobile && !await page.locator('.mobile-sidebar').evaluate((el) => el.hasAttribute('open')))
+      await page.locator('.mobile-sidebar > summary').click();
+  };
+  await revealSidebar();
+  const overview = sidebar.getByRole('link', { name: `${firstChapter.shortTitle} overview`, exact: true });
+  const chaptersNavigation = sidebar.getByRole('navigation', { name: 'Chapters' });
+  const tutorials = chaptersNavigation.locator('.chapter-section').filter({ has: page.locator('summary').filter({ hasText: 'Tutorials' }) });
+  const exercises = chaptersNavigation.locator('.chapter-section').filter({ has: page.locator('summary').filter({ hasText: 'Exercises' }) });
+  await expect(overview).toBeVisible();
+  await expect(overview).toHaveAttribute('aria-current', 'page');
+  await expect(tutorials).not.toHaveAttribute('open', '');
+  await expect(exercises).not.toHaveAttribute('open', '');
+  await tutorials.locator('summary').click();
+  await expect(sidebar.getByRole('link', { name: 'Lecture 1', exact: true })).toBeVisible();
+  await expect(exercises).not.toHaveAttribute('open', '');
+  await sidebar.getByRole('link', { name: 'Lecture 2', exact: true }).click();
+  await revealSidebar();
+  await expect(tutorials).toHaveAttribute('open', '');
+  await expect(exercises).not.toHaveAttribute('open', '');
+  await expect(sidebar.getByRole('link', { name: 'Lecture 2', exact: true })).toHaveAttribute('aria-current', 'page');
+  const chapterBody = sidebar.getByRole('link', { name: `01 ${firstChapter.shortTitle}`, exact: true });
+  await chapterBody.click();
+  await expect(overview).not.toBeVisible();
+  await expect(page).toHaveURL('/labs/changing-relations/tutorial/lecture-2');
+  await chapterBody.focus();
+  await page.keyboard.press('Enter');
+  await expect(overview).toBeVisible();
+  await expect(tutorials).toHaveAttribute('open', '');
+  await overview.click();
+  await expect(page).toHaveURL(chapterPath(firstChapter));
+  await revealSidebar();
+  await expect(tutorials).toHaveAttribute('open', '');
+  await expect(exercises).not.toHaveAttribute('open', '');
+  await sidebar.getByRole('button', { name: `Collapse ${firstChapter.shortTitle} chapter` }).click();
+  await expect(overview).not.toBeVisible();
+  await sidebar.getByRole('button', { name: `Expand ${firstChapter.shortTitle} chapter` }).click();
+  await expect(overview).toBeVisible();
+  await page.getByRole('link', { name: 'Start exercise: Exercise 1', exact: true }).click();
+  await revealSidebar();
+  await expect(tutorials).toHaveAttribute('open', '');
+  await expect(exercises).toHaveAttribute('open', '');
+  await expect(sidebar.getByRole('link', { name: 'Exercise 1', exact: true })).toHaveAttribute('aria-current', 'page');
+  await sidebar.getByRole('link', { name: 'Lecture 1', exact: true }).click();
+  await revealSidebar();
+  await expect(tutorials).toHaveAttribute('open', '');
+  await expect(exercises).toHaveAttribute('open', '');
+  await overview.click();
+  await revealSidebar();
+  await expect(tutorials).toHaveAttribute('open', '');
+  await expect(exercises).toHaveAttribute('open', '');
+  const other = coreChapters[1];
+  if (!other) throw new Error('Chapter 2 must be in the curriculum.');
+  await sidebar.getByRole('link', { name: `02 ${other.shortTitle}`, exact: true }).click();
+  await revealSidebar();
+  await sidebar.getByRole('link', { name: `01 ${firstChapter.shortTitle}`, exact: true }).click();
+  await revealSidebar();
+  await expect(tutorials).not.toHaveAttribute('open', '');
+  await expect(exercises).not.toHaveAttribute('open', '');
+  await page.getByRole('link', { name: 'Start tutorial: Lecture 1', exact: true }).click();
+  await revealSidebar();
+  await expect(tutorials).toHaveAttribute('open', '');
+  await expect(exercises).not.toHaveAttribute('open', '');
+  await exercises.locator('summary').click();
+  await sidebar.getByRole('link', { name: 'Exercise 1', exact: true }).click();
+  await page.reload();
+  await revealSidebar();
+  await expect(tutorials).not.toHaveAttribute('open', '');
+  await expect(exercises).toHaveAttribute('open', '');
+});
+
+test('chapter row and badge sizes stay consistent after selection', async ({ page, isMobile }) => {
+  const chapter = coreChapters[1];
+  if (!chapter) throw new Error('Chapter 2 must be in the curriculum.');
+  await page.goto(chapterPath(firstChapter));
+  if (isMobile) await page.locator('.mobile-sidebar > summary').click();
+  const chapterLink = page.getByRole('navigation', { name: 'Chapters' }).getByRole('link', { name: `02 ${chapter.shortTitle}`, exact: true });
+  const measure = () => chapterLink.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    const badge = el.querySelector('.chapter-link-number')!;
+    const badgeBox = badge.getBoundingClientRect();
+    return { width: box.width, height: box.height, font: getComputedStyle(el).fontSize,
+      badgeWidth: badgeBox.width, badgeHeight: badgeBox.height, badgeFont: getComputedStyle(badge).fontSize };
+  });
+  const before = await measure();
+  await chapterLink.click();
+  await expect(page).toHaveURL(chapterPath(chapter));
+  if (isMobile) await page.locator('.mobile-sidebar > summary').click();
+  expect(await measure()).toEqual(before);
 });
 
 test('explicit theme preference survives reload', async ({ page }, testInfo) => {
@@ -224,15 +388,24 @@ test('explicit theme preference survives reload', async ({ page }, testInfo) => 
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 });
 
-test('every guided lab uses the workspace and its reference controls remain accessible', async ({ page }) => {
+test('every chapter opens its overview and tutorial reference controls remain accessible', async ({ page }) => {
   for (const chapter of coreChapters) {
     await page.goto(chapterPath(chapter));
     await expect(page.getByRole('heading', { name: chapter.shortTitle, exact: true })).toBeVisible();
-    await expect(page.getByRole('region', { name: 'Lab workspace' }).getByText('To be done', { exact: true })).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Start guided run', exact: true })).toBeDisabled();
+    await expect(page.getByRole('region', { name: 'Chapter overview' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Learn more', exact: true })).toBeVisible();
+    await page.locator('.chapter-learn-more > summary').click();
+    await expect(page.getByRole('list', { name: 'Documentation links' }).getByRole('link', { name: 'Materialize documentation', exact: true })).toBeVisible();
+    for (const link of await page.getByRole('list', { name: 'Documentation links' }).getByRole('link').all()) {
+      await expect(link).toHaveAttribute('target', '_blank');
+      await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    }
+    await expect(page.getByRole('heading', { name: 'Tutorials', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Exercises', exact: true })).toBeVisible();
   }
 
   await page.goto(chapterPath(firstChapter));
+  await page.getByRole('link', { name: 'Start tutorial: Lecture 1', exact: true }).click();
   const referenceButton = page.getByRole('button', { name: 'SQL & Objectives', exact: true });
   const tipButton = page.getByRole('button', { name: 'Open SQL & Objectives', exact: true });
   const dialog = page.getByRole('dialog', { name: 'SQL & Objectives' });
@@ -305,7 +478,7 @@ test('chapter pages adapt at desktop, laptop, tablet, and mobile widths', async 
     await page.screenshot({ path: testInfo.outputPath(`lecture-${width}.png`), fullPage: true });
   }
   await page.goto(chapterPath(firstChapter));
-  await expect(page.getByRole('region', { name: 'Lab workspace' }).getByText('To be done', { exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Chapter overview' })).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('chapter-mobile.png'), fullPage: true });
   await page.getByRole('button', { name: 'Switch to dark mode' }).click();
   await page.screenshot({
@@ -383,6 +556,13 @@ test('learning path and content pages fit desktop viewports without hiding navig
         expect(navigation).not.toBeNull();
         if (navigation)
           expect(navigation.y + navigation.height).toBeLessThanOrEqual(dimensions.viewportHeight);
+        const reset = await page.getByRole('button', { name: 'Reset', exact: true }).boundingBox();
+        const breadcrumb = await page.getByRole('navigation', { name: 'Breadcrumb' }).boundingBox();
+        expect(reset).not.toBeNull();
+        expect(breadcrumb).not.toBeNull();
+        if (navigation && reset) expect(navigation.y + navigation.height).toBeLessThanOrEqual(reset.y);
+        if (navigation && breadcrumb && viewport.width >= 640)
+          expect(Math.abs(navigation.y + navigation.height / 2 - breadcrumb.y - breadcrumb.height / 2)).toBeLessThan(1);
       } else {
         await expect(page.getByRole('contentinfo')).toHaveCount(0);
         if (!isMobile) {

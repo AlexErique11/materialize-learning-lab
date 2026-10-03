@@ -3,6 +3,7 @@ import { ChallengePage } from '../challenges/ChallengePage';
 import { ChapterPage } from '../chapters/ChapterPage';
 import { ChapterContentPage } from '../chapters/ChapterContentPage';
 import { ChallengesPage } from '../pages/ChallengesPage';
+import { FaqPage } from '../pages/FaqPage';
 import { GuidedLabsPage } from '../pages/GuidedLabsPage';
 import { LearningPathPage } from '../pages/LearningPathPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
@@ -16,6 +17,7 @@ export const router = createBrowserRouter([
     errorElement: <RouteErrorPage />,
     children: [
       { index: true, element: <LearningPathPage /> },
+      { path: 'faq', element: <FaqPage /> },
       { path: 'labs', element: <GuidedLabsPage /> },
       {
         path: 'labs/:chapterSlug',

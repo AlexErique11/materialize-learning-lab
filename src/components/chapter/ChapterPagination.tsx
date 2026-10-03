@@ -14,29 +14,19 @@ interface ChapterPaginationProps {
 
 export function ChapterPagination({ previous, next }: ChapterPaginationProps) {
   return (
-    <nav className="adjacent-chapters" aria-label="Page navigation">
-      <div>
+    <nav className="guided-lab-pagination" aria-label="Page navigation">
         {previous && (
-          <Link to={previous.to}>
-            <ArrowLeft size={16} aria-hidden="true" />
-            <span>
-              <small>{previous.label ?? 'Previous'}</small>
-              {previous.title}
-            </span>
+          <Link to={previous.to} aria-label={`${previous.label ?? 'Previous'} ${previous.title}`} title={`${previous.label ?? 'Previous'}: ${previous.title}`}>
+            <ArrowLeft size={12} strokeWidth={3.5} aria-hidden="true" />
+            <span>Previous</span>
           </Link>
         )}
-      </div>
-      <div>
         {next && (
-          <Link to={next.to}>
-            <span>
-              <small>{next.label ?? 'Next'}</small>
-              {next.title}
-            </span>
-            <ArrowRight size={16} aria-hidden="true" />
+          <Link to={next.to} aria-label={`${next.label ?? 'Next'} ${next.title}`} title={`${next.label ?? 'Next'}: ${next.title}`}>
+            <span>Next</span>
+            <ArrowRight size={12} strokeWidth={3.5} aria-hidden="true" />
           </Link>
         )}
-      </div>
     </nav>
   );
 }
