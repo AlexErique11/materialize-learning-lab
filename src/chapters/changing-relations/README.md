@@ -92,4 +92,49 @@ Additional official references verified on 2026-10-04:
   rows of a read-write table. The reference SQL uses separate UPDATE statements;
   it does not put them in an explicit multi-statement transaction.
 
-No live Materialize connection is used. Exercises remain placeholders.
+No live Materialize connection is used.
+
+## Exercise 1: one inventory timeline
+
+Chapter 1 now has one exercise with three phases. It starts with four copies of
+(Kettle, $25), two of (Mug, $8), and one of (Mug, $10). The two Mug prices are
+different full rows. Each phase previews an entire upcoming timestamp; the
+current relation stays at the preceding timestamp until the answer is accepted.
+
+| Phase | Task | Correct result |
+| --- | --- | --- |
+| 1 · Reconstruct | Five interleaved diffs: −3/+2 Kettle, +2/−3 Mug $8, +2 Mug $10 | Copies: 3, 1, 3; 7 total copies / 3 full rows |
+| 2 · Build | Reprice every remaining Kettle from $25 to $30 and add one extra copy | Write −3 for the old row and +4 for the new row; 8 copies / 3 full rows |
+| 3 · Check | +2/−1 Kettle $30, −1 Mug $8, −3 Mug $10, +3 Mug $12 | 8 total copies / 2 full rows; the remaining Mug price is $12 |
+
+The first phase requires grouping several additions and retractions by full-row
+identity, rather than reading one diff as a final count. The second uses typed
+signed diffs in the ledger and checks both parts of the condition. The final
+phase combines arithmetic, zero-copy removal, and price replacement. Its unchanged
+total copy count does not imply that the relation stayed the same.
+
+Wrong or blank answers keep time and progress unchanged and identify the fields
+to recheck. A correct check applies the whole timestamp, explains the calculation,
+and locks the answer. Show Answer fills the canonical solution and immediately
+uses that same correct-check path, including state, feedback, and progress.
+Next question sits below the question box and opens the next phase with empty
+inputs. Hints do not complete a phase. Reset and reload restore the initial attempt.
+
+The toolbar order is Reset, Hint, Show Answer, Check Answer. Exercises omit Tip
+and SQL & Objectives. Compact chips identify rows, diffs, counts, and timestamps;
+their values stay together on one line. Both table grids reserve five real rows,
+including placeholders, so shorter batches and removed rows do not move the
+workbench. The old Exercise 2 URL redirects to Exercise 1 and is absent from
+chapter and sidebar lists.
+
+Answers and explanations derive from the lectures' canonical timestamp
+simulation. Counts must be nonnegative safe whole numbers; signed diffs also
+accept positive, negative, and zero integers. The typographic minus sign used
+in the ledger is accepted when pasted into a signed answer.
+
+The full-row diff and paired replacement model was rechecked on 2026-10-04
+against [SUBSCRIBE](https://materialize.com/docs/sql/subscribe/) and
+[UPDATE](https://materialize.com/docs/sql/update/). These are authored complete
+teaching batches, not promises about the exact message grouping of a real
+SUBSCRIBE stream. The reprice-and-restock phase combines a price replacement
+with an additional copy; it does not claim that one UPDATE inserts extra stock.

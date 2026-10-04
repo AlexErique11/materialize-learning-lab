@@ -135,9 +135,14 @@ test('lectures and exercises form one next/previous sequence', async ({ page }) 
         exact: true,
       }),
     ).toBeVisible();
-    if (content.sectionSlug === 'tutorial') await expect(page.getByRole('button', { name: 'Run', exact: true })).toBeEnabled();
-    else await expect(page.getByRole('button', { name: 'Run', exact: true })).toBeDisabled();
-    await expect(page.getByRole('button', { name: 'SQL & Objectives', exact: true })).toBeEnabled();
+    if (content.sectionSlug === 'tutorial') {
+      await expect(page.getByRole('button', { name: 'Run', exact: true })).toBeEnabled();
+      await expect(page.getByRole('button', { name: 'SQL & Objectives', exact: true })).toBeEnabled();
+    } else {
+      await expect(page.getByRole('button', { name: 'Check Answer', exact: true })).toBeEnabled();
+      await expect(page.getByRole('button', { name: 'Show Answer', exact: true })).toBeEnabled();
+      await expect(page.getByRole('button', { name: 'SQL & Objectives', exact: true })).toHaveCount(0);
+    }
   }
   await expect(
     page
@@ -546,9 +551,9 @@ test('learning path and content pages fit desktop viewports without hiding navig
         dimensions.viewportWidth,
       );
       if (route.path !== '/') {
-        // The populated lecture stacks readable tables on phone-sized screens.
-        // Its desktop canvas and the other content pages still fit the viewport.
-        if (viewport.width >= 640 || route.path !== chapterContentPath(firstChapter, lecture)) expect(
+        // Populated lectures and exercises stack readable tables on phone-sized screens.
+        // Their desktop canvases still fit the viewport.
+        if (viewport.width >= 640) expect(
           dimensions.height,
           `${route.path} at ${viewport.width} × ${viewport.height}`,
         ).toBeLessThanOrEqual(dimensions.viewportHeight);

@@ -1,5 +1,5 @@
 import { ArrowRight } from 'lucide-react';
-import { Link, useOutletContext, useParams } from 'react-router';
+import { Link, Navigate, useOutletContext, useParams } from 'react-router';
 import { ChapterPagination } from '../components/chapter/ChapterPagination';
 import { GuidedLabScreen } from '../labs/components/GuidedLabScreen';
 import { NotFoundPage } from '../pages/NotFoundPage';
@@ -12,10 +12,15 @@ import type { ChapterDefinition } from './chapterRegistry';
 import { getChapterNavigation } from './chapterNavigation';
 import { LectureOne } from './changing-relations/LectureOne';
 import { LectureTwo } from './changing-relations/LectureTwo';
+import { ExerciseOne } from './changing-relations/ExerciseOne';
 
 export function ChapterContentPage() {
   const chapter = useOutletContext<ChapterDefinition>();
   const { sectionSlug, pageSlug } = useParams();
+  // Preserve existing bookmarks after merging Chapter 1's exercises.
+  if (chapter.slug === 'changing-relations' && sectionSlug === 'exercises' && pageSlug === 'exercise-2') {
+    return <Navigate to={chapterContentPath(chapter, findChapterContent(chapter, 'exercises', 'exercise-1')!)} replace />;
+  }
   const section = findChapterSection(chapter, sectionSlug);
   const page = findChapterContent(chapter, sectionSlug, pageSlug);
   if (!section || (pageSlug !== undefined && !page)) return <NotFoundPage />;
@@ -28,6 +33,9 @@ export function ChapterContentPage() {
     return <LectureTwo chapter={chapter} navigation={<ChapterPagination {...navigation} />} />;
   }
   const title = page?.title ?? section.title;
+  if (chapter.slug === 'changing-relations' && section.slug === 'exercises' && page?.slug === 'exercise-1') {
+    return <ExerciseOne chapter={chapter} navigation={<ChapterPagination {...navigation} />} />;
+  }
   const placeholderTitle = page
     ? section.slug === 'tutorial'
       ? 'Lecture content'

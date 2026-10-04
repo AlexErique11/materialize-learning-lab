@@ -18,7 +18,6 @@ describe('chapter navigation outline', () => {
       { sectionSlug: 'tutorial', slug: 'lecture-1', title: 'Lecture 1' },
       { sectionSlug: 'tutorial', slug: 'lecture-2', title: 'Lecture 2' },
       { sectionSlug: 'exercises', slug: 'exercise-1', title: 'Exercise 1' },
-      { sectionSlug: 'exercises', slug: 'exercise-2', title: 'Exercise 2' },
     ]);
     const paths = getChapterPages(chapter).map((page) => chapterContentPath(chapter, page));
     expect(new Set(paths).size).toBe(paths.length);

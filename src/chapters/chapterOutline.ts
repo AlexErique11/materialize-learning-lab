@@ -50,7 +50,6 @@ const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
     ],
     exercises: [
       { slug: 'exercise-1', title: 'Exercise 1' },
-      { slug: 'exercise-2', title: 'Exercise 2' },
     ],
   },
   'time-in-materialize': {

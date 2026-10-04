@@ -33,7 +33,7 @@ describe('chapter page navigation', () => {
   });
 
   it('returns to the chapter after the last exercise', () => {
-    expect(navigationFor('exercises', 'exercise-2').next).toEqual({
+    expect(navigationFor('exercises', 'exercise-1').next).toEqual({
       to: '/labs/changing-relations', title: 'Changing Relations', label: 'Back to chapter',
     });
   });

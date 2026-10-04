@@ -33,12 +33,13 @@ export function DiffBadge({ diff }: { diff: number }) {
   return <span className={`relation-count ${diff < 0 ? 'relation-count-negative' : diff === 0 ? 'relation-count-neutral' : ''}`} aria-label={diff === 0 ? 'No net change' : `${diff < 0 ? 'Retract' : 'Add'} ${Math.abs(diff)} ${Math.abs(diff) === 1 ? 'copy' : 'copies'}`}>{diff > 0 ? '+' : diff < 0 ? '−' : ''}{Math.abs(diff)}</span>;
 }
 
-export function CurrentRelation({ relation, time, relationRef, highlightCopies, affectedRows = [], children }: {
+export function CurrentRelation({ relation, time, relationRef, highlightCopies, affectedRows = [], minRows = 0, children }: {
   relation: readonly RowMultiplicity[];
   time: number;
   relationRef: RefObject<HTMLElement | null>;
   highlightCopies: boolean;
   affectedRows?: readonly ProductRow[];
+  minRows?: number;
   children?: ReactNode;
 }) {
   return <section ref={relationRef} className="relation-panel relation-current" data-highlight-copies={highlightCopies} aria-labelledby="current-relation-heading">
@@ -53,6 +54,7 @@ export function CurrentRelation({ relation, time, relationRef, highlightCopies, 
             <td>{entry.row.product}</td><td>${entry.row.price}</td><td><span className="relation-count">{entry.copies}</span></td>
           </tr>
         )) : <tr><td colSpan={3} className="relation-empty">The relation is empty.<br /><span>Apply the first change to add row copies.</span></td></tr>}
+        {Array.from({ length: Math.max(0, minRows - Math.max(1, relation.length)) }, (_, index) => <tr key={`empty:${index}`} aria-hidden="true"><td /><td /><td /></tr>)}
       </tbody>
     </Table>
     {children}
