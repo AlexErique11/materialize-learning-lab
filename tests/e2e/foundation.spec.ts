@@ -135,7 +135,7 @@ test('lectures and exercises form one next/previous sequence', async ({ page }) 
         exact: true,
       }),
     ).toBeVisible();
-    if (content.slug === 'lecture-1') await expect(page.getByRole('button', { name: 'Run', exact: true })).toBeEnabled();
+    if (content.sectionSlug === 'tutorial') await expect(page.getByRole('button', { name: 'Run', exact: true })).toBeEnabled();
     else await expect(page.getByRole('button', { name: 'Run', exact: true })).toBeDisabled();
     await expect(page.getByRole('button', { name: 'SQL & Objectives', exact: true })).toBeEnabled();
   }
@@ -410,7 +410,7 @@ test('every chapter opens its overview and tutorial reference controls remain ac
   const referenceButton = page.getByRole('button', { name: 'SQL & Objectives', exact: true });
   const tipButton = page.getByRole('button', { name: 'Open SQL & Objectives', exact: true });
   const dialog = page.getByRole('dialog', { name: 'SQL & Objectives' });
-  for (const trigger of [referenceButton]) {
+  for (const trigger of [referenceButton, tipButton]) {
     await trigger.click();
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('link', { name: 'Tutorial', exact: true })).toHaveAttribute('href', chapterSectionPath(firstChapter, 'tutorial'));
@@ -419,7 +419,6 @@ test('every chapter opens its overview and tutorial reference controls remain ac
     await expect(dialog).not.toBeVisible();
     await expect(trigger).toBeFocused();
   }
-  await expect(tipButton).toHaveCount(0);
   await page.getByRole('button', { name: 'Switch to dark mode' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.reload();

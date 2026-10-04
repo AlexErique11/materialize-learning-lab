@@ -11,6 +11,7 @@ import {
 import type { ChapterDefinition } from './chapterRegistry';
 import { getChapterNavigation } from './chapterNavigation';
 import { LectureOne } from './changing-relations/LectureOne';
+import { LectureTwo } from './changing-relations/LectureTwo';
 
 export function ChapterContentPage() {
   const chapter = useOutletContext<ChapterDefinition>();
@@ -22,6 +23,9 @@ export function ChapterContentPage() {
   const navigation = getChapterNavigation(chapter, section, page);
   if (chapter.slug === 'changing-relations' && section.slug === 'tutorial' && page?.slug === 'lecture-1') {
     return <LectureOne chapter={chapter} navigation={<ChapterPagination {...navigation} />} />;
+  }
+  if (chapter.slug === 'changing-relations' && section.slug === 'tutorial' && page?.slug === 'lecture-2') {
+    return <LectureTwo chapter={chapter} navigation={<ChapterPagination {...navigation} />} />;
   }
   const title = page?.title ?? section.title;
   const placeholderTitle = page

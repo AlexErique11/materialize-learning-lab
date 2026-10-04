@@ -1,9 +1,9 @@
 import { Clock3, Database, Table2, Trash2 } from 'lucide-react';
-import { useId, useLayoutEffect, useRef, useState, type RefObject } from 'react';
+import { useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { Table } from '../../components/ui/Table';
 import { RelationHelp } from './RelationHelp';
 import { relationHelp } from './scenario';
-import { copiesOf, getRelationMetrics, rowKey, type RelationUpdate, type RowMultiplicity } from './simulation';
+import { copiesOf, getRelationMetrics, rowKey, type ProductRow, type RelationUpdate, type RowMultiplicity } from './simulation';
 
 export function RelationMetrics({ relation, time, metricsRef }: {
   relation: readonly RowMultiplicity[];
@@ -30,7 +30,34 @@ export function RelationMetrics({ relation, time, metricsRef }: {
 }
 
 export function DiffBadge({ diff }: { diff: number }) {
-  return <span className={`relation-count ${diff < 0 ? 'relation-count-negative' : ''}`} aria-label={`${diff < 0 ? 'Retract' : 'Add'} ${Math.abs(diff)} ${Math.abs(diff) === 1 ? 'copy' : 'copies'}`}>{diff > 0 ? '+' : '−'}{Math.abs(diff)}</span>;
+  return <span className={`relation-count ${diff < 0 ? 'relation-count-negative' : diff === 0 ? 'relation-count-neutral' : ''}`} aria-label={diff === 0 ? 'No net change' : `${diff < 0 ? 'Retract' : 'Add'} ${Math.abs(diff)} ${Math.abs(diff) === 1 ? 'copy' : 'copies'}`}>{diff > 0 ? '+' : diff < 0 ? '−' : ''}{Math.abs(diff)}</span>;
+}
+
+export function CurrentRelation({ relation, time, relationRef, highlightCopies, affectedRows = [], children }: {
+  relation: readonly RowMultiplicity[];
+  time: number;
+  relationRef: RefObject<HTMLElement | null>;
+  highlightCopies: boolean;
+  affectedRows?: readonly ProductRow[];
+  children?: ReactNode;
+}) {
+  return <section ref={relationRef} className="relation-panel relation-current" data-highlight-copies={highlightCopies} aria-labelledby="current-relation-heading">
+    <h2 id="current-relation-heading">Current relation <RelationHelp {...relationHelp.relation} /><span className="relation-panel-time">at t = {time}</span></h2>
+    <Table caption="Current relation">
+      <thead><tr>
+        {[relationHelp.product, relationHelp.price, relationHelp.copies].map((help) => <th key={help.label} scope="col"><span className="relation-column-label">{help.label}<RelationHelp {...help} /></span></th>)}
+      </tr></thead>
+      <tbody>
+        {relation.length ? relation.map((entry) => (
+          <tr key={rowKey(entry.row)} className={affectedRows.some((row) => rowKey(row) === rowKey(entry.row)) ? 'relation-row-affected' : ''}>
+            <td>{entry.row.product}</td><td>${entry.row.price}</td><td><span className="relation-count">{entry.copies}</span></td>
+          </tr>
+        )) : <tr><td colSpan={3} className="relation-empty">The relation is empty.<br /><span>Apply the first change to add row copies.</span></td></tr>}
+      </tbody>
+    </Table>
+    {children}
+    <p className="relation-table-note">Full row identity includes both product and price.</p>
+  </section>;
 }
 
 interface RelationWorkbenchProps {
@@ -97,23 +124,9 @@ export function RelationWorkbench({ relation, updates, time, applied, onSelectTi
         </Table>
         <p className="relation-table-note">Select an applied timestamp to replay its state.</p>
       </section>
-      <section ref={relationRef} className="relation-panel relation-current" data-highlight-copies={highlightCopies} aria-labelledby="current-relation-heading">
-        <h2 id="current-relation-heading">Current relation <RelationHelp {...relationHelp.relation} /><span className="relation-panel-time">at t = {time}</span></h2>
-        <Table caption="Current relation">
-          <thead><tr>
-            {[relationHelp.product, relationHelp.price, relationHelp.copies].map((help) => <th key={help.label} scope="col"><span className="relation-column-label">{help.label}<RelationHelp {...help} /></span></th>)}
-          </tr></thead>
-          <tbody>
-            {relation.length ? relation.map((entry) => (
-              <tr key={rowKey(entry.row)} className={current && rowKey(current.row) === rowKey(entry.row) ? 'relation-row-affected' : ''}>
-                <td>{entry.row.product}</td><td>${entry.row.price}</td><td><span className="relation-count">{entry.copies}</span></td>
-              </tr>
-            )) : <tr><td colSpan={3} className="relation-empty">The relation is empty.<br /><span>Apply the first change to add row copies.</span></td></tr>}
-          </tbody>
-        </Table>
+      <CurrentRelation relation={relation} time={time} relationRef={relationRef} highlightCopies={highlightCopies} affectedRows={current ? [current.row] : []}>
         {removed && <div className="relation-removed" role="status"><Trash2 size={17} aria-hidden="true" /><span>Removed at t = {time}: <strong>{current.row.product}, ${current.row.price}</strong><span className="relation-removed-count">1 → 0 copies</span></span></div>}
-        <p className="relation-table-note">Full row identity includes both product and price.</p>
-      </section>
+      </CurrentRelation>
       {arrow && <svg className="relation-causal-arrow" aria-hidden="true" viewBox={`0 0 ${arrow.width} ${arrow.height}`} style={{ color: current && current.diff < 0 ? 'var(--danger)' : 'var(--lab-purple)' }}>
         <defs><marker id={markerId} markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M 0 0 L 5 3 L 0 6" fill="none" stroke="currentColor" strokeWidth="1.2" /></marker></defs>
         <path d={arrow.path} fill="none" stroke="currentColor" strokeWidth="1.6" markerEnd={`url(#${markerId})`} />

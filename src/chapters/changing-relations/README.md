@@ -54,4 +54,42 @@ complete by construction; actual progress/frontier handling belongs in later lab
 The simulation forbids a negative final row count. Complete timestamp groups are
 consolidated first so cancellation does not depend on animation or delivery order.
 
-No live Materialize connection is used. Lecture 2 and exercises remain placeholders.
+## Lecture 2: updates and timestamp batches
+
+Lecture 2 reuses the same metrics, current-relation table, playback controller,
+help, standard Tip, and frosted guide. It starts from a separate preloaded snapshot,
+not Lecture 1's final state. Its ledger displays only the selected complete
+timestamp, with a compact selector for completed history.
+
+| Complete logical time | Authored diffs | Current relation | Copies / distinct rows |
+| --- | --- | --- | --- |
+| 0 | Starting snapshot | (A, $10) × 1, (B, $14) × 1, (C, $20) × 2 | 4 / 3 |
+| 1 | −1 (B, $14), +1 (B, $18) | A × 1, (B, $18) × 1, (C, $20) × 2 | 4 / 3 |
+| 2 | −2 (C, $20), +2 (C, $25) | A × 1, (B, $18) × 1, (C, $25) × 2 | 4 / 3 |
+| 3 | +2 A, −1 A, +1 (B, $18), −1 (B, $18) | A × 2, (B, $18) × 1, (C, $25) × 2 | 5 / 3 |
+
+Normal playback applies exactly three complete timestamp batches; Previous/Next
+timestamp and the selector inspect complete results without discarding applied
+progress. Reset and replay restore the seed. Guided run has eight steps: snapshot,
+paired update, hypothetical insert-only comparison, multiple-copy update,
+consolidation, cancellation versus replacement, record-order independence, and
+recap. The three new timestamps pause before Show effect. Comparisons use the same
+pure domain functions and never mutate the live scenario.
+
+The header separates Timestamps (0/3) from Tutorial (0/8); completing playback
+does not complete the tutorial. Educational diagrams appear only in the guide.
+All diffs within a timestamp are consolidated by full-row identity before the
+result is exposed. The cancellation diagram retains zero net diff for explanation;
+the relation never includes zero-copy rows.
+
+Additional official references verified on 2026-10-04:
+
+- [SUBSCRIBE: mapping rows to their updates](https://materialize.com/docs/sql/subscribe/#mapping-rows-to-their-updates):
+  retraction of the old row and insertion of the new row share a timestamp.
+  Real output can already consolidate matching diffs, so t = 3 explicitly displays
+  authored teaching records rather than promising four individual messages.
+- [UPDATE](https://materialize.com/docs/sql/update/): updates change all matching
+  rows of a read-write table. The reference SQL uses separate UPDATE statements;
+  it does not put them in an explicit multi-statement transaction.
+
+No live Materialize connection is used. Exercises remain placeholders.

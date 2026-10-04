@@ -268,6 +268,11 @@
   background: color-mix(in srgb, var(--danger) 12%, var(--lab-surface));
 }
 
+.relation-count-neutral {
+  color: var(--lab-muted);
+  background: var(--surface-muted);
+}
+
 .relation-ledger-selected {
   background: var(--lab-tint);
   outline: 1px solid color-mix(in srgb, var(--lab-purple) 40%, var(--lab-border));
