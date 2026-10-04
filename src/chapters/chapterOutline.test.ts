@@ -14,7 +14,7 @@ if (!chapter) throw new Error('Chapter 1 must be in the curriculum.');
 
 describe('chapter navigation outline', () => {
   it('orders lectures before exercises in one continuous sequence', () => {
-    expect(getChapterPages(chapter)).toEqual([
+    expect(getChapterPages(chapter).map(({ sectionSlug, slug, title }) => ({ sectionSlug, slug, title }))).toEqual([
       { sectionSlug: 'tutorial', slug: 'lecture-1', title: 'Lecture 1' },
       { sectionSlug: 'tutorial', slug: 'lecture-2', title: 'Lecture 2' },
       { sectionSlug: 'exercises', slug: 'exercise-1', title: 'Exercise 1' },

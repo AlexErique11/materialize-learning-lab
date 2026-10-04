@@ -7,6 +7,7 @@ export interface ChapterDefinition {
   readonly shortTitle: string;
   readonly description: string;
   readonly introduction?: string;
+  readonly overviewImage?: string;
   readonly documentationLinks?: readonly DocumentationLink[];
   readonly optional?: boolean;
 }
@@ -19,6 +20,18 @@ export const chapters: readonly ChapterDefinition[] = [
     title: 'Changing Relations — Rows, Updates, and Diffs',
     shortTitle: 'Changing Relations',
     description: 'Reconstruct a changing relation from additions, retractions, and updates.',
+    introduction: 'Learn how signed changes reconstruct a relation over logical time. Follow additions, retractions, and updates in two tutorials, then practice reading and writing diffs in a three-phase inventory exercise.',
+    overviewImage: '/changing-relations-overview.png',
+    documentationLinks: [
+      { title: 'SUBSCRIBE: logical timestamps and signed diffs', href: 'https://materialize.com/docs/sql/subscribe/#output' },
+      { title: 'SUBSCRIBE: snapshots and initial state', href: 'https://materialize.com/docs/sql/subscribe/#snapshot' },
+      { title: 'SUBSCRIBE: old and new rows in an update', href: 'https://materialize.com/docs/sql/subscribe/#mapping-rows-to-their-updates' },
+      { title: 'SELECT: duplicate rows and grouping', href: 'https://materialize.com/docs/sql/select/' },
+      { title: 'COUNT: counting row copies', href: 'https://materialize.com/docs/sql/functions/#aggregate-functions' },
+      { title: 'INSERT: adding rows', href: 'https://materialize.com/docs/sql/insert/' },
+      { title: 'UPDATE: changing matching rows', href: 'https://materialize.com/docs/sql/update/' },
+      { title: 'DELETE: removing rows', href: 'https://materialize.com/docs/sql/delete/' },
+    ],
   },
   {
     number: 2,

@@ -41,15 +41,27 @@ const sectionDefinitions: readonly Omit<ChapterSectionDefinition, 'pages'>[] = [
   },
 ];
 
-// Navigation slots only. Actual chapter content will live beside its chapter.
+// Navigation and overview summaries. Actual chapter content lives beside its chapter.
 const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
   'changing-relations': {
     tutorial: [
-      { slug: 'lecture-1', title: 'Lecture 1' },
-      { slug: 'lecture-2', title: 'Lecture 2' },
+      {
+        slug: 'lecture-1',
+        title: 'Lecture 1',
+        description: 'Follow signed additions and retractions, distinguish row copies from distinct full rows, and see why a row disappears when its copy count reaches zero.',
+      },
+      {
+        slug: 'lecture-2',
+        title: 'Lecture 2',
+        description: 'Explore price updates as paired retractions and additions. Apply complete timestamp batches, combine matching diffs, and compare cancellation with replacement.',
+      },
     ],
     exercises: [
-      { slug: 'exercise-1', title: 'Exercise 1' },
+      {
+        slug: 'exercise-1',
+        title: 'Exercise 1',
+        description: 'Work through a three-phase inventory timeline: calculate copy counts, write diffs for a price change and restock, then identify the final rows and totals.',
+      },
     ],
   },
   'time-in-materialize': {

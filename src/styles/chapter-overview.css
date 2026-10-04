@@ -94,6 +94,11 @@
   color: var(--overview-accent);
 }
 
+.chapter-overview-illustration-image {
+  aspect-ratio: 5 / 2;
+  object-fit: cover;
+}
+
 .chapter-learn-more {
   --learn-more-muted: #626da8;
   --learn-more-icon-left: 1.9cqw;

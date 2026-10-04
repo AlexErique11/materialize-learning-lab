@@ -23,7 +23,7 @@ export function ChapterPage() {
           <h1>{chapter.shortTitle}</h1>
           <p>{chapter.introduction ?? chapter.description}</p>
         </div>
-        <ChapterOverviewIllustration />
+        <ChapterOverviewIllustration imageSrc={chapter.overviewImage} />
       </header>
       <ChapterDocumentation key={chapter.slug} chapter={chapter} />
       {getChapterSections(chapter).map((section) => (

@@ -1,4 +1,21 @@
-export function ChapterOverviewIllustration() {
+interface ChapterOverviewIllustrationProps {
+  readonly imageSrc?: string;
+}
+
+export function ChapterOverviewIllustration({ imageSrc }: ChapterOverviewIllustrationProps) {
+  if (imageSrc) {
+    return (
+      <img
+        className="chapter-overview-illustration chapter-overview-illustration-image"
+        src={imageSrc}
+        width={400}
+        height={160}
+        alt=""
+        aria-hidden="true"
+      />
+    );
+  }
+
   return (
     <svg className="chapter-overview-illustration" viewBox="0 0 400 160" fill="none" aria-hidden="true">
       <defs>

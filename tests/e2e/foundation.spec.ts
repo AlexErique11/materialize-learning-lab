@@ -64,27 +64,46 @@ test('chapter overview lists collapse independently and start their content', as
   expect(dimensions.width).toBeLessThanOrEqual(dimensions.viewport);
 });
 
-test('overview illustration stays separate from text when sections collapse near the layout breakpoint', async ({ page, isMobile }) => {
+test('overview illustrations keep a consistent frame when sections collapse near the layout breakpoint', async ({ page, isMobile }) => {
   test.skip(isMobile, 'Desktop verifies the breakpoint where a scrollbar can change the layout.');
   await page.setViewportSize({ width: 1350, height: 900 });
-  await page.goto('/labs/time-in-materialize');
-  for (const width of [1350, 1351, 1366, 1440]) {
-    await page.setViewportSize({ width, height: 900 });
-    for (const expanded of [true, false]) {
-      for (const section of await page.locator('.chapter-overview-section').all()) {
-        if (await section.evaluate((el) => el.hasAttribute('open')) !== expanded)
-          await section.locator('summary').click();
+  const imageFrames = new Map<string, { width: number; height: number }>();
+  for (const slug of ['changing-relations', 'time-in-materialize']) {
+    await page.goto(`/labs/${slug}`);
+    const illustration = page.locator('.chapter-overview-illustration');
+    if (slug === 'changing-relations') {
+      await expect(illustration).toHaveAttribute('src', '/changing-relations-overview.png');
+      await expect.poll(() => illustration.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+    } else {
+      await expect(page.locator('svg.chapter-overview-illustration')).toHaveCount(1);
+    }
+    for (const width of [1350, 1351, 1366, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      for (const expanded of [true, false]) {
+        for (const section of await page.locator('.chapter-overview-section').all()) {
+          if (await section.evaluate((el) => el.hasAttribute('open')) !== expanded)
+            await section.locator('summary').click();
+        }
+        const geometry = await page.locator('.chapter-overview-hero').evaluate((hero) => {
+          const text = hero.querySelector('div')!.getBoundingClientRect();
+          const illustration = hero.querySelector('.chapter-overview-illustration')!.getBoundingClientRect();
+          return { textRight: text.right, illustrationLeft: illustration.left,
+            illustrationRight: illustration.right, heroRight: hero.getBoundingClientRect().right,
+            width: illustration.width, height: illustration.height,
+            pageHeight: document.documentElement.scrollHeight, viewportHeight: innerHeight };
+        });
+        expect(geometry.illustrationLeft, `Text separation in ${slug} at ${width}px, expanded=${expanded}`).toBeGreaterThanOrEqual(geometry.textRight + 16);
+        expect(geometry.illustrationRight).toBeLessThanOrEqual(geometry.heroRight);
+        const frameKey = `${width}/${expanded}`;
+        if (slug === 'changing-relations') {
+          imageFrames.set(frameKey, geometry);
+        } else {
+          const imageFrame = imageFrames.get(frameKey)!;
+          expect(geometry.width).toBeCloseTo(imageFrame.width);
+          expect(geometry.height).toBeCloseTo(imageFrame.height);
+        }
+        if (!expanded) expect(geometry.pageHeight).toBeLessThanOrEqual(geometry.viewportHeight);
       }
-      const geometry = await page.locator('.chapter-overview-hero').evaluate((hero) => {
-        const text = hero.querySelector('div')!.getBoundingClientRect();
-        const illustration = hero.querySelector('svg')!.getBoundingClientRect();
-        return { textRight: text.right, illustrationLeft: illustration.left,
-          illustrationRight: illustration.right, heroRight: hero.getBoundingClientRect().right,
-          pageHeight: document.documentElement.scrollHeight, viewportHeight: innerHeight };
-      });
-      expect(geometry.illustrationLeft, `Text separation at ${width}px, expanded=${expanded}`).toBeGreaterThanOrEqual(geometry.textRight + 16);
-      expect(geometry.illustrationRight).toBeLessThanOrEqual(geometry.heroRight);
-      if (!expanded) expect(geometry.pageHeight).toBeLessThanOrEqual(geometry.viewportHeight);
     }
   }
 });

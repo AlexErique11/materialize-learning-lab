@@ -138,3 +138,19 @@ against [SUBSCRIBE](https://materialize.com/docs/sql/subscribe/) and
 teaching batches, not promises about the exact message grouping of a real
 SUBSCRIBE stream. The reprice-and-restock phase combines a price replacement
 with an additional copy; it does not claim that one UPDATE inserts extra stock.
+
+## Chapter overview
+
+The overview introduces both tutorials and the single three-phase inventory
+exercise. Its summaries live in the existing chapter outline; the introduction,
+documentation links, and illustration are chapter metadata.
+
+Learn more links to SUBSCRIBE's output, snapshot, and update-mapping sections,
+SELECT's duplicate-row and grouping behavior, aggregate functions including COUNT,
+and INSERT, UPDATE, and DELETE. These official references were checked on
+2026-10-04 and supplement the general Materialize documentation link.
+
+The supplied transparent diagram is stored unchanged at
+`public/changing-relations-overview.png`. Only Chapter 1 selects this image.
+It uses the same 400:160 illustration frame and responsive sizing as the default
+SVG; fitting it crops outer transparent padding without stretching the artwork.
