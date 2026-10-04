@@ -42,7 +42,7 @@ export function SqlObjectivesPanel({
             <ul className="space-y-2 text-sm">
               {documentationLinks.map((link) => (
                 <li key={link.href}>
-                  <a className="text-link inline-flex items-center gap-1" href={link.href}>
+                  <a className="text-link inline-flex items-center gap-1" href={link.href} target="_blank" rel="noopener noreferrer">
                     {link.label}
                     <ArrowUpRight size={14} aria-hidden="true" />
                   </a>

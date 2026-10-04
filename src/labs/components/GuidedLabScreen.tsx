@@ -1,5 +1,5 @@
-import { useEffect, useState, type ReactNode } from 'react';
-import { ArrowRight, Lightbulb, Play } from 'lucide-react';
+import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
+import { ArrowRight, Lightbulb, Pause, Play } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 import { materializeDocumentation } from '../../app/resources';
 import { chapterSectionPath, getChapterSections } from '../../chapters/chapterOutline';
@@ -13,12 +13,27 @@ import { usePageTitle } from '../../hooks/usePageTitle';
 // Preserve the reference's four checkpoints until real lab content supplies progress.
 const PLACEHOLDER_CHECKPOINT_TOTAL = 4;
 
+interface SimulationControls {
+  completed: number;
+  total: number;
+  playing: boolean;
+  progressLabel?: string;
+  onReset: () => void;
+  onRun: () => void;
+  onStartGuidedRun: () => void;
+}
+
 interface GuidedLabScreenProps {
   chapter: ChapterDefinition;
   title?: string;
   regionLabel?: string;
   navigation?: ReactNode;
   children?: ReactNode;
+  workspace?: ReactNode;
+  className?: string;
+  showTip?: boolean;
+  simulation?: SimulationControls;
+  reference?: Pick<ComponentProps<typeof SqlObjectivesPanel>, 'objective' | 'sql' | 'documentationLinks'>;
 }
 
 export function GuidedLabScreen({
@@ -27,6 +42,11 @@ export function GuidedLabScreen({
   regionLabel = 'Lab workspace',
   navigation,
   children,
+  workspace,
+  className = '',
+  showTip = true,
+  simulation,
+  reference,
 }: GuidedLabScreenProps) {
   const [referenceOpen, setReferenceOpen] = useState(false);
   const { pathname } = useLocation();
@@ -36,7 +56,7 @@ export function GuidedLabScreen({
   usePageTitle(title);
 
   return (
-    <section className="guided-lab-page">
+    <section className={`guided-lab-page ${className}`}>
       <div className="guided-lab-top-row">
         <Breadcrumbs items={[
           { label: 'Guided labs', to: '/labs' },
@@ -52,35 +72,37 @@ export function GuidedLabScreen({
         </div>
         <div className="guided-lab-controls" aria-label="Lab controls">
           <div className="guided-lab-progress">
-            <div><span>Progress</span><strong>{`0 / ${PLACEHOLDER_CHECKPOINT_TOTAL}`}</strong></div>
-            <ProgressBar value={0} total={PLACEHOLDER_CHECKPOINT_TOTAL} label="Lab checkpoints completed" />
+            <div><span>{simulation?.progressLabel ?? 'Progress'}</span><strong>{`${simulation?.completed ?? 0} / ${simulation?.total ?? PLACEHOLDER_CHECKPOINT_TOTAL}`}</strong></div>
+            <ProgressBar value={simulation?.completed ?? 0} total={simulation?.total ?? PLACEHOLDER_CHECKPOINT_TOTAL} label={simulation?.progressLabel ? `${simulation.progressLabel} progress` : 'Lab checkpoints completed'} />
           </div>
           <Button onClick={() => setReferenceOpen(true)}>SQL &amp; Objectives</Button>
-          <Button disabled title="This lab is to be done">Reset</Button>
-          <Button disabled title="This lab is to be done">
-            <Play size={13} fill="currentColor" aria-hidden="true" />Run
+          <Button disabled={!simulation} onClick={simulation?.onReset} title={!simulation ? 'This lab is to be done' : undefined}>Reset</Button>
+          <Button disabled={!simulation} onClick={simulation?.onRun} title={!simulation ? 'This lab is to be done' : undefined}>
+            {simulation?.playing ? <Pause size={13} aria-hidden="true" /> : <Play size={13} fill="currentColor" aria-hidden="true" />}
+            {simulation?.playing ? 'Pause' : 'Run'}
           </Button>
-          <Button variant="primary" disabled title="This lab is to be done">
+          <Button variant="primary" disabled={!simulation} onClick={simulation?.onStartGuidedRun} title={!simulation ? 'This lab is to be done' : undefined}>
             <Play size={13} fill="currentColor" aria-hidden="true" />Start guided run
           </Button>
         </div>
       </div>
-      <section className="guided-lab-canvas" aria-label={regionLabel}><p>To be done</p></section>
+      <section className="guided-lab-canvas" aria-label={regionLabel}>{workspace ?? <p>To be done</p>}</section>
       {children && <div className="guided-lab-page-navigation">{children}</div>}
-      <aside className="guided-lab-tip" aria-label="Lab tip">
+      {showTip && <aside className="guided-lab-tip" aria-label="Lab tip">
         <Lightbulb size={27} aria-hidden="true" />
         <strong>Tip</strong>
         <p>Use the SQL &amp; Objectives panel to see what to build, or start a guided run to step through the scenario.</p>
         <button type="button" onClick={() => setReferenceOpen(true)}>
           Open SQL &amp; Objectives<ArrowRight size={16} aria-hidden="true" />
         </button>
-      </aside>
+      </aside>}
       <SqlObjectivesPanel
         open={referenceOpen}
         onClose={() => setReferenceOpen(false)}
+        sql={reference?.sql}
         objective={
           <>
-            <p>{chapter.description}</p>
+            <p>{reference?.objective ?? chapter.description}</p>
             <nav className="guided-lab-reference-links" aria-label="Lab sections">
               {getChapterSections(chapter).map((section) => (
                 <Link key={section.slug} to={chapterSectionPath(chapter, section.slug)}>
@@ -90,7 +112,7 @@ export function GuidedLabScreen({
             </nav>
           </>
         }
-        documentationLinks={[{ label: materializeDocumentation.title, href: materializeDocumentation.href }]}
+        documentationLinks={reference?.documentationLinks ?? [{ label: materializeDocumentation.title, href: materializeDocumentation.href }]}
       />
     </section>
   );

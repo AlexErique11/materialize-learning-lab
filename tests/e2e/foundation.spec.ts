@@ -113,7 +113,7 @@ test('learning path, chapter navigation, and browser history', async ({ page }, 
   await expect(page.getByRole('heading', { name: firstChapter.shortTitle, exact: true })).toBeVisible();
 });
 
-test('empty lectures and exercises form one next/previous sequence', async ({ page }) => {
+test('lectures and exercises form one next/previous sequence', async ({ page }) => {
   await page.goto(chapterPath(firstChapter));
   await expect(page.getByRole('region', { name: 'Chapter overview' })).toBeVisible();
   await expect(page.getByRole('link', { name: /preview/i })).toHaveCount(0);
@@ -135,7 +135,8 @@ test('empty lectures and exercises form one next/previous sequence', async ({ pa
         exact: true,
       }),
     ).toBeVisible();
-    await expect(page.getByRole('button', { name: 'Run', exact: true })).toBeDisabled();
+    if (content.slug === 'lecture-1') await expect(page.getByRole('button', { name: 'Run', exact: true })).toBeEnabled();
+    else await expect(page.getByRole('button', { name: 'Run', exact: true })).toBeDisabled();
     await expect(page.getByRole('button', { name: 'SQL & Objectives', exact: true })).toBeEnabled();
   }
   await expect(
@@ -409,7 +410,7 @@ test('every chapter opens its overview and tutorial reference controls remain ac
   const referenceButton = page.getByRole('button', { name: 'SQL & Objectives', exact: true });
   const tipButton = page.getByRole('button', { name: 'Open SQL & Objectives', exact: true });
   const dialog = page.getByRole('dialog', { name: 'SQL & Objectives' });
-  for (const trigger of [referenceButton, tipButton]) {
+  for (const trigger of [referenceButton]) {
     await trigger.click();
     await expect(dialog).toBeVisible();
     await expect(dialog.getByRole('link', { name: 'Tutorial', exact: true })).toHaveAttribute('href', chapterSectionPath(firstChapter, 'tutorial'));
@@ -418,6 +419,7 @@ test('every chapter opens its overview and tutorial reference controls remain ac
     await expect(dialog).not.toBeVisible();
     await expect(trigger).toBeFocused();
   }
+  await expect(tipButton).toHaveCount(0);
   await page.getByRole('button', { name: 'Switch to dark mode' }).click();
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   await page.reload();
@@ -545,7 +547,9 @@ test('learning path and content pages fit desktop viewports without hiding navig
         dimensions.viewportWidth,
       );
       if (route.path !== '/') {
-        expect(
+        // The populated lecture stacks readable tables on phone-sized screens.
+        // Its desktop canvas and the other content pages still fit the viewport.
+        if (viewport.width >= 640 || route.path !== chapterContentPath(firstChapter, lecture)) expect(
           dimensions.height,
           `${route.path} at ${viewport.width} × ${viewport.height}`,
         ).toBeLessThanOrEqual(dimensions.viewportHeight);
