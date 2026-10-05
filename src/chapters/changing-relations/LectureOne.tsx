@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle2, Play } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { GuidedLabScreen } from '../../labs/components/GuidedLabScreen';
@@ -9,6 +9,7 @@ import { LessonText } from './LessonText';
 import { RelationMetrics, RelationWorkbench } from './RelationWorkbench';
 import { lectureReference, lectureSteps, lectureUpdates } from './scenario';
 import { relationAt } from './simulation';
+import { useWalkthrough } from '../../components/walkthrough/WalkthroughProvider';
 import { useLectureRun } from './useLectureRun';
 import './lecture-one.css';
 
@@ -19,6 +20,8 @@ interface LectureOneProps {
 
 export function LectureOne({ chapter, navigation }: LectureOneProps) {
   const { state, dispatch } = useLectureRun();
+  const { open: helpOpen } = useWalkthrough();
+  useEffect(() => { if (helpOpen) dispatch({ type: 'pause' }); }, [helpOpen, dispatch]);
   const ledgerRef = useRef<HTMLElement>(null);
   const relationRef = useRef<HTMLElement>(null);
   const metricsRef = useRef<HTMLDivElement>(null);
@@ -59,7 +62,7 @@ export function LectureOne({ chapter, navigation }: LectureOneProps) {
               <Button disabled={state.guided || state.playing || state.selectedTime === 0} onClick={() => dispatch({ type: 'previous-change' })}>
                 <ArrowLeft size={14} aria-hidden="true" />Previous change
               </Button>
-              <Button disabled={state.guided || state.playing || state.selectedTime === lectureUpdates.length} onClick={() => dispatch({ type: 'next-change' })}>
+              <Button data-walkthrough="next-change" disabled={state.guided || state.playing || state.selectedTime === lectureUpdates.length} onClick={() => dispatch({ type: 'next-change' })}>
                 Next change<ArrowRight size={14} aria-hidden="true" />
               </Button>
             </div>

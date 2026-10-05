@@ -1,0 +1,115 @@
+.relation-guide-actions .button-primary {
+  background: var(--lab-purple);
+  border-color: var(--lab-purple);
+}
+.relation-guide {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  color: var(--lab-text);
+  background: transparent;
+}
+.relation-guide::backdrop {
+  background: transparent;
+}
+.relation-guide-shade {
+  position: absolute;
+  background: var(--overlay);
+  backdrop-filter: blur(3px);
+}
+.relation-guide-hole {
+  position: absolute;
+  pointer-events: none;
+  border: 2px solid var(--lab-purple);
+  border-radius: 6px;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--lab-purple) 15%, transparent);
+}
+.relation-guide-card {
+  position: absolute;
+  width: min(460px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  border: 1px solid var(--lab-purple);
+  border-radius: 7px;
+  padding: 16px 18px;
+  background: var(--lab-surface);
+  box-shadow: 0 8px 35px var(--overlay);
+}
+.relation-guide-card-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--lab-purple);
+}
+.relation-guide-card-heading h2 {
+  flex: 1;
+  padding-top: 2px;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.relation-guide-card-heading > svg {
+  flex-shrink: 0;
+}
+.relation-guide-card-heading .relation-guide-close {
+  min-height: 24px;
+  padding: 2px;
+  color: var(--lab-muted);
+}
+.relation-guide-card > p {
+  margin-top: 9px;
+  color: var(--lab-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.relation-guide-phase {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--lab-purple);
+  background: var(--lab-tint);
+  font-size: 10px;
+  font-weight: 600;
+}
+.relation-guide-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 13px;
+}
+.relation-guide-step {
+  margin-right: auto;
+  color: var(--lab-muted);
+  font-size: 11px;
+}
+@media (max-width: 639px) {
+  .relation-guide-card {
+    padding: 13px;
+  }
+  .relation-guide-card-heading h2 {
+    font-size: 14px;
+  }
+  .relation-guide-card > p {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .relation-guide-phase {
+    margin-top: 6px;
+  }
+  .relation-guide-actions {
+    margin-top: 9px;
+  }
+}
+.relation-guide-actions .button { min-height: 34px; font-size: 12px; }
+.chapter-walkthrough-button { width: 24px; height: 24px; border: 1px solid var(--border-strong); border-radius: 50%; color: var(--text-muted); font-weight: 600; cursor: pointer; }
+.chapter-walkthrough-button:hover { color: var(--accent); border-color: var(--accent); }

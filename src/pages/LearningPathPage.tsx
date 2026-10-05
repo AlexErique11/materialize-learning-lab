@@ -5,6 +5,8 @@ import { Link } from 'react-router';
 import { coreChapters } from '../chapters/chapterRegistry';
 import { findChallenge, challengePath } from '../challenges/challengeRegistry';
 import { DOCUMENTATION_URL } from '../app/resources';
+import { Button } from '../components/ui/Button';
+import { useWalkthrough } from '../components/walkthrough/WalkthroughProvider';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
 import { ProgressBar } from '../components/ui/ProgressBar';
@@ -20,11 +22,13 @@ function LearningPathProgress({ total, label }: { total: number; label: string }
 }
 
 export function LearningPathPage() {
+  const { startChapterTour } = useWalkthrough();
   return (
     <PageContainer className="learning-path-page">
       <PageHeader
         eyebrow={<span className="learning-path-eyebrow">Learning path</span>}
         title="Learning path"
+        trailing={<Button className="learning-path-tour-button" onClick={() => startChapterTour()}>Take a tour</Button>}
         description="Build real-time data skills with hands-on labs and challenges. Follow the guided path or explore on your own."
       />
       <div className="learning-path-grid">

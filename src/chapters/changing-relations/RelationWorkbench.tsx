@@ -106,7 +106,7 @@ export function RelationWorkbench({ relation, updates, time, applied, onSelectTi
     return () => observer.disconnect();
   }, [time, removed, showArrow]);
   return (
-    <div ref={panelsRef} className="relation-panels">
+    <div ref={panelsRef} data-walkthrough="lecture-workspace" className="relation-panels">
       <section ref={ledgerRef} className="relation-panel" aria-labelledby="ledger-heading">
         <h2 id="ledger-heading">Change ledger <RelationHelp {...relationHelp.ledger} /></h2>
         <Table caption="Change ledger">

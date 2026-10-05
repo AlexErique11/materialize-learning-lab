@@ -141,3 +141,10 @@ describe('lecture run controls', () => {
     expect(lectureRunReducer(replay, { type: 'reset' })).toEqual(initialRunState);
   });
 });
+
+it('pause preserves applied changes, timestamp selection, and lesson progress', () => {
+  const state = { ...initialRunState, step: 3, applied: 2, selectedTime: 1, playing: true, revealed: false };
+  const paused = lectureRunReducer(state, { type: 'pause' });
+  expect(paused).toEqual({ ...state, playing: false });
+  expect(lectureRunReducer(paused, { type: 'tick' })).toEqual(paused);
+});

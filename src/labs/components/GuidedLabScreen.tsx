@@ -6,6 +6,7 @@ import { chapterSectionPath, getChapterSections } from '../../chapters/chapterOu
 import { chapterPath, type ChapterDefinition } from '../../chapters/chapterRegistry';
 import { SqlObjectivesPanel } from '../../components/lab/SqlObjectivesPanel';
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs';
+import { useWalkthrough } from '../../components/walkthrough/WalkthroughProvider';
 import { Button } from '../../components/ui/Button';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { usePageTitle } from '../../hooks/usePageTitle';
@@ -57,6 +58,8 @@ export function GuidedLabScreen({
   reference,
 }: GuidedLabScreenProps) {
   const [referenceOpen, setReferenceOpen] = useState(false);
+  const { open: helpOpen } = useWalkthrough();
+  useEffect(() => { if (helpOpen) setReferenceOpen(false); }, [helpOpen]);
   const { pathname } = useLocation();
   useEffect(() => {
     setReferenceOpen(false);
@@ -83,14 +86,14 @@ export function GuidedLabScreen({
             <div><span>{simulation?.progressLabel ?? 'Progress'}</span><strong>{`${simulation?.completed ?? 0} / ${simulation?.total ?? PLACEHOLDER_CHECKPOINT_TOTAL}`}</strong></div>
             <ProgressBar value={simulation?.completed ?? 0} total={simulation?.total ?? PLACEHOLDER_CHECKPOINT_TOTAL} label={simulation?.progressLabel ? `${simulation.progressLabel} progress` : 'Lab checkpoints completed'} />
           </div>}
-          {showReference && <Button onClick={() => setReferenceOpen(true)}>SQL &amp; Objectives</Button>}
+          {showReference && <Button data-walkthrough="sql" onClick={() => setReferenceOpen(true)}>SQL &amp; Objectives</Button>}
           {controls ? controls.actions : <>
           <Button disabled={!simulation} onClick={simulation?.onReset} title={!simulation ? 'This lab is to be done' : undefined}>Reset</Button>
-          <Button disabled={!simulation} onClick={simulation?.onRun} title={!simulation ? 'This lab is to be done' : undefined}>
+          <Button data-walkthrough="run" disabled={!simulation} onClick={simulation?.onRun} title={!simulation ? 'This lab is to be done' : undefined}>
             {simulation?.playing ? <Pause size={13} aria-hidden="true" /> : <Play size={13} fill="currentColor" aria-hidden="true" />}
             {simulation?.playing ? 'Pause' : 'Run'}
           </Button>
-          <Button variant="primary" disabled={!simulation} onClick={simulation?.onStartGuidedRun} title={!simulation ? 'This lab is to be done' : undefined}>
+          <Button data-walkthrough="guided" variant="primary" disabled={!simulation} onClick={simulation?.onStartGuidedRun} title={!simulation ? 'This lab is to be done' : undefined}>
             <Play size={13} fill="currentColor" aria-hidden="true" />Start guided run
           </Button>
           </>}

@@ -1,4 +1,5 @@
-import { useReducer } from 'react';
+import { useEffect, useReducer } from 'react';
+import { rememberCompletedWork } from '../../components/walkthrough/walkthroughStorage';
 import type { LessonTextContent } from './LessonText';
 
 export interface ExerciseGrade {
@@ -33,6 +34,7 @@ export function exerciseStageReducer(state: ExerciseStageState, action: Exercise
 export function useExerciseStages(total: number) {
   const [state, dispatch] = useReducer((previous: ExerciseStageState, action: ExerciseStageAction) => exerciseStageReducer(previous, action, total), initialExerciseStage);
   const accepted = state.grade?.correct ?? false;
+  useEffect(() => { if (accepted) rememberCompletedWork(); }, [accepted]);
   return { ...state, total, accepted, completed: state.stage + Number(accepted),
     complete: accepted && state.stage === total - 1, dispatch };
 }

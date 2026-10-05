@@ -17,7 +17,7 @@ export function ChapterOverviewSection({ chapter, section }: ChapterOverviewSect
   const SectionIcon = isTutorial ? BookOpen : Code;
 
   return (
-    <details className="chapter-overview-section" open>
+    <details data-walkthrough={isTutorial ? 'tutorials' : 'exercises'} className="chapter-overview-section" open>
       <summary>
         <SectionIcon size={36} aria-hidden="true" />
         <div>
@@ -40,6 +40,7 @@ export function ChapterOverviewSection({ chapter, section }: ChapterOverviewSect
               </span>
             ) : <span className="chapter-overview-status">Not started</span>}
             <Link
+              data-walkthrough={isTutorial && page.slug === 'lecture-1' ? 'start-lecture-1' : undefined}
               className={`chapter-overview-start${isTutorial && index === 0 ? ' chapter-overview-start-primary' : ''}`}
               to={chapterContentPath(chapter, { ...page, sectionSlug: section.slug })}
               aria-label={`Start ${section.itemLabel}: ${page.title}`}

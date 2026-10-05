@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react';
+import { useEffect, useRef, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle2, Play } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { GuidedLabScreen } from '../../labs/components/GuidedLabScreen';
@@ -10,12 +10,15 @@ import { RelationMetrics } from './RelationWorkbench';
 import { UpdateDiagram } from './UpdateDiagram';
 import { lectureTwoBatches, lectureTwoInitial, lectureTwoReference, lectureTwoRun, lectureTwoSteps, lectureTwoUpdates } from './lecture-two-scenario';
 import { relationAt } from './simulation';
+import { useWalkthrough } from '../../components/walkthrough/WalkthroughProvider';
 import { useLectureRun } from './useLectureRun';
 import './lecture-one.css';
 import './lecture-two.css';
 
 export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition; navigation: ReactNode }) {
   const { state, dispatch } = useLectureRun(lectureTwoRun);
+  const { open: helpOpen } = useWalkthrough();
+  useEffect(() => { if (helpOpen) dispatch({ type: 'pause' }); }, [helpOpen, dispatch]);
   const ledgerRef = useRef<HTMLElement>(null);
   const relationRef = useRef<HTMLElement>(null);
   const metricsRef = useRef<HTMLDivElement>(null);
@@ -48,7 +51,7 @@ export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition
           {inspectingHistory && <Button onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
           <div>
             <Button disabled={state.guided || state.playing || state.selectedTime === 0} onClick={() => dispatch({ type: 'previous-change' })}><ArrowLeft size={14} aria-hidden="true" />Previous timestamp</Button>
-            <Button disabled={state.guided || state.playing || state.selectedTime === lectureTwoBatches.length} onClick={() => dispatch({ type: 'next-change' })}>Next timestamp<ArrowRight size={14} aria-hidden="true" /></Button>
+            <Button data-walkthrough="next-change" disabled={state.guided || state.playing || state.selectedTime === lectureTwoBatches.length} onClick={() => dispatch({ type: 'next-change' })}>Next timestamp<ArrowRight size={14} aria-hidden="true" /></Button>
           </div>
         </div>
       </div>} />

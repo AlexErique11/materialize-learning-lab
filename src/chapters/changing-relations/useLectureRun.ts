@@ -1,4 +1,5 @@
 import { useEffect, useReducer } from 'react';
+import { rememberCompletedWork } from '../../components/walkthrough/walkthroughStorage';
 import { lectureSteps, lectureUpdates } from './scenario';
 import type { LessonTextContent } from './LessonText';
 
@@ -26,7 +27,7 @@ export const initialRunState: LectureRunState = {
 };
 
 export type LectureRunAction =
-  | { type: 'reset' | 'play' | 'tick' | 'start-guided' | 'close-guided' | 'previous-change' | 'next-change' | 'reveal' | 'next' | 'back' }
+  | { type: 'reset' | 'pause' | 'play' | 'tick' | 'start-guided' | 'close-guided' | 'previous-change' | 'next-change' | 'reveal' | 'next' | 'back' }
   | { type: 'select'; time: number };
 
 function advanceChange(state: LectureRunState, totalChanges: number): LectureRunState {
@@ -39,6 +40,7 @@ function advanceChange(state: LectureRunState, totalChanges: number): LectureRun
 export function lectureRunReducer(state: LectureRunState, action: LectureRunAction, definition: LectureRunDefinition = lectureOneRun): LectureRunState {
   const { totalChanges, steps } = definition;
   switch (action.type) {
+    case 'pause': return { ...state, playing: false };
     case 'reset': return initialRunState;
     case 'start-guided': return { ...initialRunState, guided: true };
     case 'close-guided': return { ...state, guided: false, revealed: true };
@@ -89,5 +91,8 @@ export function useLectureRun(definition: LectureRunDefinition = lectureOneRun) 
     const timeout = window.setTimeout(() => dispatch({ type: 'tick' }), PLAYBACK_INTERVAL_MS);
     return () => window.clearTimeout(timeout);
   }, [state.playing, state.applied]);
+  useEffect(() => {
+    if (state.step === definition.steps.length) rememberCompletedWork();
+  }, [state.step, definition.steps.length]);
   return { state, dispatch };
 }

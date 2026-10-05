@@ -27,7 +27,7 @@ export function BatchWorkbench({ relation, time, applied, previewTime, ledgerRef
   const current = lectureTwoBatches.find((entry) => entry.time === time);
   const affectedRows = current ? consolidateTimestamp(current.updates).filter((update) => update.diff !== 0).map((update) => update.row) : [];
 
-  return <div className="relation-panels">
+  return <div data-walkthrough="lecture-workspace" className="relation-panels">
     <section ref={ledgerRef} className="relation-panel batch-ledger" aria-labelledby="ledger-heading">
       <div className="batch-panel-heading">
         <h2 id="ledger-heading">Change ledger <RelationHelp {...batchHelp.ledger} /></h2>

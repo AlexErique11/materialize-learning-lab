@@ -575,3 +575,9 @@
     padding-inline: 20px;
   }
 }
+
+.learning-path-tour-button { margin-top: 20px; }
+@media (max-width: 767px) {
+  .learning-path-page .page-heading { gap: 12px; }
+  .learning-path-page h1 { font-size: 30px; }
+}

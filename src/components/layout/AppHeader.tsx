@@ -3,7 +3,10 @@ import { Link } from 'react-router';
 import { DOCUMENTATION_URL } from '../../app/resources';
 import { useTheme } from '../../hooks/useTheme';
 
+import { useWalkthrough } from '../walkthrough/WalkthroughProvider';
+
 export function AppHeader() {
+  const { lectureHelpAvailable, startLectureHelp } = useWalkthrough();
   const { theme, toggleTheme } = useTheme();
 
   return (
@@ -22,6 +25,7 @@ export function AppHeader() {
           <a href={DOCUMENTATION_URL} className="docs-link" target="_blank" rel="noopener noreferrer">
             Docs<ArrowUpRight size={15} aria-hidden="true" />
           </a>
+          {lectureHelpAvailable && <button type="button" className="chapter-walkthrough-button" aria-label="Lecture controls walkthrough" onClick={startLectureHelp}>?</button>}
           <span className="header-divider" aria-hidden="true" />
           <div className="lab-theme-switch" role="group" aria-label="Color theme">
             <button

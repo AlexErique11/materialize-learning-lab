@@ -71,15 +71,15 @@ export function ExerciseLayout({ chapter, title, description, navigation, flow, 
         <ProgressBar value={flow.completed} total={flow.total} label="Exercise phases completed" /></div>,
       actions: <>
         <Button onClick={onReset}>Reset</Button>
-        <Button disabled={flow.accepted} aria-expanded={flow.hintOpen} aria-controls={`${formId}-question`} onClick={() => flow.dispatch({ type: 'hint' })}><Lightbulb size={14} aria-hidden="true" />Hint</Button>
-        <Button disabled={flow.accepted} onClick={onShowAnswer}><Eye size={14} aria-hidden="true" />Show Answer</Button>
-        <Button variant="primary" type="submit" form={formId} disabled={flow.accepted}><CheckCircle2 size={14} aria-hidden="true" />Check Answer</Button>
+        <Button data-walkthrough="hint" disabled={flow.accepted} aria-expanded={flow.hintOpen} aria-controls={`${formId}-question`} onClick={() => flow.dispatch({ type: 'hint' })}><Lightbulb size={14} aria-hidden="true" />Hint</Button>
+        <Button data-walkthrough="answer" disabled={flow.accepted} onClick={onShowAnswer}><Eye size={14} aria-hidden="true" />Show Answer</Button>
+        <Button data-walkthrough="check" variant="primary" type="submit" form={formId} disabled={flow.accepted}><CheckCircle2 size={14} aria-hidden="true" />Check Answer</Button>
       </>,
     }}
     workspace={<form id={formId} className="relation-workspace" noValidate onSubmit={(event) => { event.preventDefault(); if (!flow.accepted) onCheck(); }}>
       <RelationMetrics relation={relation} time={time} metricsRef={metricsRef} />
       <div className="relation-panels">{ledger}<CurrentRelation relation={relation} time={time} relationRef={relationRef} highlightCopies={false} minRows={rows} /></div>
-      <section id={`${formId}-question`} className="exercise-question" data-result={flow.grade ? (flow.accepted ? 'correct' : 'incorrect') : 'ready'} aria-labelledby={`${formId}-heading`}>
+      <section id={`${formId}-question`} data-walkthrough="question" className="exercise-question" data-result={flow.grade ? (flow.accepted ? 'correct' : 'incorrect') : 'ready'} aria-labelledby={`${formId}-heading`}>
         <div className="exercise-question-copy" aria-live="polite" aria-atomic="true">
           <h2 id={`${formId}-heading`}>{flow.accepted ? <CheckCircle2 size={18} aria-hidden="true" /> : <Lightbulb size={18} aria-hidden="true" />}<span><LessonText content={flow.grade?.title ?? [`Phase ${flow.stage + 1} of ${flow.total}: ${checkpointTitle}`]} /></span></h2>
           <p><LessonText content={flow.grade?.explanation ?? (flow.hintOpen ? hint : question)} /></p>
