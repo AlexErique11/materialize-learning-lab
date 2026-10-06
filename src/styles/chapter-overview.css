@@ -399,16 +399,15 @@
   border-color: var(--overview-accent);
 }
 
-.chapter-overview-start-primary {
-  color: var(--accent-contrast);
-  background: var(--overview-accent);
-  border-color: var(--overview-accent);
+.chapter-overview-start-lesson {
+  color: var(--overview-accent);
+  background: color-mix(in srgb, var(--lab-tint) 15%, var(--lab-surface));
+  border-color: color-mix(in srgb, var(--overview-accent) 14%, var(--lab-surface));
 }
 
-.chapter-overview-start-primary:hover {
-  color: var(--accent-contrast);
-  background: var(--overview-accent);
-  filter: brightness(.94);
+.chapter-overview-start-lesson:hover {
+  background: var(--lab-tint);
+  border-color: var(--overview-accent);
 }
 
 .chapter-overview-row > .chapter-overview-start {

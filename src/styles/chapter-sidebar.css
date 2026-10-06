@@ -374,14 +374,6 @@
   transform: rotate(-90deg);
 }
 
-.chapter-section > summary > .chapter-section-forward {
-  transform: none;
-}
-
-.chapter-section[open] > summary > .chapter-section-forward {
-  display: none;
-}
-
 .app-shell-guided-labs .chapter-pages {
   margin: 0 0 4px 12px;
   padding: 0 0 0 16px;

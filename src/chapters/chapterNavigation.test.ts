@@ -19,7 +19,7 @@ describe('chapter page navigation', () => {
       previous: {
         to: '/labs/changing-relations', title: 'Changing Relations', label: 'Chapter overview',
       },
-      next: { to: '/labs/changing-relations/tutorial/lecture-2', title: 'Lecture 2' },
+      next: { to: '/labs/changing-relations/tutorial/lecture-2', title: 'Lecture 2: Updates and batches' },
     });
   });
 
@@ -28,7 +28,7 @@ describe('chapter page navigation', () => {
       to: '/labs/changing-relations/exercises/exercise-1', title: 'Exercise 1',
     });
     expect(navigationFor('exercises', 'exercise-1').previous).toEqual({
-      to: '/labs/changing-relations/tutorial/lecture-2', title: 'Lecture 2',
+      to: '/labs/changing-relations/tutorial/lecture-2', title: 'Lecture 2: Updates and batches',
     });
   });
 

@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { NavLink } from 'react-router';
 import {
   chapterContentPath,
@@ -25,7 +25,6 @@ export function ChapterSidebarSection({ chapter, section, open, onOpenChange }: 
         <span className="chapter-group-dot" aria-hidden="true" />
         <ChevronDown className="chapter-section-chevron" size={16} aria-hidden="true" />
         <span>{section.listTitle}</span>
-        <ChevronRight className="chapter-section-forward" size={16} aria-hidden="true" />
       </summary>
       <ol className="chapter-pages">
         {section.pages.length === 0 && (

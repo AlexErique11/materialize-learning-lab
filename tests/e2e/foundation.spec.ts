@@ -137,7 +137,7 @@ test('lectures and exercises form one next/previous sequence', async ({ page }) 
   await expect(page.getByRole('region', { name: 'Chapter overview' })).toBeVisible();
   await expect(page.getByRole('link', { name: /preview/i })).toHaveCount(0);
   await expect(page.getByRole('navigation', { name: 'Page navigation' })).toHaveCount(0);
-  await page.getByRole('link', { name: 'Start tutorial: Lecture 1', exact: true }).click();
+  await page.getByRole('link', { name: 'Start tutorial: Lecture 1: Signed changes', exact: true }).click();
   const pages = getChapterPages(firstChapter);
   for (const [index, content] of pages.entries()) {
     if (index > 0)
@@ -146,7 +146,7 @@ test('lectures and exercises form one next/previous sequence', async ({ page }) 
       .getByRole('link', { name: new RegExp(`Next\\s+${content.title}`) })
       .click();
     await expect(page).toHaveURL(chapterContentPath(firstChapter, content));
-    await expect(page.getByRole('heading', { name: content.title, exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: content.title.split(':')[0], exact: true })).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible();
     await expect(
       page.getByRole('region', {
@@ -190,7 +190,7 @@ test('section overviews have their own URLs and only registered pages', async ({
   await expect(page.getByRole('list', { name: 'Tutorial pages' }).getByRole('link')).toHaveCount(2);
   await page
     .getByRole('list', { name: 'Tutorial pages' })
-    .getByRole('link', { name: 'Lecture 2' })
+    .getByRole('link', { name: 'Lecture 2: Updates and batches' })
     .click();
   await expect(page.getByRole('heading', { name: 'Lecture 2', exact: true })).toBeVisible();
   await page.goBack();
@@ -221,15 +221,15 @@ test('sidebar subsections are keyboard-operable and reflect the active page', as
     .filter({ hasText: 'Tutorial' });
   await tutorialToggle.focus();
   await page.keyboard.press('Enter');
-  await expect(sidebar.getByRole('link', { name: 'Lecture 2', exact: true })).not.toBeVisible();
+  await expect(sidebar.getByRole('link', { name: 'Lecture 2: Updates and batches', exact: true })).not.toBeVisible();
   await page.keyboard.press('Enter');
-  await sidebar.getByRole('link', { name: 'Lecture 2', exact: true }).click();
+  await sidebar.getByRole('link', { name: 'Lecture 2: Updates and batches', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Lecture 2', exact: true })).toBeVisible();
   if (isMobile) {
     await expect(page.locator('.mobile-sidebar')).not.toHaveAttribute('open', '');
     await mobileToggle.click();
   }
-  await expect(sidebar.getByRole('link', { name: 'Lecture 2', exact: true })).toHaveAttribute(
+  await expect(sidebar.getByRole('link', { name: 'Lecture 2: Updates and batches', exact: true })).toHaveAttribute(
     'aria-current',
     'page',
   );
@@ -279,7 +279,7 @@ test('chapter navigation remains accessible when the sidebar is collapsed', asyn
     expect(collapsedBounds).not.toBeNull();
     if (expandedBounds && collapsedBounds)
       expect(collapsedBounds.width).toBeGreaterThan(expandedBounds.width);
-    await page.getByRole('link', { name: 'Start tutorial: Lecture 1', exact: true }).click();
+    await page.getByRole('link', { name: 'Start tutorial: Lecture 1: Signed changes', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Lecture 1', exact: true })).toBeVisible();
     await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible();
     await expect(expand).toHaveAttribute('aria-expanded', 'false');
@@ -323,13 +323,13 @@ test('chapter sidebar preserves open groups and toggles from the chapter body', 
   await expect(tutorials).not.toHaveAttribute('open', '');
   await expect(exercises).not.toHaveAttribute('open', '');
   await tutorials.locator('summary').click();
-  await expect(sidebar.getByRole('link', { name: 'Lecture 1', exact: true })).toBeVisible();
+  await expect(sidebar.getByRole('link', { name: 'Lecture 1: Signed changes', exact: true })).toBeVisible();
   await expect(exercises).not.toHaveAttribute('open', '');
-  await sidebar.getByRole('link', { name: 'Lecture 2', exact: true }).click();
+  await sidebar.getByRole('link', { name: 'Lecture 2: Updates and batches', exact: true }).click();
   await revealSidebar();
   await expect(tutorials).toHaveAttribute('open', '');
   await expect(exercises).not.toHaveAttribute('open', '');
-  await expect(sidebar.getByRole('link', { name: 'Lecture 2', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(sidebar.getByRole('link', { name: 'Lecture 2: Updates and batches', exact: true })).toHaveAttribute('aria-current', 'page');
   const chapterBody = sidebar.getByRole('link', { name: `01 ${firstChapter.shortTitle}`, exact: true });
   await chapterBody.click();
   await expect(overview).not.toBeVisible();
@@ -352,7 +352,7 @@ test('chapter sidebar preserves open groups and toggles from the chapter body', 
   await expect(tutorials).toHaveAttribute('open', '');
   await expect(exercises).toHaveAttribute('open', '');
   await expect(sidebar.getByRole('link', { name: 'Exercise 1', exact: true })).toHaveAttribute('aria-current', 'page');
-  await sidebar.getByRole('link', { name: 'Lecture 1', exact: true }).click();
+  await sidebar.getByRole('link', { name: 'Lecture 1: Signed changes', exact: true }).click();
   await revealSidebar();
   await expect(tutorials).toHaveAttribute('open', '');
   await expect(exercises).toHaveAttribute('open', '');
@@ -371,7 +371,7 @@ test('chapter sidebar preserves open groups and toggles from the chapter body', 
   await revealSidebar();
   await expect(tutorials).toHaveAttribute('open', '');
   await expect(exercises).toHaveAttribute('open', '');
-  await page.getByRole('link', { name: 'Start tutorial: Lecture 1', exact: true }).click();
+  await page.getByRole('link', { name: 'Start tutorial: Lecture 1: Signed changes', exact: true }).click();
   await revealSidebar();
   await expect(tutorials).toHaveAttribute('open', '');
   await expect(exercises).toHaveAttribute('open', '');
@@ -433,7 +433,7 @@ test('every chapter opens its overview and tutorial reference controls remain ac
   }
 
   await page.goto(chapterPath(firstChapter));
-  await page.getByRole('link', { name: 'Start tutorial: Lecture 1', exact: true }).click();
+  await page.getByRole('link', { name: 'Start tutorial: Lecture 1: Signed changes', exact: true }).click();
   const referenceButton = page.getByRole('button', { name: 'SQL & Objectives', exact: true });
   const tipButton = page.getByRole('button', { name: 'Open SQL & Objectives', exact: true });
   const dialog = page.getByRole('dialog', { name: 'SQL & Objectives' });
@@ -550,7 +550,7 @@ test('learning path and content pages fit desktop viewports without hiding navig
       ];
   const routes = [
     ...(!isMobile ? [{ path: '/', title: 'Learning path' }] : []),
-    { path: chapterContentPath(firstChapter, lecture), title: lecture.title },
+    { path: chapterContentPath(firstChapter, lecture), title: 'Lecture 1' },
     { path: chapterContentPath(firstChapter, exercise), title: exercise.title },
   ];
   for (const viewport of viewports) {

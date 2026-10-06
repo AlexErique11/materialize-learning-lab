@@ -5,7 +5,6 @@ export function RelationHelp({ label, text }: { label: string; text: string }) {
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const tooltipRef = useRef<HTMLSpanElement>(null);
-  const pinned = useRef(false);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ left: 0, top: 0 });
 
@@ -39,7 +38,7 @@ export function RelationHelp({ label, text }: { label: string; text: string }) {
 
   useEffect(() => {
     if (!open) return;
-    const dismiss = () => { pinned.current = false; setOpen(false); };
+    const dismiss = () => setOpen(false);
     const onPointerDown = (event: PointerEvent) => {
       if (event.target instanceof Node && !triggerRef.current?.contains(event.target)) dismiss();
     };
@@ -57,9 +56,8 @@ export function RelationHelp({ label, text }: { label: string; text: string }) {
   return <span className="relation-help">
     <button ref={triggerRef} type="button" aria-label={`About ${label}`} aria-describedby={open ? id : undefined} aria-expanded={open}
       onPointerEnter={(event) => { if (event.pointerType === 'mouse') setOpen(true); }}
-      onPointerLeave={() => { if (!pinned.current && document.activeElement !== triggerRef.current) setOpen(false); }}
-      onFocus={() => setOpen(true)} onBlur={() => { pinned.current = false; setOpen(false); }}
-      onClick={() => { pinned.current = !pinned.current; setOpen(pinned.current); }}>
+      onPointerLeave={() => setOpen(false)}
+      onFocus={() => setOpen(true)} onBlur={() => setOpen(false)}>
       <HelpCircle size={14} aria-hidden="true" />
     </button>
     <span ref={tooltipRef} id={id} role="tooltip" popover="manual" className="relation-help-tooltip" style={position}>
