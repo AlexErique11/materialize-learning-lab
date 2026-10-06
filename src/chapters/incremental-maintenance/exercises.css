@@ -1,0 +1,132 @@
+﻿.maintenance-exercise-page .exercise-time { color: var(--lab-muted); font-size: 12px; }
+.exercise-question-toggle { display: none; }
+.maintenance-exercise-page .exercise-question { grid-template-columns: 1fr; gap: 8px; min-height: 0; }
+.maintenance-exercise-page .exercise-answers { gap: 10px; align-items: center; }
+.maintenance-exercise-page .guided-lab-progress { min-width: 110px; }
+.maintenance-exercise-page .guided-lab-progress strong { white-space: nowrap; }
+.maintenance-exercise-page .exercise-question-navigation { min-height: 32px; }
+.maintenance-exercise-page .exercise-question-navigation[data-free-navigation]:empty { display: none; }
+
+/* The regional exercise keeps the reference's shared input and two methods
+   visible above the question, including on short desktop screens. */
+.grouped-revenue-exercise-page .exercise-question-toggle { display: none; }
+.maintenance-exercise-page.grouped-revenue-exercise-page [data-question-open] .exercise-question { display: grid; }
+.grouped-revenue-exercise-page .exercise-choice:first-child { flex: 0 0 250px; }
+.grouped-revenue-exercise-page .exercise-choice:last-child { flex: 1; }
+.grouped-revenue-exercise-page [data-layout='comparison'] .comparison-section-title { display: none; }
+.grouped-revenue-exercise-page [data-layout='comparison'] .comparison-method { gap: 4px; }
+.grouped-revenue-exercise-page .exercise-question-navigation[data-free-navigation] { height: 40px; min-height: 40px; }
+.maintenance-exercise-page.grouped-revenue-exercise-page .exercise-question-navigation[data-free-navigation]:empty { display: flex; visibility: hidden; }
+.exercise-choice { border: 0; padding: 0; margin: 0; min-width: 0; font-size: 12px; color: var(--lab-muted); }
+.exercise-choice legend { font-weight: 650; margin-bottom: 4px; }
+.exercise-choice label { display: inline-flex; align-items: center; gap: 5px; margin-right: 10px; padding: 3px 5px; border-radius: 4px; }
+.exercise-choice input { accent-color: var(--lab-purple); }
+.maintenance-exercise-page .exercise-choice label[data-answer='correct'] { color: var(--success); background: color-mix(in srgb, var(--success) 12%, transparent); outline: 1px solid var(--success); }
+.maintenance-exercise-page .exercise-choice label[data-answer='incorrect'] { color: var(--danger); outline: 1px solid var(--danger); }
+
+/* Questions and their reference tables share the available space on short screens. */
+@media (max-width: 639px), (max-height: 820px) {
+ .join-filter-exercise-page .exercise-question-toggle { display: block; justify-self: end; }
+ .join-filter-exercise-page [data-question-open='false'] .exercise-question { display: none; }
+ .join-filter-exercise-page [data-question-open='true'] .maintenance-panels { display: none; }
+}
+@media (min-width: 640px) and (max-height: 820px) {
+ .maintenance-exercise-page .exercise-question { padding: 8px 12px; }
+}
+@media (max-width: 639px) {
+ .join-filter-exercise-page [data-question-open='true'] .maintenance-stage-workspace .maintenance-flow { display: none; }
+
+}
+
+/* The combined scenario uses table-only panels, leaving room for its prediction. */
+@media (min-width: 640px) {
+ .app-shell-guided-labs .guided-lab-page.incremental-maintenance-page.join-filter-exercise-page[data-viewport-fit] { padding-bottom: 12px; }
+ .guided-lab-page.incremental-maintenance-page.join-filter-exercise-page[data-viewport-fit] .guided-lab-canvas { display: flex; flex: 1; align-items: stretch; }
+ .guided-lab-page.incremental-maintenance-page.join-filter-exercise-page[data-viewport-fit] .relation-workspace { flex: 1; grid-auto-rows: min-content; align-content: space-between; }
+ .join-filter-exercise-page .maintenance-stage-workspace { display: grid; gap: 4px; }
+ .join-filter-exercise-page .maintenance-panels > .relation-panel { height: 190px; }
+ .join-filter-exercise-page .maintenance-panels .table-scroll { height: 166px; }
+ .join-filter-exercise-page .maintenance-panels .data-table th { padding: 6px 4px; white-space: nowrap; }
+ .join-filter-exercise-page .maintenance-panels .data-table td { height: 26px; padding-block: 2px; }
+ .join-filter-exercise-page [data-question-open='true'] .maintenance-panels { display: grid; }
+ .join-filter-exercise-page [data-question-open='false'] .exercise-question { display: grid; }
+ .join-filter-exercise-page .exercise-question-toggle { display: none; }
+}
+
+@media (min-width: 640px) and (max-height: 740px) {
+ .guided-lab-page.incremental-maintenance-page.join-filter-exercise-page[data-viewport-fit] .relation-workspace { gap: 4px; }
+ .join-filter-exercise-page .maintenance-panels > .relation-panel { height: 174px; padding: 3px; }
+ .join-filter-exercise-page .exercise-question { padding-block: 6px; gap: 6px; }
+ .join-filter-exercise-page .exercise-answers { gap: 6px; }
+ .join-filter-exercise-page .exercise-question:has(.exercise-choice:only-child) { padding-block: 12px; gap: 12px; }
+}
+
+.maintenance-exercise-page .exercise-question-navigation[data-free-navigation] { min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+.join-filter-exercise-page .exercise-choice { flex-basis: 100%; }
+@media (min-width: 640px) and (min-height: 741px) {
+ .app-shell-guided-labs .guided-lab-page.incremental-maintenance-page.join-filter-exercise-page[data-viewport-fit] { padding-bottom: 16px; }
+ .guided-lab-page.incremental-maintenance-page.join-filter-exercise-page[data-viewport-fit] .relation-workspace { gap: 14px; }
+ .join-filter-exercise-page .maintenance-stage-workspace { display: grid; gap: 14px; }
+ .join-filter-exercise-page .exercise-question { padding: 12px 16px; gap: 12px; }
+ .join-filter-exercise-page .exercise-answers { gap: 14px; }
+}
+@media (min-width: 640px) and (min-height: 850px) {
+ .app-shell-guided-labs .guided-lab-page.incremental-maintenance-page.join-filter-exercise-page[data-viewport-fit] { padding-bottom: 24px; }
+ .guided-lab-page.incremental-maintenance-page.join-filter-exercise-page[data-viewport-fit] .relation-workspace, .join-filter-exercise-page .maintenance-stage-workspace { gap: 22px; }
+ .join-filter-exercise-page .maintenance-panels > .relation-panel { height: 228px; }
+ .join-filter-exercise-page .maintenance-panels .table-scroll { height: 202px; }
+ .join-filter-exercise-page .exercise-question { padding: 20px; gap: 16px; }
+ .join-filter-exercise-page .exercise-answers { gap: 18px; }
+ }
+@media (max-width: 639px) {
+ .maintenance-exercise-page .exercise-question-navigation[data-free-navigation] { gap: 6px; }
+ .maintenance-exercise-page .exercise-question-navigation[data-free-navigation] .button { padding-inline: 8px; font-size: 12px; }
+ .maintenance-exercise-page .exercise-question-navigation[data-free-navigation] .button { min-height: 36px; }
+}
+
+@media (min-width: 640px) {
+ .app-shell-guided-labs .guided-lab-page.incremental-maintenance-page.grouped-revenue-exercise-page[data-viewport-fit] { padding-bottom: 12px; }
+ .maintenance-exercise-page.grouped-revenue-exercise-page .exercise-question-toggle { display: none; }
+ .guided-lab-page.incremental-maintenance-page.grouped-revenue-exercise-page[data-viewport-fit] .guided-lab-canvas { display: flex; flex: 1; align-items: stretch; }
+ .guided-lab-page.incremental-maintenance-page.grouped-revenue-exercise-page[data-viewport-fit] .relation-workspace { flex: 1; grid-auto-rows: min-content; align-content: space-between; gap: 10px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .comparison-input ul { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .relation-panel:not([data-stage='orders']) { height: 212px; }
+ .grouped-revenue-exercise-page .exercise-question { padding: 12px 16px; gap: 10px; }
+ .grouped-revenue-exercise-page .exercise-answers { gap: 10px; }
+}
+@media (min-width: 640px) and (max-height: 820px) {
+ .grouped-revenue-exercise-page .maintenance-stage-workspace[data-layout='comparison'] { --comparison-source-height: 112px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .relation-panel[data-stage] { padding-top: 36px; padding-bottom: 8px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .relation-panel:not([data-stage='orders']) { height: 184px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .comparison-arrows { height: 20px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .comparison-arrows svg { height: calc(var(--comparison-source-height) / 2 + 20px + var(--comparison-row-gap) * 2); }
+}
+@media (min-width: 640px) and (max-height: 740px) {
+ .grouped-revenue-exercise-page .maintenance-stage-workspace[data-layout='comparison'] { --comparison-source-height: 88px; --comparison-row-gap: 6px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .relation-panel[data-stage] { padding-top: 36px; padding-bottom: 4px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .relation-panel:not([data-stage='orders']) { height: 168px; }
+ .grouped-revenue-exercise-page [data-question-open] [data-layout='comparison'] .maintenance-flow > div:nth-child(n) { margin-top: 10px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .comparison-input p { display: none; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .comparison-arrows { height: 12px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .comparison-arrows svg { height: calc(var(--comparison-source-height) / 2 + 12px + var(--comparison-row-gap) * 2); }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .table-scroll { height: 100px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .data-table td { height: 24px; }
+ .grouped-revenue-exercise-page .exercise-question { padding: 8px 12px; gap: 6px; }
+ .grouped-revenue-exercise-page .exercise-answers { gap: 6px; align-items: start; }
+ .guided-lab-page.incremental-maintenance-page.grouped-revenue-exercise-page[data-viewport-fit] .relation-workspace { gap: 6px; }
+}
+@media (max-width: 639px) {
+ .grouped-revenue-exercise-page [data-layout='comparison'] .comparison-time { display: none; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .maintenance-flow > div:first-child .button { height: 40px; }
+ .grouped-revenue-exercise-page [data-question-open] .exercise-question-toggle { display: none; }
+ .grouped-revenue-exercise-page .exercise-choice:first-child, .grouped-revenue-exercise-page .exercise-choice:last-child { flex: 1 1 100%; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .relation-panel[data-stage] { height: 148px; padding: 8px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .comparison-input p { display: none; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .comparison-input ul { gap: 6px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .comparison-input li { padding: 5px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .table-scroll { height: 100px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .data-table td { height: 24px; }
+ .grouped-revenue-exercise-page [data-layout='comparison'] .comparison-counters { display: none; }
+ .grouped-revenue-exercise-page .exercise-question { padding: 8px; gap: 6px; }
+ .grouped-revenue-exercise-page .exercise-answers { gap: 6px; }
+ }

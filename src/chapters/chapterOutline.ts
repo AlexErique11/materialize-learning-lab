@@ -52,19 +52,30 @@ const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
       slug: 'lecture-2',
       title: 'Lecture 2: Joins',
       description: 'Match Orders and Products. See late matches, one-to-many updates, and product deletions maintain the joined result.',
+    }, {
+      slug: 'lecture-3',
+      title: 'Lecture 3: Aggregations',
+      description: 'Maintain grouped counts and revenue. Replace result rows, move orders between groups, and remove empty groups.',
+    }, {
+      slug: 'lecture-4',
+      title: 'Lecture 4: Recompute or maintain',
+      description: 'Compare rebuilding grouped revenue with maintaining retained state. See identical results and different illustrative work.',
     }],
-    exercises: [],
+    exercises: [
+      { slug: 'exercise-1', title: 'Exercise 1: Matches through the filter', description: 'Combine JOIN and WHERE across three checkpoints with retained matches and filtered fan-out.', durationMinutes: 6 },
+      { slug: 'exercise-3', title: 'Exercise 2: Maintain revenue by region', description: 'Combine retained joins, grouped revenue and incremental updates across three checkpoints.', durationMinutes: 7 },
+    ],
   },
   'changing-relations': {
     tutorial: [
       {
         slug: 'lecture-1',
-        title: 'Lecture 1',
+        title: 'Lecture 1: Signed changes',
         description: 'Follow signed additions and retractions, distinguish row copies from distinct full rows, and see why a row disappears when its copy count reaches zero.',
       },
       {
         slug: 'lecture-2',
-        title: 'Lecture 2',
+        title: 'Lecture 2: Updates and batches',
         description: 'Explore price updates as paired retractions and additions. Apply complete timestamp batches, combine matching diffs, and compare cancellation with replacement.',
       },
     ],
