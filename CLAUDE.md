@@ -60,12 +60,36 @@ Verify these distinctions when relevant; this list does not replace documentatio
 
 ## Chapter style and layout
 
-- New chapters must match previous chapters in style and formatting. Chapter 1 is
-  the baseline for typography, font sizes, spacing, panels, metric cards, controls,
-  diff styling, and help dialogs. Reuse established components and design tokens.
-- Keep terminology and equivalent control behavior consistent across chapters.
-  Each chapter uses tables and visualizations suited to its own concepts;
-  consistency does not require copying another chapter's visualization.
+- Consistency has two levels, and both are required. Across the whole app,
+  typography, font sizes, buttons, controls, and shared styling must follow the
+  common design system and remain consistent from chapter to chapter. Within a
+  chapter, lectures and exercises that use the same visualization must also share
+  its layout: spacing, dimensions, alignment, labels, and responsive behavior.
+- Treat an existing page that the user or curriculum identifies as the reference
+  as the source of truth. Before building or editing a comparable page, inspect
+  that page's rendered structure and reuse its components, markup, class names,
+  and styles wherever practical. Prefer extending a shared component or shared
+  stylesheet over copying a page and tuning it independently. Do not approximate
+  a reference from memory or create a parallel layout and reconcile it later.
+- Matching design tokens alone is insufficient. Preserve the arrangement of
+  headings, stage selectors, SQL labels, tables, panels, metrics, controls,
+  navigation, help, and guided steps. When a shared layout changes, update all
+  affected lectures and exercises together.
+- Chapter 1 is the baseline for app-wide typography, font sizes, buttons,
+  controls, and shared styling. Within each chapter, use its established lectures
+  and exercises as the reference for spacing and equivalent visualization
+  layouts. For Chapter 2, Lecture 1 defines the numbered stage-button layout with
+  names and SQL labels above the panels. Later lectures must reuse that pattern.
+- Chapters may and should use different visualizations and concept-specific
+  panels when the learning objective calls for them. Keep those visualization
+  differences inside the shared app styling and, where applicable, the chapter's
+  shared layout. Do not force distinct concepts into identical diagrams.
+- Keep terminology, equivalent control behavior, focus handling, and responsive
+  patterns consistent within and across chapters. Fit content by removing
+  redundancy or moving detail into existing help and SQL & Objectives, while
+  preserving familiar page structure. Changes to shared patterns must be applied
+  consistently to affected pages; do not redesign a single page without an
+  explicit user request or a concrete learning or accessibility need.
 - Lectures and exercises must fit the viewport without page or workspace scrolling.
   Never scale the page or shrink fonts to fit content. Remove redundant information
   or move supporting detail into guided explanations and SQL & Objectives.

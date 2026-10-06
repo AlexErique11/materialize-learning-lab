@@ -37,11 +37,24 @@ understand, modify, and verify. Prefer simple, explicit code over cleverness.
 
 1. Locate relevant code and inspect nearby conventions. Search for existing
    implementations before adding components or abstractions. Read only the files
-   and sections needed to understand the change.
+   and sections needed to understand the change. For UI work, identify the exact
+   reference page(s), then inspect their component, markup, shared styles, and
+   rendered layout before editing. Reuse that implementation where practical;
+   do not independently recreate a comparable page and tune it by eye afterward.
+   Follow both levels of consistency in [CLAUDE.md](./CLAUDE.md): app-wide shared
+   styling across chapters, and equivalent layout and spacing for matching
+   visualizations within a chapter. Keep distinct chapter visualizations when
+   they serve different learning goals.
 2. Make the smallest clean change, with clear boundaries and consistent styling.
-   For chapter presentation requirements, follow [CLAUDE.md](./CLAUDE.md).
+   If shared presentation changes, apply it through the shared implementation so
+   all affected pages stay aligned. For chapter presentation requirements, follow
+   [CLAUDE.md](./CLAUDE.md).
 3. Check affected callers, realistic edge cases, and relevant tests. Scale
    verification to risk; prioritize semantic correctness and meaningful regressions.
+   For UI changes, compare the affected page with its reference pages at relevant
+   viewport sizes and states. Check spacing, dimensions, alignment, and responsive
+   behavior as well as colors and fonts. Verify structure and equivalent behavior,
+   not just the absence of overflow.
 4. Review the diff. Remove dead code and temporary artifacts, and confirm the
    feature is easy to locate, understand, and change without unrelated knowledge.
 
