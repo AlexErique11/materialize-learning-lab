@@ -403,6 +403,19 @@ Do not write low-value tests solely to increase coverage percentage.
 
 ## 13. Design Direction
 
+Lectures and exercises must fit the available viewport without page or workspace
+scrolling. Chapter 1 defines the visual style for every chapter: reuse its metric
+card styling, panel styling, typography, spacing, and controls. Each chapter keeps
+the visualizations and tables appropriate to its own concepts; consistency does
+not mean copying Chapter 1's paired ledger/relation visualization. Never scale or
+zoom the page or shrink fonts to fit more content. Cut
+redundant information or move supporting detail into the guided explanation and
+SQL & Objectives panel instead. Keep the active information and controls on screen. On narrow screens,
+use panel selectors instead of stacking all tables vertically; guided lessons
+must automatically show their highlighted panel. Verify every lesson and exercise
+phase at desktop, laptop, and mobile sizes. Chapter navigation must retain other
+chapters' expanded branches and subsections when the active chapter changes.
+
 The application should feel like an interactive systems textbook, laboratory,
 and guided worksheet.
 

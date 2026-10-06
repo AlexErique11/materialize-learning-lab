@@ -24,7 +24,7 @@ describe('chapter navigation outline', () => {
   });
 
   it('leaves chapters without defined content empty', () => {
-    for (const other of chapters.filter((item) => ![chapter.slug, 'time-in-materialize'].includes(item.slug))) {
+    for (const other of chapters.filter((item) => ![chapter.slug, 'incremental-maintenance', 'time-in-materialize'].includes(item.slug))) {
       expect(getChapterSections(other).map((section) => section.slug)).toEqual([
         'tutorial',
         'exercises',
@@ -59,7 +59,8 @@ describe('chapter navigation outline', () => {
     expect(findChapterContent(chapter, undefined, undefined)).toBeUndefined();
     const other = chapters[1];
     if (!other) throw new Error('The curriculum must contain a second chapter.');
-    expect(findChapterContent(other, 'tutorial', 'lecture-1')).toBeUndefined();
+    expect(findChapterContent(other, 'tutorial', 'lecture-1')?.title).toBe('Lecture 1: Filters and projections');
+    expect(findChapterContent(other, 'tutorial', 'lecture-2')?.title).toBe('Lecture 2: Joins');
   });
 
   it('builds section and page URLs with encoded page slugs', () => {

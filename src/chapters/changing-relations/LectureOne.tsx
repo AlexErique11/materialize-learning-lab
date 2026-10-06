@@ -37,25 +37,22 @@ export function LectureOne({ chapter, navigation }: LectureOneProps) {
   if (lesson.diagram === 'record') phaseLabel = 'Read the record';
   else if (lesson.diagram === 'recap') phaseLabel = 'Recap';
   else if (lesson.before) phaseLabel = beforeChange ? 'Before the change' : 'Effect shown';
-  let playbackStatus = `${state.applied} of ${lectureUpdates.length} changes applied`;
-  if (state.playing) playbackStatus = 'Playing changes';
-  else if (inspectingHistory) playbackStatus = `Inspecting t = ${state.selectedTime}`;
 
   return (
     <>
       <GuidedLabScreen chapter={chapter} title="Lecture 1" regionLabel="Lecture content" navigation={navigation}
-        className="changing-relations-page" reference={lectureReference}
-        simulation={{ completed: state.guided ? state.step : state.applied, total: state.guided ? lectureSteps.length : lectureUpdates.length,
+        className="changing-relations-page" reference={lectureReference} showTip="when-space"
+        simulation={{ completed: state.guided ? state.step : state.selectedTime, total: state.guided ? lectureSteps.length : lectureUpdates.length,
           progressLabel: state.guided ? 'Tutorial' : 'Changes', playing: state.playing,
           onReset: () => dispatch({ type: 'reset' }), onRun: () => dispatch({ type: 'play' }), onStartGuidedRun: () => dispatch({ type: 'start-guided' }) }}
         workspace={<div className="relation-workspace" data-guided={state.guided}>
           <RelationMetrics relation={relation} time={state.selectedTime} metricsRef={metricsRef} />
           <RelationWorkbench relation={relation} updates={lectureUpdates} time={state.selectedTime} applied={state.applied} onSelectTime={(time) => dispatch({ type: 'select', time })}
+            guidedPanel={state.guided ? (spotlight === 'ledger' ? 'ledger' : 'relation') : undefined}
             ledgerRef={ledgerRef} relationRef={relationRef} controlsDisabled={state.playing || state.guided}
             highlightCopies={state.guided && state.revealed && lesson.spotlight === 'relation'} showArrow={state.guided && state.revealed}
             previewTime={state.guided && (beforeChange || lesson.diagram === 'record') ? lesson.time || lectureUpdates[0]!.time : null} />
           <div className="relation-playback-controls" aria-label="Change playback">
-            <span className="relation-playback-status" role="status">{playbackStatus}</span>
             {tutorialComplete && <span className="relation-tutorial-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
             {inspectingHistory && <Button onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
             <div>

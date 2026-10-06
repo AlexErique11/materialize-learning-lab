@@ -1,0 +1,21 @@
+.join-plus { text-align: center; }
+.join-flow { display: none; }
+.join-panels > section { position: relative; }
+.join-panels > section h2 { margin-bottom: 4px; }
+.join-panel-sql { display: block; font-size: 12px; min-height: 18px; overflow-wrap: anywhere; }
+.join-panel-connector { position: absolute; right: -18px; top: 38px; width: 16px; text-align: center; color: var(--lab-muted); }
+.join-maintenance-page .relation-workspace { gap: 4px; }
+.join-panels tr[data-affected="true"] td { background: var(--lab-tint); }
+.join-diffs ul { gap: 0; }
+.join-diffs li { min-width: 0; min-height: 26px; }
+.join-diffs h3 { height: 18px; }
+.join-diffs { height: 140px; }
+@media (max-width: 639px) {
+  .join-flow { display: grid; }
+  .join-panel-sql, .join-panel-connector { display: none; }
+  .join-panels > section h2 { margin-bottom: 12px; }
+  .app-shell-guided-labs .guided-lab-page.join-maintenance-page[data-viewport-fit] { gap: 6px; padding-bottom: 4px; }
+  .join-panels[data-join-stage="orders"] > :not(:first-child),
+  .join-panels[data-join-stage="products"] > :not(:nth-child(2)),
+  .join-panels[data-join-stage="result"] > :not(:nth-child(3)) { display: none; }
+}

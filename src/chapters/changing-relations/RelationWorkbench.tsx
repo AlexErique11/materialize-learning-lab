@@ -1,6 +1,8 @@
 import { Clock3, Database, Table2, Trash2 } from 'lucide-react';
 import { useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { Table } from '../../components/ui/Table';
+import { PanelTabs } from '../../components/lab/PanelTabs';
+import { WorkspaceMetric } from '../../components/lab/WorkspaceMetric';
 import { RelationHelp } from './RelationHelp';
 import { relationHelp } from './scenario';
 import { copiesOf, getRelationMetrics, rowKey, type ProductRow, type RelationUpdate, type RowMultiplicity } from './simulation';
@@ -13,18 +15,12 @@ export function RelationMetrics({ relation, time, metricsRef }: {
   const metrics = getRelationMetrics(relation);
   return (
     <div ref={metricsRef} className="relation-metrics" aria-label="Relation metrics">
-      <div className="relation-metric" data-testid="total-copies">
-        <Database size={25} aria-hidden="true" />
-        <div><span>Total row copies <RelationHelp {...relationHelp.totalCopies} /></span><strong>{metrics.totalCopies}</strong></div>
-      </div>
-      <div className="relation-metric" data-testid="distinct-rows">
-        <Table2 size={25} aria-hidden="true" />
-        <div><span>Distinct full rows <RelationHelp {...relationHelp.distinctRows} /></span><strong>{metrics.distinctRows}</strong></div>
-      </div>
-      <div className="relation-metric" data-testid="logical-time">
-        <Clock3 size={25} aria-hidden="true" />
-        <div><span>Current logical timestamp <RelationHelp {...relationHelp.logicalTime} /></span><strong className="relation-time">t = {time}</strong></div>
-      </div>
+      <WorkspaceMetric testId="total-copies" icon={<Database size={25} aria-hidden="true" />}
+        label={<>Total row copies <RelationHelp {...relationHelp.totalCopies} /></>} value={metrics.totalCopies} />
+      <WorkspaceMetric testId="distinct-rows" icon={<Table2 size={25} aria-hidden="true" />}
+        label={<>Distinct full rows <RelationHelp {...relationHelp.distinctRows} /></>} value={metrics.distinctRows} />
+      <WorkspaceMetric testId="logical-time" icon={<Clock3 size={25} aria-hidden="true" />}
+        label={<>Current logical timestamp <RelationHelp {...relationHelp.logicalTime} /></>} value={<span className="relation-time">t = {time}</span>} />
     </div>
   );
 }
@@ -63,6 +59,7 @@ export function CurrentRelation({ relation, time, relationRef, highlightCopies, 
 }
 
 interface RelationWorkbenchProps {
+  guidedPanel?: 'ledger' | 'relation';
   relation: readonly RowMultiplicity[];
   updates: readonly RelationUpdate[];
   time: number;
@@ -76,7 +73,9 @@ interface RelationWorkbenchProps {
   showArrow: boolean;
 }
 
-export function RelationWorkbench({ relation, updates, time, applied, onSelectTime, ledgerRef, relationRef, controlsDisabled, highlightCopies, previewTime, showArrow }: RelationWorkbenchProps) {
+export function RelationWorkbench({ relation, updates, time, applied, onSelectTime, ledgerRef, relationRef, controlsDisabled, highlightCopies, previewTime, showArrow, guidedPanel }: RelationWorkbenchProps) {
+  const [selectedPanel, setSelectedPanel] = useState<'ledger' | 'relation'>('ledger');
+  const activePanel = guidedPanel ?? selectedPanel;
   const panelsRef = useRef<HTMLDivElement>(null);
   const markerId = useId();
   const [arrow, setArrow] = useState<{ width: number; height: number; path: string } | null>(null);
@@ -106,9 +105,15 @@ export function RelationWorkbench({ relation, updates, time, applied, onSelectTi
     return () => observer.disconnect();
   }, [time, removed, showArrow]);
   return (
-    <div ref={panelsRef} data-walkthrough="lecture-workspace" className="relation-panels">
+    <div ref={panelsRef} data-walkthrough="lecture-workspace" className="relation-panels" data-selected-panel={activePanel}>
+      <PanelTabs value={activePanel} onChange={setSelectedPanel} disabled={Boolean(guidedPanel)} />
       <section ref={ledgerRef} className="relation-panel" aria-labelledby="ledger-heading">
         <h2 id="ledger-heading">Change ledger <RelationHelp {...relationHelp.ledger} /></h2>
+        <nav className="relation-mobile-timestamps" aria-label="Inspect change history">
+          {updates.map((update) => <button key={update.time} className="relation-timestamp-button" type="button"
+            aria-label={`Inspect t = ${update.time}`} aria-pressed={time === update.time} disabled={update.time > applied || controlsDisabled}
+            onClick={() => onSelectTime(update.time)}>{update.time}</button>)}
+        </nav>
         <Table caption="Change ledger">
           <thead><tr>
             {[relationHelp.time, relationHelp.diff, relationHelp.row].map((help) => <th key={help.label} scope="col"><span className="relation-column-label">{help.label}<RelationHelp {...help} /></span></th>)}
@@ -116,7 +121,7 @@ export function RelationWorkbench({ relation, updates, time, applied, onSelectTi
           <tbody>
             {updates.map((update) => {
               const pending = update.time > applied;
-              return <tr key={update.time} data-ledger-time={update.time} className={`${time === update.time ? 'relation-ledger-selected' : ''} ${pending ? 'relation-ledger-pending' : ''} ${previewTime === update.time ? 'relation-ledger-preview' : ''}`}>
+              return <tr key={update.time} data-ledger-time={update.time} data-mobile-current={update.time === (previewTime ?? Math.max(1, time))} className={`${time === update.time ? 'relation-ledger-selected' : ''} ${pending ? 'relation-ledger-pending' : ''} ${previewTime === update.time ? 'relation-ledger-preview' : ''}`}>
                 <td><button className="relation-timestamp-button" aria-label={`Inspect t = ${update.time}`} aria-pressed={time === update.time} disabled={pending || controlsDisabled} onClick={() => onSelectTime(update.time)}>{update.time}</button></td>
                 <td><DiffBadge diff={update.diff} /></td>
                 <td><span className="relation-row-value">{update.row.product}<span>${update.row.price}</span></span>{pending && <span className="relation-pending-label">{previewTime === update.time ? 'Next' : 'Upcoming'}</span>}</td>

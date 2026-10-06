@@ -13,6 +13,8 @@ import { getChapterNavigation } from './chapterNavigation';
 import { LectureOne } from './changing-relations/LectureOne';
 import { LectureTwo } from './changing-relations/LectureTwo';
 import { ExerciseOne } from './changing-relations/ExerciseOne';
+import { IncrementalLectureOne } from './incremental-maintenance/LectureOne';
+import { IncrementalLectureTwo } from './incremental-maintenance/LectureTwo';
 
 export function ChapterContentPage() {
   const chapter = useOutletContext<ChapterDefinition>();
@@ -26,6 +28,12 @@ export function ChapterContentPage() {
   if (!section || (pageSlug !== undefined && !page)) return <NotFoundPage />;
 
   const navigation = getChapterNavigation(chapter, section, page);
+  if (chapter.slug === 'incremental-maintenance' && section.slug === 'tutorial' && page?.slug === 'lecture-1') {
+    return <IncrementalLectureOne chapter={chapter} navigation={<ChapterPagination {...navigation} />} />;
+  }
+  if (chapter.slug === 'incremental-maintenance' && section.slug === 'tutorial' && page?.slug === 'lecture-2') {
+    return <IncrementalLectureTwo chapter={chapter} navigation={<ChapterPagination {...navigation} />} />;
+  }
   if (chapter.slug === 'changing-relations' && section.slug === 'tutorial' && page?.slug === 'lecture-1') {
     return <LectureOne chapter={chapter} navigation={<ChapterPagination {...navigation} />} />;
   }

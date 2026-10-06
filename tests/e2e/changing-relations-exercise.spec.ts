@@ -7,6 +7,8 @@ const nextQuestion = (page: Page) => page.getByRole('button', { name: 'Next ques
 const progress = (page: Page) => page.getByRole('progressbar', { name: 'Exercise phases completed' });
 
 async function answerPhase(page: Page, stage: number) {
+  const panel = page.getByRole('navigation', { name: 'Workspace panels' });
+  if (await panel.isVisible()) await panel.getByRole('button', { name: stage === 1 ? 'Change ledger' : 'Question', exact: true }).click();
   const values = stage === 0 ? ['3', '1', '3'] : stage === 1 ? ['-3', '+4'] : ['8', '2', '12'];
   for (const [index, value] of values.entries()) await page.getByRole('textbox').nth(index).fill(value);
 }
@@ -21,12 +23,12 @@ async function expectNextBelowQuestion(page: Page) {
 
 test('one inventory exercise reconstructs mixed changes, builds a conditional batch, and checks the final relation', async ({ page }, testInfo) => {
   await page.goto(exercisePath);
-  const current = page.getByRole('table', { name: 'Current relation', exact: true });
+  const current = page.getByRole('table', { name: 'Current relation', exact: true, includeHidden: true });
   const actualRows = () => current.locator('tbody tr:not([aria-hidden="true"])');
   await expect(progress(page)).toHaveAttribute('max', '3');
   await expect(progress(page)).toHaveAttribute('value', '0');
   await expect(actualRows()).toHaveText(['Kettle$254', 'Mug$82', 'Mug$101']);
-  await expect(page.getByRole('table', { name: 'Change ledger', exact: true }).locator('tbody tr')).toHaveCount(5);
+  await expect(page.getByRole('table', { name: 'Change ledger', exact: true, includeHidden: true }).locator('tbody tr')).toHaveCount(5);
   await expect(nextQuestion(page)).toHaveCount(0);
   await page.getByRole('button', { name: 'Hint', exact: true }).click();
   await expect(page.locator('.exercise-question')).toContainText('calculated separately');
@@ -48,6 +50,8 @@ test('one inventory exercise reconstructs mixed changes, builds a conditional ba
   await nextQuestion(page).click();
   await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'ready');
   await expect(page.locator('.exercise-question h2')).toContainText('Phase 2 of 3');
+  if (await page.getByRole('navigation', { name: 'Workspace panels' }).isVisible())
+    await page.getByRole('navigation', { name: 'Workspace panels' }).getByRole('button', { name: 'Change ledger', exact: true }).click();
   await expect(page.getByRole('textbox')).toHaveCount(2);
   await expect(page.getByRole('textbox').first()).toHaveValue('');
   await page.getByRole('textbox', { name: 'Signed diff for (Kettle, $25)', exact: true }).fill('-3');
@@ -58,7 +62,7 @@ test('one inventory exercise reconstructs mixed changes, builds a conditional ba
   await answerPhase(page, 1);
   await check(page).click();
   await expect(actualRows()).toHaveText(['Kettle$304', 'Mug$81', 'Mug$103']);
-  await expect(page.getByRole('table', { name: 'Build the change' }).locator('.relation-count')).toHaveText(['−3', '+4']);
+  await expect(page.getByRole('table', { name: 'Build the change', includeHidden: true }).locator('.relation-count')).toHaveText(['−3', '+4']);
   await expectNextBelowQuestion(page);
   await nextQuestion(page).click();
   await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'ready');
@@ -95,7 +99,7 @@ test('Show Answer accepts and applies each solution like a correct manual answer
     await expect(page.locator('.guided-lab-controls .button')).toHaveText(['Reset', 'Hint', 'Show Answer', 'Check Answer']);
     await expect(check(page)).toBeDisabled();
     await expect(page.getByRole('button', { name: 'Show Answer', exact: true })).toBeDisabled();
-    if (stage === 1) await expect(page.getByRole('table', { name: 'Build the change' }).locator('.relation-count')).toHaveText(['−3', '+4']);
+    if (stage === 1) await expect(page.getByRole('table', { name: 'Build the change', includeHidden: true }).locator('.relation-count')).toHaveText(['−3', '+4']);
     else {
       const values = stage === 0 ? ['3', '1', '3'] : ['8', '2', '12'];
       for (const [index, value] of values.entries()) {
@@ -107,7 +111,7 @@ test('Show Answer accepts and applies each solution like a correct manual answer
       await expectNextBelowQuestion(page);
       await nextQuestion(page).click();
       await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'ready');
-      await expect(page.getByRole('textbox').first()).toHaveValue('');
+      await expect(page.getByRole('textbox', { includeHidden: true }).first()).toHaveValue('');
     }
   }
   await page.getByRole('button', { name: 'Reset', exact: true }).click();
@@ -124,6 +128,8 @@ test('the chapter lists one exercise, preserves old links, and keeps the request
   await expect(page.locator('.guided-lab-controls .button')).toHaveText(['Reset', 'Hint', 'Show Answer', 'Check Answer']);
   await expect(page.getByRole('complementary', { name: 'Lab tip' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'SQL & Objectives', exact: true })).toHaveCount(0);
+  if (await page.getByRole('navigation', { name: 'Workspace panels' }).isVisible())
+    await page.getByRole('navigation', { name: 'Workspace panels' }).getByRole('button', { name: 'Change ledger', exact: true }).click();
   await page.getByRole('button', { name: 'About Signed diff', exact: true }).focus();
   await expect(page.getByRole('tooltip')).toContainText('not the resulting count');
   await page.keyboard.press('Escape');
@@ -144,12 +150,14 @@ test('all phases fit desktop screens with stable grids, nonbreaking labels, and 
         if (state === 'hint') await page.getByRole('button', { name: 'Hint', exact: true }).click();
         if (state === 'invalid') await check(page).click();
         if (state === 'correct') { await answerPhase(page, stage); await check(page).click(); }
+        await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight <= innerHeight
+          && document.documentElement.scrollWidth <= innerWidth), { message: 'Exercise fits after its layout settles' }).toBe(true);
         const dimensions = await page.evaluate(() => ({ width: document.documentElement.scrollWidth, height: document.documentElement.scrollHeight, viewportWidth: innerWidth, viewportHeight: innerHeight,
           gridHeight: document.querySelector('.relation-panels')!.getBoundingClientRect().height,
           labelHeights: Array.from(document.querySelectorAll('.exercise-answer-field > span:first-child:not(.sr-only)'), (label) => label.getBoundingClientRect().height),
           timestampsStayTogether: Array.from(document.querySelectorAll('.exercise-question .relation-inline-time')).every((chip) => getComputedStyle(chip).whiteSpace === 'nowrap') }));
         expect(dimensions.width, `${stage}:${state} at ${viewport.width}`).toBeLessThanOrEqual(dimensions.viewportWidth);
-        if (!isMobile) expect(dimensions.height, `${stage}:${state} at ${viewport.width}×${viewport.height}`).toBeLessThanOrEqual(dimensions.viewportHeight);
+        expect(dimensions.height, `${stage}:${state} at ${viewport.width}×${viewport.height}`).toBeLessThanOrEqual(dimensions.viewportHeight);
         gridHeight ??= dimensions.gridHeight;
         if (!isMobile) expect(Math.abs(dimensions.gridHeight - gridHeight), 'Stable workbench height').toBeLessThanOrEqual(1);
         expect(dimensions.timestampsStayTogether).toBe(true);

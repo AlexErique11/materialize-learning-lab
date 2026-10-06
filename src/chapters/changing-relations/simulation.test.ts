@@ -130,6 +130,8 @@ describe('lecture run controls', () => {
     }
     expect(state).toMatchObject({ step: 4, applied: 3 });
     state = lectureRunReducer(state, { type: 'back' });
+    expect(state).toMatchObject({ step: 4, applied: 2, selectedTime: 2, revealed: false });
+    state = lectureRunReducer(state, { type: 'back' });
     expect(state).toMatchObject({ step: 3, applied: 2, selectedTime: 2, revealed: true });
     while (state.guided) {
       state = lectureRunReducer(state, { type: 'reveal' });

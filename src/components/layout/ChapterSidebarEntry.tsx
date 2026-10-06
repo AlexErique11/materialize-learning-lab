@@ -20,13 +20,11 @@ export function ChapterSidebarEntry({ chapter, compact }: ChapterSidebarEntryPro
   const number = formatChapterNumber(chapter.number);
 
   useEffect(() => {
-    setExpanded(selected);
+    if (selected) setExpanded(true);
   }, [pathname, selected]);
 
   useEffect(() => {
-    if (!selected) {
-      setOpenSections((previous) => previous.length ? [] : previous);
-    } else if (sectionSlug) {
+    if (selected && sectionSlug) {
       setOpenSections((previous) => previous.includes(sectionSlug) ? previous : [...previous, sectionSlug]);
     }
   }, [pathname, selected, sectionSlug]);
@@ -47,8 +45,8 @@ export function ChapterSidebarEntry({ chapter, compact }: ChapterSidebarEntryPro
           className={selected ? 'chapter-selected' : undefined}
           aria-label={`${number} ${chapter.shortTitle}`}
           aria-current={compact ? undefined : false}
-          aria-expanded={selected && !compact ? expanded : undefined}
-          aria-controls={selected && !compact ? branchId : undefined}
+          aria-expanded={!compact ? expanded : undefined}
+          aria-controls={!compact ? branchId : undefined}
           title={compact ? chapter.shortTitle : undefined}
           onClick={(event) => {
             if (selected && !compact && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
@@ -62,7 +60,7 @@ export function ChapterSidebarEntry({ chapter, compact }: ChapterSidebarEntryPro
           <span className="chapter-link-number">{number}</span>
           {!compact && <span className="chapter-link-label">{chapter.shortTitle}</span>}
         </NavLink>
-        {!compact && selected && (
+        {!compact && (
           <button
             type="button"
             className="chapter-branch-toggle"
@@ -74,9 +72,8 @@ export function ChapterSidebarEntry({ chapter, compact }: ChapterSidebarEntryPro
             <ChevronDown size={16} aria-hidden="true" />
           </button>
         )}
-        {!compact && !selected && <span className="chapter-branch-toggle-spacer" aria-hidden="true" />}
       </div>
-      {!compact && selected && (
+      {!compact && (
         <div id={branchId} className="chapter-sections" hidden={!expanded}>
           <NavLink to={chapterPath(chapter)} end className="chapter-overview-link" aria-label={`${chapter.shortTitle} overview`}>
             <span className="chapter-group-dot" aria-hidden="true" />Overview

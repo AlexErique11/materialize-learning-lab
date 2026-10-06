@@ -217,7 +217,7 @@ test('sidebar subsections are keyboard-operable and reflect the active page', as
   }
   const tutorialToggle = sidebar
     .getByRole('navigation', { name: 'Chapters' })
-    .locator('.chapter-section > summary')
+    .locator('.chapter-branch-selected .chapter-section > summary')
     .filter({ hasText: 'Tutorial' });
   await tutorialToggle.focus();
   await page.keyboard.press('Enter');
@@ -237,7 +237,7 @@ test('sidebar subsections are keyboard-operable and reflect the active page', as
     'aria-current',
     'page',
   );
-  await sidebar.getByRole('navigation', { name: 'Chapters' }).locator('.chapter-section > summary').filter({ hasText: 'Exercises' }).click();
+  await sidebar.getByRole('navigation', { name: 'Chapters' }).locator('.chapter-branch-selected .chapter-section > summary').filter({ hasText: 'Exercises' }).click();
   await sidebar.getByRole('link', { name: 'Exercise 1', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Exercise 1', exact: true })).toBeVisible();
 });
@@ -315,8 +315,9 @@ test('chapter sidebar preserves open groups and toggles from the chapter body', 
   await revealSidebar();
   const overview = sidebar.getByRole('link', { name: `${firstChapter.shortTitle} overview`, exact: true });
   const chaptersNavigation = sidebar.getByRole('navigation', { name: 'Chapters' });
-  const tutorials = chaptersNavigation.locator('.chapter-section').filter({ has: page.locator('summary').filter({ hasText: 'Tutorials' }) });
-  const exercises = chaptersNavigation.locator('.chapter-section').filter({ has: page.locator('summary').filter({ hasText: 'Exercises' }) });
+  const firstBranch = chaptersNavigation.locator('.chapter-links > li').filter({ has: page.getByRole('link', { name: '01 Changing Relations', exact: true }) });
+  const tutorials = firstBranch.locator('.chapter-section').filter({ has: page.locator('summary').filter({ hasText: 'Tutorials' }) });
+  const exercises = firstBranch.locator('.chapter-section').filter({ has: page.locator('summary').filter({ hasText: 'Exercises' }) });
   await expect(overview).toBeVisible();
   await expect(overview).toHaveAttribute('aria-current', 'page');
   await expect(tutorials).not.toHaveAttribute('open', '');
@@ -363,15 +364,17 @@ test('chapter sidebar preserves open groups and toggles from the chapter body', 
   if (!other) throw new Error('Chapter 2 must be in the curriculum.');
   await sidebar.getByRole('link', { name: `02 ${other.shortTitle}`, exact: true }).click();
   await revealSidebar();
+  await expect(overview).toBeVisible();
+  await expect(tutorials).toHaveAttribute('open', '');
+  await expect(exercises).toHaveAttribute('open', '');
   await sidebar.getByRole('link', { name: `01 ${firstChapter.shortTitle}`, exact: true }).click();
   await revealSidebar();
-  await expect(tutorials).not.toHaveAttribute('open', '');
-  await expect(exercises).not.toHaveAttribute('open', '');
+  await expect(tutorials).toHaveAttribute('open', '');
+  await expect(exercises).toHaveAttribute('open', '');
   await page.getByRole('link', { name: 'Start tutorial: Lecture 1', exact: true }).click();
   await revealSidebar();
   await expect(tutorials).toHaveAttribute('open', '');
-  await expect(exercises).not.toHaveAttribute('open', '');
-  await exercises.locator('summary').click();
+  await expect(exercises).toHaveAttribute('open', '');
   await sidebar.getByRole('link', { name: 'Exercise 1', exact: true }).click();
   await page.reload();
   await revealSidebar();

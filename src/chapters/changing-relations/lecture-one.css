@@ -396,10 +396,6 @@
   font-size: 12px;
 }
 
-.relation-playback-status {
-  margin-right: auto;
-}
-
 .relation-playback-controls > div, .relation-tutorial-complete {
   display: flex;
   align-items: center;
@@ -408,6 +404,7 @@
 
 .relation-playback-controls > div {
   flex-wrap: wrap;
+  margin-left: auto;
 }
 
 .relation-tutorial-complete {
@@ -586,13 +583,6 @@
 
 .relation-metric-comparison small b {
   color: var(--success);
-}
-
-.relation-diagram-removal {
-  margin-top: 8px;
-  color: var(--danger);
-  font-size: 11px;
-  text-align: center;
 }
 
 .relation-diagram-comparison {
@@ -794,6 +784,10 @@
 }
 
 @media (max-width: 639px) {
+  .relation-diagram-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  .relation-diagram-metrics .relation-metric-comparison + .relation-metric-comparison { margin-top: 0; }
+  .relation-diagram-metrics .relation-metric-comparison > div:first-child { flex-wrap: wrap; font-size: 11px; }
+  .relation-diagram-metrics .relation-metric-comparison small { font-size: 10px; }
   .guided-lab-page.changing-relations-page {
     gap: 12px;
   }

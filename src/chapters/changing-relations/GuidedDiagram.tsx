@@ -63,7 +63,7 @@ export function GuidedDiagram({ kind, time, revealed }: { kind: LectureDiagramKi
     const previousMetrics = getRelationMetrics(before);
     const currentMetrics = getRelationMetrics(after);
     const maximum = Math.max(...lectureUpdates.map((change) => getRelationMetrics(relationAt(lectureUpdates, change.time)).totalCopies));
-    return <div className="relation-diagram" role="group" aria-label="Copies and distinct rows compared">
+    return <div className="relation-diagram relation-diagram-metrics" role="group" aria-label="Copies and distinct rows compared">
       <MetricComparison label="Total row copies" before={previousMetrics.totalCopies} after={currentMetrics.totalCopies} revealed={revealed} maximum={maximum} unit="copy" />
       <MetricComparison label="Distinct full rows" before={previousMetrics.distinctRows} after={currentMetrics.distinctRows} revealed={revealed} maximum={maximum} unit="full row" />
     </div>;
@@ -79,7 +79,6 @@ export function GuidedDiagram({ kind, time, revealed }: { kind: LectureDiagramKi
     </div>}
     {kind === 'new-row' && <div className="relation-steady-row"><RowLabel row={comparisonRow} /><span>{copiesOf(after, comparisonRow)} copies · unchanged</span></div>}
     {kind === 'removal' && revealed && <>
-      <div className="relation-diagram-removal">0 copies → row removed from the relation</div>
       <div className="relation-diagram-comparison" role="group" aria-label="Hypothetical partial retraction">
         <span>If the same diff targeted A instead</span>
         <div><RowLabel row={comparisonRow} /><b>{copiesOf(before, comparisonRow)} − {Math.abs(update.diff)} = {copiesOf(applyTimestamp(before, [{ ...update, row: comparisonRow }]), comparisonRow)}</b><span>Still present</span></div>

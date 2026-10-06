@@ -1,4 +1,5 @@
-import { useId, useRef, type ReactNode } from 'react';
+import { useId, useRef, useState, type ReactNode } from 'react';
+import { PanelTabs } from '../../components/lab/PanelTabs';
 import { ArrowRight, CheckCircle2, Eye, Lightbulb } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { ProgressBar } from '../../components/ui/ProgressBar';
@@ -62,6 +63,8 @@ export function ExerciseLayout({ chapter, title, description, navigation, flow, 
   onCheck: () => void; onShowAnswer: () => void; onNext: () => void; onReset: () => void;
 }) {
   const formId = useId();
+  const [selectedPanel, setSelectedPanel] = useState<'ledger' | 'relation'>('ledger');
+  const [questionOpen, setQuestionOpen] = useState(true);
   const metricsRef = useRef<HTMLDivElement>(null);
   const relationRef = useRef<HTMLElement>(null);
   return <GuidedLabScreen chapter={chapter} title={title} regionLabel="Exercise content" navigation={navigation}
@@ -71,14 +74,19 @@ export function ExerciseLayout({ chapter, title, description, navigation, flow, 
         <ProgressBar value={flow.completed} total={flow.total} label="Exercise phases completed" /></div>,
       actions: <>
         <Button onClick={onReset}>Reset</Button>
-        <Button data-walkthrough="hint" disabled={flow.accepted} aria-expanded={flow.hintOpen} aria-controls={`${formId}-question`} onClick={() => flow.dispatch({ type: 'hint' })}><Lightbulb size={14} aria-hidden="true" />Hint</Button>
-        <Button data-walkthrough="answer" disabled={flow.accepted} onClick={onShowAnswer}><Eye size={14} aria-hidden="true" />Show Answer</Button>
+        <Button data-walkthrough="hint" disabled={flow.accepted} aria-expanded={flow.hintOpen} aria-controls={`${formId}-question`} onClick={() => { setQuestionOpen(true); flow.dispatch({ type: 'hint' }); }}><Lightbulb size={14} aria-hidden="true" />Hint</Button>
+        <Button data-walkthrough="answer" disabled={flow.accepted} onClick={() => { setQuestionOpen(true); onShowAnswer(); }}><Eye size={14} aria-hidden="true" />Show Answer</Button>
         <Button data-walkthrough="check" variant="primary" type="submit" form={formId} disabled={flow.accepted}><CheckCircle2 size={14} aria-hidden="true" />Check Answer</Button>
       </>,
     }}
-    workspace={<form id={formId} className="relation-workspace" noValidate onSubmit={(event) => { event.preventDefault(); if (!flow.accepted) onCheck(); }}>
+    workspace={<form id={formId} className="relation-workspace" data-mobile-view={questionOpen ? 'question' : selectedPanel} noValidate onSubmit={(event) => { event.preventDefault(); if (!flow.accepted) { setQuestionOpen(true); onCheck(); } }}>
       <RelationMetrics relation={relation} time={time} metricsRef={metricsRef} />
-      <div className="relation-panels">{ledger}<CurrentRelation relation={relation} time={time} relationRef={relationRef} highlightCopies={false} minRows={rows} /></div>
+      <div className="relation-panels" data-selected-panel={selectedPanel}>
+        <PanelTabs value={questionOpen ? undefined : selectedPanel} onChange={(panel) => { setQuestionOpen(false); setSelectedPanel(panel); }}>
+          <Button aria-pressed={questionOpen} onClick={() => setQuestionOpen(true)}>Question</Button>
+        </PanelTabs>
+        {ledger}<CurrentRelation relation={relation} time={time} relationRef={relationRef} highlightCopies={false} minRows={rows} />
+      </div>
       <section id={`${formId}-question`} data-walkthrough="question" className="exercise-question" data-result={flow.grade ? (flow.accepted ? 'correct' : 'incorrect') : 'ready'} aria-labelledby={`${formId}-heading`}>
         <div className="exercise-question-copy" aria-live="polite" aria-atomic="true">
           <h2 id={`${formId}-heading`}>{flow.accepted ? <CheckCircle2 size={18} aria-hidden="true" /> : <Lightbulb size={18} aria-hidden="true" />}<span><LessonText content={flow.grade?.title ?? [`Phase ${flow.stage + 1} of ${flow.total}: ${checkpointTitle}`]} /></span></h2>
@@ -87,7 +95,7 @@ export function ExerciseLayout({ chapter, title, description, navigation, flow, 
         <div className="exercise-answers" aria-label="Your prediction">{answers}</div>
       </section>
       <div className="exercise-question-navigation">
-        {flow.accepted && !flow.complete && <Button className="exercise-next-question" variant="primary" onClick={onNext}>Next question<ArrowRight size={14} aria-hidden="true" /></Button>}
+        {flow.accepted && !flow.complete && <Button className="exercise-next-question" variant="primary" onClick={() => { setQuestionOpen(true); onNext(); }}>Next question<ArrowRight size={14} aria-hidden="true" /></Button>}
       </div>
     </form>} />;
 }

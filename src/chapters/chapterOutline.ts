@@ -43,6 +43,18 @@ const sectionDefinitions: readonly Omit<ChapterSectionDefinition, 'pages'>[] = [
 
 // Navigation and overview summaries. Actual chapter content lives beside its chapter.
 const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
+  'incremental-maintenance': {
+    tutorial: [{
+      slug: 'lecture-1',
+      title: 'Lecture 1: Filters and projections',
+      description: 'Trace order changes through WHERE and SELECT. See when result rows appear, disappear, change, or stay the same.',
+    }, {
+      slug: 'lecture-2',
+      title: 'Lecture 2: Joins',
+      description: 'Match Orders and Products. See late matches, one-to-many updates, and product deletions maintain the joined result.',
+    }],
+    exercises: [],
+  },
   'changing-relations': {
     tutorial: [
       {

@@ -261,11 +261,6 @@
   background: var(--lab-purple);
 }
 
-.chapter-branch-toggle-spacer {
-  width: 36px;
-  flex-shrink: 0;
-}
-
 .chapter-branch-toggle {
   display: grid;
   place-items: center;
