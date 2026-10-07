@@ -132,7 +132,7 @@ test('learning path, chapter navigation, and browser history', async ({ page }, 
   await expect(page.getByRole('heading', { name: firstChapter.shortTitle, exact: true })).toBeVisible();
 });
 
-test('lectures and exercises form one next/previous sequence', async ({ page }) => {
+test('lectures and exercises form one next/previous sequence', async ({ page, isMobile }) => {
   await page.goto(chapterPath(firstChapter));
   await expect(page.getByRole('region', { name: 'Chapter overview' })).toBeVisible();
   await expect(page.getByRole('link', { name: /preview/i })).toHaveCount(0);
@@ -147,7 +147,7 @@ test('lectures and exercises form one next/previous sequence', async ({ page }) 
       .click();
     await expect(page).toHaveURL(chapterContentPath(firstChapter, content));
     await expect(page.getByRole('heading', { name: content.title.split(':')[0], exact: true })).toBeVisible();
-    await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible();
+    if (!isMobile) await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toBeVisible();
     await expect(
       page.getByRole('region', {
         name: content.sectionSlug === 'tutorial' ? 'Lecture content' : 'Exercise content',
@@ -160,7 +160,7 @@ test('lectures and exercises form one next/previous sequence', async ({ page }) 
     } else {
       await expect(page.getByRole('button', { name: 'Check Answer', exact: true })).toBeEnabled();
       await expect(page.getByRole('button', { name: 'Show Answer', exact: true })).toBeEnabled();
-      await expect(page.getByRole('button', { name: 'SQL & Objectives', exact: true })).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'SQL & Objectives', exact: true })).toBeEnabled();
     }
   }
   await expect(
@@ -587,9 +587,11 @@ test('learning path and content pages fit desktop viewports without hiding navig
         if (navigation)
           expect(navigation.y + navigation.height).toBeLessThanOrEqual(dimensions.viewportHeight);
         const reset = await page.getByRole('button', { name: 'Reset', exact: true }).boundingBox();
-        const breadcrumb = await page.getByRole('navigation', { name: 'Breadcrumb' }).boundingBox();
+        const breadcrumb = viewport.width >= 640
+          ? await page.getByRole('navigation', { name: 'Breadcrumb' }).boundingBox()
+          : null;
         expect(reset).not.toBeNull();
-        expect(breadcrumb).not.toBeNull();
+        if (viewport.width >= 640) expect(breadcrumb).not.toBeNull();
         if (navigation && reset) expect(navigation.y + navigation.height).toBeLessThanOrEqual(reset.y);
         if (navigation && breadcrumb && viewport.width >= 640)
           expect(Math.abs(navigation.y + navigation.height / 2 - breadcrumb.y - breadcrumb.height / 2)).toBeLessThan(1);

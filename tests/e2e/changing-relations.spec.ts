@@ -1,10 +1,9 @@
-import type { Page } from '@playwright/test';
+import { expectChapterOneGuideLayout } from './chapter-one-guide';
 import { expect, test } from './fixtures';
 
 const lecturePath = '/labs/changing-relations/tutorial/lecture-1';
 const playbackInterval = 2200;
 const guideTitles = [
-  'Read changes, see the current state',
   'Read one change record',
   'One change can add several copies',
   'A different row adds a distinct value',
@@ -12,23 +11,6 @@ const guideTitles = [
   'Zero-copy rows are removed',
   'The rule: add each diff to the row’s count',
 ];
-
-async function expectGuideLayout(page: Page) {
-  const geometry = await page.locator('.relation-guide').evaluate((dialog) => {
-    const card = dialog.querySelector('.relation-guide-card')!;
-    const bounds = card.getBoundingClientRect();
-    const hole = dialog.querySelector('.relation-guide-hole')!.getBoundingClientRect();
-    return { left: bounds.left, right: bounds.right, top: bounds.top, bottom: bounds.bottom,
-      scrollHeight: card.scrollHeight, clientHeight: card.clientHeight, width: innerWidth, height: innerHeight,
-      overlaps: bounds.left < hole.right && bounds.right > hole.left && bounds.top < hole.bottom && bounds.bottom > hole.top };
-  });
-  expect(geometry.left).toBeGreaterThanOrEqual(0);
-  expect(geometry.right).toBeLessThanOrEqual(geometry.width);
-  expect(geometry.top).toBeGreaterThanOrEqual(0);
-  expect(geometry.bottom).toBeLessThanOrEqual(geometry.height);
-  expect(geometry.scrollHeight).toBeLessThanOrEqual(geometry.clientHeight);
-  expect(geometry.overlaps, 'The teaching card should leave its highlighted panel visible').toBe(false);
-}
 
 test('simple mode steps only data changes, stays minimal, and replays historical state', async ({ page, isMobile }, testInfo) => {
   await page.goto(lecturePath);
@@ -121,49 +103,60 @@ test('every metric, panel, and column has readable help on hover, focus, and cli
   }
 });
 
-test('guided mode teaches before revealing each effect and distinguishes partial retractions', async ({ page }, testInfo) => {
-  await page.goto(lecturePath);
-  await page.getByRole('button', { name: 'Start guided run' }).click();
-  for (const [index, title] of guideTitles.entries()) {
-    const guide = page.getByRole('dialog');
-    await expect(guide).toHaveAccessibleName(title);
-    await expect(guide).toContainText(`${index + 1} of 7`);
-    await expect(page.locator('.guided-lab-progress progress')).toHaveAttribute('max', '7');
-    await expect(page.locator('.guided-lab-progress progress')).toHaveAttribute('value', String(index));
-    await expect(guide.getByRole('radio')).toHaveCount(0);
-    await expect(page.locator('.relation-guide-shade')).toHaveCount(4);
-    await expectGuideLayout(page);
-    if (index >= 2 && index <= 5) {
-      await expect(guide.locator('.relation-guide-phase')).toHaveText('Before the change');
-      await expect(page.getByTestId('logical-time').locator('strong')).toHaveText(`t = ${index - 2}`);
-      if (index === 2) await page.screenshot({ path: testInfo.outputPath('guided-before.png') });
-      await guide.getByRole('button', { name: 'Show effect', exact: true }).click();
-      await expect(guide.locator('.relation-guide-phase')).toHaveText('Effect shown');
-      await expect(page.getByTestId('logical-time').locator('strong')).toHaveText(`t = ${index - 1}`);
-      await expectGuideLayout(page);
-      if (index === 4) {
-        await expect(guide.getByRole('group', { name: 'Total row copies', exact: true })).toContainText('4 → 6');
-        await expect(guide.getByRole('group', { name: 'Distinct full rows', exact: true })).toContainText('2 → 3');
-        await page.screenshot({ path: testInfo.outputPath('guided-metrics.png') });
-      } else {
-        const rowCopies = index === 2 ? '3' : index === 3 ? '1' : '0';
-        await expect(guide.getByRole('group', { name: 'Copy-count transition' }).locator('strong').last()).toHaveText(rowCopies);
+test('six guided steps explain the live tables and predict each effect', async ({ page, isMobile }, testInfo) => {
+  if (isMobile) await page.setViewportSize({ width: 390, height: 664 });
+  for (const theme of ['light', 'dark']) {
+    await page.goto(lecturePath);
+    const toggle = page.getByRole('button', { name: 'Switch to ' + theme + ' mode', exact: true });
+    if (await toggle.isVisible()) await toggle.click();
+    await page.getByRole('button', { name: 'Start guided run' }).click();
+    const totals = ['0', '3', '4', '6', '5', '5'];
+    const distinct = ['0', '1', '2', '3', '2', '2'];
+    for (const [index, title] of guideTitles.entries()) {
+      const guide = page.getByRole('dialog');
+      await expect(guide).toHaveAccessibleName(title);
+      await expect(guide).toContainText((index + 1) + ' of 6');
+      await expect(guide.locator('.relation-diagram')).toHaveCount(0);
+      await expect(page.locator('.guided-lab-progress span')).toHaveText('Changes');
+      const progress = page.getByRole('progressbar', { name: 'Changes progress' });
+      await expect(progress).toHaveAttribute('max', '4');
+      const beforeTime = index >= 1 && index <= 4 ? index - 1 : index === 5 ? 4 : 0;
+      await expect(progress).toHaveAttribute('value', String(beforeTime));
+      await expectChapterOneGuideLayout(page);
+      if (index >= 1 && index <= 4) {
+        await expect(guide.locator('.relation-guide-phase')).toHaveText('Predict the effect');
+        await expect(page.getByTestId('logical-time').locator('strong')).toHaveText('t = ' + (index - 1));
+        if (index === 1) await page.screenshot({ path: testInfo.outputPath('guided-before.png') });
+        await guide.getByRole('button', { name: 'Show effect', exact: true }).click();
+        await expect(guide.locator('.relation-guide-phase')).toHaveText('Explanation');
+        await expect(page.locator('.relation-causal-arrow')).toHaveCount(0);
+        await expect(page.getByTestId('logical-time').locator('strong')).toHaveText('t = ' + index);
+        await expect(progress).toHaveAttribute('value', String(index));
+        await expectChapterOneGuideLayout(page);
+        if (index === 3) {
+          await expect(guide.locator('p')).toContainText('4 → 6');
+          await expect(guide.locator('p')).toContainText('2 → 3');
+          const targets = await page.locator('.relation-guide-hole').evaluate(hole => {
+            const bounds = hole.getBoundingClientRect();
+            const time = document.querySelector('[data-testid="logical-time"]')!.getBoundingClientRect();
+            return { timeLeft: time.left, right: bounds.right };
+          });
+          expect(targets.right).toBeLessThan(targets.timeLeft);
+          await page.screenshot({ path: testInfo.outputPath('guided-metrics.png') });
+        }
+        if (index === 4) {
+          await expect(page.locator('.relation-current tbody tr')).toHaveText(['A$103', 'C$202']);
+          await page.screenshot({ path: testInfo.outputPath('guided-removal.png') });
+        }
       }
-      if (index === 5) {
-        await expect(guide.getByRole('group', { name: 'Hypothetical partial retraction' })).toContainText('3 − 1 = 2');
-        await expect(page.locator('.relation-current tbody tr').first().locator('td').last()).toHaveText('3');
-        await expect(page.getByTestId('total-copies').locator('strong')).toHaveText('5');
-        await page.screenshot({ path: testInfo.outputPath('guided-removal.png') });
-      }
+      await expect(page.getByTestId('total-copies').locator('strong')).toHaveText(totals[index]!);
+      await expect(page.getByTestId('distinct-rows').locator('strong')).toHaveText(distinct[index]!);
+      await guide.getByRole('button', { name: index === 5 ? 'Finish tutorial' : 'Next', exact: true }).click();
     }
-    await guide.getByRole('button', { name: index === 6 ? 'Finish tutorial' : 'Next', exact: true }).click();
+    await expect(page.getByRole('dialog')).not.toBeVisible();
+    await expect(page.locator('.relation-tutorial-complete')).toHaveText('Tutorial completed');
+    await expect(page.getByRole('progressbar', { name: 'Changes progress' })).toHaveAttribute('value', '4');
   }
-  await expect(page.getByRole('dialog')).not.toBeVisible();
-  await expect(page.getByTestId('total-copies').locator('strong')).toHaveText('5');
-  await expect(page.locator('.relation-tutorial-complete')).toHaveText('Tutorial completed');
-  await expect(page.getByRole('progressbar', { name: 'Changes progress' })).toHaveAttribute('value', '4');
-  await expect(page.locator('.relation-diagram')).toHaveCount(0);
-  await page.screenshot({ path: testInfo.outputPath('lecture-completed.png'), fullPage: true });
 });
 
 test('guided Back rewinds state and Escape returns to minimal playback with focus restored', async ({ page }) => {
@@ -174,7 +167,6 @@ test('guided Back rewinds state and Escape returns to minimal playback with focu
   await expect(guide.getByRole('button', { name: 'Close guided run' })).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(guide.getByRole('button', { name: 'Next', exact: true })).toBeFocused();
-  await guide.getByRole('button', { name: 'Next', exact: true }).click();
   await guide.getByRole('button', { name: 'Next', exact: true }).click();
   await guide.getByRole('button', { name: 'Show effect', exact: true }).click();
   await guide.getByRole('button', { name: 'Back', exact: true }).click();
@@ -232,14 +224,14 @@ test('playback and all guide phases fit laptop screens and work in dark mode', a
       expect(size.width).toBeLessThanOrEqual(size.viewportWidth);
     }
     await page.getByRole('button', { name: 'Start guided run' }).click();
-    for (let step = 0; step < 7; step++) {
-      await expectGuideLayout(page);
+    for (let step = 0; step < guideTitles.length; step++) {
+      await expectChapterOneGuideLayout(page);
       const guide = page.getByRole('dialog');
       if (await guide.getByRole('button', { name: 'Show effect', exact: true }).isVisible()) {
         await guide.getByRole('button', { name: 'Show effect', exact: true }).click();
-        await expectGuideLayout(page);
+        await expectChapterOneGuideLayout(page);
       }
-      await guide.getByRole('button', { name: step === 6 ? 'Finish tutorial' : 'Next', exact: true }).click();
+      await guide.getByRole('button', { name: step === guideTitles.length - 1 ? 'Finish tutorial' : 'Next', exact: true }).click();
     }
   }
   await page.setViewportSize({ width: 1366, height: 768 });
@@ -249,8 +241,7 @@ test('playback and all guide phases fit laptop screens and work in dark mode', a
   await page.getByRole('button', { name: 'Start guided run' }).click();
   const guide = page.getByRole('dialog');
   await guide.getByRole('button', { name: 'Next', exact: true }).click();
-  await guide.getByRole('button', { name: 'Next', exact: true }).click();
   await guide.getByRole('button', { name: 'Show effect', exact: true }).click();
-  await expectGuideLayout(page);
+  await expectChapterOneGuideLayout(page);
   await page.screenshot({ path: testInfo.outputPath('guided-dark.png') });
 });

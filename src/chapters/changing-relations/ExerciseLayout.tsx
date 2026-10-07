@@ -31,32 +31,32 @@ export interface ExerciseLedgerRecord {
   pending?: boolean;
 }
 
-export function ExerciseLedger({ records, rows = 4, title = 'Change ledger', targetTime }: {
-  records: readonly ExerciseLedgerRecord[]; rows?: number; title?: string; targetTime: number;
+export function ExerciseLedger({ records, rows = 4, title = 'Change ledger', targetTime, highlightPending = true }: {
+  records: readonly ExerciseLedgerRecord[]; rows?: number; title?: string; targetTime: number; highlightPending?: boolean;
 }) {
   return <section className="relation-panel exercise-ledger" aria-labelledby="exercise-ledger-heading">
-    <h2 id="exercise-ledger-heading">{title}<RelationHelp label={title} text="These authored records affect full rows. The tinted batch is awaiting your prediction; the current relation changes only after a correct answer. Empty grid rows are placeholders." /><span className="relation-panel-time">{records.some((record) => record.pending) ? 'Upcoming' : 'Applied'} · t = {targetTime}</span></h2>
+    <h2 id="exercise-ledger-heading">{title}<RelationHelp label={title} text={`These authored records affect full rows. The ${highlightPending ? 'tinted ' : ''}batch is awaiting your prediction; the current relation changes only after a correct answer. Empty grid rows are placeholders.`} /><span className="relation-panel-time">{records.some((record) => record.pending) ? 'Upcoming' : 'Applied'} · t = {targetTime}</span></h2>
     <Table caption={title}>
       <thead><tr>{[relationHelp.time, relationHelp.diff, relationHelp.row].map((help, index) => <th key={help.label} scope="col"><span className="relation-column-label">{index === 0 ? 't' : help.label}<RelationHelp {...help} /></span></th>)}</tr></thead>
       <tbody>
-        {records.map((record, index) => <tr key={`${record.time}:${rowKey(record.row)}:${index}`} className={record.pending ? 'relation-ledger-preview' : ''}>
-          <td>{record.time}</td><td>{record.control ?? (record.diff === null ? '?' : <DiffBadge diff={record.diff} />)}</td>
+        {records.map((record, index) => <tr key={`${record.time}:${rowKey(record.row)}:${index}`} className={highlightPending && record.pending ? 'relation-ledger-preview' : ''}>
+          <td>{record.time}</td><td><span className="relation-ledger-cell">{record.control ?? (record.diff === null ? '?' : <DiffBadge diff={record.diff} />)}</span></td>
           <td><span className="relation-row-value">{record.row.product}<span>${record.row.price}</span></span></td>
         </tr>)}
-        {Array.from({ length: Math.max(0, rows - records.length) }, (_, index) => <tr key={`empty:${index}`} aria-hidden="true"><td /><td /><td /></tr>)}
+        {Array.from({ length: Math.max(0, rows - records.length) }, (_, index) => <tr key={`empty:${index}`} aria-hidden="true"><td /><td><span className="relation-ledger-cell" /></td><td /></tr>)}
       </tbody>
     </Table>
-    <p className="relation-table-note">{records.some((record) => record.pending) ? 'Tinted rows are upcoming. Predict their effect before applying them.' : 'The complete timestamp has been applied.'}</p>
+    <p className="relation-table-note">{records.some((record) => record.pending) ? `${highlightPending ? 'Tinted rows' : 'These changes'} are upcoming. Predict their effect before applying them.` : 'The complete timestamp has been applied.'}</p>
   </section>;
 }
 
-export function ExerciseLayout(props: Omit<ComponentProps<typeof ExerciseFrame>, 'visualization' | 'pageClass' | 'reference'> & {
+export function ExerciseLayout(props: Omit<ComponentProps<typeof ExerciseFrame>, 'visualization' | 'pageClass'> & {
  relation: readonly RowMultiplicity[]; time: number; ledger: ReactNode; rows?: number;
 }) {
  const [selectedPanel, setSelectedPanel] = useState<'ledger' | 'relation'>('ledger');
  const metricsRef = useRef<HTMLDivElement>(null);
  const relationRef = useRef<HTMLElement>(null);
- return <ExerciseFrame {...props} mobilePanel={selectedPanel} visualization={(questionOpen, setQuestionOpen) => <>
+ return <ExerciseFrame {...props} pageClass="changing-relations-page changing-relations-exercise-page staged-exercise-page" mobilePanel={selectedPanel} visualization={(questionOpen, setQuestionOpen) => <>
  <RelationMetrics relation={props.relation} time={props.time} metricsRef={metricsRef} />
  <div className="relation-panels" data-selected-panel={selectedPanel}>
  <PanelTabs value={questionOpen ? undefined : selectedPanel} onChange={panel => { setQuestionOpen(false); setSelectedPanel(panel); }}>

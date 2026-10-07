@@ -71,3 +71,19 @@ export const inventoryCheckpoints: readonly InventoryCheckpoint[] = [
     hint: ['Compute each full row first. Rows that reach ', { kind: 'count', text: '0 copies' }, ' disappear. Retracting ', { kind: 'row', text: '(Mug, $10)' }, ' and adding ', { kind: 'row', text: '(Mug, $12)' }, ' changes row values even when the total count stays the same.'],
   },
 ];
+
+export const inventoryExerciseReference = {
+  objective: 'Reconstruct inventory at each complete logical timestamp: combine full-row diffs, distinguish copies from distinct rows, and build a price replacement with an extra copy.',
+  sql: `SELECT product, price, COUNT(*) AS copies
+FROM products GROUP BY product, price;
+SELECT COUNT(*) AS total_copies FROM products;
+SELECT DISTINCT product, price FROM products;
+-- Observe changes in a separate SQL connection.
+SUBSCRIBE products;`,
+  documentationLinks: [
+    { label: 'SELECT: duplicate rows and grouping', href: 'https://materialize.com/docs/sql/select/' },
+    { label: 'COUNT: counting row copies', href: 'https://materialize.com/docs/sql/functions/#aggregate-functions' },
+    { label: 'SUBSCRIBE: logical timestamps and signed diffs', href: 'https://materialize.com/docs/sql/subscribe/#output' },
+    { label: 'SUBSCRIBE: old and new rows in an update', href: 'https://materialize.com/docs/sql/subscribe/#mapping-rows-to-their-updates' },
+  ],
+};

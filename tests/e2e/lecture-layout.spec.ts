@@ -1,5 +1,110 @@
 import { expect, test } from './fixtures';
 
+test('Chapter 1 ledgers share Lecture 1 presentation and keep history usable in both themes', async ({ page, isMobile }, testInfo) => {
+  test.setTimeout(60_000);
+  const viewports = isMobile ? [{ width: 390, height: 664 }] : [
+    { width: 1440, height: 1000 }, { width: 1366, height: 768 },
+    { width: 1280, height: 650 }, { width: 1024, height: 768 },
+  ];
+  const presentation = () => page.locator('.relation-ledger').evaluate((panel) => {
+    const table = panel.querySelector('table')!;
+    const styles = (element: Element) => {
+      const css = getComputedStyle(element);
+      return [css.fontFamily, css.fontSize, css.fontWeight, css.color, css.backgroundColor,
+        css.padding, css.borderBottomColor, css.borderRadius, css.textAlign];
+    };
+    return {
+      panel: styles(panel), heading: styles(panel.querySelector('h2')!),
+      headers: Array.from(table.querySelectorAll('th')).map(styles),
+      cells: Array.from(table.querySelectorAll('tbody tr:first-child td')).map(styles),
+      columns: Array.from(table.querySelectorAll('th')).map((cell) => cell.getBoundingClientRect().width),
+      rowHeight: table.querySelector('tbody tr')!.getBoundingClientRect().height,
+    };
+  });
+  const workspaceLayout = () => page.evaluate(() => {
+    const box = (element: Element) => {
+      const rect = element.getBoundingClientRect();
+      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+    };
+    const tip = document.querySelector('.guided-lab-tip')!;
+    const tipVisible = tip.getAttribute('data-fit-hidden') !== 'true';
+    return {
+      metrics: Array.from(document.querySelectorAll('.relation-metric')).map(box),
+      controls: box(document.querySelector('.relation-playback-controls')!),
+      tip: tipVisible ? box(tip) : null,
+    };
+  });
+  for (const viewport of viewports) {
+    await page.setViewportSize(viewport);
+    for (const theme of ['light', 'dark']) {
+      await page.goto('/labs/incremental-maintenance/tutorial/lecture-1');
+      const toggle = page.getByRole('button', { name: `Switch to ${theme} mode`, exact: true });
+      if (await toggle.isVisible()) await toggle.click();
+      const referenceLayout = await workspaceLayout();
+      await page.goto('/labs/changing-relations/tutorial/lecture-1');
+      const description = page.locator('.guided-lab-title > p');
+      if (!isMobile) await expect(description).toBeVisible();
+      const chapterOneLayout = await workspaceLayout();
+      expect(chapterOneLayout.controls).toEqual(referenceLayout.controls);
+      expect(chapterOneLayout.tip).toEqual(referenceLayout.tip);
+      if (!isMobile) {
+        const gaps = await page.evaluate(() => {
+          const heading = document.querySelector('.guided-lab-heading')!.getBoundingClientRect();
+          const metrics = document.querySelector('.relation-metrics')!.getBoundingClientRect();
+          const panels = document.querySelector('.relation-panels')!.getBoundingClientRect();
+          return { above: metrics.top - heading.bottom, between: panels.top - metrics.bottom };
+        });
+        expect(gaps.above).toBe(viewport.height <= 740 ? 40 : viewport.width <= 1150 ? 44 : 52);
+        expect(gaps.between).toBe(22);
+      }
+      for (let time = 0; time <= 4; time++) {
+        if (time > 0) await page.getByRole('button', { name: 'Next change', exact: true }).click();
+        await expect.poll(workspaceLayout).toEqual(chapterOneLayout);
+      }
+      await page.getByRole('button', { name: 'Reset', exact: true }).click();
+      const reference = await presentation();
+      const referencePanelHeight = (await page.locator('.relation-ledger').boundingBox())!.height;
+      const referenceTableHeight = (await page.locator('.relation-ledger table').boundingBox())!.height;
+      await page.goto('/labs/changing-relations/tutorial/lecture-2');
+      if (!isMobile) await expect(description).toBeVisible();
+      const batchPresentation = await presentation();
+      expect(batchPresentation.panel).toEqual(reference.panel);
+      expect(batchPresentation.heading).toEqual(reference.heading);
+      expect(batchPresentation.headers).toEqual(reference.headers.slice(1));
+      expect(batchPresentation.cells).toEqual(reference.cells.slice(1));
+      expect(batchPresentation.rowHeight).toBeCloseTo(reference.rowHeight, 0);
+      expect(batchPresentation.columns[0]).toBeCloseTo(reference.columns[1]!, 0);
+      const ledger = page.locator('.relation-ledger');
+      const startingHeight = (await ledger.boundingBox())!.height;
+      if (!isMobile) {
+        expect(startingHeight).toBeCloseTo(referencePanelHeight, 0);
+        expect((await ledger.locator('table').boundingBox())!.height).toBeCloseTo(referenceTableHeight, 0);
+      }
+      await expect(ledger.locator('thead .relation-column-label')).toHaveText([/^Signed diff/, /^Row/]);
+      for (let time = 0; time <= 3; time++) {
+        if (time > 0) await page.getByRole('button', { name: 'Next timestamp', exact: true }).click();
+        await expect.poll(workspaceLayout).toEqual(chapterOneLayout);
+        await expect(ledger.locator('tbody tr')).toHaveCount(4);
+        expect(Math.abs((await ledger.boundingBox())!.height - startingHeight)).toBeLessThanOrEqual(1);
+        const geometry = await page.evaluate(() => ({ height: document.documentElement.scrollHeight, width: document.documentElement.scrollWidth, viewportHeight: innerHeight, viewportWidth: innerWidth }));
+        expect(geometry.height).toBeLessThanOrEqual(geometry.viewportHeight);
+        expect(geometry.width).toBeLessThanOrEqual(geometry.viewportWidth);
+        await expect(ledger.locator('tbody tr[data-mobile-current="true"]')).toHaveCount(time === 0 ? 3 : time === 3 ? 4 : 2);
+      }
+      await expect(page.getByRole('button', { name: /^Inspect t =/ })).toHaveCount(0);
+      const previous = page.getByRole('button', { name: 'Previous timestamp', exact: true });
+      await previous.focus(); await page.keyboard.press('Enter'); await page.keyboard.press('Enter');
+      await expect(page.getByTestId('logical-time').locator('strong')).toHaveText('t = 1');
+      await expect(page.getByRole('progressbar', { name: 'Changes progress' })).toHaveAttribute('value', '1');
+      await expect(ledger.locator('.relation-ledger-selected')).toHaveCount(0);
+      const historyGeometry = await page.evaluate(() => ({ height: document.documentElement.scrollHeight, bottom: document.querySelector('.relation-playback-controls')!.getBoundingClientRect().bottom, viewportHeight: innerHeight }));
+      expect(historyGeometry.height).toBeLessThanOrEqual(historyGeometry.viewportHeight);
+      expect(historyGeometry.bottom).toBeLessThanOrEqual(historyGeometry.viewportHeight);
+      await page.screenshot({ path: testInfo.outputPath(`chapter-1-ledger-${theme}-${viewport.width}-${viewport.height}.png`) });
+    }
+  }
+});
+
 test('Back revisits the prediction after Show effect in every lecture', async ({ page }) => {
   for (const chapter of ['changing-relations', 'incremental-maintenance']) {
     for (const lecture of [1, 2]) {
@@ -43,7 +148,7 @@ test('all lecture trackers follow the displayed change when navigating back', as
       const timestamp = chapter === 'changing-relations' && lecture === 2;
       const next = page.getByRole('button', { name: timestamp ? 'Next timestamp' : 'Next change', exact: true });
       const previous = page.getByRole('button', { name: timestamp ? 'Previous timestamp' : 'Previous change', exact: true });
-      const progress = page.getByRole('progressbar', { name: timestamp ? 'Timestamps progress' : 'Changes progress' });
+      const progress = page.getByRole('progressbar', { name: 'Changes progress' });
       await next.click(); await next.click();
       await expect(progress).toHaveAttribute('value', '2');
       await previous.click(); await previous.click();

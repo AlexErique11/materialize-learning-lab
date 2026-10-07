@@ -1,14 +1,16 @@
 import { useState, type ReactNode } from 'react';
 import type { ChapterDefinition } from '../chapterRegistry';
 import { ExerciseInput, ExerciseLayout, ExerciseLedger } from './ExerciseLayout';
-import { inventoryBatches, inventoryCheckpoints, inventoryGridRows, inventoryInitial, inventoryUpdates } from './exercise-one-scenario';
+import { inventoryBatches, inventoryCheckpoints, inventoryExerciseReference, inventoryGridRows, inventoryInitial, inventoryUpdates } from './exercise-one-scenario';
 import { getInventoryAnswer, gradeInventoryPrediction, type InventoryPrediction } from './inventory-exercise';
 import { relationAt } from './simulation';
 import { useExerciseStages } from './useExerciseStages';
+import { ChapterCompletionDialog } from './ChapterCompletionDialog';
 
 export function ExerciseOne({ chapter, navigation }: { chapter: ChapterDefinition; navigation: ReactNode }) {
   const flow = useExerciseStages(inventoryCheckpoints.length);
   const [answer, setAnswer] = useState<InventoryPrediction>({});
+  const [completionOpen, setCompletionOpen] = useState(false);
   const checkpoint = inventoryCheckpoints[flow.stage]!;
   const batch = inventoryBatches[flow.stage]!;
   const time = flow.accepted ? batch.time : batch.time - 1;
@@ -23,9 +25,10 @@ export function ExerciseOne({ chapter, navigation }: { chapter: ChapterDefinitio
           disabled={flow.accepted} onChange={(value) => edit(field.id, value)} /> : undefined,
     };
   });
-  return <ExerciseLayout chapter={chapter} title="Exercise 1" description="Reconstruct, build, and check one inventory timeline in three phases."
-    navigation={navigation} flow={flow} relation={relationAt(inventoryUpdates, time, inventoryInitial)} time={time} rows={inventoryGridRows}
-    ledger={<ExerciseLedger targetTime={batch.time} rows={inventoryGridRows} records={records} title={checkpoint.kind === 'build' ? 'Build the change' : 'Change ledger'} />}
+  return <><ExerciseLayout chapter={chapter} title="Exercise 1" description="Reconstruct, build, and check one inventory timeline in three questions."
+    navigation={navigation} reference={inventoryExerciseReference} flow={flow} relation={relationAt(inventoryUpdates, time, inventoryInitial)} time={time} rows={inventoryGridRows}
+    progressLabel="Questions" allowSkipping={flow.complete} nextExerciseLabel="Finish chapter"
+    ledger={<ExerciseLedger targetTime={batch.time} rows={inventoryGridRows} records={records} highlightPending={checkpoint.kind === 'build'} title={checkpoint.kind === 'build' ? 'Build the change' : 'Change ledger'} />}
     checkpointTitle={checkpoint.title} question={checkpoint.question} hint={checkpoint.hint}
     answers={checkpoint.kind === 'build' ? <p className="exercise-answer-note">{flow.accepted ? 'The completed batch is shown in the ledger.' : 'Write both signed diffs in the ledger.'}</p>
       : checkpoint.fields.map((field) => <ExerciseInput key={`${flow.stage}:${field.id}`} label={field.label} labelContent={field.labelContent}
@@ -35,6 +38,12 @@ export function ExerciseOne({ chapter, navigation }: { chapter: ChapterDefinitio
       const solution = getInventoryAnswer(flow.stage);
       setAnswer(solution); flow.dispatch({ type: 'check', grade: gradeInventoryPrediction(flow.stage, solution) });
     }}
-    onNext={() => { if (!flow.accepted || flow.complete) return; flow.dispatch({ type: 'next' }); setAnswer({}); }}
-    onReset={() => { flow.dispatch({ type: 'reset' }); setAnswer({}); }} />;
+    onNext={() => {
+      if (!flow.accepted) return;
+      if (flow.complete) { setCompletionOpen(true); return; }
+      flow.dispatch({ type: 'next' }); setAnswer({});
+    }}
+    onReset={() => { flow.dispatch({ type: 'reset' }); setAnswer({}); setCompletionOpen(false); }} />
+    <ChapterCompletionDialog chapter={chapter} open={completionOpen} onClose={() => setCompletionOpen(false)} />
+  </>;
 }

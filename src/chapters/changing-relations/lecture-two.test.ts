@@ -66,9 +66,9 @@ describe('Lecture 2 playback and guide', () => {
     expect(reduce(state, { type: 'reset' })).toEqual(initialRunState);
   });
 
-  it('pauses before the three complete batches, keeps comparison steps at their time, and finishes after eight steps', () => {
+  it('pauses before the three complete batches, finishes after the five-step recap', () => {
     let state = reduce(initialRunState, { type: 'start-guided' });
-    expect(lectureTwoSteps).toHaveLength(8);
+    expect(lectureTwoSteps).toHaveLength(5);
     for (const [step, lesson] of lectureTwoSteps.entries()) {
       expect(state.step).toBe(step);
       if (lesson.before) {
@@ -80,8 +80,8 @@ describe('Lecture 2 playback and guide', () => {
       expect(state).toMatchObject({ applied: lesson.time, selectedTime: lesson.time, guided: true });
       state = reduce(state, { type: 'next' });
     }
-    expect(state).toMatchObject({ applied: 3, step: 8, guided: false });
-    expect(reduce(state, { type: 'play' })).toMatchObject({ applied: 0, selectedTime: 0, step: 8, playing: true });
+    expect(state).toMatchObject({ applied: 3, step: 5, guided: false });
+    expect(reduce(state, { type: 'play' })).toMatchObject({ applied: 0, selectedTime: 0, step: 5, playing: true });
   });
 
   it('Back rewinds whole results and closing before a reveal preserves the prior timestamp', () => {
@@ -90,13 +90,12 @@ describe('Lecture 2 playback and guide', () => {
     expect(reduce(state, { type: 'close-guided' })).toMatchObject({ applied: 0, selectedTime: 0, guided: false });
     state = reduce(state, { type: 'reveal' });
     state = reduce(state, { type: 'next' });
-    state = reduce(state, { type: 'next' });
     state = reduce(state, { type: 'reveal' });
     expect(state.selectedTime).toBe(2);
     state = reduce(state, { type: 'back' });
-    expect(state).toMatchObject({ step: 3, selectedTime: 1, applied: 1, revealed: false });
+    expect(state).toMatchObject({ step: 2, selectedTime: 1, applied: 1, revealed: false });
     state = reduce(state, { type: 'back' });
-    expect(state).toMatchObject({ step: 2, selectedTime: 1, applied: 1, revealed: true });
+    expect(state).toMatchObject({ step: 1, selectedTime: 1, applied: 1, revealed: true });
     expect(reduce(state, { type: 'previous-change' })).toEqual(state);
     expect(reduce(state, { type: 'play' })).toEqual(state);
   });

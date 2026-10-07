@@ -46,24 +46,22 @@ describe('changing relations', () => {
 });
 
 describe('lecture run controls', () => {
-  it('pauses before each timestamp, reveals once, and completes only after the seven-step recap', () => {
+  it('pauses before each timestamp, reveals once, and completes only after the six-step recap', () => {
     let state = lectureRunReducer(initialRunState, { type: 'start-guided' });
-    expect(lectureSteps).toHaveLength(7);
+    expect(lectureSteps).toHaveLength(6);
     expect(state).toMatchObject({ step: 0, applied: 0, guided: true });
-    state = lectureRunReducer(state, { type: 'next' });
-    expect(state).toMatchObject({ step: 1, applied: 0 });
     for (const time of [1, 2, 3, 4]) {
       state = lectureRunReducer(state, { type: 'next' });
-      expect(state).toMatchObject({ step: time + 1, applied: time - 1, selectedTime: time - 1, revealed: false });
+      expect(state).toMatchObject({ step: time, applied: time - 1, selectedTime: time - 1, revealed: false });
       expect(lectureRunReducer(state, { type: 'next' })).toEqual(state);
       state = lectureRunReducer(state, { type: 'reveal' });
       expect(state).toMatchObject({ applied: time, selectedTime: time, revealed: true });
       expect(lectureRunReducer(state, { type: 'reveal' })).toEqual(state);
     }
     state = lectureRunReducer(state, { type: 'next' });
-    expect(state).toMatchObject({ step: 6, applied: 4, guided: true });
+    expect(state).toMatchObject({ step: 5, applied: 4, guided: true });
     state = lectureRunReducer(state, { type: 'next' });
-    expect(state).toMatchObject({ step: 7, applied: 4, guided: false });
+    expect(state).toMatchObject({ step: 6, applied: 4, guided: false });
     expect(lectureRunReducer(state, { type: 'next' })).toEqual(state);
     expect(lectureRunReducer(state, { type: 'reset' })).toEqual(initialRunState);
   });
@@ -91,14 +89,13 @@ describe('lecture run controls', () => {
     expect(lectureRunReducer(guided, { type: 'select', time: 0 })).toEqual(guided);
     expect(lectureRunReducer(guided, { type: 'next-change' })).toEqual(guided);
     expect(lectureRunReducer(guided, { type: 'previous-change' })).toEqual(guided);
-    const record = lectureRunReducer(guided, { type: 'next' });
-    const before = lectureRunReducer(record, { type: 'next' });
+    const before = lectureRunReducer(guided, { type: 'next' });
     const advanced = lectureRunReducer(before, { type: 'reveal' });
     const closed = lectureRunReducer(advanced, { type: 'close-guided' });
-    expect(closed).toMatchObject({ step: 2, applied: 1, guided: false });
+    expect(closed).toMatchObject({ step: 1, applied: 1, guided: false });
     const inspecting = lectureRunReducer(closed, { type: 'select', time: 0 });
     expect(lectureRunReducer(inspecting, { type: 'next-change' })).toMatchObject({ applied: 1, selectedTime: 1 });
-    expect(lectureRunReducer(inspecting, { type: 'play' })).toMatchObject({ selectedTime: 1, step: 2, playing: true });
+    expect(lectureRunReducer(inspecting, { type: 'play' })).toMatchObject({ selectedTime: 1, step: 1, playing: true });
   });
 
   it('revisits changes in both directions, preserving applied progress and the empty starting state', () => {
@@ -124,22 +121,22 @@ describe('lecture run controls', () => {
 
   it('rewinds the guide, preserves its completion during data replay, and resets deliberately', () => {
     let state = lectureRunReducer(initialRunState, { type: 'start-guided' });
-    for (let step = 0; step < 4; step++) {
+    for (let step = 0; step < 3; step++) {
       state = lectureRunReducer(state, { type: 'next' });
       state = lectureRunReducer(state, { type: 'reveal' });
     }
-    expect(state).toMatchObject({ step: 4, applied: 3 });
+    expect(state).toMatchObject({ step: 3, applied: 3 });
     state = lectureRunReducer(state, { type: 'back' });
-    expect(state).toMatchObject({ step: 4, applied: 2, selectedTime: 2, revealed: false });
+    expect(state).toMatchObject({ step: 3, applied: 2, selectedTime: 2, revealed: false });
     state = lectureRunReducer(state, { type: 'back' });
-    expect(state).toMatchObject({ step: 3, applied: 2, selectedTime: 2, revealed: true });
+    expect(state).toMatchObject({ step: 2, applied: 2, selectedTime: 2, revealed: true });
     while (state.guided) {
       state = lectureRunReducer(state, { type: 'reveal' });
       state = lectureRunReducer(state, { type: 'next' });
     }
-    expect(state).toMatchObject({ step: 7, applied: 4 });
+    expect(state).toMatchObject({ step: 6, applied: 4 });
     const replay = lectureRunReducer(state, { type: 'play' });
-    expect(replay).toMatchObject({ step: 7, applied: 0, selectedTime: 0, playing: true });
+    expect(replay).toMatchObject({ step: 6, applied: 0, selectedTime: 0, playing: true });
     expect(lectureRunReducer(replay, { type: 'reset' })).toEqual(initialRunState);
   });
 });

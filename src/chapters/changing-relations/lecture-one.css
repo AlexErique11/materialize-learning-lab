@@ -38,6 +38,91 @@
   gap: 14px;
 }
 
+.changing-relations-lecture-page .relation-count-metrics {
+  display: grid;
+  grid-column: span 2;
+  grid-template-columns: subgrid;
+  gap: inherit;
+}
+
+/* Share the data-row spacing across Chapter 1 while retaining the lecture footer position. */
+.app-shell-guided-labs .guided-lab-page.changing-relations-page:is(.changing-relations-lecture-page, .changing-relations-exercise-page)[data-viewport-fit] {
+  --lecture-visualization-height: 432px;
+  --chapter-one-data-spacing: 12px;
+  --chapter-one-title-spacing: 38px;
+  --chapter-one-workspace-gap: 10px;
+  gap: 14px;
+  padding-bottom: 4px;
+}
+
+.app-shell-guided-labs :is(.changing-relations-lecture-page, .changing-relations-exercise-page)[data-viewport-fit] .relation-workspace {
+  gap: var(--chapter-one-workspace-gap);
+  padding-top: var(--chapter-one-title-spacing);
+}
+
+:is(.changing-relations-lecture-page, .changing-relations-exercise-page) .relation-metrics {
+  margin-bottom: calc(var(--chapter-one-data-spacing) + 10px - var(--chapter-one-workspace-gap));
+}
+
+.changing-relations-exercise-page .relation-panels {
+  margin-bottom: calc(var(--chapter-one-data-spacing) + 10px - var(--chapter-one-workspace-gap));
+}
+
+.changing-relations-lecture-page .relation-panels {
+  min-height: calc(var(--lecture-visualization-height) - var(--chapter-one-title-spacing) - var(--chapter-one-data-spacing));
+  align-content: start;
+}
+
+.changing-relations-lecture-page .relation-playback-controls {
+  margin-top: 4px;
+}
+
+@media (min-width: 640px) and (max-width: 1150px) {
+  .app-shell-guided-labs .guided-lab-page.changing-relations-page:is(.changing-relations-lecture-page, .changing-relations-exercise-page)[data-viewport-fit] {
+    /* Account for the restored 13px description and its 4px top margin. */
+    --lecture-visualization-height: calc(404px - 13px * 1.5 - 4px);
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1150px) {
+  .app-shell-guided-labs .guided-lab-page.changing-relations-page:is(.changing-relations-lecture-page, .changing-relations-exercise-page)[data-viewport-fit] {
+    --chapter-one-title-spacing: 34px;
+    gap: 10px;
+  }
+}
+
+@media (min-width: 640px) and (max-height: 740px) {
+  .app-shell-guided-labs .guided-lab-page.changing-relations-page:is(.changing-relations-lecture-page, .changing-relations-exercise-page)[data-viewport-fit] {
+    --lecture-visualization-height: calc(382px - 14px * 1.5 - 5px);
+    --chapter-one-title-spacing: 32px;
+    gap: 8px;
+    padding-block: 8px 2px;
+  }
+  :is(.changing-relations-lecture-page, .changing-relations-exercise-page) .relation-metric {
+    min-height: 52px;
+    padding-block: 2px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1150px) and (max-height: 740px) {
+  .app-shell-guided-labs .guided-lab-page.changing-relations-page:is(.changing-relations-lecture-page, .changing-relations-exercise-page)[data-viewport-fit] {
+    --lecture-visualization-height: calc(398px - 13px * 1.5 - 4px);
+  }
+}
+
+@media (max-width: 639px) {
+  .app-shell-guided-labs .guided-lab-page.changing-relations-page:is(.changing-relations-lecture-page, .changing-relations-exercise-page)[data-viewport-fit] {
+    --lecture-visualization-height: 294px;
+    --chapter-one-data-spacing: 0px;
+    --chapter-one-title-spacing: 0px;
+    gap: 6px;
+    padding-block: 4px 0;
+  }
+  .changing-relations-lecture-page .relation-panels {
+    gap: 10px;
+  }
+}
+
 .relation-metric {
   display: flex;
   align-items: center;
@@ -210,6 +295,114 @@
   font-size: 13px;
 }
 
+.changing-relations-lecture-page .relation-ledger .data-table {
+  table-layout: fixed;
+}
+
+.changing-relations-lecture-page .relation-ledger .data-table th:first-child {
+  width: 18%;
+}
+
+.changing-relations-lecture-page .relation-ledger .data-table th:nth-child(2) {
+  width: 38%;
+}
+
+.guided-lab-page.changing-relations-lecture-page .relation-ledger .data-table tr.relation-ledger-placeholder {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .changing-relations-lecture-page .relation-ledger[data-timestamp-view='false'] .data-table tr:has(+ .relation-ledger-placeholder) td {
+    border-bottom: 0;
+  }
+}
+
+.changing-relations-lecture-page .relation-ledger-mobile-time {
+  display: none;
+}
+
+.changing-relations-lecture-page .relation-ledger-header {
+  display: contents;
+}
+
+.changing-relations-lecture-page .relation-ledger[data-timestamp-view='true'] .relation-ledger-header {
+  display: block;
+  grid-column: 1 / -1;
+  margin-bottom: 12px;
+}
+
+.changing-relations-lecture-page .relation-ledger[data-timestamp-view='true'] h2 {
+  margin-bottom: 0;
+}
+
+.changing-relations-lecture-page .relation-ledger[data-timestamp-view='true'] .data-table th:first-child {
+  width: 38%;
+}
+
+.changing-relations-lecture-page .relation-ledger[data-timestamp-view='true'] .data-table th:nth-child(2) {
+  width: auto;
+  text-align: left;
+}
+
+.changing-relations-lecture-page .relation-ledger[data-timestamp-view='true'] .data-table td:nth-child(2) {
+  text-align: start;
+}
+
+/* Preserve the four-row footprint when the timestamp cells are omitted. */
+:is(.changing-relations-lecture-page, .changing-relations-exercise-page) .relation-ledger-cell {
+  display: inline-flex;
+  vertical-align: middle;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.guided-lab-page.changing-relations-lecture-page .relation-ledger[data-timestamp-view='true'] .data-table tr.relation-ledger-placeholder {
+  display: table-row;
+}
+
+@media (min-width: 1024px) and (max-height: 740px), (min-width: 1024px) and (max-width: 1150px), (max-width: 639px) {
+  .changing-relations-lecture-page .relation-ledger[data-timestamp-view='true'] .relation-ledger-header {
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 639px) {
+  .changing-relations-lecture-page .relation-playback-kind {
+    display: none;
+  }
+  .changing-relations-lecture-page .relation-ledger {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .changing-relations-lecture-page .relation-ledger h2 {
+    margin-bottom: 8px;
+  }
+  .changing-relations-lecture-page .relation-mobile-timestamps {
+    margin: 0;
+  }
+  .changing-relations-lecture-page .relation-ledger .table-scroll,
+  .changing-relations-lecture-page .relation-ledger .relation-table-note {
+    grid-column: 1 / -1;
+  }
+  .changing-relations-lecture-page .relation-ledger .relation-pending-label {
+    display: none;
+  }
+  .guided-lab-page.changing-relations-lecture-page .relation-ledger .data-table tr.relation-ledger-placeholder {
+    display: table-row;
+  }
+  .changing-relations-lecture-page .relation-ledger td .relation-timestamp-button {
+    display: none;
+  }
+  .changing-relations-lecture-page .relation-ledger-mobile-time {
+    display: inline;
+  }
+  :is(.changing-relations-lecture-page, .changing-relations-exercise-page) .relation-ledger-cell {
+    min-height: 0;
+  }
+}
+
 .relation-panel .data-table th {
   border: 0;
   border-bottom: 1px solid var(--lab-border);
@@ -378,15 +571,6 @@
   white-space: nowrap;
 }
 
-.relation-causal-arrow {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  overflow: visible;
-}
-
 .relation-playback-controls {
   display: flex;
   flex-wrap: wrap;
@@ -414,219 +598,6 @@
 .relation-playback-controls .button {
   min-height: 34px;
   font-size: 12px;
-}
-
-.relation-diagram {
-  margin-top: 12px;
-  padding: 12px;
-  border: 1px solid var(--lab-border);
-  border-radius: 5px;
-  background: color-mix(in srgb, var(--lab-tint) 25%, var(--lab-surface));
-  font-size: 12px;
-}
-
-.relation-diagram-flow {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: 12px;
-}
-
-.relation-diagram-flow > div {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.relation-diagram-flow svg, .relation-count-transition > svg {
-  color: var(--lab-purple);
-}
-
-.relation-diagram-flow span {
-  color: var(--lab-muted);
-  font-size: 11px;
-}
-
-.relation-diagram-record {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.relation-diagram-record > div {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 7px;
-  min-width: 0;
-}
-
-.relation-diagram-record > div > span:first-child, .relation-diagram-record small {
-  color: var(--lab-muted);
-  font-size: 10px;
-}
-
-.relation-diagram-row, .relation-steady-row {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-}
-
-.relation-diagram-row > span:last-child, .relation-steady-row > span:last-child {
-  color: var(--lab-muted);
-  font-size: 11px;
-}
-
-.relation-count-transition {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, .85fr) 17px minmax(0, 1fr);
-  align-items: center;
-  gap: 6px;
-  margin-top: 12px;
-}
-
-.relation-count-transition > div {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  text-align: center;
-}
-
-.relation-count-transition > div > span:first-child {
-  color: var(--lab-muted);
-  font-size: 10px;
-}
-
-.relation-count-transition strong {
-  color: var(--lab-purple);
-  font-size: 23px;
-  font-variant-numeric: tabular-nums;
-}
-
-.relation-count-transition .relation-result-zero {
-  color: var(--danger);
-}
-
-.relation-copy-group, .relation-steady-row {
-  margin-top: 12px;
-  border-top: 1px solid var(--lab-border);
-  padding-top: 10px;
-}
-
-.relation-copy-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  color: var(--lab-muted);
-  font-size: 11px;
-}
-
-.relation-copy-group > div {
-  display: flex;
-  flex-shrink: 0;
-  gap: 4px;
-}
-
-.relation-copy-group > div > span {
-  width: 12px;
-  height: 12px;
-  border-radius: 3px;
-  background: var(--success);
-}
-
-.relation-metric-comparison + .relation-metric-comparison {
-  margin-top: 14px;
-}
-
-.relation-metric-comparison > div:first-child, .relation-metric-comparison small {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-}
-
-.relation-metric-comparison strong {
-  color: var(--lab-purple);
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
-}
-
-.relation-diagram-bar {
-  display: grid;
-  gap: 4px;
-  margin-top: 7px;
-}
-
-.relation-diagram-bar > span {
-  height: 10px;
-  border: 1px solid var(--lab-border);
-  border-radius: 2px;
-}
-
-.relation-diagram-bar .relation-bar-existing {
-  border-color: var(--lab-purple);
-  background: var(--lab-purple);
-}
-
-.relation-diagram-bar .relation-bar-added {
-  border-color: var(--success);
-  background: var(--success);
-}
-
-.relation-metric-comparison small {
-  margin-top: 4px;
-  color: var(--lab-muted);
-  font-size: 10px;
-}
-
-.relation-metric-comparison small b {
-  color: var(--success);
-}
-
-.relation-diagram-comparison {
-  margin-top: 12px;
-  border-top: 1px solid var(--lab-border);
-  padding-top: 10px;
-  color: var(--lab-muted);
-  font-size: 11px;
-}
-
-.relation-diagram-comparison > div {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px;
-  margin-top: 6px;
-}
-
-.relation-diagram-comparison b, .relation-diagram-comparison > div > span:last-child {
-  color: var(--success);
-}
-
-.relation-diagram-rule {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr auto 1fr;
-  align-items: center;
-  gap: 7px;
-  text-align: center;
-  color: var(--lab-purple);
-  font-size: 11px;
-}
-
-.relation-diagram-rule span {
-  border-radius: 3px;
-  padding: 7px 4px;
-  background: var(--lab-tint);
-}
-
-.relation-diagram-final {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 10px;
-  margin-top: 12px;
 }
 
 @media (max-width: 1350px) {
@@ -784,10 +755,6 @@
 }
 
 @media (max-width: 639px) {
-  .relation-diagram-metrics { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-  .relation-diagram-metrics .relation-metric-comparison + .relation-metric-comparison { margin-top: 0; }
-  .relation-diagram-metrics .relation-metric-comparison > div:first-child { flex-wrap: wrap; font-size: 11px; }
-  .relation-diagram-metrics .relation-metric-comparison small { font-size: 10px; }
   .guided-lab-page.changing-relations-page {
     gap: 12px;
   }
@@ -806,9 +773,6 @@
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  .relation-causal-arrow {
-    display: none;
-  }
   .relation-panel .data-table th {
     font-size: 11px;
   }
@@ -826,20 +790,5 @@
   .relation-workspace[data-guided="true"] .relation-table-note,
   .relation-workspace[data-guided="true"] .relation-pending-label {
     display: none;
-  }
-  .relation-diagram {
-    margin-top: 8px;
-    padding: 8px;
-  }
-  .relation-count-transition,
-  .relation-copy-group,
-  .relation-steady-row,
-  .relation-diagram-comparison {
-    margin-top: 8px;
-  }
-  .relation-copy-group,
-  .relation-steady-row,
-  .relation-diagram-comparison {
-    padding-top: 6px;
   }
 }
