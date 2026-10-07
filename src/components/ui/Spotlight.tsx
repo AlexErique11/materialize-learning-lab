@@ -13,6 +13,7 @@ interface SpotlightProps {
   visual: ReactNode;
   children: ReactNode;
   closeLabel?: string;
+  placement?: 'auto' | 'above-first';
   onClose: () => void;
 }
 
@@ -26,7 +27,7 @@ interface SpotlightGeometry {
   cardWidth: number;
 }
 
-export function Spotlight({ open, targetRef, step, total, title, description, phaseLabel, visual, children, closeLabel = 'Close guided run', onClose }: SpotlightProps) {
+export function Spotlight({ open, targetRef, step, total, title, description, phaseLabel, visual, children, closeLabel = 'Close guided run', placement = 'auto', onClose }: SpotlightProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const [geometry, setGeometry] = useState<SpotlightGeometry | null>(null);
@@ -47,7 +48,7 @@ export function Spotlight({ open, targetRef, step, total, title, description, ph
     const target = targetRef.current;
     const card = cardRef.current;
     if (!target || !card) return;
-    // Prefer above/below; on short desktops use the space beside the clear panel.
+    // Chapter 1 uses compact text above its target; other guides keep their existing placement.
     const measure = () => {
       let rect = target.getBoundingClientRect();
       const padding = 6;
@@ -58,7 +59,10 @@ export function Spotlight({ open, targetRef, step, total, title, description, ph
       let cardHeight = card.offsetHeight;
       let cardLeft = Math.max(12, Math.min(rect.right + padding - cardWidth, innerWidth - cardWidth - 12));
       let cardTop = rect.bottom + padding + gap;
-      if (cardTop + cardHeight > innerHeight - 12) {
+      if (placement === 'above-first') {
+        const above = rect.top - padding - gap - cardHeight;
+        if (above >= 12) cardTop = above;
+      } else if (cardTop + cardHeight > innerHeight - 12) {
         const above = rect.top - padding - gap - cardHeight;
         if (above >= 12) cardTop = above;
         else {
@@ -101,7 +105,7 @@ export function Spotlight({ open, targetRef, step, total, title, description, ph
       window.removeEventListener('resize', measure);
       window.removeEventListener('scroll', measure, true);
     };
-  }, [open, targetRef, currentTarget, step, title, phaseLabel]);
+  }, [open, targetRef, currentTarget, step, title, phaseLabel, placement]);
 
   return (
     <dialog ref={dialogRef} className="relation-guide" aria-labelledby={titleId} aria-describedby={descriptionId}

@@ -1,15 +1,12 @@
 import type { LessonTextContent } from './LessonText';
 import type { RelationUpdate } from './simulation';
 
-export type LectureDiagramKind = 'overview' | 'record' | 'copies' | 'new-row' | 'metrics' | 'removal' | 'recap';
-
 interface LectureStep {
   readonly time: number;
   readonly title: string;
   readonly explanation: LessonTextContent;
   readonly before?: LessonTextContent;
   readonly spotlight: 'ledger' | 'relation' | 'metrics';
-  readonly diagram: LectureDiagramKind;
 }
 
 export const lectureUpdates: readonly RelationUpdate[] = [
@@ -21,113 +18,70 @@ export const lectureUpdates: readonly RelationUpdate[] = [
 
 export const lectureSteps: readonly LectureStep[] = [
   {
-    time: 0,
-    title: 'Read changes, see the current state',
+    time: 0, title: 'Read one change record', spotlight: 'ledger',
     explanation: [
-      'A relation can contain identical copies of a row. The ', { kind: 'term', text: 'Change ledger' },
-      ' records additions and retractions; the ', { kind: 'term', text: 'Current relation' },
-      ' shows what remains. We start empty at ', { kind: 'time', text: 't = 0' },
-      '. Follow the guide to see how a change becomes current state.',
+      'Read ', { kind: 'time', text: 't = 1' }, ', ', { kind: 'term', text: 'Signed diff' }, ' ',
+      { kind: 'diff', text: '+3' }, ', and ', { kind: 'term', text: 'Row' }, ' ', { kind: 'row', text: '(A, $10)' },
+      ' in the ', { kind: 'term', text: 'Change ledger' }, '. The ', { kind: 'term', text: 'Current relation' },
+      ' starts empty at ', { kind: 'time', text: 't = 0' }, '.',
     ],
-    spotlight: 'ledger',
-    diagram: 'overview',
   },
   {
-    time: 0,
-    title: 'Read one change record',
-    explanation: [
-      'Read the first record as three parts: the full ', { kind: 'term', text: 'Row' },
-      ' is ', { kind: 'row', text: '(A, $10)' }, ', its logical time is ', { kind: 'time', text: 't = 1' },
-      ', and its ', { kind: 'term', text: 'Signed diff' }, ' is ', { kind: 'diff', text: '+3' },
-      '. The diff changes the number of copies of that exact row.',
-    ],
-    spotlight: 'ledger',
-    diagram: 'record',
-  },
-  {
-    time: 1,
-    title: 'One change can add several copies',
+    time: 1, title: 'One change can add several copies', spotlight: 'relation',
     before: [
-      'The relation is still empty. At ', { kind: 'time', text: 't = 1' }, ', ',
-      { kind: 'diff', text: '+3' }, ' will add three identical copies of ', { kind: 'row', text: '(A, $10)' },
-      '. Show the effect to see how the table groups those copies.',
+      'The relation is empty. How many copies of ', { kind: 'row', text: '(A, $10)' },
+      ' will ', { kind: 'diff', text: '+3' }, ' add at ', { kind: 'time', text: 't = 1' }, '?',
     ],
     explanation: [
-      'At ', { kind: 'time', text: 't = 1' }, ', the signed diff ', { kind: 'diff', text: '+3' },
-      ' adds three identical copies of ', { kind: 'row', text: '(A, $10)' },
-      '. The table groups them into one line: ', { kind: 'count', text: '3 copies' },
-      ' of ', { kind: 'count', text: '1 distinct full row' }, '. One change record can add several copies.',
+      { kind: 'row', text: '(A, $10)' }, ' now has ', { kind: 'count', text: '3 copies' },
+      '. They share one table line, with ', { kind: 'term', text: 'Copies per row' }, ' equal to ',
+      { kind: 'count', text: '3' }, '.',
     ],
-    spotlight: 'relation',
-    diagram: 'copies',
   },
   {
-    time: 2,
-    title: 'A different row adds a distinct value',
+    time: 2, title: 'A different row adds a distinct value', spotlight: 'relation',
     before: [
-      { kind: 'row', text: '(A, $10)' }, ' already has ', { kind: 'count', text: '3 copies' },
-      '. The next change adds ', { kind: 'diff', text: '+1' }, ' for ', { kind: 'row', text: '(B, $14)' },
-      '. Watch a new full row appear while A stays unchanged.',
+      'Next, ', { kind: 'diff', text: '+1' }, ' adds ', { kind: 'row', text: '(B, $14)' },
+      '. Will the copies of ', { kind: 'row', text: '(A, $10)' }, ' change?',
     ],
     explanation: [
-      'At ', { kind: 'time', text: 't = 2' }, ', ', { kind: 'diff', text: '+1' },
-      ' adds ', { kind: 'row', text: '(B, $14)' }, '. ', { kind: 'row', text: '(A, $10)' },
-      ' keeps its three copies. We now have ', { kind: 'count', text: '4 total copies' },
-      ' across ', { kind: 'count', text: '2 distinct full rows' },
-      '. Both product and price identify a full row.',
+      { kind: 'row', text: '(B, $14)' }, ' appears with ', { kind: 'count', text: '1 copy' },
+      '; ', { kind: 'row', text: '(A, $10)' }, ' keeps ', { kind: 'count', text: '3 copies' },
+      '. Product and price together identify a full row.',
     ],
-    spotlight: 'relation',
-    diagram: 'new-row',
   },
   {
-    time: 3,
-    title: 'Total copies and distinct rows differ',
+    time: 3, title: 'Total copies and distinct rows differ', spotlight: 'metrics',
     before: [
-      'We have ', { kind: 'count', text: '4 copies' }, ' across ', { kind: 'count', text: '2 full rows' },
-      '. The next ', { kind: 'diff', text: '+2' }, ' adds two identical copies of ', { kind: 'row', text: '(C, $20)' },
-      '. Watch the two metrics increase by different amounts.',
+      { kind: 'diff', text: '+2' }, ' adds two copies of ', { kind: 'row', text: '(C, $20)' },
+      '. How will ', { kind: 'term', text: 'Total row copies' }, ' and ',
+      { kind: 'term', text: 'Distinct full rows' }, ' change?',
     ],
     explanation: [
-      'At ', { kind: 'time', text: 't = 3' }, ', ', { kind: 'diff', text: '+2' },
-      ' adds two copies of ', { kind: 'row', text: '(C, $20)' }, '. ',
-      { kind: 'term', text: 'Total row copies' }, ' rises by two, while ',
-      { kind: 'term', text: 'Distinct full rows' }, ' rises by one: ',
-      { kind: 'count', text: '6 copies' }, ' across ', { kind: 'count', text: '3 full rows' }, '.',
+      { kind: 'term', text: 'Total row copies' }, ' rises ', { kind: 'count', text: '4 → 6' },
+      '; ', { kind: 'term', text: 'Distinct full rows' }, ' rises ', { kind: 'count', text: '2 → 3' },
+      '. Two identical copies add one distinct full row.',
     ],
-    spotlight: 'metrics',
-    diagram: 'metrics',
   },
   {
-    time: 4,
-    title: 'Zero-copy rows are removed',
+    time: 4, title: 'Zero-copy rows are removed', spotlight: 'relation',
     before: [
-      { kind: 'row', text: '(B, $14)' }, ' has ', { kind: 'count', text: '1 copy' },
-      '. At ', { kind: 'time', text: 't = 4' }, ', ', { kind: 'diff', text: '−1' },
-      ' will retract that copy. Show the effect to see what happens when a count reaches zero.',
+      { kind: 'diff', text: '−1' }, ' retracts the last copy of ', { kind: 'row', text: '(B, $14)' },
+      '. What remains when its count reaches ', { kind: 'count', text: '0' }, '?',
     ],
     explanation: [
-      'At ', { kind: 'time', text: 't = 4' }, ', ', { kind: 'diff', text: '−1' },
-      ' retracts the last copy of ', { kind: 'row', text: '(B, $14)' }, ': ',
-      { kind: 'count', text: '1 → 0 copies' }, '. That row disappears. ',
-      { kind: 'row', text: '(A, $10)' }, ' and ', { kind: 'row', text: '(C, $20)' },
-      ' remain, leaving ', { kind: 'count', text: '5 total copies' },
-      ' across ', { kind: 'count', text: '2 distinct full rows' }, '.',
+      { kind: 'row', text: '(B, $14)' }, ' disappears because its count is now ', { kind: 'count', text: '0' },
+      '. ', { kind: 'row', text: '(A, $10)' }, ' and ', { kind: 'row', text: '(C, $20)' },
+      ' remain with ', { kind: 'count', text: '5 copies' }, ' in total.',
     ],
-    spotlight: 'relation',
-    diagram: 'removal',
   },
   {
-    time: 4,
-    title: 'The rule: add each diff to the row’s count',
+    time: 4, title: 'The rule: add each diff to the row’s count', spotlight: 'relation',
     explanation: [
-      { kind: 'diff', text: '+diff' }, ' adds copies; ', { kind: 'diff', text: '−diff' },
-      ' retracts copies. A row disappears when its count reaches ', { kind: 'count', text: '0' },
-      '. The final relation is ', { kind: 'row', text: '(A, $10) × 3' },
-      ' and ', { kind: 'row', text: '(C, $20) × 2' },
-      '. After finishing, select an applied timestamp in the ledger to revisit any change.',
+      'Add the ', { kind: 'term', text: 'Signed diff' }, ' to that full row’s previous copy count. ',
+      'The final ', { kind: 'term', text: 'Current relation' }, ' has ', { kind: 'row', text: '(A, $10)' },
+      ' × ', { kind: 'count', text: '3' }, ' and ', { kind: 'row', text: '(C, $20)' }, ' × ', { kind: 'count', text: '2' }, '.',
     ],
-    spotlight: 'relation',
-    diagram: 'recap',
   },
 ];
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, Play } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { GuidedLabScreen } from '../../labs/components/GuidedLabScreen';
 import type { ChapterDefinition } from '../chapterRegistry';
@@ -7,13 +7,11 @@ import { BatchWorkbench } from './BatchWorkbench';
 import { GuidedSpotlight } from './GuidedSpotlight';
 import { LessonText } from './LessonText';
 import { RelationMetrics } from './RelationWorkbench';
-import { UpdateDiagram } from './UpdateDiagram';
 import { lectureTwoBatches, lectureTwoInitial, lectureTwoReference, lectureTwoRun, lectureTwoSteps, lectureTwoUpdates } from './lecture-two-scenario';
 import { relationAt } from './simulation';
 import { useWalkthrough } from '../../components/walkthrough/WalkthroughProvider';
 import { useLectureRun } from './useLectureRun';
 import './lecture-one.css';
-import './lecture-two.css';
 
 export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition; navigation: ReactNode }) {
   const { state, dispatch } = useLectureRun(lectureTwoRun);
@@ -28,14 +26,14 @@ export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition
   const inspectingHistory = state.selectedTime !== state.applied;
   const beforeChange = Boolean(lesson.before) && !state.revealed;
   const spotlight = beforeChange ? 'ledger' : lesson.spotlight;
-  const targetRef = spotlight === 'ledger' ? ledgerRef : spotlight === 'metrics' ? metricsRef : relationRef;
-  const phaseLabel = lesson.phase ?? (beforeChange ? 'Before the change' : 'Effect shown');
+  const targetRef = spotlight === 'ledger' ? ledgerRef : relationRef;
+  const phaseLabel = beforeChange ? 'Predict the effect' : 'Explanation';
 
   return <>
     <GuidedLabScreen chapter={chapter} title="Lecture 2" regionLabel="Lecture content" navigation={navigation}
-      className="changing-relations-page lecture-two-page" reference={lectureTwoReference} showTip="when-space"
-      simulation={{ completed: state.guided ? state.step : state.selectedTime, total: state.guided ? lectureTwoSteps.length : lectureTwoBatches.length,
-        progressLabel: state.guided ? 'Tutorial' : 'Timestamps', playing: state.playing,
+      className="changing-relations-page changing-relations-lecture-page" reference={lectureTwoReference} showTip="when-space"
+      simulation={{ completed: state.selectedTime, total: lectureTwoBatches.length,
+        progressLabel: 'Changes', playing: state.playing,
         onReset: () => dispatch({ type: 'reset' }), onRun: () => dispatch({ type: 'play' }), onStartGuidedRun: () => dispatch({ type: 'start-guided' }) }}
       workspace={<div className="relation-workspace" data-guided={state.guided}>
         <RelationMetrics relation={relation} time={state.selectedTime} metricsRef={metricsRef} />
@@ -45,20 +43,20 @@ export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition
           highlightCopies={state.guided && state.revealed && lesson.spotlight === 'relation'} onSelectTime={(time) => dispatch({ type: 'select', time })} />
         <div className="relation-playback-controls" aria-label="Timestamp playback">
           {tutorialComplete && <span className="relation-tutorial-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
-          {inspectingHistory && <Button onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
           <div>
-            <Button disabled={state.guided || state.playing || state.selectedTime === 0} onClick={() => dispatch({ type: 'previous-change' })}><ArrowLeft size={14} aria-hidden="true" />Previous timestamp</Button>
-            <Button data-walkthrough="next-change" disabled={state.guided || state.playing || state.selectedTime === lectureTwoBatches.length} onClick={() => dispatch({ type: 'next-change' })}>Next timestamp<ArrowRight size={14} aria-hidden="true" /></Button>
+            {inspectingHistory && <Button onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
+            <Button aria-label="Previous timestamp" disabled={state.guided || state.playing || state.selectedTime === 0} onClick={() => dispatch({ type: 'previous-change' })}><ArrowLeft size={14} aria-hidden="true" /><span>Previous<span className="relation-playback-kind"> timestamp</span></span></Button>
+            <Button aria-label="Next timestamp" data-walkthrough="next-change" disabled={state.guided || state.playing || state.selectedTime === lectureTwoBatches.length} onClick={() => dispatch({ type: 'next-change' })}><span>Next<span className="relation-playback-kind"> timestamp</span></span><ArrowRight size={14} aria-hidden="true" /></Button>
           </div>
         </div>
       </div>} />
     <GuidedSpotlight open={state.guided} targetRef={targetRef} step={Math.min(state.step + 1, lectureTwoSteps.length)} total={lectureTwoSteps.length}
       title={lesson.title} description={<LessonText content={beforeChange ? lesson.before! : lesson.explanation} />} phaseLabel={phaseLabel}
-      visual={<UpdateDiagram kind={lesson.diagram} time={lesson.time} revealed={state.revealed} />} onClose={() => dispatch({ type: 'close-guided' })}>
-      <Button disabled={state.step === 0} onClick={() => dispatch({ type: 'back' })}><ArrowLeft size={14} aria-hidden="true" />Back</Button>
+      onClose={() => dispatch({ type: 'close-guided' })}>
+      <Button disabled={state.step === 0} onClick={() => dispatch({ type: 'back' })}>Back</Button>
       {beforeChange
-        ? <Button variant="primary" onClick={() => dispatch({ type: 'reveal' })}><Play size={13} fill="currentColor" aria-hidden="true" />Show effect</Button>
-        : <Button variant="primary" onClick={() => dispatch({ type: 'next' })}>{state.step === lectureTwoSteps.length - 1 ? 'Finish tutorial' : 'Next'}<ArrowRight size={14} aria-hidden="true" /></Button>}
+        ? <Button variant="primary" onClick={() => dispatch({ type: 'reveal' })}>Show effect</Button>
+        : <Button variant="primary" onClick={() => dispatch({ type: 'next' })}>{state.step === lectureTwoSteps.length - 1 ? 'Finish tutorial' : 'Next'}</Button>}
     </GuidedSpotlight>
   </>;
 }

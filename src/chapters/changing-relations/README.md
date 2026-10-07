@@ -16,20 +16,31 @@ shows tables and metrics, and can be paused or stepped with Next change.
 Previous change and Next change revisit already applied timestamps without
 discarding playback progress; at the latest timestamp, Next change applies
 the next pending change. The standard Tip box sits below the workbench.
-Its Changes progress counts applied changes. Playback does not complete the tutorial.
+Its Changes progress follows the displayed logical state, from 0/4 to 4/4,
+including during guided runs. Playback does not complete the tutorial.
 
-Guided run has seven teaching steps: introduction, anatomy of a record, four
-timestamp demonstrations, and recap. Each timestamp pauses with its previous
-relation intact. Show effect applies that timestamp; Next advances the lesson.
-Back revisits an earlier completed state. Only finishing the recap completes
-Tutorial progress. Closing the guide keeps the actual applied state for playback.
+Guided run has six teaching steps: read a ledger record, add copies, add a new
+full row, compare copies with distinct rows, retract a last copy, and recap.
+Each timestamp pauses for a prediction; Show effect applies it, and Next advances
+the lesson. Back revisits the prediction or an earlier completed state. Only
+finishing the recap marks the tutorial complete; playback stays separate.
 
-The guide contains diagrams for the ledger/state relationship, record fields,
-copy-count arithmetic, unchanged rows, and total copies versus distinct rows.
-The removal step also includes a clearly labelled hypothetical partial retraction
-of A, calculated with the same domain functions; it does not modify the scenario.
-The guide card uses space beside the target on short desktop screens, and adjusts
-scroll position on stacked phone layouts to keep the card and highlighted panel visible.
+Both Chapter 1 lectures reuse Chapter 2's compact text-only guide card and
+controls. Chapter 1 opts into placement above the relevant table or metric,
+falling below when there is insufficient room above. Its copies-versus-rows step
+highlights the two count metrics, excluding the logical-time card. Short inline
+explanations use the live tables instead of duplicated diagrams or hypothetical
+panels. Other chapters retain their existing spotlight placement.
+
+Both lectures reserve the same visualization footprint as Chapter 2's first two
+lectures, keeping playback controls and the Tip at the reference positions without
+enlarging the four-row tables. The three metric cards share equal columns and gaps;
+Lecture 1's two-card guide target uses those same columns. On phones, each selected
+ledger reserves four rows so playback does not move when the timestamp changes.
+Return to latest stays in the right-hand playback group. The Tip appears only when
+it fits. Desktop descriptions remain under the title, with modest gaps above the
+metric cards and between the cards and tables. Compact screens
+reserve less visualization space to retain the description and visible controls.
 
 Rows, timestamps, diffs, counts, and named panels have compact inline styling
 in guide explanations. Every metric, panel, and table column has
@@ -56,10 +67,22 @@ consolidated first so cancellation does not depend on animation or delivery orde
 
 ## Lecture 2: updates and timestamp batches
 
-Lecture 2 reuses the same metrics, current-relation table, playback controller,
-help, standard Tip, and frosted guide. It starts from a separate preloaded snapshot,
-not Lecture 1's final state. Its ledger displays only the selected complete
-timestamp, with a compact selector for completed history.
+Lecture 2 reuses Lecture 1's `ChangeLedger`, metrics, current-relation table,
+playback controller, help, standard Tip, and frosted guide. Both ledgers use the
+same Signed diff / Row styling and row spacing. Lecture 2 omits the timestamp
+column and numbered history buttons; the current-relation heading shows the time.
+The ledger heading identifies a guided preview as Upcoming and its shown logical
+timestamp; after revealing the effect, it identifies the batch as Applied.
+Lecture 2 starts from a separate preloaded snapshot, not Lecture 1's final state.
+Its ledger shows one complete timestamp at a time in four reserved rows, matching
+Lecture 1's desktop table dimensions. Previous/Next timestamp revisits the starting
+snapshot at t = 0 and all three applied batches on desktop and phones. Positive
+snapshot diffs describe the initial copies. Shorter batches use blank rows;
+t = 3 shows all four authored records without hiding cancellation. Guided previews
+show the next complete batch while preserving the preceding current relation
+until Show effect.
+On mobile, both lectures display Previous/Next while retaining their full
+accessible change/timestamp labels, leaving room for Return to latest.
 
 | Complete logical time | Authored diffs | Current relation | Copies / distinct rows |
 | --- | --- | --- | --- |
@@ -69,18 +92,22 @@ timestamp, with a compact selector for completed history.
 | 3 | +2 A, −1 A, +1 (B, $18), −1 (B, $18) | A × 2, (B, $18) × 1, (C, $25) × 2 | 5 / 3 |
 
 Normal playback applies exactly three complete timestamp batches; Previous/Next
-timestamp and the selector inspect complete results without discarding applied
-progress. Reset and replay restore the seed. Guided run has eight steps: snapshot,
-paired update, hypothetical insert-only comparison, multiple-copy update,
-consolidation, cancellation versus replacement, record-order independence, and
-recap. The three new timestamps pause before Show effect. Comparisons use the same
-pure domain functions and never mutate the live scenario.
+timestamp inspect complete results without
+discarding applied progress. Reset and replay restore the seed. Guided run has
+five steps: snapshot, paired price update, multiple-copy update, combined diffs
+and cancellation, and recap. All three new timestamps pause before Show effect.
+The insert-only misconception is one sentence in the replacement explanation;
+record-order independence remains in ledger help.
 
-The header separates Timestamps (0/3) from Tutorial (0/8); completing playback
-does not complete the tutorial. Educational diagrams appear only in the guide.
+The header always shows Changes (0/3); each complete timestamp batch counts as
+one change, and the starting snapshot is excluded. The guide keeps its own
+five-step counter. Completing playback does not complete the tutorial.
 All diffs within a timestamp are consolidated by full-row identity before the
-result is exposed. The cancellation diagram retains zero net diff for explanation;
+result is exposed. Cancelling records stay visible in the authored ledger;
 the relation never includes zero-copy rows.
+
+The ledger's timestamp, diff, starting snapshot, and update-pair explanations
+were rechecked against the official SUBSCRIBE documentation on 2026-10-07.
 
 Additional official references verified on 2026-10-04:
 
@@ -96,32 +123,55 @@ No live Materialize connection is used.
 
 ## Exercise 1: one inventory timeline
 
-Chapter 1 now has one exercise with three phases. It starts with four copies of
+Chapter 1 now has one exercise with three questions. Its header shows Questions
+(0/3), counting accepted answers, and the question headings use Question 1–3.
+It starts with four copies of
 (Kettle, $25), two of (Mug, $8), and one of (Mug, $10). The two Mug prices are
-different full rows. Each phase previews an entire upcoming timestamp; the
+different full rows. Each question previews an entire upcoming timestamp; the
 current relation stays at the preceding timestamp until the answer is accepted.
 
-| Phase | Task | Correct result |
+The exercise shares the lectures' description-to-metrics and metrics-to-tables
+spacing through `lecture-one.css`. The tables retain tutorial row sizing and five
+rows, and the question uses the same gap below the tables as the cards use above.
+Panel padding and title-to-table spacing also reuse the tutorials' responsive
+styles. Desktop screens show both tables and the question together. The question
+keeps its title above its description at every size and grows when the description
+wraps, retaining 4px more vertical padding on each side of the compact laptop box.
+The existing panel selector remains limited to phones.
+
+| Question | Task | Correct result |
 | --- | --- | --- |
 | 1 · Reconstruct | Five interleaved diffs: −3/+2 Kettle, +2/−3 Mug $8, +2 Mug $10 | Copies: 3, 1, 3; 7 total copies / 3 full rows |
 | 2 · Build | Reprice every remaining Kettle from $25 to $30 and add one extra copy | Write −3 for the old row and +4 for the new row; 8 copies / 3 full rows |
 | 3 · Check | +2/−1 Kettle $30, −1 Mug $8, −3 Mug $10, +3 Mug $12 | 8 total copies / 2 full rows; the remaining Mug price is $12 |
 
-The first phase requires grouping several additions and retractions by full-row
+The first question requires grouping several additions and retractions by full-row
 identity, rather than reading one diff as a final count. The second uses typed
 signed diffs in the ledger and checks both parts of the condition. The final
-phase combines arithmetic, zero-copy removal, and price replacement. Its unchanged
+question combines arithmetic, zero-copy removal, and price replacement. Its unchanged
 total copy count does not imply that the relation stayed the same.
 
 Wrong or blank answers keep time and progress unchanged and identify the fields
 to recheck. A correct check applies the whole timestamp, explains the calculation,
 and locks the answer. Show Answer fills the canonical solution and immediately
 uses that same correct-check path, including state, feedback, and progress.
-Next question sits below the question box and opens the next phase with empty
-inputs. Hints do not complete a phase. Reset and reload restore the initial attempt.
+Next question sits below the question box and opens the next question with empty
+inputs. Hints do not complete a question. Reset and reload restore the initial attempt.
 
-The toolbar order is Reset, Hint, Show Answer, Check Answer. Exercises omit Tip
-and SQL & Objectives. Compact chips identify rows, diffs, counts, and timestamps;
+After the final question is accepted, Finish chapter opens a recap dialog with the
+Chapter 1 illustration, signed diffs, copies versus full rows, and updates at
+complete timestamps. Its markup and responsive styling match Chapter 2's
+completion presentation; the copied styles are scoped to Chapter 1. Closing the
+dialog preserves the completed exercise and returns focus to Finish chapter.
+Go to next chapter opens the Chapter 2 overview. Reset clears the completion
+action along with the attempt. Incorrect predictions cannot finish the chapter.
+On phones, inspecting a completed table hides the disabled grading controls to
+keep Finish chapter visible; returning to Question restores the full toolbar.
+
+The toolbar order is SQL & Objectives, Reset, Hint, Show Answer, Check Answer.
+The exercise uses the shared SQL & Objectives dialog with its inventory objective,
+grouped copy counts, total copies, distinct full rows, SUBSCRIBE, and official
+documentation links. It omits Tip. Compact chips identify rows, diffs, counts, and timestamps;
 their values stay together on one line. Both table grids reserve five real rows,
 including placeholders, so shorter batches and removed rows do not move the
 workbench. The old Exercise 2 URL redirects to Exercise 1 and is absent from
@@ -138,6 +188,16 @@ against [SUBSCRIBE](https://materialize.com/docs/sql/subscribe/) and
 teaching batches, not promises about the exact message grouping of a real
 SUBSCRIBE stream. The reprice-and-restock phase combines a price replacement
 with an additional copy; it does not claim that one UPDATE inserts extra stock.
+
+The exercise reference SQL was checked on 2026-10-07 against the official
+[SELECT](https://materialize.com/docs/sql/select/),
+[aggregate functions](https://materialize.com/docs/sql/functions/#aggregate-functions),
+and [SUBSCRIBE output](https://materialize.com/docs/sql/subscribe/#output)
+documentation. These stable features use a `products` relation with duplicate
+`(product, price)` rows; `copies` is a grouped display count, not a stored column.
+The reference queries inspect the current state without supplying checkpoint
+answers. Real SUBSCRIBE output includes an initial snapshot by default, while
+the exercise starts from a preloaded state and shows authored complete batches.
 
 ## Chapter overview
 

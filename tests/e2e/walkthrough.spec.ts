@@ -65,7 +65,7 @@ for (const theme of ['light', 'dark']) test(`home tour visits and highlights the
     }
     if (step.path === chapterTourPaths.exercise) {
       await expect(page.locator('input').first()).toHaveValue('');
-      await expect(page.getByRole('progressbar', { name: 'Exercise phases completed' })).toHaveAttribute('value', '0');
+      await expect(page.getByRole('progressbar', { name: 'Exercise questions completed' })).toHaveAttribute('value', '0');
       await expect(page.getByRole('button', { name: 'Hint', exact: true })).toHaveAttribute('aria-expanded', 'false');
     }
     await dialog(page).getByRole('button', { name: index === chapterTourSteps.length - 1 ? 'Finish' : 'Next', exact: true }).click();

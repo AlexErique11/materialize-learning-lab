@@ -26,95 +26,73 @@ export const lectureTwoBatches = [
 
 export const lectureTwoUpdates: readonly RelationUpdate[] = lectureTwoBatches.flatMap((batch) => [...batch.updates]);
 
-export type UpdateDiagramKind = 'start' | 'replace' | 'insert-only' | 'batch' | 'cancel' | 'order' | 'recap';
+export const lectureTwoLedger: readonly RelationUpdate[] = [
+  ...lectureTwoInitial.map(({ row, copies }) => ({ row, time: 0, diff: copies })),
+  ...lectureTwoUpdates,
+];
 
 interface LectureTwoStep {
   readonly time: number;
   readonly title: string;
   readonly explanation: LessonTextContent;
   readonly before?: LessonTextContent;
-  readonly spotlight: 'ledger' | 'relation' | 'metrics';
-  readonly diagram: UpdateDiagramKind;
-  readonly phase?: string;
+  readonly spotlight: 'ledger' | 'relation';
 }
 
 export const lectureTwoSteps: readonly LectureTwoStep[] = [
   {
-    time: 0, title: 'From individual changes to timestamp batches', diagram: 'start', spotlight: 'relation', phase: 'Introduction',
+    time: 0, title: 'Start with an existing relation', spotlight: 'relation',
     explanation: [
-      'Lecture 1 built a relation from individual diffs. Here we start with ', { kind: 'count', text: '4 copies' },
-      ' across ', { kind: 'count', text: '3 full rows' }, '. Each next timestamp groups several diffs. Watch them update the relation together.',
+      'At ', { kind: 'time', text: 't = 0' }, ', the ', { kind: 'term', text: 'Current relation' },
+      ' already has ', { kind: 'count', text: '4 copies' }, ' across ', { kind: 'count', text: '3 full rows' },
+      '. Each next timestamp applies a complete group of diffs.',
     ],
   },
   {
-    time: 1, title: 'One update, two signed changes', diagram: 'replace', spotlight: 'relation',
+    time: 1, title: 'One update, two signed changes', spotlight: 'relation',
     before: [
-      'B’s price changes from ', { kind: 'row', text: '(B, $14)' }, ' to ', { kind: 'row', text: '(B, $18)' },
-      '. The old full row gets ', { kind: 'diff', text: '−1' }, '; the new full row gets ', { kind: 'diff', text: '+1' },
-      '. Both belong to ', { kind: 'time', text: 't = 1' }, '. Show their combined effect.',
+      'B’s price changes from ', { kind: 'row', text: '$14' }, ' to ', { kind: 'row', text: '$18' },
+      '. Predict the effect of ', { kind: 'diff', text: '−1' }, ' for ', { kind: 'row', text: '(B, $14)' },
+      ' and ', { kind: 'diff', text: '+1' }, ' for ', { kind: 'row', text: '(B, $18)' }, ' together at ',
+      { kind: 'time', text: 't = 1' }, '.',
     ],
     explanation: [
-      { kind: 'row', text: '(B, $14)' }, ' is gone; ', { kind: 'row', text: '(B, $18)' },
-      ' now has ', { kind: 'count', text: '1 copy' }, '. The values changed, but the metrics stay at ',
-      { kind: 'count', text: '4 copies / 3 full rows' }, '. Zero change in the total does not mean an unchanged relation.',
+      { kind: 'row', text: '(B, $14)' }, ' is replaced by ', { kind: 'row', text: '(B, $18)' },
+      ', keeping ', { kind: 'count', text: '4 total copies' }, '. Adding only the new row would leave the old row present too.',
     ],
   },
   {
-    time: 1, title: 'Inserting a new value does not replace the old one', diagram: 'insert-only', spotlight: 'relation', phase: 'Hypothetical comparison',
-    explanation: [
-      'Starting from ', { kind: 'time', text: 't = 0' }, ', adding only ', { kind: 'diff', text: '+1' },
-      ' for ', { kind: 'row', text: '(B, $18)' }, ' would leave ', { kind: 'row', text: '(B, $14)' },
-      ' present too. The comparison below is hypothetical; the current relation still shows the correct update.',
-    ],
-  },
-  {
-    time: 2, title: 'An update can replace several identical copies', diagram: 'replace', spotlight: 'relation',
+    time: 2, title: 'An update can replace several identical copies', spotlight: 'relation',
     before: [
       { kind: 'row', text: '(C, $20)' }, ' has ', { kind: 'count', text: '2 copies' },
-      '. Correcting both prices uses ', { kind: 'diff', text: '−2' }, ' for the old full row and ',
-      { kind: 'diff', text: '+2' }, ' for ', { kind: 'row', text: '(C, $25)' },
-      ', together at ', { kind: 'time', text: 't = 2' }, '.',
+      '. Predict the result of ', { kind: 'diff', text: '−2' }, ' for that row and ', { kind: 'diff', text: '+2' },
+      ' for ', { kind: 'row', text: '(C, $25)' }, ' at ', { kind: 'time', text: 't = 2' }, '.',
     ],
     explanation: [
-      'Both copies now have price ', { kind: 'row', text: '$25' }, '. ', { kind: 'row', text: '(C, $20)' },
-      ' has zero copies and disappears; ', { kind: 'row', text: '(C, $25)' }, ' has two. The total remains ',
-      { kind: 'count', text: '4' }, '. A diff measures copies, not the number of edits.',
+      'Both copies are now ', { kind: 'row', text: '(C, $25)' }, '; ', { kind: 'row', text: '(C, $20)' },
+      ' disappears. The total stays at ', { kind: 'count', text: '4 copies' }, '.',
     ],
   },
   {
-    time: 3, title: 'Combine diffs separately for each full row', diagram: 'batch', spotlight: 'relation',
+    time: 3, title: 'Combine matching diffs, cancel opposite ones', spotlight: 'relation',
     before: [
-      'At ', { kind: 'time', text: 't = 3' }, ', four authored diffs affect two full rows. Group matching rows and sum their signed diffs. The relation stays at ',
-      { kind: 'time', text: 't = 2' }, ' until you show the complete batch’s effect.',
+      'At ', { kind: 'time', text: 't = 3' }, ', sum the diffs separately for each full row. ',
+      'What do ', { kind: 'diff', text: '+2 − 1' }, ' for ', { kind: 'row', text: '(A, $10)' },
+      ' and ', { kind: 'diff', text: '+1 − 1' }, ' for ', { kind: 'row', text: '(B, $18)' }, ' change?',
     ],
     explanation: [
-      'For ', { kind: 'row', text: '(A, $10)' }, ', ', { kind: 'diff', text: '+2' }, ' and ', { kind: 'diff', text: '−1' },
-      ' combine to ', { kind: 'diff', text: '+1' }, '. A now has two copies. B’s matching diffs cancel. We finish with ',
-      { kind: 'count', text: '5 copies / 3 full rows' }, '.',
-    ],
-  },
-  {
-    time: 3, title: 'Cancellation requires the same full row', diagram: 'cancel', spotlight: 'relation', phase: 'Cancellation',
-    explanation: [
-      { kind: 'diff', text: '+1' }, ' and ', { kind: 'diff', text: '−1' }, ' cancel for ', { kind: 'row', text: '(B, $18)' },
-      ' at the same time, so B keeps one copy. At ', { kind: 'time', text: 't = 1' },
-      ', the two diffs targeted different prices: that changed B’s value instead.',
+      { kind: 'row', text: '(A, $10)' }, ' gains ', { kind: 'count', text: '1 copy' }, ' and now has ',
+      { kind: 'count', text: '2' }, '. The opposite diffs for ', { kind: 'row', text: '(B, $18)' },
+      ' cancel, so B keeps ', { kind: 'count', text: '1 copy' }, '.',
     ],
   },
   {
-    time: 3, title: 'Record order does not change the completed result', diagram: 'order', spotlight: 'relation', phase: 'Same batch, different order',
+    time: 3, title: 'Read the completed relation', spotlight: 'relation',
     explanation: [
-      'Reversing the records at ', { kind: 'time', text: 't = 3' },
-      ' gives the same combined diffs and final relation. These orders are illustrations of one complete timestamp, rather than separate readable states. A has ',
-      { kind: 'count', text: '2 copies' }, '; B has ', { kind: 'count', text: '1' }, '.',
-    ],
-  },
-  {
-    time: 3, title: 'Read values, counts, and time together', diagram: 'recap', spotlight: 'metrics', phase: 'Recap',
-    explanation: [
-      'Updates replace full rows; matching diffs at one timestamp combine. We finish with ',
-      { kind: 'row', text: '(A, $10) × 2' }, ', ', { kind: 'row', text: '(B, $18) × 1' },
-      ', and ', { kind: 'row', text: '(C, $25) × 2' }, '. After finishing, use the timestamp controls to revisit each complete result.',
+      'Apply all diffs at a timestamp together, matching the full row. The final ',
+      { kind: 'term', text: 'Current relation' }, ' has ', { kind: 'row', text: '(A, $10)' }, ' × ',
+      { kind: 'count', text: '2' }, ', ', { kind: 'row', text: '(B, $18)' }, ' × ', { kind: 'count', text: '1' },
+      ', and ', { kind: 'row', text: '(C, $25)' }, ' × ', { kind: 'count', text: '2' }, '.',
     ],
   },
 ];
@@ -122,8 +100,8 @@ export const lectureTwoSteps: readonly LectureTwoStep[] = [
 export const lectureTwoRun = { steps: lectureTwoSteps, totalChanges: lectureTwoBatches.length };
 
 export const batchHelp = {
-  ledger: { label: 'Change ledger', text: 'The authored diff records for the selected complete timestamp. t = 0 describes the starting snapshot. Later timestamps contain an update pair or a teaching batch. Cancelling teaching records are not a promise of separate messages from a real SUBSCRIBE connection.' },
-  time: { label: 't', text: 'The logical timestamp shared by every record in this batch. All its diffs apply together. The selector and Previous/Next timestamp controls revisit completed timestamps; future ones stay unavailable until applied.' },
+  ledger: { label: 'Change ledger', text: 'The authored diff records for the selected logical timestamp. At t = 0, positive diffs describe the starting snapshot. The three later timestamps show complete changes; all records at a timestamp apply together. Blank rows only keep the table size fixed. Within a complete timestamp, record order does not change the summed diffs. Cancelling teaching records are not a promise of separate messages from a real SUBSCRIBE connection.' },
+  time: { label: 't', text: 'The logical timestamp shared by every record in a batch. All its diffs apply together. Select an applied timestamp to inspect its complete result. Previous/Next timestamp also revisit completed results, including the starting snapshot at t = 0; future ones stay unavailable until applied.' },
 };
 
 export const lectureTwoReference = {
