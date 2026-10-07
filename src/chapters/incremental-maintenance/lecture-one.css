@@ -1,0 +1,96 @@
+/* Chapter-specific dataflow; panel and table styling comes from Chapter 1. */
+.maintenance-stage-workspace { display: contents; }
+.maintenance-flow, .maintenance-panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
+.maintenance-flow > div { position: relative; }
+.maintenance-flow .button { display: grid; height: 54px; align-content: center; justify-content: stretch; gap: 4px; width: 100%; text-align: left; padding: 8px 12px; font-size: 13px; }
+.maintenance-flow code { font-size: 12px; white-space: normal; }
+.maintenance-flow [aria-pressed="true"], .maintenance-panels [data-active="true"] { border-color: var(--lab-purple); }
+.maintenance-flow [aria-pressed="true"] { color: var(--lab-purple); background: var(--lab-tint); }
+.maintenance-flow-arrow { position: absolute; right: -17px; top: 19px; width: 16px; color: var(--lab-muted); }
+.maintenance-panels { align-items: stretch; }
+.maintenance-panels > .relation-panel { height: 368px; }
+.maintenance-panels > .relation-panel > h2 { display: none; }
+.maintenance-panels .table-scroll { height: 202px; overflow: clip; }
+.maintenance-panels .data-table { height: 100%; }
+.guided-lab-page.incremental-maintenance-page[data-viewport-fit] { padding-bottom: 4px; }
+.guided-lab-page.incremental-maintenance-page[data-viewport-fit] .relation-workspace { gap: 10px; }
+.incremental-maintenance-page .relation-playback-controls { margin-top: 4px; }
+.maintenance-panels .data-table { table-layout: fixed; width: 100%; }
+.maintenance-panels .data-table th, .maintenance-panels .data-table td { text-align: center; }
+.maintenance-panels .data-table .maintenance-currency { text-align: right; font-variant-numeric: tabular-nums; }
+.maintenance-panels .data-table .maintenance-text { text-align: left; }
+.maintenance-panels .data-table th { overflow-wrap: anywhere; padding-block: 10px; }
+.maintenance-panels .data-table th, .maintenance-panels .data-table td { padding-inline: 6px; }
+.maintenance-panels .data-table td:last-child { white-space: normal; }
+.maintenance-panels .data-table td { overflow-wrap: anywhere; }
+.maintenance-note-cell { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.maintenance-diffs { height: 132px; margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--lab-border); font-size: 13px; }
+.maintenance-diffs h3 { height: 32px; margin-bottom: 2px; font-size: 12px; font-weight: 600; }
+.maintenance-panels > section > .maintenance-diffs h3 { height: 18px; }
+.maintenance-diffs ul { display: grid; gap: 0; }
+.maintenance-diffs li { display: flex; align-items: center; gap: 8px; min-height: 25px; border-bottom: 1px solid var(--lab-border); }
+.maintenance-diff-tuple { min-width: 0; color: var(--lab-muted); line-height: 18px; }
+.maintenance-diff-tuple [data-changed="true"] { color: var(--lab-purple); font-weight: 600; }
+.maintenance-diffs p { color: var(--lab-muted); }
+.maintenance-empty-reason { display: block; margin-top: 4px; color: var(--lab-purple); }
+.maintenance-output-diffs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.maintenance-mobile-view { display: none; }
+@media (min-width: 640px) and (max-width: 1150px) {
+  .incremental-maintenance-page .guided-lab-title > p { margin-top: 4px; font-size: 13px; }
+  .maintenance-flow .button { height: 70px; }
+  .maintenance-panels > .relation-panel { height: 324px; }
+  .maintenance-panels .data-table th { padding-block: 6px; }
+  .maintenance-panels .data-table td { height: 28px; }
+  .maintenance-panels .table-scroll { height: 168px; }
+}
+@media (min-width: 640px) and (max-height: 740px) {
+  .maintenance-panels > .relation-panel { height: 318px; }
+  .maintenance-panels .table-scroll { height: 164px; }
+  .maintenance-panels .data-table th { padding-block: 7px; }
+}
+@media (max-width: 639px) {
+  .maintenance-mobile-view { display: inline-flex; margin-left: auto; min-height: 24px; padding: 3px 6px; font-size: 12px; }
+  .maintenance-flow { gap: 8px; }
+  .maintenance-flow .button { height: 40px; padding: 7px; font-size: 12px; }
+  .maintenance-flow code, .maintenance-flow-arrow { display: none; }
+  .maintenance-panels { grid-template-columns: 1fr; }
+  .maintenance-panels > .relation-panel { height: 244px; }
+  .maintenance-panels > .relation-panel > h2 { display: flex; margin-bottom: 12px; }
+  .maintenance-panels .table-scroll { height: 164px; }
+  .maintenance-panels .data-table th { padding-block: 6px; }
+  .maintenance-panels .data-table td { height: 32px; padding-block: 3px; }
+  .incremental-maintenance-page .relation-playback-controls > div { gap: 6px; }
+  .incremental-maintenance-page .relation-playback-controls .button { padding-inline: 6px; }
+  .maintenance-panels[data-selected-stage="source"] > :not(:first-child),
+  .maintenance-panels[data-selected-stage="filter"] > :not(:nth-child(2)),
+  .maintenance-panels[data-selected-stage="projection"] > :not(:nth-child(3)) { display: none; }
+  .maintenance-panels[data-mobile-diffs="false"] .maintenance-diffs,
+  .maintenance-panels[data-mobile-diffs="false"] .maintenance-output-diffs,
+  .maintenance-panels[data-mobile-diffs="true"] .table-scroll { display: none; }
+}
+
+@media (min-width: 640px) and (max-height: 740px) {
+  .app-shell-guided-labs .guided-lab-page.incremental-maintenance-page[data-viewport-fit] { gap: 8px; padding-block: 8px; }
+}
+@media (min-width: 1024px) and (max-width: 1150px) {
+  .app-shell-guided-labs .guided-lab-page.incremental-maintenance-page[data-viewport-fit] { gap: 10px; padding-block: 8px; }
+}
+@media (max-width: 639px) {
+  .app-shell-guided-labs .guided-lab-page.incremental-maintenance-page[data-viewport-fit] { gap: 6px; padding: 8px 16px 4px; }
+}
+/* Larger authored fan-out batches use the same frame without changing font size. */
+.maintenance-diffs ul[data-many-rows='true'] li { min-height: 18px; }
+.maintenance-panels .data-table[data-many-rows='true'] td { height: 26px; padding-block: 1px; }
+
+/* Six complete signed rows fit the change frame used for join fan-out. */
+.maintenance-diffs ul[data-many-rows='true'] .relation-count { padding-block: 0; line-height: 17px; }
+.maintenance-diffs ul[data-many-rows='true'] .maintenance-diff-tuple { line-height: 17px; }
+/* Keep full-size type and the shared table frame on short lecture viewports. */
+@media (min-width: 640px) and (max-height: 740px) {
+ .incremental-maintenance-page .guided-lab-title > p { display: none; }
+ .incremental-maintenance-page .relation-metric { min-height: 52px; padding-block: 2px; }
+ .app-shell-guided-labs .guided-lab-page.incremental-maintenance-page[data-viewport-fit] { padding-bottom: 2px; }
+}
+@media (max-width: 639px) {
+ .app-shell-guided-labs .guided-lab-page.incremental-maintenance-page.join-maintenance-page[data-viewport-fit] { padding-block: 4px 0; }
+}

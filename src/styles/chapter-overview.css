@@ -70,6 +70,14 @@
   min-width: 0;
 }
 
+.chapter-overview[data-chapter='incremental-maintenance'] .chapter-overview-hero {
+  grid-template-columns: minmax(0, 1fr) 444px;
+}
+
+.chapter-overview[data-chapter='incremental-maintenance'] .chapter-overview-illustration {
+  max-width: none;
+}
+
 .chapter-overview-hero h1 {
   font-size: 40px;
   font-weight: 700;
@@ -399,16 +407,15 @@
   border-color: var(--overview-accent);
 }
 
-.chapter-overview-start-primary {
-  color: var(--accent-contrast);
-  background: var(--overview-accent);
-  border-color: var(--overview-accent);
+.chapter-overview-start-lesson {
+  color: var(--overview-accent);
+  background: color-mix(in srgb, var(--lab-tint) 15%, var(--lab-surface));
+  border-color: color-mix(in srgb, var(--overview-accent) 14%, var(--lab-surface));
 }
 
-.chapter-overview-start-primary:hover {
-  color: var(--accent-contrast);
-  background: var(--overview-accent);
-  filter: brightness(.94);
+.chapter-overview-start-lesson:hover {
+  background: var(--lab-tint);
+  border-color: var(--overview-accent);
 }
 
 .chapter-overview-row > .chapter-overview-start {
@@ -424,6 +431,9 @@
 }
 
 @media (max-width: 1350px) {
+  .chapter-overview[data-chapter='incremental-maintenance'] .chapter-overview-hero {
+    grid-template-columns: minmax(0, 1fr) 288px;
+  }
   .chapter-overview-hero {
     grid-template-columns: minmax(0, 1fr) 240px;
     gap: 20px;

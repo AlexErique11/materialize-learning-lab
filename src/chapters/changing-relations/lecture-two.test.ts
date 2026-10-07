@@ -94,6 +94,8 @@ describe('Lecture 2 playback and guide', () => {
     state = reduce(state, { type: 'reveal' });
     expect(state.selectedTime).toBe(2);
     state = reduce(state, { type: 'back' });
+    expect(state).toMatchObject({ step: 3, selectedTime: 1, applied: 1, revealed: false });
+    state = reduce(state, { type: 'back' });
     expect(state).toMatchObject({ step: 2, selectedTime: 1, applied: 1, revealed: true });
     expect(reduce(state, { type: 'previous-change' })).toEqual(state);
     expect(reduce(state, { type: 'play' })).toEqual(state);

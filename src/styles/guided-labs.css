@@ -342,3 +342,52 @@
     font-size: 11px;
   }
 }
+
+/* Narrow screens use the same panels one at a time, without scaling the page. */
+.workspace-panel-tabs { display: none; }
+.relation-mobile-timestamps { display: none; }
+@media (max-width: 639px) {
+  .app-shell-guided-labs .guided-lab-page[data-viewport-fit] { display: grid; grid-template-columns: 1fr auto; min-height: 0; padding: 8px 16px; gap: 8px; }
+  .app-shell-guided-labs .guided-lab-page.changing-relations-page[data-viewport-fit] { gap: 6px; padding-bottom: 4px; }
+  .app-shell-guided-labs .guided-lab-page.lecture-two-page[data-viewport-fit] .guided-lab-progress { width: 110px; }
+  .guided-lab-page[data-viewport-fit] .guided-lab-heading { display: contents; }
+  .guided-lab-page[data-viewport-fit] .guided-lab-title { grid-column: 1; grid-row: 1; }
+  .guided-lab-page[data-viewport-fit] .guided-lab-top-row { grid-column: 2; grid-row: 1; }
+  .guided-lab-page[data-viewport-fit] .guided-lab-controls,
+  .guided-lab-page[data-viewport-fit] .guided-lab-canvas { grid-column: 1 / -1; }
+  .guided-lab-page[data-viewport-fit] .guided-lab-title > p,
+  .guided-lab-page[data-viewport-fit] .guided-lab-tip,
+  .guided-lab-page[data-viewport-fit] .breadcrumbs { display: none; }
+  .guided-lab-page[data-viewport-fit] .guided-lab-top-row { flex-wrap: nowrap; }
+  .guided-lab-page[data-viewport-fit] .guided-lab-progress { width: 95px; margin: 0; }
+  .guided-lab-page[data-viewport-fit] .guided-lab-progress strong { white-space: nowrap; }
+  .guided-lab-page[data-viewport-fit] .relation-workspace { gap: 8px; }
+  .guided-lab-page[data-viewport-fit] .relation-metric > div > span { display: block; position: relative; padding-right: 18px; }
+  .guided-lab-page[data-viewport-fit] .relation-metric .relation-help { position: absolute; top: 0; right: 0; }
+  .guided-lab-page[data-viewport-fit] .relation-table-note,
+  .guided-lab-page[data-viewport-fit] .batch-summary,
+  .guided-lab-page[data-viewport-fit] .relation-removed,
+  .guided-lab-page[data-viewport-fit] .data-table tbody tr[aria-hidden="true"] { display: none; }
+  .guided-lab-page[data-viewport-fit] .relation-empty { height: auto; padding: 12px; }
+  .guided-lab-page[data-viewport-fit] .relation-empty > span { display: none; }
+  .relation-mobile-timestamps { display: flex; gap: 8px; margin-bottom: 8px; }
+  .relation-panel .data-table tr[data-mobile-current="false"] { display: none; }
+  .app-shell-guided-labs .batch-ledger .table-scroll { min-block-size: 0; }
+  .app-shell-guided-labs .staged-exercise-page .data-table td { height: 38px; }
+  .staged-exercise-page [data-mobile-view="question"] .relation-panels > section,
+  .staged-exercise-page [data-mobile-view="ledger"] .exercise-question,
+  .staged-exercise-page [data-mobile-view="relation"] .exercise-question { display: none; }
+  .staged-exercise-page .exercise-question-navigation:empty { display: none; }
+  .workspace-panel-tabs { display: flex; gap: 8px; grid-column: 1 / -1; }
+  .workspace-panel-tabs .button { min-height: 32px; padding: 5px 9px; font-size: 12px; }
+  .workspace-panel-tabs [aria-pressed="true"] { color: var(--lab-purple); background: var(--lab-tint); border-color: var(--lab-purple); }
+  .relation-panels[data-selected-panel="ledger"] > .relation-current,
+  .relation-panels[data-selected-panel="relation"] > .relation-panel:not(.relation-current) { display: none; }
+  .mobile-sidebar { position: relative; z-index: 20; }
+  .mobile-sidebar[open] > .sidebar-content { position: absolute; top: 100%; left: 0; right: 0; max-height: calc(100dvh - var(--header-height) - var(--chapter-nav-height)); overflow-y: auto; background: var(--lab-sidebar); border-bottom: 1px solid var(--lab-border); }
+}
+
+/* Keep conditional tips measurable while excluding them from the page layout. */
+.guided-lab-tip[data-fit-hidden="true"] { position: absolute; visibility: hidden; pointer-events: none; }
+.app-shell-guided-labs .guided-lab-page[data-viewport-fit] .guided-lab-tip[data-auto-fit="true"] { display: flex; grid-column: 1 / -1; }
+.guided-lab-page[data-viewport-fit] .data-table tbody tr[data-placeholder="true"] { display: table-row; }

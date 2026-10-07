@@ -1,13 +1,15 @@
 interface ChapterOverviewIllustrationProps {
   readonly imageSrc?: string;
+  readonly imageFit?: 'cover' | 'contain';
 }
 
-export function ChapterOverviewIllustration({ imageSrc }: ChapterOverviewIllustrationProps) {
+export function ChapterOverviewIllustration({ imageSrc, imageFit = 'cover' }: ChapterOverviewIllustrationProps) {
   if (imageSrc) {
     return (
       <img
         className="chapter-overview-illustration chapter-overview-illustration-image"
         src={imageSrc}
+        style={{ objectFit: imageFit }}
         width={400}
         height={160}
         alt=""

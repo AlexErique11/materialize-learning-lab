@@ -95,3 +95,40 @@ describe('phase progression', () => {
     expect(reduce(state, { type: 'reset' })).toEqual(initialExerciseStage);
   });
 });
+
+describe('freely navigating exercise checkpoints', () => {
+  const wrong: ExerciseGrade = { correct: false, errors: { prediction: 'Recheck.' }, title: ['Recheck'], explanation: ['Try again.'] };
+  const correct: ExerciseGrade = { correct: true, errors: {}, title: ['Correct'], explanation: ['Applied.'] };
+  const reduce = (state: typeof initialExerciseStage, action: Parameters<typeof exerciseStageReducer>[1]) => exerciseStageReducer(state, action, 3, true);
+
+  it('moves past unchecked and incorrect answers and restores feedback on return', () => {
+    let state = reduce(initialExerciseStage, { type: 'check', grade: wrong });
+    state = reduce(state, { type: 'next' });
+    expect(state.stage).toBe(1);
+    expect(state.grade).toBeNull();
+    state = reduce(state, { type: 'next' });
+    expect(state.stage).toBe(2);
+    state = reduce(state, { type: 'navigate', stage: 0 });
+    expect(state.grade).toEqual(wrong);
+    state = reduce(state, { type: 'edit' });
+    state = reduce(reduce(state, { type: 'next' }), { type: 'previous' });
+    expect(state.grade).toBeNull();
+  });
+
+  it('retains correct answers independently of the current checkpoint and resets them', () => {
+    let state = reduce(initialExerciseStage, { type: 'check', grade: correct });
+    state = reduce(state, { type: 'navigate', stage: 2 });
+    expect(Object.values(state.grades!).filter(grade => grade?.correct)).toHaveLength(1);
+    state = reduce(state, { type: 'navigate', stage: 0 });
+    expect(state.grade).toEqual(correct);
+    expect(reduce(state, { type: 'edit' })).toEqual(state);
+    expect(reduce(state, { type: 'reset' })).toEqual(initialExerciseStage);
+  });
+
+  it('stays within checkpoint boundaries', () => {
+    expect(reduce(initialExerciseStage, { type: 'previous' })).toEqual(initialExerciseStage);
+    for (const stage of [-1, 3, 1.5]) expect(reduce(initialExerciseStage, { type: 'navigate', stage })).toEqual(initialExerciseStage);
+    const last = reduce(initialExerciseStage, { type: 'navigate', stage: 2 });
+    expect(reduce(last, { type: 'next' })).toEqual(last);
+  });
+});

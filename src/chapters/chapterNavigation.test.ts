@@ -19,7 +19,7 @@ describe('chapter page navigation', () => {
       previous: {
         to: '/labs/changing-relations', title: 'Changing Relations', label: 'Chapter overview',
       },
-      next: { to: '/labs/changing-relations/tutorial/lecture-2', title: 'Lecture 2' },
+      next: { to: '/labs/changing-relations/tutorial/lecture-2', title: 'Lecture 2: Updates and batches' },
     });
   });
 
@@ -28,7 +28,7 @@ describe('chapter page navigation', () => {
       to: '/labs/changing-relations/exercises/exercise-1', title: 'Exercise 1',
     });
     expect(navigationFor('exercises', 'exercise-1').previous).toEqual({
-      to: '/labs/changing-relations/tutorial/lecture-2', title: 'Lecture 2',
+      to: '/labs/changing-relations/tutorial/lecture-2', title: 'Lecture 2: Updates and batches',
     });
   });
 
@@ -45,13 +45,13 @@ describe('chapter page navigation', () => {
   });
 
   it('leaves an empty section with only a link to its chapter overview', () => {
-    const emptyChapter = findChapter('incremental-maintenance');
-    if (!emptyChapter) throw new Error('Chapter 2 must be in the curriculum.');
+    const emptyChapter = findChapter('views-indexes-materialized-views');
+    if (!emptyChapter) throw new Error('Chapter 3 must be in the curriculum.');
     const section = findChapterSection(emptyChapter, 'tutorial');
     if (!section) throw new Error('Every chapter must have a tutorial section.');
     expect(getChapterNavigation(emptyChapter, section)).toEqual({
       previous: {
-        to: '/labs/incremental-maintenance', title: 'Incremental Maintenance', label: 'Chapter overview',
+        to: '/labs/views-indexes-materialized-views', title: 'Views, Indexes & Materialized Views', label: 'Chapter overview',
       },
       next: undefined,
     });

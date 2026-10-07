@@ -12,7 +12,7 @@ export function ChapterPage() {
   usePageTitle(chapter.shortTitle);
 
   return (
-    <section className="chapter-overview" aria-label="Chapter overview">
+    <section className="chapter-overview" data-chapter={chapter.slug} aria-label="Chapter overview">
       <Breadcrumbs items={[
         { label: 'Learning path', to: '/' },
         { label: 'Guided labs', to: '/labs' },
@@ -23,7 +23,7 @@ export function ChapterPage() {
           <h1>{chapter.shortTitle}</h1>
           <p>{chapter.introduction ?? chapter.description}</p>
         </div>
-        <ChapterOverviewIllustration imageSrc={chapter.overviewImage} />
+        <ChapterOverviewIllustration imageSrc={chapter.overviewImage} imageFit={chapter.overviewImageFit} />
       </header>
       <ChapterDocumentation key={chapter.slug} chapter={chapter} />
       {getChapterSections(chapter).map((section) => (

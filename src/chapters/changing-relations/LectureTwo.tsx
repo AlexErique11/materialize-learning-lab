@@ -30,23 +30,20 @@ export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition
   const spotlight = beforeChange ? 'ledger' : lesson.spotlight;
   const targetRef = spotlight === 'ledger' ? ledgerRef : spotlight === 'metrics' ? metricsRef : relationRef;
   const phaseLabel = lesson.phase ?? (beforeChange ? 'Before the change' : 'Effect shown');
-  let playbackStatus = `${state.applied} of ${lectureTwoBatches.length} timestamps applied`;
-  if (state.playing) playbackStatus = 'Playing complete timestamps';
-  else if (inspectingHistory) playbackStatus = `Inspecting t = ${state.selectedTime}`;
 
   return <>
     <GuidedLabScreen chapter={chapter} title="Lecture 2" regionLabel="Lecture content" navigation={navigation}
-      className="changing-relations-page lecture-two-page" reference={lectureTwoReference}
-      simulation={{ completed: state.guided ? state.step : state.applied, total: state.guided ? lectureTwoSteps.length : lectureTwoBatches.length,
+      className="changing-relations-page lecture-two-page" reference={lectureTwoReference} showTip="when-space"
+      simulation={{ completed: state.guided ? state.step : state.selectedTime, total: state.guided ? lectureTwoSteps.length : lectureTwoBatches.length,
         progressLabel: state.guided ? 'Tutorial' : 'Timestamps', playing: state.playing,
         onReset: () => dispatch({ type: 'reset' }), onRun: () => dispatch({ type: 'play' }), onStartGuidedRun: () => dispatch({ type: 'start-guided' }) }}
       workspace={<div className="relation-workspace" data-guided={state.guided}>
         <RelationMetrics relation={relation} time={state.selectedTime} metricsRef={metricsRef} />
         <BatchWorkbench relation={relation} time={state.selectedTime} applied={state.applied} previewTime={state.guided && beforeChange ? lesson.time : null}
+          guidedPanel={state.guided ? (spotlight === 'ledger' ? 'ledger' : 'relation') : undefined}
           ledgerRef={ledgerRef} relationRef={relationRef} controlsDisabled={state.playing || state.guided}
           highlightCopies={state.guided && state.revealed && lesson.spotlight === 'relation'} onSelectTime={(time) => dispatch({ type: 'select', time })} />
         <div className="relation-playback-controls" aria-label="Timestamp playback">
-          <span className="relation-playback-status" role="status">{playbackStatus}</span>
           {tutorialComplete && <span className="relation-tutorial-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
           {inspectingHistory && <Button onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
           <div>

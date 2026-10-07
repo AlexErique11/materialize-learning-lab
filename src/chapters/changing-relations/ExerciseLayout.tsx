@@ -1,26 +1,23 @@
-import { useId, useRef, type ReactNode } from 'react';
-import { ArrowRight, CheckCircle2, Eye, Lightbulb } from 'lucide-react';
+import { ExerciseFrame } from '../../components/lab/ExerciseFrame';
+import { useId, useRef, useState, type ComponentProps, type ReactNode } from 'react';
+import { PanelTabs } from '../../components/lab/PanelTabs';
 import { Button } from '../../components/ui/Button';
-import { ProgressBar } from '../../components/ui/ProgressBar';
 import { Table } from '../../components/ui/Table';
-import { GuidedLabScreen } from '../../labs/components/GuidedLabScreen';
-import type { ChapterDefinition } from '../chapterRegistry';
 import { LessonText, type LessonTextContent } from './LessonText';
 import { RelationHelp } from './RelationHelp';
 import { CurrentRelation, DiffBadge, RelationMetrics } from './RelationWorkbench';
 import { relationHelp } from './scenario';
 import { rowKey, type ProductRow, type RowMultiplicity } from './simulation';
-import type { useExerciseStages } from './useExerciseStages';
 import './lecture-one.css';
 import './exercises.css';
 
-export function ExerciseInput({ label, labelContent, value, error, signed = false, inLedger = false, disabled, onChange }: {
-  label: string; labelContent?: LessonTextContent; value: string; error?: string; signed?: boolean; inLedger?: boolean; disabled: boolean; onChange: (value: string) => void;
+export function ExerciseInput({ label, labelContent, value, error, signed = false, numeric = true, inLedger = false, disabled, onChange }: {
+  label: string; labelContent?: LessonTextContent; value: string; error?: string; signed?: boolean; numeric?: boolean; inLedger?: boolean; disabled: boolean; onChange: (value: string) => void;
 }) {
   const id = useId();
   return <label className={`exercise-answer-field${inLedger ? ' exercise-ledger-answer' : ''}`}><span className={inLedger ? 'sr-only' : undefined}><LessonText content={labelContent ?? [label]} /></span>
     <input aria-label={label} aria-invalid={Boolean(error)} aria-describedby={error ? `${id}-error` : undefined} type="text"
-      inputMode={signed ? 'text' : 'numeric'} autoComplete="off" value={value} disabled={disabled} placeholder="?"
+      inputMode={signed || !numeric ? 'text' : 'numeric'} autoComplete="off" value={value} disabled={disabled} placeholder="?"
       onChange={(event) => onChange(event.target.value)} />
     {error && <span id={`${id}-error`} className="sr-only">{error}</span>}
   </label>;
@@ -53,41 +50,18 @@ export function ExerciseLedger({ records, rows = 4, title = 'Change ledger', tar
   </section>;
 }
 
-export function ExerciseLayout({ chapter, title, description, navigation, flow, relation, time, ledger, rows = 4,
-  checkpointTitle, question, hint, answers, onCheck, onShowAnswer, onNext, onReset }: {
-  chapter: ChapterDefinition; title: string; description: string; navigation: ReactNode;
-  flow: ReturnType<typeof useExerciseStages>;
-  relation: readonly RowMultiplicity[]; time: number; ledger: ReactNode; rows?: number;
-  checkpointTitle: string; question: LessonTextContent; hint: LessonTextContent; answers: ReactNode;
-  onCheck: () => void; onShowAnswer: () => void; onNext: () => void; onReset: () => void;
+export function ExerciseLayout(props: Omit<ComponentProps<typeof ExerciseFrame>, 'visualization' | 'pageClass' | 'reference'> & {
+ relation: readonly RowMultiplicity[]; time: number; ledger: ReactNode; rows?: number;
 }) {
-  const formId = useId();
-  const metricsRef = useRef<HTMLDivElement>(null);
-  const relationRef = useRef<HTMLElement>(null);
-  return <GuidedLabScreen chapter={chapter} title={title} regionLabel="Exercise content" navigation={navigation}
-    description={description} showTip={false} showReference={false} className="changing-relations-page staged-exercise-page"
-    controls={{
-      progress: <div className="guided-lab-progress"><div><span>Phases</span><strong>{flow.completed} / {flow.total}</strong></div>
-        <ProgressBar value={flow.completed} total={flow.total} label="Exercise phases completed" /></div>,
-      actions: <>
-        <Button onClick={onReset}>Reset</Button>
-        <Button data-walkthrough="hint" disabled={flow.accepted} aria-expanded={flow.hintOpen} aria-controls={`${formId}-question`} onClick={() => flow.dispatch({ type: 'hint' })}><Lightbulb size={14} aria-hidden="true" />Hint</Button>
-        <Button data-walkthrough="answer" disabled={flow.accepted} onClick={onShowAnswer}><Eye size={14} aria-hidden="true" />Show Answer</Button>
-        <Button data-walkthrough="check" variant="primary" type="submit" form={formId} disabled={flow.accepted}><CheckCircle2 size={14} aria-hidden="true" />Check Answer</Button>
-      </>,
-    }}
-    workspace={<form id={formId} className="relation-workspace" noValidate onSubmit={(event) => { event.preventDefault(); if (!flow.accepted) onCheck(); }}>
-      <RelationMetrics relation={relation} time={time} metricsRef={metricsRef} />
-      <div className="relation-panels">{ledger}<CurrentRelation relation={relation} time={time} relationRef={relationRef} highlightCopies={false} minRows={rows} /></div>
-      <section id={`${formId}-question`} data-walkthrough="question" className="exercise-question" data-result={flow.grade ? (flow.accepted ? 'correct' : 'incorrect') : 'ready'} aria-labelledby={`${formId}-heading`}>
-        <div className="exercise-question-copy" aria-live="polite" aria-atomic="true">
-          <h2 id={`${formId}-heading`}>{flow.accepted ? <CheckCircle2 size={18} aria-hidden="true" /> : <Lightbulb size={18} aria-hidden="true" />}<span><LessonText content={flow.grade?.title ?? [`Phase ${flow.stage + 1} of ${flow.total}: ${checkpointTitle}`]} /></span></h2>
-          <p><LessonText content={flow.grade?.explanation ?? (flow.hintOpen ? hint : question)} /></p>
-        </div>
-        <div className="exercise-answers" aria-label="Your prediction">{answers}</div>
-      </section>
-      <div className="exercise-question-navigation">
-        {flow.accepted && !flow.complete && <Button className="exercise-next-question" variant="primary" onClick={onNext}>Next question<ArrowRight size={14} aria-hidden="true" /></Button>}
-      </div>
-    </form>} />;
+ const [selectedPanel, setSelectedPanel] = useState<'ledger' | 'relation'>('ledger');
+ const metricsRef = useRef<HTMLDivElement>(null);
+ const relationRef = useRef<HTMLElement>(null);
+ return <ExerciseFrame {...props} mobilePanel={selectedPanel} visualization={(questionOpen, setQuestionOpen) => <>
+ <RelationMetrics relation={props.relation} time={props.time} metricsRef={metricsRef} />
+ <div className="relation-panels" data-selected-panel={selectedPanel}>
+ <PanelTabs value={questionOpen ? undefined : selectedPanel} onChange={panel => { setQuestionOpen(false); setSelectedPanel(panel); }}>
+ <Button aria-pressed={questionOpen} onClick={() => setQuestionOpen(true)}>Question</Button>
+ </PanelTabs>
+ {props.ledger}<CurrentRelation relation={props.relation} time={props.time} relationRef={relationRef} highlightCopies={false} minRows={props.rows ?? 4} />
+ </div></>} />;
 }

@@ -1,4 +1,5 @@
-import type { RefObject } from 'react';
+import { useState, type RefObject } from 'react';
+import { PanelTabs } from '../../components/lab/PanelTabs';
 import { Table } from '../../components/ui/Table';
 import { RelationHelp } from './RelationHelp';
 import { CurrentRelation, DiffBadge } from './RelationWorkbench';
@@ -8,7 +9,8 @@ import { consolidateTimestamp, rowKey, type RowMultiplicity } from './simulation
 
 const LEDGER_VISIBLE_ROWS = 4;
 
-export function BatchWorkbench({ relation, time, applied, previewTime, ledgerRef, relationRef, controlsDisabled, highlightCopies, onSelectTime }: {
+export function BatchWorkbench({ relation, time, applied, previewTime, ledgerRef, relationRef, controlsDisabled, highlightCopies, onSelectTime, guidedPanel }: {
+  guidedPanel?: 'ledger' | 'relation';
   relation: readonly RowMultiplicity[];
   time: number;
   applied: number;
@@ -19,6 +21,8 @@ export function BatchWorkbench({ relation, time, applied, previewTime, ledgerRef
   highlightCopies: boolean;
   onSelectTime: (time: number) => void;
 }) {
+  const [selectedPanel, setSelectedPanel] = useState<'ledger' | 'relation'>('ledger');
+  const activePanel = guidedPanel ?? selectedPanel;
   // The optional preview reveals the input batch while the relation stays at its prior time.
   const shownTime = previewTime ?? time;
   const batch = lectureTwoBatches.find((entry) => entry.time === shownTime);
@@ -27,14 +31,15 @@ export function BatchWorkbench({ relation, time, applied, previewTime, ledgerRef
   const current = lectureTwoBatches.find((entry) => entry.time === time);
   const affectedRows = current ? consolidateTimestamp(current.updates).filter((update) => update.diff !== 0).map((update) => update.row) : [];
 
-  return <div data-walkthrough="lecture-workspace" className="relation-panels">
+  return <div data-walkthrough="lecture-workspace" className="relation-panels" data-selected-panel={activePanel}>
+    <PanelTabs value={activePanel} onChange={setSelectedPanel} disabled={Boolean(guidedPanel)} />
     <section ref={ledgerRef} className="relation-panel batch-ledger" aria-labelledby="ledger-heading">
       <div className="batch-panel-heading">
         <h2 id="ledger-heading">Change ledger <RelationHelp {...batchHelp.ledger} /></h2>
         <TimestampSelector shownTime={shownTime} applied={applied} disabled={controlsDisabled} onSelectTime={onSelectTime} />
       </div>
       <div className="batch-summary">
-        <span>{batch ? `${updates.length} diffs at t = ${shownTime}` : 'Starting snapshot · t = 0'} <RelationHelp {...batchHelp.time} /></span>
+        <span>{batch ? `${updates.length} diffs at t = ${shownTime}` : 'Starting snapshot · t = 0'}</span>
         <span>{previewTime !== null ? 'Upcoming' : batch ? 'Applied together' : '4 copies'}</span>
       </div>
       <Table caption="Change ledger">
@@ -57,6 +62,7 @@ export function BatchWorkbench({ relation, time, applied, previewTime, ledgerRef
 // This control is kept separate from the ledger's heading for accessible navigation.
 function TimestampSelector({ shownTime, applied, disabled, onSelectTime }: { shownTime: number; applied: number; disabled: boolean; onSelectTime: (time: number) => void }) {
   return <nav className="batch-timestamps" aria-label="Inspect complete timestamps">
+    <RelationHelp {...batchHelp.time} />
     {[0, ...lectureTwoBatches.map((batch) => batch.time)].map((time) => <button key={time} type="button" className="relation-timestamp-button"
       aria-label={`Inspect t = ${time}`} aria-pressed={time === shownTime} disabled={disabled || time > applied}
       onClick={() => onSelectTime(time)}>{time}</button>)}

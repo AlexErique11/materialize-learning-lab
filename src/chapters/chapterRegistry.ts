@@ -8,6 +8,7 @@ export interface ChapterDefinition {
   readonly description: string;
   readonly introduction?: string;
   readonly overviewImage?: string;
+  readonly overviewImageFit?: 'cover' | 'contain';
   readonly documentationLinks?: readonly DocumentationLink[];
   readonly optional?: boolean;
 }
@@ -39,6 +40,22 @@ export const chapters: readonly ChapterDefinition[] = [
     title: 'Incremental Maintenance — How One Change Travels Through SQL',
     shortTitle: 'Incremental Maintenance',
     description: 'Trace one input change through filters, joins, and aggregates.',
+    introduction: 'Explore how input changes travel through SQL filters, joins, and grouped aggregates. Follow inserts, updates, and deletions through four interactive tutorials, compare incremental maintenance with full recomputation, then practice predicting which result rows change in two exercises.',
+    overviewImage: '/incremental-maintenance-overview.png',
+    overviewImageFit: 'contain',
+    documentationLinks: [
+      { title: 'SELECT: projections, WHERE filters, and GROUP BY', href: 'https://materialize.com/docs/sql/select/' },
+      { title: 'JOIN: inner joins, matching keys, and multiple matches', href: 'https://materialize.com/docs/sql/select/join/#inner-join' },
+      { title: 'Aggregate functions: COUNT and SUM', href: 'https://materialize.com/docs/sql/functions/#aggregate-functions' },
+      { title: 'Arrangements: incremental dataflows and retained state', href: 'https://materialize.com/docs/fundamentals/concepts/arrangements/' },
+      { title: 'Views: maintaining query results as inputs change', href: 'https://materialize.com/docs/fundamentals/concepts/views/' },
+      { title: 'SUBSCRIBE: logical timestamps and signed result changes', href: 'https://materialize.com/docs/sql/subscribe/#output' },
+      { title: 'SUBSCRIBE: initial snapshots and subsequent changes', href: 'https://materialize.com/docs/sql/subscribe/#snapshot' },
+      { title: 'SUBSCRIBE: old and new rows in an update', href: 'https://materialize.com/docs/sql/subscribe/#mapping-rows-to-their-updates' },
+      { title: 'INSERT: adding input rows', href: 'https://materialize.com/docs/sql/insert/' },
+      { title: 'UPDATE: changing amounts, join keys, and group keys', href: 'https://materialize.com/docs/sql/update/' },
+      { title: 'DELETE: removing input rows and their contributions', href: 'https://materialize.com/docs/sql/delete/' },
+    ],
   },
   {
     number: 3,

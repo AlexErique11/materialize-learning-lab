@@ -15,8 +15,8 @@ if (!chapter) throw new Error('Chapter 1 must be in the curriculum.');
 describe('chapter navigation outline', () => {
   it('orders lectures before exercises in one continuous sequence', () => {
     expect(getChapterPages(chapter).map(({ sectionSlug, slug, title }) => ({ sectionSlug, slug, title }))).toEqual([
-      { sectionSlug: 'tutorial', slug: 'lecture-1', title: 'Lecture 1' },
-      { sectionSlug: 'tutorial', slug: 'lecture-2', title: 'Lecture 2' },
+      { sectionSlug: 'tutorial', slug: 'lecture-1', title: 'Lecture 1: Signed changes' },
+      { sectionSlug: 'tutorial', slug: 'lecture-2', title: 'Lecture 2: Updates and batches' },
       { sectionSlug: 'exercises', slug: 'exercise-1', title: 'Exercise 1' },
     ]);
     const paths = getChapterPages(chapter).map((page) => chapterContentPath(chapter, page));
@@ -24,7 +24,7 @@ describe('chapter navigation outline', () => {
   });
 
   it('leaves chapters without defined content empty', () => {
-    for (const other of chapters.filter((item) => ![chapter.slug, 'time-in-materialize'].includes(item.slug))) {
+    for (const other of chapters.filter((item) => ![chapter.slug, 'incremental-maintenance', 'time-in-materialize'].includes(item.slug))) {
       expect(getChapterSections(other).map((section) => section.slug)).toEqual([
         'tutorial',
         'exercises',
@@ -53,13 +53,15 @@ describe('chapter navigation outline', () => {
   it('validates pages within their section and chapter', () => {
     expect(findChapterSection(chapter, 'tutorial')?.title).toBe('Tutorial');
     expect(findChapterSection(chapter, 'workspace')).toBeUndefined();
-    expect(findChapterContent(chapter, 'tutorial', 'lecture-1')?.title).toBe('Lecture 1');
+    expect(findChapterContent(chapter, 'tutorial', 'lecture-1')?.title).toBe('Lecture 1: Signed changes');
     expect(findChapterContent(chapter, 'exercises', 'lecture-1')).toBeUndefined();
     expect(findChapterContent(chapter, 'tutorial', 'lecture-3')).toBeUndefined();
     expect(findChapterContent(chapter, undefined, undefined)).toBeUndefined();
     const other = chapters[1];
     if (!other) throw new Error('The curriculum must contain a second chapter.');
-    expect(findChapterContent(other, 'tutorial', 'lecture-1')).toBeUndefined();
+    expect(findChapterContent(other, 'tutorial', 'lecture-1')?.title).toBe('Lecture 1: Filters and projections');
+    expect(findChapterContent(other, 'tutorial', 'lecture-2')?.title).toBe('Lecture 2: Joins');
+    expect(findChapterContent(other, 'tutorial', 'lecture-4')?.title).toBe('Lecture 4: Recompute or maintain');
   });
 
   it('builds section and page URLs with encoded page slugs', () => {
@@ -71,5 +73,17 @@ describe('chapter navigation outline', () => {
         title: 'Future page',
       }),
     ).toBe('/labs/changing-relations/exercises/future%2Fpage');
+  });
+  it('registers Chapter 2 exercises after the four lectures', () => {
+    const maintenance = findChapter('incremental-maintenance')!;
+    const pages = getChapterPages(maintenance);
+    expect(pages.map(page => page.slug)).toEqual([
+      'lecture-1', 'lecture-2', 'lecture-3', 'lecture-4',
+      'exercise-1', 'exercise-3',
+    ]);
+    for (const page of pages.filter(page => page.sectionSlug === 'exercises')) {
+      expect(chapterContentPath(maintenance, page)).toBe(`/labs/incremental-maintenance/exercises/${page.slug}`);
+      expect(page.description).toBeTruthy();
+    }
   });
 });

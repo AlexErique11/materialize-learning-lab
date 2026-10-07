@@ -13,24 +13,48 @@ import { getChapterNavigation } from './chapterNavigation';
 import { LectureOne } from './changing-relations/LectureOne';
 import { LectureTwo } from './changing-relations/LectureTwo';
 import { ExerciseOne } from './changing-relations/ExerciseOne';
+import { maintenanceExercises } from './incremental-maintenance/exercise-scenarios';
+import { MaintenanceExercisePage } from './incremental-maintenance/MaintenanceExercisePage';
+import { IncrementalLectureOne } from './incremental-maintenance/LectureOne';
+import { IncrementalLectureThree } from './incremental-maintenance/LectureThree';
+import { IncrementalLectureFour } from './incremental-maintenance/LectureFour';
+import { IncrementalLectureTwo } from './incremental-maintenance/LectureTwo';
 
 export function ChapterContentPage() {
   const chapter = useOutletContext<ChapterDefinition>();
   const { sectionSlug, pageSlug } = useParams();
-  // Preserve existing bookmarks after merging Chapter 1's exercises.
-  if (chapter.slug === 'changing-relations' && sectionSlug === 'exercises' && pageSlug === 'exercise-2') {
+  // Preserve existing bookmarks after merging exercises in either chapter.
+  if (['changing-relations', 'incremental-maintenance'].includes(chapter.slug) && sectionSlug === 'exercises' && pageSlug === 'exercise-2') {
     return <Navigate to={chapterContentPath(chapter, findChapterContent(chapter, 'exercises', 'exercise-1')!)} replace />;
+  }
+  if (chapter.slug === 'incremental-maintenance' && sectionSlug === 'exercises' && pageSlug === 'exercise-4') {
+    return <Navigate to={chapterContentPath(chapter, findChapterContent(chapter, 'exercises', 'exercise-3')!)} replace />;
   }
   const section = findChapterSection(chapter, sectionSlug);
   const page = findChapterContent(chapter, sectionSlug, pageSlug);
   if (!section || (pageSlug !== undefined && !page)) return <NotFoundPage />;
 
   const navigation = getChapterNavigation(chapter, section, page);
+  if (chapter.slug === 'incremental-maintenance' && section.slug === 'tutorial' && page?.slug === 'lecture-1') {
+    return <IncrementalLectureOne chapter={chapter} navigation={<ChapterPagination {...navigation} showTooltips={false} />} />;
+  }
+  if (chapter.slug === 'incremental-maintenance' && section.slug === 'tutorial' && page?.slug === 'lecture-2') {
+    return <IncrementalLectureTwo chapter={chapter} navigation={<ChapterPagination {...navigation} showTooltips={false} />} />;
+  }
+  if (chapter.slug === 'incremental-maintenance' && section.slug === 'tutorial' && page?.slug === 'lecture-3') {
+    return <IncrementalLectureThree chapter={chapter} navigation={<ChapterPagination {...navigation} showTooltips={false} />} />;
+  }
+  if (chapter.slug === 'incremental-maintenance' && section.slug === 'tutorial' && page?.slug === 'lecture-4') {
+    return <IncrementalLectureFour chapter={chapter} navigation={<ChapterPagination {...navigation} showTooltips={false} />} />;
+  }
   if (chapter.slug === 'changing-relations' && section.slug === 'tutorial' && page?.slug === 'lecture-1') {
     return <LectureOne chapter={chapter} navigation={<ChapterPagination {...navigation} />} />;
   }
   if (chapter.slug === 'changing-relations' && section.slug === 'tutorial' && page?.slug === 'lecture-2') {
     return <LectureTwo chapter={chapter} navigation={<ChapterPagination {...navigation} />} />;
+  }
+  if (chapter.slug === 'incremental-maintenance' && section.slug === 'exercises' && page) {
+    return <MaintenanceExercisePage key={page.slug} chapter={chapter} exerciseIndex={maintenanceExercises.findIndex(exercise => exercise.slug === page.slug)} navigation={<ChapterPagination {...navigation} showTooltips={false} />} />;
   }
   const title = page?.title ?? section.title;
   if (chapter.slug === 'changing-relations' && section.slug === 'exercises' && page?.slug === 'exercise-1') {

@@ -30,12 +30,12 @@ async function expectGuideLayout(page: Page) {
   expect(geometry.overlaps, 'The teaching card should leave its highlighted panel visible').toBe(false);
 }
 
-test('simple mode steps only data changes, stays minimal, and replays historical state', async ({ page }, testInfo) => {
+test('simple mode steps only data changes, stays minimal, and replays historical state', async ({ page, isMobile }, testInfo) => {
   await page.goto(lecturePath);
   const progress = page.getByRole('progressbar', { name: 'Changes progress' });
   await expect(progress).toHaveAttribute('max', '4');
   await expect(progress).toHaveAttribute('value', '0');
-  await expect(page.getByRole('complementary', { name: 'Lab tip' })).toBeVisible();
+  if (!isMobile) await expect(page.getByRole('complementary', { name: 'Lab tip' })).toBeVisible();
   const previousChange = page.getByRole('button', { name: 'Previous change', exact: true });
   await expect(previousChange).toBeDisabled();
   await expect(page.locator('.relation-explanation, .relation-diagram')).toHaveCount(0);
@@ -50,23 +50,26 @@ test('simple mode steps only data changes, stays minimal, and replays historical
   }
   await expect(page.getByRole('button', { name: 'Next change', exact: true })).toBeDisabled();
   await expect(page.locator('.relation-tutorial-complete, .relation-causal-arrow')).toHaveCount(0);
-  const relation = page.getByRole('table', { name: 'Current relation', exact: true });
-  await expect(relation.getByRole('row')).toHaveCount(3);
-  await expect(relation.getByRole('cell', { name: 'B', exact: true })).toHaveCount(0);
+  const relation = page.getByRole('table', { name: 'Current relation', exact: true, includeHidden: true });
+  await expect(relation.getByRole('row', { includeHidden: true })).toHaveCount(3);
+  await expect(relation.getByRole('cell', { name: 'B', exact: true, includeHidden: true })).toHaveCount(0);
   await expect(page.locator('.relation-removed')).toContainText('Removed at t = 4: B, $14');
   await page.screenshot({ path: testInfo.outputPath('simple-run.png'), fullPage: true });
   await previousChange.click();
   await expect(page.getByTestId('logical-time').locator('strong')).toHaveText('t = 3');
   await expect(page.getByTestId('total-copies').locator('strong')).toHaveText('6');
-  await expect(relation.getByRole('cell', { name: 'B', exact: true })).toBeVisible();
+  const panelSelector = page.getByRole('navigation', { name: 'Workspace panels' });
+  if (await panelSelector.isVisible()) await panelSelector.getByRole('button', { name: 'Current relation', exact: true }).click();
+  await expect(relation.getByRole('cell', { name: 'B', exact: true, includeHidden: true })).toBeVisible();
+  if (await panelSelector.isVisible()) await panelSelector.getByRole('button', { name: 'Change ledger', exact: true }).click();
   await expect(page.locator('.relation-removed')).toHaveCount(0);
-  await expect(progress).toHaveAttribute('value', '4');
+  await expect(progress).toHaveAttribute('value', '3');
   await page.getByRole('button', { name: 'Next change', exact: true }).click();
   await expect(page.getByTestId('logical-time').locator('strong')).toHaveText('t = 4');
-  await expect(relation.getByRole('cell', { name: 'B', exact: true })).toHaveCount(0);
+  await expect(relation.getByRole('cell', { name: 'B', exact: true, includeHidden: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Inspect t = 2' }).click();
   await expect(page.getByTestId('total-copies').locator('strong')).toHaveText('4');
-  await expect(progress).toHaveAttribute('value', '4');
+  await expect(progress).toHaveAttribute('value', '2');
   await page.getByRole('button', { name: 'Next change', exact: true }).click();
   await expect(page.getByTestId('total-copies').locator('strong')).toHaveText('6');
   await previousChange.click();
@@ -83,6 +86,8 @@ test('every metric, panel, and column has readable help on hover, focus, and cli
   await page.goto(lecturePath);
   const labels = ['Total row copies', 'Distinct full rows', 'Current logical timestamp', 'Change ledger', 't', 'Signed diff', 'Row', 'Current relation', 'Product', 'Price', 'Copies per row'];
   for (const label of labels) {
+    if (isMobile && ['Current relation', 'Product', 'Price', 'Copies per row'].includes(label))
+      await page.getByRole('navigation', { name: 'Workspace panels' }).getByRole('button', { name: 'Current relation', exact: true }).click();
     const help = page.getByRole('button', { name: `About ${label}`, exact: true });
     await help.click();
     const tooltip = page.getByRole('tooltip');
@@ -172,6 +177,9 @@ test('guided Back rewinds state and Escape returns to minimal playback with focu
   await guide.getByRole('button', { name: 'Next', exact: true }).click();
   await guide.getByRole('button', { name: 'Next', exact: true }).click();
   await guide.getByRole('button', { name: 'Show effect', exact: true }).click();
+  await guide.getByRole('button', { name: 'Back', exact: true }).click();
+  await expect(guide).toHaveAccessibleName('One change can add several copies');
+  await expect(guide.getByRole('button', { name: 'Show effect', exact: true })).toBeVisible();
   await guide.getByRole('button', { name: 'Back', exact: true }).click();
   await expect(guide).toHaveAccessibleName('Read one change record');
   await expect(page.getByTestId('logical-time').locator('strong')).toHaveText('t = 0');

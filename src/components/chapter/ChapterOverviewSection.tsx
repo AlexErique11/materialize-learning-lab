@@ -41,7 +41,7 @@ export function ChapterOverviewSection({ chapter, section }: ChapterOverviewSect
             ) : <span className="chapter-overview-status">Not started</span>}
             <Link
               data-walkthrough={isTutorial && page.slug === 'lecture-1' ? 'start-lecture-1' : undefined}
-              className={`chapter-overview-start${isTutorial && index === 0 ? ' chapter-overview-start-primary' : ''}`}
+              className="chapter-overview-start chapter-overview-start-lesson"
               to={chapterContentPath(chapter, { ...page, sectionSlug: section.slug })}
               aria-label={`Start ${section.itemLabel}: ${page.title}`}
             >

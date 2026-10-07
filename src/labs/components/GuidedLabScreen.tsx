@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
 import { ArrowRight, Lightbulb, Pause, Play } from 'lucide-react';
 import { Link, useLocation } from 'react-router';
 import { materializeDocumentation } from '../../app/resources';
@@ -32,7 +32,7 @@ interface GuidedLabScreenProps {
   children?: ReactNode;
   workspace?: ReactNode;
   className?: string;
-  showTip?: boolean;
+  showTip?: boolean | 'when-space';
   showReference?: boolean;
   simulation?: SimulationControls;
   controls?: { progress: ReactNode; actions: ReactNode };
@@ -58,16 +58,41 @@ export function GuidedLabScreen({
   reference,
 }: GuidedLabScreenProps) {
   const [referenceOpen, setReferenceOpen] = useState(false);
+  const pageRef = useRef<HTMLElement>(null);
+  const tipRef = useRef<HTMLElement>(null);
+  const [tipFits, setTipFits] = useState(false);
+  const fitViewport = Boolean(simulation || controls);
   const { open: helpOpen } = useWalkthrough();
   useEffect(() => { if (helpOpen) setReferenceOpen(false); }, [helpOpen]);
   const { pathname } = useLocation();
+  useLayoutEffect(() => {
+    if (showTip !== 'when-space') return;
+    const page = pageRef.current;
+    const tipElement = tipRef.current;
+    if (!page || !tipElement) return;
+    const measure = () => {
+      const style = getComputedStyle(page);
+      tipElement.style.width = `${page.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)}px`;
+      const contentBottom = Math.max(...Array.from(page.children)
+        .filter((child) => child !== tipElement && child.tagName !== 'DIALOG')
+        .map((child) => child.getBoundingClientRect().bottom));
+      const gap = parseFloat(style.rowGap) || 0;
+      setTipFits(contentBottom + gap + tipElement.offsetHeight + parseFloat(style.paddingBottom) <= innerHeight);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    for (const child of Array.from(page.children)) observer.observe(child);
+    observer.observe(page);
+    window.addEventListener('resize', measure);
+    return () => { observer.disconnect(); window.removeEventListener('resize', measure); };
+  }, [showTip, pathname]);
   useEffect(() => {
     setReferenceOpen(false);
   }, [pathname]);
   usePageTitle(title);
 
   return (
-    <section className={`guided-lab-page ${className}`}>
+    <section ref={pageRef} data-viewport-fit={fitViewport || undefined} className={`guided-lab-page ${className}`}>
       <div className="guided-lab-top-row">
         <Breadcrumbs items={[
           { label: 'Guided labs', to: '/labs' },
@@ -101,7 +126,10 @@ export function GuidedLabScreen({
       </div>
       <section className="guided-lab-canvas" aria-label={regionLabel}>{workspace ?? <p>To be done</p>}</section>
       {children && <div className="guided-lab-page-navigation">{children}</div>}
-      {showTip && <aside className="guided-lab-tip" aria-label="Lab tip">
+      {showTip && <aside ref={tipRef} className="guided-lab-tip" aria-label="Lab tip"
+        data-auto-fit={showTip === 'when-space' || undefined}
+        data-fit-hidden={showTip === 'when-space' && !tipFits || undefined} aria-hidden={showTip === 'when-space' && !tipFits || undefined}
+        inert={showTip === 'when-space' && !tipFits || undefined}>
         <Lightbulb size={27} aria-hidden="true" />
         <strong>Tip</strong>
         <p>{tip}</p>

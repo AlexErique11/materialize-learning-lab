@@ -34,19 +34,19 @@ async function finishGuide(page: Page) {
   }
 }
 
-test('timestamp playback replaces values as complete batches and revisits the seed and history', async ({ page }, testInfo) => {
+test('timestamp playback replaces values as complete batches and revisits the seed and history', async ({ page, isMobile }, testInfo) => {
   await page.goto(lecturePath);
   const progress = page.getByRole('progressbar', { name: 'Timestamps progress' });
   const previous = page.getByRole('button', { name: 'Previous timestamp', exact: true });
   const next = page.getByRole('button', { name: 'Next timestamp', exact: true });
-  const relation = page.getByRole('table', { name: 'Current relation', exact: true });
+  const relation = page.getByRole('table', { name: 'Current relation', exact: true, includeHidden: true });
   await expect(progress).toHaveAttribute('max', '3');
   await expect(progress).toHaveAttribute('value', '0');
   await expect(previous).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Inspect t = 1', exact: true })).toBeDisabled();
   await expect(page.getByTestId('total-copies').locator('strong')).toHaveText('4');
   await expect(relation.locator('tbody tr')).toHaveText(['A$101', 'B$141', 'C$202']);
-  await expect(page.getByRole('complementary', { name: 'Lab tip' })).toBeVisible();
+  if (!isMobile) await expect(page.getByRole('complementary', { name: 'Lab tip' })).toBeVisible();
   for (const time of [1, 2, 3]) {
     await next.click();
     await expect(page.getByTestId('logical-time').locator('strong')).toHaveText(`t = ${time}`);
@@ -60,7 +60,7 @@ test('timestamp playback replaces values as complete batches and revisits the se
   await page.screenshot({ path: testInfo.outputPath('lecture-two-playback.png'), fullPage: true });
   await previous.click();
   await expect(page.getByTestId('total-copies').locator('strong')).toHaveText('4');
-  await expect(progress).toHaveAttribute('value', '3');
+  await expect(progress).toHaveAttribute('value', '2');
   await page.getByRole('button', { name: 'Inspect t = 0', exact: true }).click();
   await expect(relation.locator('tbody tr')).toHaveText(['A$101', 'B$141', 'C$202']);
   await next.click();
@@ -140,6 +140,9 @@ test('Run and Pause operate on three whole timestamps and do not finish the tuto
 test('Lecture 2 help and documentation remain accessible with the established styles', async ({ page }) => {
   await page.goto(lecturePath);
   for (const label of ['Total row copies', 'Distinct full rows', 'Current logical timestamp', 'Change ledger', 't', 'Signed diff', 'Row', 'Current relation', 'Product', 'Price', 'Copies per row']) {
+    const panels = page.getByRole('navigation', { name: 'Workspace panels' });
+    if (await panels.isVisible() && ['Current relation', 'Product', 'Price', 'Copies per row'].includes(label))
+      await panels.getByRole('button', { name: 'Current relation', exact: true }).click();
     await page.getByRole('button', { name: `About ${label}`, exact: true }).click();
     await expect(page.getByRole('tooltip')).toBeVisible();
     if (label === 'Change ledger') await expect(page.getByRole('tooltip')).toContainText('Cancelling teaching records');

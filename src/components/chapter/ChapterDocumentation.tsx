@@ -3,7 +3,9 @@ import { materializeDocumentation } from '../../app/resources';
 import { formatChapterNumber, type ChapterDefinition } from '../../chapters/chapterRegistry';
 
 export function ChapterDocumentation({ chapter }: { chapter: ChapterDefinition }) {
-  const resources = [...(chapter.documentationLinks ?? []), materializeDocumentation];
+  const resources = chapter.number === 1 || chapter.number === 2
+    ? chapter.documentationLinks ?? []
+    : [...(chapter.documentationLinks ?? []), materializeDocumentation];
 
   return (
     <details className="chapter-learn-more">

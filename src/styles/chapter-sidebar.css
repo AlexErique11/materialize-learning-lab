@@ -261,11 +261,6 @@
   background: var(--lab-purple);
 }
 
-.chapter-branch-toggle-spacer {
-  width: 36px;
-  flex-shrink: 0;
-}
-
 .chapter-branch-toggle {
   display: grid;
   place-items: center;
@@ -377,14 +372,6 @@
 
 .chapter-section:not([open]) > summary > .chapter-section-chevron {
   transform: rotate(-90deg);
-}
-
-.chapter-section > summary > .chapter-section-forward {
-  transform: none;
-}
-
-.chapter-section[open] > summary > .chapter-section-forward {
-  display: none;
 }
 
 .app-shell-guided-labs .chapter-pages {
