@@ -8,18 +8,18 @@ import { LessonText, type LessonTextContent } from '../../chapters/changing-rela
 import type { useExerciseStages } from '../../chapters/changing-relations/useExerciseStages';
 import '../../chapters/changing-relations/exercises.css';
 export function ExerciseFrame({ chapter, title, description, navigation, flow, visualization, pageClass, reference, mobilePanel, progressLabel = 'Phases',
-  checkpointTitle, question, hint, answers, preserveQuestion = false, allowSkipping = false, nextExerciseLabel, onCheck, onShowAnswer, onNext, onReset }: {
+  checkpointTitle, question, hint, answers, preserveQuestion = false, nextExerciseLabel, onCheck, onShowAnswer, onNext, onReset }: {
   chapter: ChapterDefinition; title: string; description: string; navigation: ReactNode;
   flow: ReturnType<typeof useExerciseStages>;
   visualization: ReactNode | ((questionOpen: boolean, setQuestionOpen: (open: boolean) => void) => ReactNode); mobilePanel?: string; progressLabel?: string; pageClass?: string; reference?: ComponentProps<typeof GuidedLabScreen>['reference'];
-  allowSkipping?: boolean;
   nextExerciseLabel?: string;
   preserveQuestion?: boolean; checkpointTitle: string; question: LessonTextContent; hint: LessonTextContent; answers: ReactNode;
   onCheck: () => void; onShowAnswer: () => void; onNext: () => void; onReset: () => void;
 }) {
-  const showNext = allowSkipping
-    ? Boolean(flow.grade) && (flow.stage < flow.total - 1 || Boolean(nextExerciseLabel))
-    : flow.accepted && !flow.complete;
+  const showNext = flow.accepted && (!flow.complete || Boolean(nextExerciseLabel));
+  const questionContent = preserveQuestion && (!flow.grade || flow.accepted)
+    ? (flow.hintOpen && !flow.grade ? hint : question)
+    : flow.grade?.explanation ?? (flow.hintOpen ? hint : question);
   const formId = useId();
   const stageLabel = progressLabel === 'Phases' ? 'Phase' : progressLabel === 'Questions' ? 'Question' : 'Checkpoint';
   const [questionOpen, setQuestionOpen] = useState(true);
@@ -41,11 +41,11 @@ export function ExerciseFrame({ chapter, title, description, navigation, flow, v
       <section id={`${formId}-question`} data-walkthrough="question" className="exercise-question" data-result={flow.grade ? (flow.accepted ? 'correct' : 'incorrect') : 'ready'} aria-labelledby={`${formId}-heading`}>
         <div className="exercise-question-copy" aria-live="polite" aria-atomic="true">
           <h2 id={`${formId}-heading`}>{flow.accepted ? <CheckCircle2 size={18} aria-hidden="true" /> : <Lightbulb size={18} aria-hidden="true" />}<span><LessonText content={(preserveQuestion ? undefined : flow.grade?.title) ?? [`${stageLabel} ${flow.stage + 1} of ${flow.total}: ${checkpointTitle}`]} /></span></h2>
-          <p><LessonText content={preserveQuestion ? (flow.hintOpen && !flow.grade ? hint : question) : flow.grade?.explanation ?? (flow.hintOpen ? hint : question)} /></p>
+          <p><LessonText content={questionContent} /></p>
         </div>
         <div className="exercise-answers" aria-label="Your prediction">{answers}</div>
       </section>
-      <div className="exercise-question-navigation" data-free-navigation={allowSkipping || undefined}>
+      <div className="exercise-question-navigation" data-reserve-navigation={Boolean(nextExerciseLabel) || undefined}>
         {showNext && <Button className="exercise-next-question" variant="primary" onClick={() => { setQuestionOpen(true); onNext(); }}>{flow.stage === flow.total - 1 && nextExerciseLabel ? nextExerciseLabel : 'Next question'}<ArrowRight size={14} aria-hidden="true" /></Button>}
       </div>
     </form>} />;

@@ -9,9 +9,13 @@ export function MaintenancePanels({ stages, layout, activeStage, setSelectedStag
  time: number; timeTestId: string; beforeChange?: boolean; outputChanged?: boolean; renderRows: (stage: string) => ReactNode;
  panelRefs?: Record<string, RefObject<HTMLElement | null>>;
 }) { return (
-        <div className="maintenance-stage-workspace" data-layout={layout}>
+        <div className="maintenance-stage-workspace" data-layout={layout} data-guided={guided}>
           <nav className="maintenance-flow join-flow" aria-label={layout === 'comparison' ? 'Maintenance comparison' : stages[1]?.id === 'products' ? 'Join inputs and result' : stages[1]?.id === 'groups' ? 'Aggregation stages' : 'Query stages'}>
             {stages.map((stage, index) => <div key={stage.id}>
+              {!layout && <h2 className="maintenance-stage-heading" data-active={guided && activeStage === stage.id}>
+                <span>{index + 1}. {stage.title}</span>
+                <code>{stage.sql}</code>
+              </h2>}
               <Button aria-pressed={activeStage === stage.id} disabled={guided} onClick={() => setSelectedStage(stage.id)}>
                 <span>{!layout && `${index + 1}. `}<span className="maintenance-stage-full-title">{stage.title}</span><span className="maintenance-stage-short-title">{stage.shortTitle ?? stage.title}</span></span>
                 {!layout && <code>{stage.sql}</code>}

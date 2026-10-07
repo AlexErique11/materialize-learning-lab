@@ -78,3 +78,21 @@
 @media (min-width: 1024px) and (max-width: 1150px) {
   [data-layout="comparison"] .maintenance-flow .button { font-size: 16px; }
 }
+
+/* Use the lecture's spare vertical space without crowding the exercise question. */
+@media (min-width: 640px) {
+  .maintenance-comparison-lecture .maintenance-stage-workspace[data-layout="comparison"] {
+    --comparison-source-height: clamp(144px, calc(10vh + 84px), 184px);
+    --comparison-row-gap: clamp(9px, calc(3vh - 10px), 20px);
+    margin-top: clamp(0px, calc(6vh - 40px), 20px);
+  }
+  .maintenance-comparison-lecture .comparison-input li { padding-block: 10px; }
+}
+@media (min-width: 640px) and (max-height: 740px) {
+  .maintenance-comparison-lecture .comparison-input li { padding-block: 5px; }
+}
+@media (min-width: 640px) and (max-width: 1150px) and (max-height: 740px) {
+  .maintenance-comparison-lecture .maintenance-stage-workspace[data-layout="comparison"] { --comparison-source-height: 134px; --comparison-row-gap: 9px; margin-top: 0; }
+  .maintenance-comparison-lecture .comparison-arrows { height: 16px; }
+  .maintenance-comparison-lecture .comparison-arrows svg { height: calc(var(--comparison-source-height) / 2 + 16px + var(--comparison-row-gap) * 2); }
+}

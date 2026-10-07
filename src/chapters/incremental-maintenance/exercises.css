@@ -61,7 +61,7 @@
 .maintenance-exercise-page .guided-lab-progress { min-width: 110px; }
 .maintenance-exercise-page .guided-lab-progress strong { white-space: nowrap; }
 .maintenance-exercise-page .exercise-question-navigation { height: 40px; min-height: 40px; }
-.maintenance-exercise-page .exercise-question-navigation[data-free-navigation]:empty { display: flex; visibility: hidden; }
+.maintenance-exercise-page .exercise-question-navigation[data-reserve-navigation]:empty { display: flex; visibility: hidden; }
 
 /* The regional exercise keeps the reference's shared input and two methods
    visible above the question, including on short desktop screens. */
@@ -91,6 +91,7 @@
 }
 @media (max-width: 639px) {
  .join-filter-exercise-page [data-question-open='true'] .maintenance-stage-workspace .maintenance-flow { display: none; }
+ .join-filter-exercise-page .exercise-question-copy > p { min-height: 5lh; }
 
 }
 
@@ -117,7 +118,7 @@
  .join-filter-exercise-page .exercise-question:has(.exercise-choice:only-child) { padding-block: 12px; gap: 12px; }
 }
 
-.maintenance-exercise-page .exercise-question-navigation[data-free-navigation] { min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
+.maintenance-exercise-page .exercise-question-navigation[data-reserve-navigation] { min-width: 0; display: flex; align-items: center; justify-content: flex-end; gap: 12px; }
 .join-filter-exercise-page .exercise-choice { flex-basis: 100%; }
 @media (min-width: 640px) and (min-height: 741px) {
  .app-shell-guided-labs .guided-lab-page.incremental-maintenance-page.join-filter-exercise-page[data-viewport-fit] { padding-bottom: 16px; }
@@ -135,9 +136,9 @@
  .join-filter-exercise-page .exercise-answers { gap: 18px; }
  }
 @media (max-width: 639px) {
- .maintenance-exercise-page .exercise-question-navigation[data-free-navigation] { gap: 6px; }
- .maintenance-exercise-page .exercise-question-navigation[data-free-navigation] .button { padding-inline: 8px; font-size: 12px; }
- .maintenance-exercise-page .exercise-question-navigation[data-free-navigation] .button { min-height: 36px; }
+ .maintenance-exercise-page .exercise-question-navigation[data-reserve-navigation] { gap: 6px; }
+ .maintenance-exercise-page .exercise-question-navigation[data-reserve-navigation] .button { padding-inline: 8px; font-size: 12px; }
+ .maintenance-exercise-page .exercise-question-navigation[data-reserve-navigation] .button { min-height: 36px; }
 }
 
 @media (min-width: 640px) {

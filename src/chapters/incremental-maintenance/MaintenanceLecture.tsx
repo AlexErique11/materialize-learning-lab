@@ -45,13 +45,14 @@ export function MaintenanceLecture<Snapshot extends MaintenanceSnapshot>({ chapt
 
   return <>
     <GuidedLabScreen chapter={chapter} title={title} regionLabel="Lecture content" navigation={navigation}
-      className="changing-relations-page incremental-maintenance-page join-maintenance-page" reference={reference} showTip={layout === 'comparison' ? false : 'when-space'}
+      className={`changing-relations-page incremental-maintenance-page join-maintenance-page maintenance-lecture-page${layout === 'comparison' ? ' maintenance-comparison-lecture' : ''}`} reference={reference} showTip="when-space"
       description={description}
       simulation={{ completed: state.guided ? state.step : state.selectedTime, total: state.guided ? lessons.length : definition.totalChanges,
         progressLabel: state.guided ? 'Tutorial' : 'Changes', playing: state.playing,
         onReset: () => { setSelectedStage(stages[0]!.id); setMobileDiffs(false); dispatch({ type: 'reset' }); },
         onRun: () => dispatch({ type: 'play' }), onStartGuidedRun: () => dispatch({ type: 'start-guided' }) }}
       workspace={<div className="relation-workspace" data-guided={state.guided}>
+        <div className="maintenance-lecture-visualization">
         {layout !== 'comparison' && <div className="relation-metrics" aria-label="Relation metrics">
           <WorkspaceMetric icon={<Database size={25} aria-hidden="true" />} label={<>Input rows <RelationHelp label="Input rows" text="The number of rows currently present in the input table or tables. Each row counts once; identical rows in the input are still separate copies." /></>} value={current.inputCount} />
           <WorkspaceMetric icon={<Table2 size={25} aria-hidden="true" />} label={<>Result rows <RelationHelp label="Result rows" text="The number of rows currently shown in the query result. Joins produce a row for each matching input-row combination; aggregations produce one row per group." /></>} value={current.output.length} />
@@ -62,6 +63,7 @@ export function MaintenanceLecture<Snapshot extends MaintenanceSnapshot>({ chapt
           mobileDiffs={mobileDiffs} setMobileDiffs={setMobileDiffs} guided={state.guided} time={state.selectedTime}
           timeTestId={timeTestId} beforeChange={beforeChange} outputChanged={current.outputChanged}
           panelRefs={refs} renderRows={(stage) => renderRows(stage, current)} />
+        </div>
         <div className="relation-playback-controls" aria-label="Change playback">
           {state.step === lessons.length && <span className="relation-tutorial-complete maintenance-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
           <div>

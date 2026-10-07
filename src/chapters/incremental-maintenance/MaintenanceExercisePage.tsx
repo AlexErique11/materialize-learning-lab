@@ -32,11 +32,7 @@ export function MaintenanceExercisePage({ chapter, navigation, exerciseIndex }: 
   ? { label: `Exercise ${exerciseIndex + 2}`, to: `/labs/${chapter.slug}/exercises/${nextExercise.slug}` }
   : nextChapter ? { label: 'Finish chapter', to: chapterPath(nextChapter) } : undefined;
  const [completionOpen, setCompletionOpen] = useState(false);
- const stages = useExerciseStages(exercise.checkpoints.length, true);
- const flow = { ...stages,
-  completed: stages.stage + Number(Boolean(stages.grade)),
-  complete: stages.stage === stages.total - 1 && Boolean(stages.grade),
- };
+ const flow = useExerciseStages(exercise.checkpoints.length);
  const [answers, setAnswers] = useState<Record<number, Prediction>>({});
  const answer = answers[flow.stage] ?? emptyAnswer();
  const setAnswer = (prediction: Prediction) => setAnswers(previous => ({ ...previous, [flow.stage]: prediction }));
@@ -68,7 +64,7 @@ export function MaintenanceExercisePage({ chapter, navigation, exerciseIndex }: 
  };
  return <><ExerciseFrame chapter={chapter} navigation={navigation} title={`Exercise ${exerciseIndex + 1}`} description={`${exercise.title}. ${exercise.description}`}
   preserveQuestion pageClass={`changing-relations-page incremental-maintenance-page join-maintenance-page maintenance-exercise-page ${exercise.kind === 'join-filter' ? 'join-filter-exercise-page' : 'grouped-revenue-exercise-page'}`} reference={{ ...reference, sql: exercise.sql, objective: 'Predict one complete logical timestamp before revealing its effects. Use hints on request. Initial state is t = 0. Work counts are illustrative contributions and group keys, not measured performance.' }}
-  allowSkipping nextExerciseLabel={nextDestination?.label}
+  nextExerciseLabel={nextDestination?.label}
   flow={flow} progressLabel="Questions" checkpointTitle={checkpoint.title} question={[checkpoint.question]} hint={[checkpoint.hint]}
   visualization={(_questionOpen, setQuestionOpen) => <><div className="exercise-time" aria-live="polite">t = {time} · {flow.accepted ? 'Complete batch applied' : 'Current state · next batch awaits your prediction'}</div>
    <MaintenancePanels stages={selectedStages} layout={exercise.kind === 'region' ? 'comparison' : undefined} activeStage={activeStage} setSelectedStage={stage => { setActiveStage(stage); if (exercise.kind === 'join-filter') setQuestionOpen(false); }}
@@ -77,6 +73,7 @@ export function MaintenanceExercisePage({ chapter, navigation, exerciseIndex }: 
   onCheck={() => flow.dispatch({ type: 'check', grade: gradePrediction(exercise, flow.stage, answer) })}
   onShowAnswer={() => { const solution = solutionFor(exercise, flow.stage); setAnswer(solution); flow.dispatch({ type: 'check', grade: gradePrediction(exercise, flow.stage, solution) }); }}
   onNext={() => {
+   if (!flow.accepted) return;
    if (flow.stage === flow.total - 1 && nextDestination) {
     if (nextExercise) navigate(nextDestination.to);
     else setCompletionOpen(true);

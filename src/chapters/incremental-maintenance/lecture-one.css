@@ -1,8 +1,29 @@
 /* Chapter-specific dataflow; panel and table styling comes from Chapter 1. */
 .maintenance-stage-workspace { display: contents; }
+.maintenance-lecture-visualization { display: grid; align-content: start; gap: 10px; height: 520px; }
+@media (min-width: 640px) and (max-width: 1150px) {
+  .maintenance-lecture-visualization { height: 496px; }
+}
+@media (min-width: 640px) and (max-height: 740px) {
+  .maintenance-lecture-visualization { height: 448px; }
+}
+@media (min-width: 640px) and (max-width: 1150px) and (max-height: 740px) {
+  .maintenance-lecture-visualization { height: 392px; }
+  .maintenance-lecture-page .relation-metrics { display: none; }
+}
+@media (max-width: 639px) {
+  .maintenance-lecture-visualization { height: 380px; }
+}
 .maintenance-flow, .maintenance-panels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .maintenance-flow > div { position: relative; }
 .maintenance-flow .button { display: grid; height: 54px; align-content: center; justify-content: stretch; gap: 4px; width: 100%; text-align: left; padding: 8px 12px; font-size: 13px; }
+.maintenance-stage-heading { display: none; }
+@media (min-width: 640px) {
+  .maintenance-stage-workspace:not([data-layout]) .maintenance-flow > div > .button { display: none; }
+  .maintenance-flow .maintenance-stage-heading { display: grid; height: 54px; align-content: center; gap: 4px; margin: 0; padding: 8px 30px 8px 12px; border: 1px solid var(--lab-border); border-radius: 5px; background: var(--lab-surface); font-size: 13px; font-weight: 600; }
+  .maintenance-stage-heading[data-active="true"] { border-color: var(--lab-purple); color: var(--lab-purple); background: var(--lab-tint); }
+  .maintenance-stage-workspace:not([data-layout])[data-guided="false"] .maintenance-panels [data-active="true"] { border-color: var(--lab-border); }
+}
 .maintenance-flow code { font-size: 12px; white-space: normal; }
 .maintenance-flow [aria-pressed="true"], .maintenance-panels [data-active="true"] { border-color: var(--lab-purple); }
 .maintenance-flow [aria-pressed="true"] { color: var(--lab-purple); background: var(--lab-tint); }
@@ -38,6 +59,7 @@
 @media (min-width: 640px) and (max-width: 1150px) {
   .incremental-maintenance-page .guided-lab-title > p { margin-top: 4px; font-size: 13px; }
   .maintenance-flow .button { height: 70px; }
+  .maintenance-flow .maintenance-stage-heading { height: 70px; }
   .maintenance-panels > .relation-panel { height: 324px; }
   .maintenance-panels .data-table th { padding-block: 6px; }
   .maintenance-panels .data-table td { height: 28px; }

@@ -10,6 +10,8 @@ test('all Chapter 2 exercises support retries, hints, reveal, advancement and re
   await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
   await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'incorrect');
   await expect(page.locator('.exercise-time')).toContainText('t = 0');
+  await expect(page.getByRole('button', { name: 'Next question', exact: true })).toHaveCount(0);
+  await expect(page.locator('.guided-lab-progress strong')).toHaveText('0 / 3');
   await page.getByRole('button', { name: 'Hint', exact: true }).click();
   for (let stage = 0; stage < total!; stage++) {
    await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
@@ -148,7 +150,7 @@ test('combined JOIN and WHERE keeps tables, question and highlighted tick boxes'
   }
   await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
   await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'incorrect');
-  await expect(question).toHaveText(checkpoint.question);
+  await expect(question).toContainText('Recheck');
   await expect(boxes).toHaveCount(count);
   if (index === 0) {
    await expect(page.locator('.exercise-choice [data-answer="incorrect"]')).toHaveCount(1);
@@ -156,8 +158,9 @@ test('combined JOIN and WHERE keeps tables, question and highlighted tick boxes'
    await expect(page.locator('.exercise-choice [data-answer]')).toHaveCount(0);
    await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
   }
-  await expect(page.locator('.exercise-choice [data-answer="correct"]')).toHaveCount(checkpoint.choices!.reduce((sum, choice) => sum + choice.expected.length, 0));
+  await expect(page.locator('.exercise-choice [data-answer="correct"]')).toHaveCount(0);
   await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+  await expect(page.locator('.exercise-choice [data-answer="correct"]')).toHaveCount(checkpoint.choices!.reduce((sum, choice) => sum + choice.expected.length, 0));
   await expect(question).toHaveText(checkpoint.question);
   await expect(boxes).toHaveCount(count);
   await expect(boxes.first()).toBeDisabled();
@@ -170,7 +173,7 @@ test('combined JOIN and WHERE keeps tables, question and highlighted tick boxes'
  }
 });
 
-test('Next requires an answer action, permits incorrect answers and opens the next exercise', async ({ page, isMobile }) => {
+test('Next requires a correct answer or reveal, supports retries and opens the next exercise', async ({ page, isMobile }) => {
  test.setTimeout(60_000);
  for (const exercise of maintenanceExercises) {
   await page.goto(`/labs/incremental-maintenance/exercises/${exercise.slug}`);
@@ -183,6 +186,18 @@ test('Next requires an answer action, permits incorrect answers and opens the ne
   await page.locator('.exercise-choice').first().locator('input').last().check();
   await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
   await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'incorrect');
+  await expect(next).toHaveCount(0);
+  await expect(page.locator('.guided-lab-progress strong')).toHaveText('0 / 3');
+  await expect(page.locator('.exercise-time')).toContainText('t = 0');
+  await expect(page.locator('.exercise-choice [data-answer="correct"]')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
+  await expect(next).toHaveCount(0);
+  for (const [index, choice] of exercise.checkpoints[0]!.choices.entries()) {
+   for (const option of choice.options) await page.locator('.exercise-choice').nth(index).getByRole('checkbox', { name: option, exact: true }).setChecked(choice.expected.includes(option));
+  }
+  await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'ready');
+  await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
+  await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'correct');
   await next.focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('.exercise-time')).toContainText('t = 1');
@@ -198,6 +213,8 @@ test('Next requires an answer action, permits incorrect answers and opens the ne
   await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
   const exerciseIndex = maintenanceExercises.indexOf(exercise);
   const following = maintenanceExercises[exerciseIndex + 1];
+  await expect(page.getByRole('button', { name: following ? `Exercise ${exerciseIndex + 2}` : 'Finish chapter', exact: true })).toHaveCount(0);
+  await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
   if (following) {
    await page.getByRole('button', { name: `Exercise ${exerciseIndex + 2}`, exact: true }).click();
    await expect(page).toHaveURL(`/labs/incremental-maintenance/exercises/${following.slug}`);
@@ -246,8 +263,11 @@ for (const action of ['Check Answer', 'Show Answer']) {
   for (let stage = 0; stage < 3; stage++) {
    const next = page.getByRole('button', { name: stage === 2 ? 'Finish chapter' : 'Next question', exact: true });
    await expect(next).toHaveCount(0);
+   if (action === 'Check Answer') {
+    for (const [index, choice] of maintenanceExercises[1]!.checkpoints[stage]!.choices.entries()) for (const option of choice.expected) await page.locator('.exercise-choice').nth(index).getByRole('checkbox', { name: option, exact: true }).check();
+   }
    await page.getByRole('button', { name: action, exact: true }).click();
-   await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', action === 'Check Answer' ? 'incorrect' : 'correct');
+   await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'correct');
    await expect(page.locator('.guided-lab-progress strong')).toHaveText(`${stage + 1} / 3`);
    await next.click();
   }
