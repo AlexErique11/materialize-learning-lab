@@ -21,6 +21,7 @@ export function ExerciseFrame({ chapter, title, description, navigation, flow, v
     ? Boolean(flow.grade) && (flow.stage < flow.total - 1 || Boolean(nextExerciseLabel))
     : flow.accepted && !flow.complete;
   const formId = useId();
+  const stageLabel = progressLabel === 'Phases' ? 'Phase' : progressLabel === 'Questions' ? 'Question' : 'Checkpoint';
   const [questionOpen, setQuestionOpen] = useState(true);
   return <GuidedLabScreen chapter={chapter} title={title} regionLabel="Exercise content" navigation={navigation}
     description={description} showTip={false} showReference={Boolean(reference)} reference={reference} className={pageClass ?? "changing-relations-page staged-exercise-page"}
@@ -39,7 +40,7 @@ export function ExerciseFrame({ chapter, title, description, navigation, flow, v
       {!mobilePanel && <Button className="exercise-question-toggle" aria-expanded={questionOpen} onClick={() => setQuestionOpen((value) => !value)}>{questionOpen ? 'View tables' : 'Question'}</Button>}
       <section id={`${formId}-question`} data-walkthrough="question" className="exercise-question" data-result={flow.grade ? (flow.accepted ? 'correct' : 'incorrect') : 'ready'} aria-labelledby={`${formId}-heading`}>
         <div className="exercise-question-copy" aria-live="polite" aria-atomic="true">
-          <h2 id={`${formId}-heading`}>{flow.accepted ? <CheckCircle2 size={18} aria-hidden="true" /> : <Lightbulb size={18} aria-hidden="true" />}<span><LessonText content={(preserveQuestion ? undefined : flow.grade?.title) ?? [`${progressLabel === 'Phases' ? 'Phase' : 'Checkpoint'} ${flow.stage + 1} of ${flow.total}: ${checkpointTitle}`]} /></span></h2>
+          <h2 id={`${formId}-heading`}>{flow.accepted ? <CheckCircle2 size={18} aria-hidden="true" /> : <Lightbulb size={18} aria-hidden="true" />}<span><LessonText content={(preserveQuestion ? undefined : flow.grade?.title) ?? [`${stageLabel} ${flow.stage + 1} of ${flow.total}: ${checkpointTitle}`]} /></span></h2>
           <p><LessonText content={preserveQuestion ? (flow.hintOpen && !flow.grade ? hint : question) : flow.grade?.explanation ?? (flow.hintOpen ? hint : question)} /></p>
         </div>
         <div className="exercise-answers" aria-label="Your prediction">{answers}</div>
@@ -49,4 +50,3 @@ export function ExerciseFrame({ chapter, title, description, navigation, flow, v
       </div>
     </form>} />;
 }
-

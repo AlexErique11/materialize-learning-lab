@@ -26,8 +26,10 @@ export function ExerciseAnswers({ checkpoint, answer, grade, onEdit, accepted = 
     <input type="checkbox" disabled={accepted} checked={answer.selections[index]?.includes(option) ?? false}
      onChange={event => selectOption(index, option, event.target.checked)} />
     {option}
-    {reviewChoices && grade && choice.expected.includes(option) && <Check size={14} aria-label="Correct answer" />}
-    {reviewChoices && grade && !choice.expected.includes(option) && answer.selections[index]?.includes(option) && <X size={14} aria-label="Incorrect answer" />}
+    {reviewChoices && <span className="exercise-choice-feedback">
+     {grade && choice.expected.includes(option) && <Check size={14} aria-label="Correct answer" />}
+     {grade && !choice.expected.includes(option) && answer.selections[index]?.includes(option) && <X size={14} aria-label="Incorrect answer" />}
+    </span>}
    </label>)}
   </fieldset>)}
  </>;

@@ -48,6 +48,31 @@ test('exercise references, keyboard controls, themes and viewports fit', async (
 });
 import { maintenanceExercises, solutionFor } from '../../src/chapters/incremental-maintenance/exercise-scenarios';
 
+test('first exercise keeps the checked spacing before answering', async ({ page, isMobile }) => {
+ test.setTimeout(60_000);
+ for (const size of isMobile ? [{ width: 390, height: 750 }] : [{ width: 1440, height: 1000 }, { width: 1366, height: 768 }, { width: 1280, height: 650 }]) {
+  await page.setViewportSize(size);
+  for (const theme of ['light', 'dark']) {
+   await page.goto('/labs/incremental-maintenance/exercises/exercise-1');
+   await page.evaluate(theme => document.documentElement.setAttribute('data-theme', theme), theme);
+   const layout = () => page.locator('.exercise-time, .maintenance-stage-workspace, .exercise-question, .exercise-question-navigation').evaluateAll(elements => elements.map(element => {
+    const { top, height } = element.getBoundingClientRect();
+    return { top, height };
+   }));
+   for (let question = 0; question < 3; question++) {
+    const before = await layout();
+    await expect(page.getByRole('button', { name: 'Next question', exact: true })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
+    expect(await layout()).toEqual(before);
+    await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+    expect(await layout()).toEqual(before);
+    expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight && document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    if (question < 2) await page.getByRole('button', { name: 'Next question', exact: true }).click();
+   }
+  }
+ }
+});
+
 test('learners independently predict every combined exercise checkpoint', async ({ page, isMobile }) => {
  test.setTimeout(90_000);
  await page.setViewportSize(isMobile ? { width: 390, height: 750 } : { width: 1366, height: 768 });
@@ -161,7 +186,9 @@ test('Next requires an answer action, permits incorrect answers and opens the ne
   await next.focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('.exercise-time')).toContainText('t = 1');
-  await expect(page.locator('.guided-lab-progress strong')).toHaveText(`0 / ${exercise.checkpoints.length}`);
+  await expect(page.locator('.guided-lab-progress strong')).toHaveText(`1 / ${exercise.checkpoints.length}`);
+  await expect(page.locator('.guided-lab-progress span').first()).toHaveText('Questions');
+  await expect(page.locator('.exercise-question h2')).toContainText('Question 2 of 3');
   await expect(next).toHaveCount(0);
   for (let index = 1; index < exercise.checkpoints.length - 1; index++) {
    await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
@@ -176,7 +203,12 @@ test('Next requires an answer action, permits incorrect answers and opens the ne
    await expect(page).toHaveURL(`/labs/incremental-maintenance/exercises/${following.slug}`);
    await expect(page.locator('.exercise-time')).toContainText('t = 0');
    await page.goto(`/labs/incremental-maintenance/exercises/${exercise.slug}`);
-  } else await expect(next).toHaveCount(0);
+  } else {
+   await page.getByRole('button', { name: 'Finish chapter', exact: true }).click();
+   await page.getByRole('dialog', { name: 'You finished Chapter 2', exact: true }).getByRole('button', { name: 'Go to next chapter', exact: true }).click();
+   await expect(page).toHaveURL('/labs/views-indexes-materialized-views');
+   await page.goto(`/labs/incremental-maintenance/exercises/${exercise.slug}`);
+  }
   await page.getByRole('button', { name: 'Reset', exact: true }).click();
   await expect(page.locator('.exercise-time')).toContainText('t = 0');
  }
@@ -207,3 +239,44 @@ test('Next requires an answer action, permits incorrect answers and opens the ne
   }
  }
 });
+
+for (const action of ['Check Answer', 'Show Answer']) {
+ test(`second exercise opens the completion popup after ${action} on the final question`, async ({ page }, testInfo) => {
+  await page.goto('/labs/incremental-maintenance/exercises/exercise-3');
+  for (let stage = 0; stage < 3; stage++) {
+   const next = page.getByRole('button', { name: stage === 2 ? 'Finish chapter' : 'Next question', exact: true });
+   await expect(next).toHaveCount(0);
+   await page.getByRole('button', { name: action, exact: true }).click();
+   await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', action === 'Check Answer' ? 'incorrect' : 'correct');
+   await expect(page.locator('.guided-lab-progress strong')).toHaveText(`${stage + 1} / 3`);
+   await next.click();
+  }
+  await expect(page).toHaveURL('/labs/incremental-maintenance/exercises/exercise-3');
+  const dialog = page.getByRole('dialog', { name: 'You finished Chapter 2', exact: true });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText('filters, joins, and grouped aggregates');
+  for (const theme of ['light', 'dark']) {
+   await page.evaluate(theme => document.documentElement.setAttribute('data-theme', theme), theme);
+   const box = await dialog.boundingBox();
+   const viewport = page.viewportSize()!;
+   expect(box!.x).toBeGreaterThanOrEqual(0);
+   expect(box!.y).toBeGreaterThanOrEqual(0);
+   expect(box!.x + box!.width).toBeLessThanOrEqual(viewport.width);
+   expect(box!.y + box!.height).toBeLessThanOrEqual(viewport.height);
+   expect(await dialog.evaluate(element => element.scrollHeight <= element.clientHeight)).toBe(true);
+   const buttonBox = await dialog.getByRole('button', { name: 'Go to next chapter', exact: true }).boundingBox();
+   expect(buttonBox!.y + buttonBox!.height).toBeLessThanOrEqual(box!.y + box!.height);
+   await page.screenshot({ path: testInfo.outputPath(`completion-${theme}.png`) });
+  }
+  await page.keyboard.press('Escape');
+  await expect(dialog).not.toBeVisible();
+  await expect(page.locator('.guided-lab-progress strong')).toHaveText('3 / 3');
+  await expect(page.getByRole('button', { name: 'Finish chapter', exact: true })).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole('button', { name: 'Go to next chapter', exact: true }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL('/labs/views-indexes-materialized-views');
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Views, Indexes');
+ });
+}

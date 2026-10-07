@@ -9,3 +9,10 @@ test-results/
 *.tsbuildinfo
 .idea/
 .DS_Store
+
+# Local reference photos and temporary audit reports; app assets live in public/.
+/*.png
+/*.jpg
+/*.jpeg
+/*.webp
+/CHAPTER_1_2_CONSISTENCY_AUDIT.md

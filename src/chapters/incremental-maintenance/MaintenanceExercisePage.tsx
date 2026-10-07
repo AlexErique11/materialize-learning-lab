@@ -1,8 +1,12 @@
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
+import { ArrowRight, Filter, GitMerge, Sigma } from 'lucide-react';
 import type { ChapterDefinition } from '../chapterRegistry';
+import { chapterPath, chapters } from '../chapterRegistry';
 import { ExerciseAnswers } from './ExerciseAnswers';
 import { ExerciseFrame } from '../../components/lab/ExerciseFrame';
+import { Dialog } from '../../components/ui/Dialog';
+import { Button } from '../../components/ui/Button';
 import { useExerciseStages } from '../changing-relations/useExerciseStages';
 import { MaintenancePanels } from './MaintenancePanels';
 import { JoinTable, ComparisonPanel } from './MaintenanceTables';
@@ -23,7 +27,16 @@ export function MaintenanceExercisePage({ chapter, navigation, exerciseIndex }: 
  const navigate = useNavigate();
  const exercise = maintenanceExercises[exerciseIndex]!;
  const nextExercise = maintenanceExercises[exerciseIndex + 1];
- const flow = useExerciseStages(exercise.checkpoints.length, true);
+ const nextChapter = chapters[chapters.findIndex(item => item.slug === chapter.slug) + 1];
+ const nextDestination = nextExercise
+  ? { label: `Exercise ${exerciseIndex + 2}`, to: `/labs/${chapter.slug}/exercises/${nextExercise.slug}` }
+  : nextChapter ? { label: 'Finish chapter', to: chapterPath(nextChapter) } : undefined;
+ const [completionOpen, setCompletionOpen] = useState(false);
+ const stages = useExerciseStages(exercise.checkpoints.length, true);
+ const flow = { ...stages,
+  completed: stages.stage + Number(Boolean(stages.grade)),
+  complete: stages.stage === stages.total - 1 && Boolean(stages.grade),
+ };
  const [answers, setAnswers] = useState<Record<number, Prediction>>({});
  const answer = answers[flow.stage] ?? emptyAnswer();
  const setAnswer = (prediction: Prediction) => setAnswers(previous => ({ ...previous, [flow.stage]: prediction }));
@@ -53,10 +66,10 @@ export function MaintenanceExercisePage({ chapter, navigation, exerciseIndex }: 
    changeTitle: flow.accepted ? checkpoint.title : 'Current input: predict the next batch', affectedKeys, contributionCount: 0 }} />;
 
  };
- return <ExerciseFrame chapter={chapter} navigation={navigation} title={`Exercise ${exerciseIndex + 1}`} description={`${exercise.title}. ${exercise.description}`}
+ return <><ExerciseFrame chapter={chapter} navigation={navigation} title={`Exercise ${exerciseIndex + 1}`} description={`${exercise.title}. ${exercise.description}`}
   preserveQuestion pageClass={`changing-relations-page incremental-maintenance-page join-maintenance-page maintenance-exercise-page ${exercise.kind === 'join-filter' ? 'join-filter-exercise-page' : 'grouped-revenue-exercise-page'}`} reference={{ ...reference, sql: exercise.sql, objective: 'Predict one complete logical timestamp before revealing its effects. Use hints on request. Initial state is t = 0. Work counts are illustrative contributions and group keys, not measured performance.' }}
-  allowSkipping nextExerciseLabel={nextExercise ? `Exercise ${exerciseIndex + 2}` : undefined}
-  flow={flow} progressLabel="Checkpoints" checkpointTitle={checkpoint.title} question={[checkpoint.question]} hint={[checkpoint.hint]}
+  allowSkipping nextExerciseLabel={nextDestination?.label}
+  flow={flow} progressLabel="Questions" checkpointTitle={checkpoint.title} question={[checkpoint.question]} hint={[checkpoint.hint]}
   visualization={(_questionOpen, setQuestionOpen) => <><div className="exercise-time" aria-live="polite">t = {time} · {flow.accepted ? 'Complete batch applied' : 'Current state · next batch awaits your prediction'}</div>
    <MaintenancePanels stages={selectedStages} layout={exercise.kind === 'region' ? 'comparison' : undefined} activeStage={activeStage} setSelectedStage={stage => { setActiveStage(stage); if (exercise.kind === 'join-filter') setQuestionOpen(false); }}
     mobileDiffs={mobileDiffs} setMobileDiffs={setMobileDiffs} time={time} timeTestId="exercise-time" beforeChange={!flow.accepted} outputChanged={diffs.length > 0} renderRows={renderRows} /></>}
@@ -64,13 +77,30 @@ export function MaintenanceExercisePage({ chapter, navigation, exerciseIndex }: 
   onCheck={() => flow.dispatch({ type: 'check', grade: gradePrediction(exercise, flow.stage, answer) })}
   onShowAnswer={() => { const solution = solutionFor(exercise, flow.stage); setAnswer(solution); flow.dispatch({ type: 'check', grade: gradePrediction(exercise, flow.stage, solution) }); }}
   onNext={() => {
-   if (flow.stage === flow.total - 1 && nextExercise) {
-    navigate(`/labs/${chapter.slug}/exercises/${nextExercise.slug}`);
+   if (flow.stage === flow.total - 1 && nextDestination) {
+    if (nextExercise) navigate(nextDestination.to);
+    else setCompletionOpen(true);
     return;
    }
    flow.dispatch({ type: 'next' }); setMobileDiffs(false);
   }}
-  onReset={() => { flow.dispatch({ type: 'reset' }); setAnswers({}); setMobileDiffs(false); setActiveStage(selectedStages[0]!.id); }} />;
+  onReset={() => { flow.dispatch({ type: 'reset' }); setAnswers({}); setMobileDiffs(false); setActiveStage(selectedStages[0]!.id); }} />
+  <Dialog open={completionOpen} onClose={() => setCompletionOpen(false)} title={`You finished Chapter ${chapter.number}`} eyebrow="Chapter complete" className="chapter-completion-dialog">
+   <div className="chapter-completion-intro">
+    <div className="chapter-completion-copy">
+     <h3>How one change travels through SQL</h3>
+     <p>You explored incremental maintenance: how input changes travel through filters, joins, and grouped aggregates.</p>
+    </div>
+    <img src={chapter.overviewImage} alt="" aria-hidden="true" className="chapter-completion-art" />
+   </div>
+   <div className="chapter-completion-topics">
+    <section><Filter aria-hidden="true" /><h3>Filters & projections</h3><p>Predict when rows enter or leave a result, and when an unused-column edit leaves it unchanged.</p></section>
+    <section><GitMerge aria-hidden="true" /><h3>Joins & retained matches</h3><p>Follow late matches and see how one product edit can change several joined rows.</p></section>
+    <section><Sigma aria-hidden="true" /><h3>Grouped counts & revenue</h3><p>Track COUNT and SUM as values change, rows move between groups, or the last row disappears.</p></section>
+   </div>
+   <div className="chapter-completion-takeaway"><strong>The key idea</strong><p>Incremental maintenance reuses retained state to apply changes. You compared this with rebuilding the full result, and predicted the complete rows inserted or retracted at each timestamp.</p></div>
+   {nextChapter && <div className="chapter-completion-next"><div><span className="eyebrow">Up next · Chapter {nextChapter.number}</span><p>{nextChapter.shortTitle}</p></div><Button variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button></div>}
+  </Dialog></>;
 }
 
 function diffRows<Row>(before: readonly Row[], after: readonly Row[]) { return consolidate([...before.map(row => ({ row, diff: -1 })), ...after.map(row => ({ row, diff: 1 }))]); }
