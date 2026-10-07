@@ -188,7 +188,7 @@ test('chapter completion preserves the finished inventory, fits both themes, and
 
 test('the chapter lists one exercise, preserves old links, and keeps the requested actions and help', async ({ page }, testInfo) => {
   await page.goto('/labs/changing-relations');
-  await expect(page.getByRole('link', { name: 'Start exercise: Exercise 1', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Start exercise: Exercise 1: Inventory changes', exact: true })).toBeVisible();
   await expect(page.getByRole('link', { name: /Exercise 2/ })).toHaveCount(0);
   await page.goto('/labs/changing-relations/exercises/exercise-2');
   await expect(page).toHaveURL(exercisePath);

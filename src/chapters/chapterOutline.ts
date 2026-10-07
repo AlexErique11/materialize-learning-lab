@@ -82,7 +82,7 @@ const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
     exercises: [
       {
         slug: 'exercise-1',
-        title: 'Exercise 1',
+        title: 'Exercise 1: Inventory changes',
         description: 'Work through a three-phase inventory timeline: calculate copy counts, write diffs for a price change and restock, then identify the final rows and totals.',
       },
     ],

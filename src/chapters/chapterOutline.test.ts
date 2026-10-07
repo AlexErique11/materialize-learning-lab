@@ -17,7 +17,7 @@ describe('chapter navigation outline', () => {
     expect(getChapterPages(chapter).map(({ sectionSlug, slug, title }) => ({ sectionSlug, slug, title }))).toEqual([
       { sectionSlug: 'tutorial', slug: 'lecture-1', title: 'Lecture 1: Signed changes' },
       { sectionSlug: 'tutorial', slug: 'lecture-2', title: 'Lecture 2: Updates and batches' },
-      { sectionSlug: 'exercises', slug: 'exercise-1', title: 'Exercise 1' },
+      { sectionSlug: 'exercises', slug: 'exercise-1', title: 'Exercise 1: Inventory changes' },
     ]);
     const paths = getChapterPages(chapter).map((page) => chapterContentPath(chapter, page));
     expect(new Set(paths).size).toBe(paths.length);

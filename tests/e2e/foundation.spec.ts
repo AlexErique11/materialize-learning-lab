@@ -238,7 +238,7 @@ test('sidebar subsections are keyboard-operable and reflect the active page', as
     'page',
   );
   await sidebar.getByRole('navigation', { name: 'Chapters' }).locator('.chapter-branch-selected .chapter-section > summary').filter({ hasText: 'Exercises' }).click();
-  await sidebar.getByRole('link', { name: 'Exercise 1', exact: true }).click();
+  await sidebar.getByRole('link', { name: 'Exercise 1: Inventory changes', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Exercise 1', exact: true })).toBeVisible();
 });
 
@@ -347,11 +347,11 @@ test('chapter sidebar preserves open groups and toggles from the chapter body', 
   await expect(overview).not.toBeVisible();
   await sidebar.getByRole('button', { name: `Expand ${firstChapter.shortTitle} chapter` }).click();
   await expect(overview).toBeVisible();
-  await page.getByRole('link', { name: 'Start exercise: Exercise 1', exact: true }).click();
+  await page.getByRole('link', { name: 'Start exercise: Exercise 1: Inventory changes', exact: true }).click();
   await revealSidebar();
   await expect(tutorials).toHaveAttribute('open', '');
   await expect(exercises).toHaveAttribute('open', '');
-  await expect(sidebar.getByRole('link', { name: 'Exercise 1', exact: true })).toHaveAttribute('aria-current', 'page');
+  await expect(sidebar.getByRole('link', { name: 'Exercise 1: Inventory changes', exact: true })).toHaveAttribute('aria-current', 'page');
   await sidebar.getByRole('link', { name: 'Lecture 1: Signed changes', exact: true }).click();
   await revealSidebar();
   await expect(tutorials).toHaveAttribute('open', '');
@@ -375,7 +375,7 @@ test('chapter sidebar preserves open groups and toggles from the chapter body', 
   await revealSidebar();
   await expect(tutorials).toHaveAttribute('open', '');
   await expect(exercises).toHaveAttribute('open', '');
-  await sidebar.getByRole('link', { name: 'Exercise 1', exact: true }).click();
+  await sidebar.getByRole('link', { name: 'Exercise 1: Inventory changes', exact: true }).click();
   await page.reload();
   await revealSidebar();
   await expect(tutorials).not.toHaveAttribute('open', '');

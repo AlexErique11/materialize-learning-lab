@@ -25,7 +25,7 @@ describe('chapter page navigation', () => {
 
   it('crosses the tutorial/exercise boundary in both directions', () => {
     expect(navigationFor('tutorial', 'lecture-2').next).toEqual({
-      to: '/labs/changing-relations/exercises/exercise-1', title: 'Exercise 1',
+      to: '/labs/changing-relations/exercises/exercise-1', title: 'Exercise 1: Inventory changes',
     });
     expect(navigationFor('exercises', 'exercise-1').previous).toEqual({
       to: '/labs/changing-relations/tutorial/lecture-2', title: 'Lecture 2: Updates and batches',
@@ -40,7 +40,7 @@ describe('chapter page navigation', () => {
 
   it('starts a section overview at its own first page', () => {
     expect(navigationFor('exercises').next).toEqual({
-      to: '/labs/changing-relations/exercises/exercise-1', title: 'Exercise 1',
+      to: '/labs/changing-relations/exercises/exercise-1', title: 'Exercise 1: Inventory changes',
     });
   });
 
