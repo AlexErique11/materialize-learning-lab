@@ -1,0 +1,44 @@
+/* Chapter 1 defines the shared lecture frame. Only the visualization varies by chapter. */
+.app-shell-guided-labs {
+  --lecture-title-spacing: 38px;
+  --lecture-panel-height: 382px;
+  --lecture-metrics-gap: 22px;
+  --lecture-tip-space: 67px;
+  --lecture-playback-height: 34px;
+  --lecture-playback-offset: 16px;
+  --lecture-playback-bottom-space: 16px;
+  --lecture-metric-columns-gap: 14px;
+}
+@media (min-width: 640px) and (max-width: 1150px) {
+  .app-shell-guided-labs { --lecture-panel-height: 330.5px; }
+}
+@media (min-width: 1024px) and (max-width: 1150px) {
+  .app-shell-guided-labs { --lecture-title-spacing: 34px; --lecture-panel-height: 334.5px; }
+}
+@media (min-width: 640px) and (max-height: 740px) {
+  .app-shell-guided-labs { --lecture-title-spacing: 32px; --lecture-panel-height: 312px; --lecture-tip-space: 0px; }
+}
+@media (min-width: 640px) and (max-width: 1150px) and (max-height: 740px) {
+  .app-shell-guided-labs { --lecture-panel-height: 330.5px; }
+}
+@media (max-width: 639px) {
+  .app-shell-guided-labs { --lecture-title-spacing: 0px; --lecture-panel-height: 294px; --lecture-metrics-gap: 10px; --lecture-tip-space: 0px; --lecture-metric-columns-gap: 7px; }
+}
+.lecture-workspace .lecture-visualization { min-width: 0; }
+.lecture-workspace .lecture-visualization-content { display: grid; align-content: start; gap: 10px; }
+.lecture-workspace { position: relative; }
+.lecture-metric-measure { position: absolute; width: calc((100% - 2 * var(--lecture-metric-columns-gap)) / 3); visibility: hidden; pointer-events: none; }
+.lecture-metric-help { width: 20px; height: 20px; flex-shrink: 0; }
+.lecture-metric-measure .relation-metric > div > span { min-height: 20px; }
+.lecture-workspace[data-lecture-layout='with-tip'] .lecture-visualization { min-height: var(--lecture-panel-height); }
+.app-shell-guided-labs .guided-lab-page.lecture-layout-page:has([data-lecture-layout='without-tip']) { padding-bottom: 0; }
+.app-shell-guided-labs .guided-lab-page.lecture-layout-page .lecture-workspace[data-lecture-layout='without-tip'] {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-height: var(--lecture-frame-height);
+  padding-top: var(--lecture-content-inset);
+}
+.lecture-workspace[data-lecture-layout='without-tip'] > .relation-metrics { margin-bottom: var(--lecture-applied-metrics-gap); }
+.lecture-workspace[data-lecture-layout='without-tip'] > .lecture-visualization { flex: 1; }
+.lecture-workspace[data-lecture-layout='without-tip'] > .relation-playback-controls { margin-top: var(--lecture-applied-footer-gap); }

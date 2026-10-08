@@ -6,10 +6,12 @@ import { Spotlight } from '../../components/ui/Spotlight';
 import { WorkspaceMetric } from '../../components/lab/WorkspaceMetric';
 import { useWalkthrough } from '../../components/walkthrough/WalkthroughProvider';
 import { GuidedLabScreen } from '../../labs/components/GuidedLabScreen';
+import { LectureScreen } from '../../labs/components/LectureScreen';
 import { useLectureRun } from '../../labs/useLectureRun';
 import type { ChapterDefinition } from '../chapterRegistry';
 import { RelationHelp } from '../changing-relations/RelationHelp';
 import { relationHelp } from '../changing-relations/scenario';
+import { LessonText, type LessonTextContent } from '../changing-relations/LessonText';
 import '../changing-relations/lecture-one.css';
 import './lecture-one.css';
 import './lecture-two.css';
@@ -21,7 +23,7 @@ interface MaintenanceLectureProps<Snapshot extends MaintenanceSnapshot> {
   chapter: ChapterDefinition; navigation: ReactNode; title: string; description: string; timeTestId: string;
   definition: Parameters<typeof useLectureRun>[0];
   layout?: 'comparison';
-  lessons: readonly { time: number; title: string; stage: string; explanation: string; before?: string }[];
+  lessons: readonly { time: number; title: string; stage: string; explanation: LessonTextContent; before?: LessonTextContent }[];
   stages: readonly { id: string; title: string; shortTitle?: string; sql: string; description: string; showChanges?: boolean }[];
   reference: NonNullable<ComponentProps<typeof GuidedLabScreen>['reference']>;
   snapshot: (time: number) => Snapshot;
@@ -44,26 +46,24 @@ export function MaintenanceLecture<Snapshot extends MaintenanceSnapshot>({ chapt
   const beforeChange = Boolean(lesson.before) && !state.revealed;
 
   return <>
-    <GuidedLabScreen chapter={chapter} title={title} regionLabel="Lecture content" navigation={navigation}
-      className={`changing-relations-page incremental-maintenance-page join-maintenance-page maintenance-lecture-page${layout === 'comparison' ? ' maintenance-comparison-lecture' : ''}`} reference={reference} showTip="when-space"
+    <LectureScreen layout="without-tip" chapter={chapter} title={title} regionLabel="Lecture content" navigation={navigation}
+      className={`changing-relations-page incremental-maintenance-page join-maintenance-page maintenance-lecture-page${layout === 'comparison' ? ' maintenance-comparison-lecture' : ''}`} reference={reference}
       description={description}
       simulation={{ completed: state.guided ? state.step : state.selectedTime, total: state.guided ? lessons.length : definition.totalChanges,
         progressLabel: state.guided ? 'Tutorial' : 'Changes', playing: state.playing,
         onReset: () => { setSelectedStage(stages[0]!.id); setMobileDiffs(false); dispatch({ type: 'reset' }); },
         onRun: () => dispatch({ type: 'play' }), onStartGuidedRun: () => dispatch({ type: 'start-guided' }) }}
-      workspace={<div className="relation-workspace" data-guided={state.guided}>
-        <div className="maintenance-lecture-visualization">
-        {layout !== 'comparison' && <div className="relation-metrics" aria-label="Relation metrics">
+      guided={state.guided} metrics={layout !== 'comparison' && <div className="relation-metrics" aria-label="Relation metrics">
           <WorkspaceMetric icon={<Database size={25} aria-hidden="true" />} label={<>Input rows <RelationHelp label="Input rows" text="The number of rows currently present in the input table or tables. Each row counts once; identical rows in the input are still separate copies." /></>} value={current.inputCount} />
           <WorkspaceMetric icon={<Table2 size={25} aria-hidden="true" />} label={<>Result rows <RelationHelp label="Result rows" text="The number of rows currently shown in the query result. Joins produce a row for each matching input-row combination; aggregations produce one row per group." /></>} value={current.output.length} />
           <WorkspaceMetric icon={<Clock3 size={25} aria-hidden="true" />} label={<>{relationHelp.logicalTime.label} <RelationHelp {...relationHelp.logicalTime} /></>}
             value={<span className="relation-time" data-testid={timeTestId}>t = {state.selectedTime}</span>} />
         </div>}
-        <MaintenancePanels stages={stages} layout={layout} activeStage={activeStage} setSelectedStage={setSelectedStage}
+      visualization={<MaintenancePanels stages={stages} layout={layout} activeStage={activeStage} setSelectedStage={setSelectedStage}
           mobileDiffs={mobileDiffs} setMobileDiffs={setMobileDiffs} guided={state.guided} time={state.selectedTime}
           timeTestId={timeTestId} beforeChange={beforeChange} outputChanged={current.outputChanged}
-          panelRefs={refs} renderRows={(stage) => renderRows(stage, current)} />
-        </div>
+          panelRefs={refs} renderRows={(stage) => renderRows(stage, current)} />}
+      playback={
         <div className="relation-playback-controls" aria-label="Change playback">
           {state.step === lessons.length && <span className="relation-tutorial-complete maintenance-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
           <div>
@@ -72,9 +72,9 @@ export function MaintenanceLecture<Snapshot extends MaintenanceSnapshot>({ chapt
             <Button data-walkthrough="next-change" disabled={state.guided || state.playing || state.selectedTime === definition.totalChanges} onClick={() => dispatch({ type: 'next-change' })}>Next change<ArrowRight size={14} aria-hidden="true" /></Button>
           </div>
         </div>
-      </div>} />
+      } />
     <Spotlight open={state.guided} targetRef={refs[lesson.stage]!} step={Math.min(state.step + 1, lessons.length)} total={lessons.length}
-      title={lesson.title} description={beforeChange ? lesson.before : lesson.explanation} phaseLabel={beforeChange ? 'Predict the effect' : 'Explanation'}
+      title={lesson.title} description={<span className="maintenance-lesson-text"><LessonText content={beforeChange ? lesson.before! : lesson.explanation} /></span>} phaseLabel={beforeChange ? 'Predict the effect' : 'Explanation'}
       visual={null} onClose={() => dispatch({ type: 'close-guided' })}>
       <Button disabled={state.step === 0} onClick={() => dispatch({ type: 'back' })}>Back</Button>
       {beforeChange ? <Button variant="primary" onClick={() => dispatch({ type: 'reveal' })}>Show effect</Button>

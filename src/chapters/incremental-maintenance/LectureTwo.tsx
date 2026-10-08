@@ -7,7 +7,7 @@ import { RowDiffs } from './RowDiffs';
 import { MaintenanceLecture } from './MaintenanceLecture';
 export function IncrementalLectureTwo({ chapter, navigation }: { chapter: ChapterDefinition; navigation: ReactNode }) {
   return <MaintenanceLecture chapter={chapter} navigation={navigation} title="Lecture 2" timeTestId="join-time"
-    description="See how changes on either join input update matching output rows."
+    description="Follow changes through both sides of a join."
     definition={joinRunDefinition} lessons={joinLessons} stages={joinStages} reference={joinReference}
     snapshot={(time) => { const state = joinSnapshotAt(time); return { ...state, inputCount: state.orders.length + state.products.length }; }}
     renderRows={(id, state) => {

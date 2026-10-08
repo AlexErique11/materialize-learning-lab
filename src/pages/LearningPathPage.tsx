@@ -28,7 +28,7 @@ export function LearningPathPage() {
       <PageHeader
         eyebrow={<span className="learning-path-eyebrow">Learning path</span>}
         title="Learning path"
-        trailing={<Button className="learning-path-tour-button" onClick={() => startChapterTour()}>Take a tour</Button>}
+        trailing={<Button className="learning-path-tour-button" onClick={() => startChapterTour()}><span>Take a tour</span></Button>}
         description="Build real-time data skills with hands-on labs and challenges. Follow the guided path or explore on your own."
       />
       <div className="learning-path-grid">

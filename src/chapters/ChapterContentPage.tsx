@@ -54,11 +54,11 @@ export function ChapterContentPage() {
     return <LectureTwo chapter={chapter} navigation={<ChapterPagination {...navigation} />} />;
   }
   if (chapter.slug === 'incremental-maintenance' && section.slug === 'exercises' && page) {
-    return <MaintenanceExercisePage key={page.slug} chapter={chapter} exerciseIndex={maintenanceExercises.findIndex(exercise => exercise.slug === page.slug)} navigation={<ChapterPagination {...navigation} showTooltips={false} />} />;
+    return <MaintenanceExercisePage key={page.slug} chapter={chapter} exerciseIndex={maintenanceExercises.findIndex(exercise => exercise.slug === page.slug)} navigation={<ChapterPagination {...navigation} showTooltips={false} hideLinks />} />;
   }
   const title = page?.title ?? section.title;
   if (chapter.slug === 'changing-relations' && section.slug === 'exercises' && page?.slug === 'exercise-1') {
-    return <ExerciseOne chapter={chapter} navigation={<ChapterPagination {...navigation} />} />;
+    return <ExerciseOne chapter={chapter} navigation={<ChapterPagination {...navigation} hideLinks />} />;
   }
   const placeholderTitle = page
     ? section.slug === 'tutorial'
@@ -71,7 +71,7 @@ export function ChapterContentPage() {
       chapter={chapter}
       title={title}
       regionLabel={placeholderTitle}
-      navigation={<ChapterPagination {...navigation} />}
+      navigation={<ChapterPagination {...navigation} hideLinks={section.slug === 'exercises'} />}
     >
       {!page && section.pages.length > 0 && (
         <ol className="chapter-content-list" aria-label={`${section.title} pages`}>

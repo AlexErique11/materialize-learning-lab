@@ -60,6 +60,15 @@ Verify these distinctions when relevant; this list does not replace documentatio
 
 ## Chapter style and layout
 
+- Lectures must reuse `LectureScreen` in `src/labs/components/LectureScreen.tsx`:
+  `with-tip` preserves the Chapter 1 frame and bottom tip; `without-tip` uses the
+  same content frame with playback near the viewport bottom. Chapter 1 uses `with-tip`;
+  Chapter 2 lectures 1–4 use `without-tip`. Shared frame measurements live in
+  `src/labs/components/lecture-layout.css`; chapter styles only define the
+  visualization inside it. Both layouts retain their compact viewport behavior.
+- Preserve existing spacing and the positions of titles, controls, and panels
+  unless the user explicitly requests a layout change. When removing or moving
+  controls, retain their layout footprint so surrounding content does not shift.
 - Consistency has two levels, and both are required. Across the whole app,
   typography, font sizes, buttons, controls, and shared styling must follow the
   common design system and remain consistent from chapter to chapter. Within a

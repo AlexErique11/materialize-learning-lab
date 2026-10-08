@@ -54,7 +54,8 @@
   gap: 24px;
 }
 
-.guided-lab-pagination a {
+.guided-lab-pagination a,
+.guided-lab-pagination-size {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -66,6 +67,10 @@
   font-weight: 600;
   white-space: nowrap;
 }
+
+.guided-lab-pagination-size { visibility: hidden; }
+.guided-lab-help-slot { position: relative; }
+.guided-lab-help-slot > .chapter-walkthrough-button { position: absolute; left: var(--lecture-tour-center, 100%); top: 50%; transform: translate(-50%, -50%); }
 
 .guided-lab-pagination a > svg {
   flex-shrink: 0;

@@ -1,3 +1,4 @@
+import type { LessonTextContent } from '../changing-relations/LessonText';
 import { initialOrders, type Order } from './scenario';
 export { initialOrders };
 export interface AggregateRow { readonly productId: number; readonly count: number; readonly total: number }
@@ -10,19 +11,166 @@ export const aggregateStages = [
   { id: 'groups', title: 'Group state', sql: 'GROUP BY product_id', description: 'Retained count and sum per key: a logical teaching model, not a physical execution plan.' },
   { id: 'result', title: 'Revenue result', shortTitle: 'Revenue', sql: 'COUNT(*), SUM(amount)', description: 'One full result row per present group. Signed diffs replace changed rows at one logical timestamp.' },
 ] as const;
-export const aggregateLessons = [
-  { time: 0, stage: 'orders', title: 'Start with orders', explanation: 'Orders 101 and 103 belong to product 7. Order 102 belongs to product 8. Every order contributes its amount.' },
-  { time: 0, stage: 'groups', title: 'Retain state by group', explanation: 'Product 7 has two contributions: $30 + $50 = $80. Product 8 has one: $80. Count and sum summarize each group for this query. The cards model retained state, not measured memory.' },
-  { time: 0, stage: 'result', title: 'One row per group', explanation: 'The output is (product_id, order_count, revenue): (7, 2, 80) and (8, 1, 80). Equal totals do not merge different group keys.' },
-  { time: 1, stage: 'orders', title: 'Correct an amount', before: 'Order 101 changes from $30 to $60. Predict the count and revenue for product 7. Does product 8 change?', explanation: 'Retract the old order and insert its replacement. Both signed contributions belong to product 7 at the same timestamp.' },
-  { time: 1, stage: 'groups', title: 'Adjust the affected group', explanation: 'Count stays 2: minus one order plus one order. Revenue changes by -$30 + $60 = +$30, reaching $110. Product 8 is untouched.' },
-  { time: 1, stage: 'result', title: 'Replace the full result row', explanation: 'Retract (7, 2, 80) with -1; insert (7, 2, 110) with +1. A $30 revenue change is not mz_diff +30: diffs describe copies of complete rows.' },
-  { time: 2, stage: 'orders', title: 'Cancel the last order', before: 'Cancel order 102, the only order for product 8. Will its result become (8, 0, 0), or disappear?', explanation: 'Order 102 is retracted. Product 8 now has no input rows.' },
-  { time: 2, stage: 'result', title: 'An empty group disappears', explanation: 'Retract (8, 1, 80) with no replacement. GROUP BY does not invent a zero-valued row for an absent key. This is a grouped query, not a global aggregate without GROUP BY.' },
-  { time: 3, stage: 'orders', title: 'Move an order between groups', before: 'Move order 103 from product 7 to product 9, keeping its $50 amount. Predict both groups and their output diffs.', explanation: 'Retract the product 7 version and insert the product 9 version. One edit touches two keys.' },
-  { time: 3, stage: 'result', title: 'Replace one group, create another', explanation: 'Replace (7, 2, 110) with (7, 1, 60): -1 then +1. New product 9 gains (9, 1, 50). Incremental maintenance can affect several result rows.' },
-  { time: 4, stage: 'result', title: 'Zero revenue is still a group', before: 'Set order 101 to $0. It still exists. Does product 7 disappear?', explanation: 'Replace (7, 1, 60) with (7, 1, 0). Count is still 1, so the group exists. Zero sum does not mean an empty group.' },
-  { time: 5, stage: 'result', title: 'Predict the final cancellation', before: 'Now cancel the zero-valued order 101. Predict the complete result batch. Should product 9 change?', explanation: 'Retract (7, 1, 0), with no replacement. Product 9 stays (9, 1, 50). Retained counts distinguish zero revenue from an absent group; unrelated results stay unchanged.' },
+export const aggregateLessons: readonly { time: number; title: string; stage: 'orders' | 'groups' | 'result'; explanation: LessonTextContent; before?: LessonTextContent }[] = [
+  {
+    time: 0, stage: 'orders', title: 'Start with orders',
+    explanation: [
+      { kind: 'row', text: 'Orders 101 and 103', column: 'orderId' }, ' belong to ',
+      { kind: 'row', text: 'product 7', column: 'productId' }, '. ',
+      { kind: 'row', text: 'Order 102', column: 'orderId' }, ' belongs to ',
+      { kind: 'row', text: 'product 8', column: 'productId' }, '. Every order contributes its ',
+      { kind: 'term', text: 'amount', column: 'amount' }, '.',
+    ],
+  },
+  {
+    time: 0, stage: 'groups', title: 'Retain state by group',
+    explanation: [
+      { kind: 'row', text: 'Product 7', column: 'productId' }, ' has ',
+      { kind: 'count', text: 'two contributions', column: 'count' }, ': ',
+      { kind: 'row', text: '$30', column: 'amount' }, ' + ', { kind: 'row', text: '$50', column: 'amount' },
+      ' = ', { kind: 'row', text: '$80', column: 'amount' }, '. ',
+      { kind: 'row', text: 'Product 8', column: 'productId' }, ' has ',
+      { kind: 'count', text: 'one', column: 'count' }, ': ', { kind: 'row', text: '$80', column: 'amount' },
+      '. ', { kind: 'term', text: 'Count and sum' },
+      ' summarize each group for this query. The cards model retained state, not measured memory.',
+    ],
+  },
+  {
+    time: 0, stage: 'result', title: 'One row per group',
+    explanation: [
+      'The output is (', { kind: 'term', text: 'product_id', column: 'productId' }, ', ',
+      { kind: 'term', text: 'order_count', column: 'count' }, ', ',
+      { kind: 'term', text: 'revenue', column: 'total' }, '): ', '(',
+      { kind: 'row', text: '7', column: 'productId' }, ', ', { kind: 'row', text: '2', column: 'count' },
+      ', ', { kind: 'row', text: '80', column: 'total' }, ')', ' and ', '(',
+      { kind: 'row', text: '8', column: 'productId' }, ', ', { kind: 'row', text: '1', column: 'count' },
+      ', ', { kind: 'row', text: '80', column: 'total' }, ')',
+      '. Equal totals do not merge different group keys.',
+    ],
+  },
+  {
+    time: 1, stage: 'orders', title: 'Correct an amount',
+    before: [
+      { kind: 'row', text: 'Order 101', column: 'orderId' }, ' changes from ',
+      { kind: 'row', text: '$30', column: 'amount' }, ' to ', { kind: 'row', text: '$60', column: 'amount' },
+      '. Predict the count and ', { kind: 'term', text: 'revenue', column: 'total' }, ' for ',
+      { kind: 'row', text: 'product 7', column: 'productId' }, '. Does ',
+      { kind: 'row', text: 'product 8', column: 'productId' }, ' change?',
+    ],
+    explanation: [
+      'Retract the old order and insert its replacement. Both signed contributions belong to ',
+      { kind: 'row', text: 'product 7', column: 'productId' }, ' at the same timestamp.',
+    ],
+  },
+  {
+    time: 1, stage: 'groups', title: 'Adjust the affected group',
+    explanation: [
+      { kind: 'count', text: 'Count stays 2', column: 'count' },
+      ': minus one order plus one order. Revenue changes by ',
+      { kind: 'row', text: '-$30', column: 'amount' }, ' + ', { kind: 'row', text: '$60', column: 'amount' },
+      ' = ', { kind: 'row', text: '+$30', column: 'amount' }, ', reaching ',
+      { kind: 'row', text: '$110', column: 'amount' }, '. ',
+      { kind: 'row', text: 'Product 8', column: 'productId' }, ' is untouched.',
+    ],
+  },
+  {
+    time: 1, stage: 'result', title: 'Replace the full result row',
+    explanation: [
+      'Retract ', '(', { kind: 'row', text: '7', column: 'productId' }, ', ',
+      { kind: 'row', text: '2', column: 'count' }, ', ', { kind: 'row', text: '80', column: 'total' }, ')',
+      ' with ', { kind: 'diff', text: '-1' }, '; insert ', '(',
+      { kind: 'row', text: '7', column: 'productId' }, ', ', { kind: 'row', text: '2', column: 'count' },
+      ', ', { kind: 'row', text: '110', column: 'total' }, ')', ' with ', { kind: 'diff', text: '+1' },
+      '. A ', { kind: 'row', text: '$30', column: 'amount' }, ' ',
+      { kind: 'term', text: 'revenue', column: 'total' }, ' change is not ',
+      { kind: 'diff', text: 'mz_diff +30' }, ': diffs describe copies of complete rows.',
+    ],
+  },
+  {
+    time: 2, stage: 'orders', title: 'Cancel the last order',
+    before: [
+      'Cancel ', { kind: 'row', text: 'order 102', column: 'orderId' }, ', the only order for ',
+      { kind: 'row', text: 'product 8', column: 'productId' }, '. Will its result become ', '(',
+      { kind: 'row', text: '8', column: 'productId' }, ', ', { kind: 'row', text: '0', column: 'count' },
+      ', ', { kind: 'row', text: '0', column: 'total' }, ')', ', or disappear?',
+    ],
+    explanation: [
+      { kind: 'row', text: 'Order 102', column: 'orderId' }, ' is retracted. ',
+      { kind: 'row', text: 'Product 8', column: 'productId' }, ' now has no input rows.',
+    ],
+  },
+  {
+    time: 2, stage: 'result', title: 'An empty group disappears',
+    explanation: [
+      'Retract ', '(', { kind: 'row', text: '8', column: 'productId' }, ', ',
+      { kind: 'row', text: '1', column: 'count' }, ', ', { kind: 'row', text: '80', column: 'total' }, ')',
+      ' with no replacement. ', { kind: 'term', text: 'GROUP BY' },
+      ' does not invent a zero-valued row for an absent key. This is a grouped query, not a global aggregate without ',
+      { kind: 'term', text: 'GROUP BY' }, '.',
+    ],
+  },
+  {
+    time: 3, stage: 'orders', title: 'Move an order between groups',
+    before: [
+      'Move ', { kind: 'row', text: 'order 103', column: 'orderId' }, ' from ',
+      { kind: 'row', text: 'product 7', column: 'productId' }, ' to ',
+      { kind: 'row', text: 'product 9', column: 'productId' }, ', keeping its ',
+      { kind: 'row', text: '$50', column: 'amount' }, ' ',
+      { kind: 'term', text: 'amount', column: 'amount' }, '. Predict both groups and their output diffs.',
+    ],
+    explanation: [
+      'Retract the ', { kind: 'row', text: 'product 7', column: 'productId' }, ' version and insert the ',
+      { kind: 'row', text: 'product 9', column: 'productId' }, ' version. One edit touches two keys.',
+    ],
+  },
+  {
+    time: 3, stage: 'result', title: 'Replace one group, create another',
+    explanation: [
+      'Replace ', '(', { kind: 'row', text: '7', column: 'productId' }, ', ',
+      { kind: 'row', text: '2', column: 'count' }, ', ', { kind: 'row', text: '110', column: 'total' }, ')',
+      ' with ', '(', { kind: 'row', text: '7', column: 'productId' }, ', ',
+      { kind: 'row', text: '1', column: 'count' }, ', ', { kind: 'row', text: '60', column: 'total' }, ')',
+      ': ', { kind: 'diff', text: '-1' }, ' then ', { kind: 'diff', text: '+1' }, '. New ',
+      { kind: 'row', text: 'product 9', column: 'productId' }, ' gains ', '(',
+      { kind: 'row', text: '9', column: 'productId' }, ', ', { kind: 'row', text: '1', column: 'count' },
+      ', ', { kind: 'row', text: '50', column: 'total' }, ')',
+      '. Incremental maintenance can affect several result rows.',
+    ],
+  },
+  {
+    time: 4, stage: 'result', title: 'Zero revenue is still a group',
+    before: [
+      'Set ', { kind: 'row', text: 'order 101', column: 'orderId' }, ' to ',
+      { kind: 'row', text: '$0', column: 'amount' }, '. It still exists. Does ',
+      { kind: 'row', text: 'product 7', column: 'productId' }, ' disappear?',
+    ],
+    explanation: [
+      'Replace ', '(', { kind: 'row', text: '7', column: 'productId' }, ', ',
+      { kind: 'row', text: '1', column: 'count' }, ', ', { kind: 'row', text: '60', column: 'total' }, ')',
+      ' with ', '(', { kind: 'row', text: '7', column: 'productId' }, ', ',
+      { kind: 'row', text: '1', column: 'count' }, ', ', { kind: 'row', text: '0', column: 'total' }, ')',
+      '. ', { kind: 'count', text: 'Count is still 1', column: 'count' },
+      ', so the group exists. Zero sum does not mean an empty group.',
+    ],
+  },
+  {
+    time: 5, stage: 'result', title: 'Predict the final cancellation',
+    before: [
+      'Now cancel the zero-valued ', { kind: 'row', text: 'order 101', column: 'orderId' },
+      '. Predict the complete result batch. Should ',
+      { kind: 'row', text: 'product 9', column: 'productId' }, ' change?',
+    ],
+    explanation: [
+      'Retract ', '(', { kind: 'row', text: '7', column: 'productId' }, ', ',
+      { kind: 'row', text: '1', column: 'count' }, ', ', { kind: 'row', text: '0', column: 'total' }, ')',
+      ', with no replacement. ', { kind: 'row', text: 'Product 9', column: 'productId' }, ' stays ', '(',
+      { kind: 'row', text: '9', column: 'productId' }, ', ', { kind: 'row', text: '1', column: 'count' },
+      ', ', { kind: 'row', text: '50', column: 'total' }, ')', '. ',
+      { kind: 'term', text: 'Retained counts' }, ' distinguish zero ',
+      { kind: 'term', text: 'revenue', column: 'total' },
+      ' from an absent group; unrelated results stay unchanged.',
+    ],
+  },
 ] as const;
 export const aggregateRunDefinition = { totalChanges: aggregateChanges.length, steps: aggregateLessons };
 export const aggregateReference = {

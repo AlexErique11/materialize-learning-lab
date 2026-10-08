@@ -4,6 +4,7 @@ test('all Chapter 2 exercises support retries, hints, reveal, advancement and re
  test.setTimeout(60_000);
  for (const [exercise, total] of [[1, 3], [3, 3]]) {
   await page.goto(`/labs/incremental-maintenance/exercises/exercise-${exercise}`);
+  await expect(page.getByRole('navigation', { name: 'Page navigation', exact: true })).toHaveCount(0);
   await expect(page.locator('.exercise-time')).toContainText('t = 0');
   await expect(page.locator('.maintenance-panels [data-affected="true"]')).toHaveCount(0);
   await expect(page.locator('.comparison-arrows [data-active="true"]')).toHaveCount(0);

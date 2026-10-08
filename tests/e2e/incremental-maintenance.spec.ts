@@ -33,7 +33,7 @@ test('lecture traces changes through the Orders, Filter and Projection tables', 
   await page.getByRole('link', { name: 'Start tutorial: Lecture 1: Filters and projections', exact: true }).click();
   await expect(page).toHaveURL(path);
   const selectStage = async (name: string) => {
-    await page.getByRole('navigation', { name: 'Query stages' }).getByRole('button', { name, exact: false }).click();
+    if (isMobile) await page.getByRole('navigation', { name: 'Query stages' }).getByRole('button', { name, exact: false }).click();
   };
   await selectStage('3. Projection');
   const actualRows = () => output(page).locator('tbody tr:not([aria-hidden="true"])');
@@ -47,8 +47,7 @@ test('lecture traces changes through the Orders, Filter and Projection tables', 
   await expect(page.getByRole('table', { name: 'Input orders', exact: true })).toContainText('Express');
   if (isMobile) await page.getByRole('button', { name: 'Show changes', exact: true }).click();
   const inputDiffs = page.getByRole('region', { name: 'Input diffs', exact: true });
-  await expect(inputDiffs.locator('li').nth(0)).toContainText('Standard delivery');
-  await expect(inputDiffs.locator('li').nth(1)).toContainText('Express delivery');
+  await expect(inputDiffs.locator('[data-field="note"]')).toHaveText(['Standard', 'Express']);
   await expect(inputDiffs.locator('[data-field="productId"]')).toHaveText(['7', '7']);
   await expect(inputDiffs.locator('[data-changed="true"]')).toHaveCount(2);
   if (isMobile) await page.getByRole('button', { name: 'Show rows', exact: true }).click();

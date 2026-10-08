@@ -1,4 +1,4 @@
-﻿.maintenance-exercise-page .exercise-time { color: var(--lab-muted); font-size: 12px; }
+﻿.maintenance-exercise-page .exercise-time { color: var(--lab-muted); font-size: 14px; line-height: 18px; }
 .exercise-question-toggle { display: none; }
 .chapter-completion-dialog { width: min(920px, calc(100% - 2rem)); border-top: 4px solid var(--accent); overflow: hidden; }
 .chapter-completion-dialog > div:first-child { background: var(--surface-muted); }

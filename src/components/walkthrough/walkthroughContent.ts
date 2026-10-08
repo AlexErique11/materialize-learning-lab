@@ -44,5 +44,5 @@ export const chapterTourSteps: readonly WalkthroughStep[] = [
   ...getLectureWalkthrough(chapterTourPaths.lectureOne)!,
   { path: chapterTourPaths.lectureOne, title: 'Exercises', description: 'After the lectures, exercises let you put what you learned into practice. Next, we will leave the lecture page and open an exercise where you solve problems and check your answers.' },
   { path: chapterTourPaths.exercise, target: 'question', title: 'Practise with exercises', description: 'Exercises let you apply what you learned in the lectures. Solve each problem, then check your answer.' },
-  { path: chapterTourPaths.overview, target: 'start-lecture-1', title: 'Ready to begin', description: 'Use Start tutorial to begin Lecture 1. The small ? beside Docs on a lecture replays help for its buttons. You can restart this full tour from Take a tour beside Learning path on the home page.' },
+  { path: chapterTourPaths.overview, target: 'start-lecture-1', title: 'Ready to begin', description: 'Use Start tutorial to begin Lecture 1. Controls tour at the top right of a lecture replays help for its buttons. You can restart this full tour from Take a tour beside Learning path on the home page.' },
 ];

@@ -8,7 +8,7 @@ import './lecture-four.css';
 
 export function IncrementalLectureFour({ chapter, navigation }: { chapter: ChapterDefinition; navigation: ReactNode }) {
   return <MaintenanceLecture chapter={chapter} navigation={navigation} title="Lecture 4" timeTestId="comparison-time" layout="comparison"
-    description="Compare rebuilding a query result with maintaining it as the inputs change."
+    description="Compare recomputing and maintaining results."
     definition={comparisonRunDefinition} lessons={comparisonLessons} stages={comparisonStages} reference={comparisonReference}
     snapshot={comparisonSnapshotAt} renderRows={(stage, state) => <ComparisonPanel stage={stage} state={state} />} />;
 }

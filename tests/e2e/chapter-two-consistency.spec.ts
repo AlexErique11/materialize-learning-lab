@@ -7,6 +7,8 @@ test('Chapter 2 lectures keep the same panel geometry and spacing across pages a
     let reference: unknown;
     for (const lecture of [1, 2, 3]) {
       await page.goto('/labs/incremental-maintenance/tutorial/lecture-' + lecture);
+      await expect(page.locator('.guided-lab-title > p')).toBeVisible();
+      await expect(page.locator('.guided-lab-tip')).toHaveCount(0);
       for (const time of [0, 1, 2, 3, 4, ...(lecture === 2 ? [] : [5])]) {
         if (time) await page.getByRole('button', { name: 'Next change', exact: true }).click();
         for (let stage = 0; stage < 3; stage++) {
@@ -28,7 +30,7 @@ test('Chapter 2 lectures keep the same panel geometry and spacing across pages a
           expect(geometry).toEqual(reference);
           expect(geometry.metricsGap).toBeGreaterThanOrEqual(10);
           expect(geometry.tablesGap).toBeGreaterThanOrEqual(10);
-          expect(geometry.controlsGap).toBeGreaterThanOrEqual(14);
+          expect(geometry.controlsGap).toBeGreaterThanOrEqual(6);
           const tablesFit = await page.locator('.maintenance-panels .table-scroll').evaluateAll((elements) => elements.every((element) => {
             if (!element.getBoundingClientRect().height) return true;
             const table = element.querySelector('table')!;

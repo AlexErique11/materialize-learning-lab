@@ -77,6 +77,9 @@ for (const theme of ['light', 'dark']) test(`home tour visits and highlights the
 
 for (const path of [chapterTourPaths.lectureOne, chapterTourPaths.lectureTwo]) test(`lecture help stays on ${path} and preserves paused playback`, async ({ page }) => {
   await page.goto(path);
+  await expect(page.locator('.app-header').getByRole('button', { name: 'Lecture controls walkthrough', exact: true })).toHaveCount(0);
+  await expect(page.locator('.guided-lab-top-row').getByRole('button', { name: 'Lecture controls walkthrough', exact: true })).toBeVisible();
+  await expect(page.getByRole('navigation', { name: 'Page navigation', exact: true })).toHaveCount(0);
   await page.clock.install();
   await page.getByRole('button', { name: 'Run', exact: true }).click();
   await page.clock.fastForward(2200);

@@ -1,3 +1,4 @@
+import type { LessonTextContent } from '../changing-relations/LessonText';
 import type { Order } from './scenario';
 import { aggregateReference } from './aggregate-scenario';
 
@@ -23,21 +24,158 @@ export const comparisonStages = [
   { id: 'incremental', title: 'Incremental maintenance', shortTitle: 'Maintain', sql: 'Signed changes + retained group state', description: 'This teaching algorithm retains count and sum by product. It consolidates changes to the selected product and amount, then applies their signed contributions to affected groups.', showChanges: false },
 ] as const;
 
-export const comparisonLessons = [
-  { time: 0, stage: 'orders', title: 'One query, the same inputs', explanation: 'Six orders belong to three products. Both methods compute the grouped count and revenue query from Lecture 3. Their result tables must agree at every complete timestamp.' },
-  { time: 0, stage: 'recompute', title: 'Initial computation needs the existing rows', explanation: 'Both methods process six initial contributions and establish three groups. Incremental maintenance does not make the initial computation free.' },
-  { time: 0, stage: 'incremental', title: 'Keep state for the next change', explanation: 'The incremental path retains each product’s count and sum. These summaries are sufficient for this query’s updates. This is a logical model, not measured memory or an execution plan.' },
-  { time: 1, stage: 'orders', title: 'Predict an amount correction', before: 'Order 101 changes from $30 to $60. Which product groups will change? Must both methods process every order again?', explanation: 'The edit replaces the old order with a new version at one timestamp. Only product 7’s revenue changes, from $80 to $110. Its count remains 2.' },
-  { time: 1, stage: 'recompute', title: 'Rebuild the same query result', explanation: 'The recomputation model processes all six current orders and rebuilds all three groups, including products 8 and 9 whose results did not change.' },
-  { time: 1, stage: 'incremental', title: 'Adjust one retained group', explanation: 'Apply −$30 and +$60 to product 7. Two signed aggregate contributions update one group; products 8 and 9 keep their retained state. Both result tables show the same full rows.' },
-  { time: 2, stage: 'orders', title: 'One edit can affect two groups', before: 'Move order 103, worth $80, from product 8 to product 7. Predict both new totals and which group remains unchanged.', explanation: 'Retract its contribution from product 8 and add it to product 7. Product 7 becomes (count 3, revenue $190); product 8 becomes (count 1, revenue $20). Product 9 stays unchanged.' },
-  { time: 2, stage: 'recompute', title: 'All groups are rebuilt again', explanation: 'Recomputation uses all six orders. It reaches the same result, but this model rebuilds product 9 as well as the two changed groups.' },
-  { time: 2, stage: 'incremental', title: 'Reuse the unaffected state', explanation: 'Two signed contributions touch two group keys. The number of affected groups depends on the old and new keys, not just the number of edited orders.' },
-  { time: 3, stage: 'orders', title: 'An input edit may leave the result unchanged', before: 'Only order 102’s note changes. This query uses product_id and amount. Will any result row change?', explanation: 'The old and new projected (product_id, amount) contributions are identical. Their opposite diffs consolidate to zero before the aggregate in this model.' },
-  { time: 3, stage: 'incremental', title: 'No net aggregate contribution', explanation: 'No group totals change. The recomputation model still processes six rows; the incremental model applies zero net aggregate contributions. Processing the source edit still has work that these counters do not measure.' },
-  { time: 4, stage: 'orders', title: 'Predict a broad batch', before: 'Add $100 to every order in one batch. Which groups change? Will the incremental path still touch only a small part of the result?', explanation: 'All three groups change. Their revenues become $490, $120, and $300. Counts stay 3, 1, and 2.' },
-  { time: 4, stage: 'recompute', title: 'Compare the whole batch', explanation: 'Recomputation processes six current contributions. Maintenance applies twelve signed contributions: six old amounts out and six new amounts in. Both produce the same three result rows.' },
-  { time: 4, stage: 'incremental', title: 'Explain what maintenance reuses', explanation: 'For any batch, the old and new product keys determine the affected groups. Retained counts and sums let this query apply signed contributions to those groups. A broad batch can touch every group; illustrative contribution counts alone do not predict which approach runs faster.' },
+export const comparisonLessons: readonly { time: number; title: string; stage: 'orders' | 'recompute' | 'incremental'; explanation: LessonTextContent; before?: LessonTextContent }[] = [
+  {
+    time: 0, stage: 'orders', title: 'One query, the same inputs',
+    explanation: [
+      { kind: 'count', text: 'Six orders', column: 'count' }, ' belong to ',
+      { kind: 'count', text: 'three products', column: 'count' },
+      '. Both methods compute the grouped count and ', { kind: 'term', text: 'revenue', column: 'total' },
+      ' query from Lecture 3. Their result tables must agree at every complete timestamp.',
+    ],
+  },
+  {
+    time: 0, stage: 'recompute', title: 'Initial computation needs the existing rows',
+    explanation: [
+      'Both methods process ', { kind: 'count', text: 'six initial contributions', column: 'count' },
+      ' and establish ', { kind: 'count', text: 'three groups', column: 'count' },
+      '. Incremental maintenance does not make the initial computation free.',
+    ],
+  },
+  {
+    time: 0, stage: 'incremental', title: 'Keep state for the next change',
+    explanation: [
+      'The incremental path retains each product’s ', { kind: 'term', text: 'count and sum' },
+      '. These summaries are sufficient for this query’s updates. This is a logical model, not measured memory or an execution plan.',
+    ],
+  },
+  {
+    time: 1, stage: 'orders', title: 'Predict an amount correction',
+    before: [
+      { kind: 'row', text: 'Order 101', column: 'orderId' }, ' changes from ',
+      { kind: 'row', text: '$30', column: 'amount' }, ' to ', { kind: 'row', text: '$60', column: 'amount' },
+      '. Which product groups will change? Must both methods process every order again?',
+    ],
+    explanation: [
+      'The edit replaces the old order with a new version at one timestamp. Only ',
+      { kind: 'row', text: 'product 7', column: 'productId' }, '’s ',
+      { kind: 'term', text: 'revenue', column: 'total' }, ' changes, from ',
+      { kind: 'row', text: '$80', column: 'amount' }, ' to ',
+      { kind: 'row', text: '$110', column: 'amount' }, '. Its ',
+      { kind: 'count', text: 'count remains 2', column: 'count' }, '.',
+    ],
+  },
+  {
+    time: 1, stage: 'recompute', title: 'Rebuild the same query result',
+    explanation: [
+      'The recomputation model processes ',
+      { kind: 'count', text: 'all six current orders', column: 'count' }, ' and rebuilds ',
+      { kind: 'count', text: 'all three groups', column: 'count' },
+      ', including products 8 and 9 whose results did not change.',
+    ],
+  },
+  {
+    time: 1, stage: 'incremental', title: 'Adjust one retained group',
+    explanation: [
+      'Apply ', { kind: 'row', text: '−$30', column: 'amount' }, ' and ',
+      { kind: 'row', text: '+$60', column: 'amount' }, ' to ',
+      { kind: 'row', text: 'product 7', column: 'productId' }, '. ',
+      { kind: 'count', text: 'Two signed aggregate contributions', column: 'count' },
+      ' update one group; products 8 and 9 keep their retained state. Both result tables show the same full rows.',
+    ],
+  },
+  {
+    time: 2, stage: 'orders', title: 'One edit can affect two groups',
+    before: [
+      'Move ', { kind: 'row', text: 'order 103', column: 'orderId' }, ', worth ',
+      { kind: 'row', text: '$80', column: 'amount' }, ', from ',
+      { kind: 'row', text: 'product 8', column: 'productId' }, ' to ',
+      { kind: 'row', text: 'product 7', column: 'productId' },
+      '. Predict both new totals and which group remains unchanged.',
+    ],
+    explanation: [
+      'Retract its contribution from ', { kind: 'row', text: 'product 8', column: 'productId' },
+      ' and add it to ', { kind: 'row', text: 'product 7', column: 'productId' }, '. ',
+      { kind: 'row', text: 'Product 7', column: 'productId' }, ' becomes ', '(',
+      { kind: 'count', text: 'count 3', column: 'count' }, ', ',
+      { kind: 'term', text: 'revenue', column: 'total' }, ' ',
+      { kind: 'row', text: '$190', column: 'amount' }, ')', '; ',
+      { kind: 'row', text: 'product 8', column: 'productId' }, ' becomes ', '(',
+      { kind: 'count', text: 'count 1', column: 'count' }, ', ',
+      { kind: 'term', text: 'revenue', column: 'total' }, ' ',
+      { kind: 'row', text: '$20', column: 'amount' }, ')', '. ',
+      { kind: 'row', text: 'Product 9', column: 'productId' }, ' stays unchanged.',
+    ],
+  },
+  {
+    time: 2, stage: 'recompute', title: 'All groups are rebuilt again',
+    explanation: [
+      'Recomputation uses ', { kind: 'count', text: 'all six orders', column: 'count' },
+      '. It reaches the same result, but this model rebuilds ',
+      { kind: 'row', text: 'product 9', column: 'productId' }, ' as well as the ',
+      { kind: 'count', text: 'two changed groups', column: 'count' }, '.',
+    ],
+  },
+  {
+    time: 2, stage: 'incremental', title: 'Reuse the unaffected state',
+    explanation: [
+      { kind: 'count', text: 'Two signed contributions', column: 'count' }, ' touch ',
+      { kind: 'count', text: 'two group keys', column: 'count' },
+      '. The number of affected groups depends on the old and new keys, not just the number of edited orders.',
+    ],
+  },
+  {
+    time: 3, stage: 'orders', title: 'An input edit may leave the result unchanged',
+    before: [
+      'Only ', { kind: 'row', text: 'order 102', column: 'orderId' }, '’s note changes. This query uses ',
+      { kind: 'term', text: 'product_id', column: 'productId' }, ' and ',
+      { kind: 'term', text: 'amount', column: 'amount' }, '. Will any result row change?',
+    ],
+    explanation: [
+      'The old and new projected (', { kind: 'term', text: 'product_id', column: 'productId' }, ', ',
+      { kind: 'term', text: 'amount', column: 'amount' },
+      ') contributions are identical. Their opposite diffs consolidate to zero before the aggregate in this model.',
+    ],
+  },
+  {
+    time: 3, stage: 'incremental', title: 'No net aggregate contribution',
+    explanation: [
+      'No group totals change. The recomputation model still processes ',
+      { kind: 'count', text: 'six rows', column: 'count' }, '; the incremental model applies ',
+      { kind: 'count', text: 'zero net aggregate contributions', column: 'count' },
+      '. Processing the source edit still has work that these counters do not measure.',
+    ],
+  },
+  {
+    time: 4, stage: 'orders', title: 'Predict a broad batch',
+    before: [
+      'Add ', { kind: 'row', text: '$100', column: 'amount' },
+      ' to every order in one batch. Which groups change? Will the incremental path still touch only a small part of the result?',
+    ],
+    explanation: [
+      'All ', { kind: 'count', text: 'three groups', column: 'count' }, ' change. Their revenues become ',
+      { kind: 'row', text: '$490', column: 'amount' }, ', ', { kind: 'row', text: '$120', column: 'amount' },
+      ', and ', { kind: 'row', text: '$300', column: 'amount' }, '. ',
+      { kind: 'count', text: 'Counts stay 3, 1, and 2', column: 'count' }, '.',
+    ],
+  },
+  {
+    time: 4, stage: 'recompute', title: 'Compare the whole batch',
+    explanation: [
+      'Recomputation processes ', { kind: 'count', text: 'six current contributions', column: 'count' },
+      '. Maintenance applies ', { kind: 'count', text: 'twelve signed contributions', column: 'count' },
+      ': six old amounts out and six new amounts in. Both produce the same ',
+      { kind: 'count', text: 'three result rows', column: 'count' }, '.',
+    ],
+  },
+  {
+    time: 4, stage: 'incremental', title: 'Explain what maintenance reuses',
+    explanation: [
+      'For any batch, the old and new product keys determine the affected groups. ',
+      { kind: 'term', text: 'Retained counts' },
+      ' and sums let this query apply signed contributions to those groups. A broad batch can touch every group; illustrative contribution counts alone do not predict which approach runs faster.',
+    ],
+  },
 ] as const;
 
 export const comparisonRunDefinition = { totalChanges: comparisonChanges.length, steps: comparisonLessons };

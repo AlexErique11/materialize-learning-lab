@@ -577,6 +577,8 @@
 }
 
 .learning-path-tour-button { margin-top: 20px; }
+/* Arial's visible text sits slightly above the centered line box. */
+.learning-path-tour-button > span { transform: translateY(1px); }
 @media (max-width: 767px) {
   .learning-path-page .page-heading { gap: 12px; }
   .learning-path-page h1 { font-size: 30px; }

@@ -20,5 +20,5 @@
 }
 
 @media (min-width: 640px) and (max-width: 1150px) {
-  .join-maintenance-page .guided-lab-title > p { display: none; }
+  .join-maintenance-page:not(.maintenance-lecture-page) .guided-lab-title > p { display: none; }
 }

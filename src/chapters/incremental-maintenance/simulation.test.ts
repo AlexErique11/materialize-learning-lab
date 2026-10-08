@@ -20,7 +20,7 @@ describe('filter and projection maintenance', () => {
   });
   it('cancels a qualifying unused-column update only after projection', () => {
     const edit = snapshotAt(2);
-    expect(edit.source.find((row) => row.orderId === 103)?.note).toBe('Express delivery');
+    expect(edit.source.find((row) => row.orderId === 103)?.note).toBe('Express');
     expect(edit.filterDiffs).toHaveLength(2);
     expect(edit.projectedDiffs).toEqual([
       { row: { orderId: 103, amount: 50 }, diff: -1 },

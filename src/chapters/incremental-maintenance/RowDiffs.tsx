@@ -35,7 +35,7 @@ export function RowDiffs({ entries, label, emptyReason, className = '' }: {
         <span className="maintenance-diff-tuple">({fields(row).map((field, fieldIndex) => {
           const changed = !otherFields || otherFields.find(({ key }) => key === field.key)?.value !== field.value;
           const value = (field.key === 'amount' || field.key === 'total') ? `$${field.value}` : field.value;
-          return <Fragment key={field.key}>{fieldIndex > 0 && ', '}<span data-field={field.key} data-changed={changed}
+          return <Fragment key={field.key}>{fieldIndex > 0 && ', '}<span data-field={field.key} data-column={field.key} data-changed={changed}
             aria-label={`${field.label}: ${field.value}`}>{value}</span></Fragment>;
         })})</span>
       </li>;

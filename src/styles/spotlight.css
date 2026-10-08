@@ -111,5 +111,21 @@
   }
 }
 .relation-guide-actions .button { min-height: 34px; font-size: 12px; }
-.chapter-walkthrough-button { width: 24px; height: 24px; border: 1px solid var(--border-strong); border-radius: 50%; color: var(--text-muted); font-weight: 600; cursor: pointer; }
-.chapter-walkthrough-button:hover { color: var(--accent); border-color: var(--accent); }
+.chapter-walkthrough-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: var(--lab-surface);
+  color: var(--lab-purple);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.chapter-walkthrough-button > svg { flex-shrink: 0; }
+.chapter-walkthrough-button:hover { border-color: var(--lab-purple); }

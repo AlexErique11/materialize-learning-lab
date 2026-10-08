@@ -1,3 +1,4 @@
+import type { LessonTextContent } from '../changing-relations/LessonText';
 export interface Order {
   readonly orderId: number;
   readonly productId: number;
@@ -8,16 +9,99 @@ export type OutputRow = Pick<Order, 'orderId' | 'amount'>;
 export interface Diff<Row> { readonly row: Row; readonly diff: number }
 export const MINIMUM_AMOUNT = 50;
 export const initialOrders: readonly Order[] = [
-  { orderId: 101, productId: 7, amount: 30, note: 'Standard delivery' },
+  { orderId: 101, productId: 7, amount: 30, note: 'Standard' },
   { orderId: 102, productId: 8, amount: 80, note: 'Gift' },
-  { orderId: 103, productId: 7, amount: 50, note: 'Standard delivery' },
+  { orderId: 103, productId: 7, amount: 50, note: 'Standard' },
 ];
 export const changes = [
-  { title: 'Cross into the filter', before: 'Order 101 changes from $30 to $60. With amount >= 50, which version passes the filter? Predict the result diff.', orderId: 101, patch: { amount: 60 }, explanation: 'Order 101 moves from $30 to $60. The old row fails the filter; the new row passes. The result gains (101, 60).' },
-  { title: 'Edit an unused column', before: 'Order 103 keeps its $50 amount but changes its note from Standard delivery to Express delivery. SELECT keeps only order_id and amount. Will the output change?', orderId: 103, patch: { note: 'Express delivery' }, explanation: 'Retract (103, 7, 50, Standard delivery) and insert (103, 7, 50, Express delivery) at the same timestamp. Only note changes. Both rows pass WHERE, but SELECT drops note. Their identical projected rows cancel, so a SUBSCRIBE to qualifying_orders emits no result update for this edit.' },
-  { title: 'Cross out of the filter', before: 'Order 101 changes from $60 to $40. Predict what happens to its existing result row when it no longer passes the filter.', orderId: 101, patch: { amount: 40 }, explanation: 'Order 101 falls below $50. Its old $60 row passes and is retracted; its new $40 row is filtered out. The result loses (101, 60).' },
-  { title: 'Replace a qualifying amount', before: 'Order 102 changes from $80 to $90. Both versions pass the filter. Predict the retraction and insertion in the result.', orderId: 102, patch: { amount: 90 }, explanation: 'Both amounts qualify. Retract (102, 80) and insert (102, 90) at the same timestamp. An update replaces the old result row.' },
-  { title: 'Delete a qualifying order', before: 'Order 103, currently $50, is deleted. Predict the result diff and decide whether order 102 should change too.', orderId: 103, patch: null, explanation: 'Deleting order 103 retracts its qualifying row. Order 102 is unaffected and remains in the result.' },
+  {
+    title: 'Cross into the filter',
+    before: [
+      { kind: 'row', text: 'Order 101', column: 'orderId' }, ' changes from ',
+      { kind: 'row', text: '$30', column: 'amount' }, ' to ', { kind: 'row', text: '$60', column: 'amount' },
+      '. With ', { kind: 'term', text: 'amount >= 50' },
+      ', which version passes the filter? Predict the result diff.',
+    ],
+    orderId: 101, patch: { amount: 60 },
+    explanation: [
+      { kind: 'row', text: 'Order 101', column: 'orderId' }, ' moves from ',
+      { kind: 'row', text: '$30', column: 'amount' }, ' to ', { kind: 'row', text: '$60', column: 'amount' },
+      '. The old row fails the filter; the new row passes. The result gains ', '(',
+      { kind: 'row', text: '101', column: 'orderId' }, ', ', { kind: 'row', text: '60', column: 'amount' },
+      ')', '.',
+    ],
+  },
+  {
+    title: 'Edit an unused column',
+    before: [
+      { kind: 'row', text: 'Order 103', column: 'orderId' }, ' keeps its ',
+      { kind: 'row', text: '$50', column: 'amount' }, ' ',
+      { kind: 'term', text: 'amount', column: 'amount' }, ' but changes its note from ',
+      { kind: 'row', text: 'Standard', column: 'note' }, ' to ',
+      { kind: 'row', text: 'Express', column: 'note' }, '. ', { kind: 'term', text: 'SELECT' },
+      ' keeps only ', { kind: 'term', text: 'order_id', column: 'orderId' }, ' and ',
+      { kind: 'term', text: 'amount', column: 'amount' }, '. Will the output change?',
+    ],
+    orderId: 103, patch: { note: 'Express' },
+    explanation: [
+      'Retract ', '(', { kind: 'row', text: '103', column: 'orderId' }, ', ',
+      { kind: 'row', text: '7', column: 'productId' }, ', ', { kind: 'row', text: '50', column: 'amount' },
+      ', ', { kind: 'row', text: 'Standard', column: 'note' }, ')', ' and insert ', '(',
+      { kind: 'row', text: '103', column: 'orderId' }, ', ', { kind: 'row', text: '7', column: 'productId' },
+      ', ', { kind: 'row', text: '50', column: 'amount' }, ', ',
+      { kind: 'row', text: 'Express', column: 'note' }, ')',
+      ' at the same timestamp. Only note changes. Both rows pass ', { kind: 'term', text: 'WHERE' },
+      ', but ', { kind: 'term', text: 'SELECT' },
+      ' drops note. Their identical projected rows cancel, so a ', { kind: 'term', text: 'SUBSCRIBE' },
+      ' to qualifying_orders emits no result update for this edit.',
+    ],
+  },
+  {
+    title: 'Cross out of the filter',
+    before: [
+      { kind: 'row', text: 'Order 101', column: 'orderId' }, ' changes from ',
+      { kind: 'row', text: '$60', column: 'amount' }, ' to ', { kind: 'row', text: '$40', column: 'amount' },
+      '. Predict what happens to its existing result row when it no longer passes the filter.',
+    ],
+    orderId: 101, patch: { amount: 40 },
+    explanation: [
+      { kind: 'row', text: 'Order 101', column: 'orderId' }, ' falls below ',
+      { kind: 'row', text: '$50', column: 'amount' }, '. Its old ',
+      { kind: 'row', text: '$60', column: 'amount' }, ' row passes and is retracted; its new ',
+      { kind: 'row', text: '$40', column: 'amount' }, ' row is filtered out. The result loses ', '(',
+      { kind: 'row', text: '101', column: 'orderId' }, ', ', { kind: 'row', text: '60', column: 'amount' },
+      ')', '.',
+    ],
+  },
+  {
+    title: 'Replace a qualifying amount',
+    before: [
+      { kind: 'row', text: 'Order 102', column: 'orderId' }, ' changes from ',
+      { kind: 'row', text: '$80', column: 'amount' }, ' to ', { kind: 'row', text: '$90', column: 'amount' },
+      '. Both versions pass the filter. Predict the retraction and insertion in the result.',
+    ],
+    orderId: 102, patch: { amount: 90 },
+    explanation: [
+      'Both amounts qualify. Retract ', '(', { kind: 'row', text: '102', column: 'orderId' }, ', ',
+      { kind: 'row', text: '80', column: 'amount' }, ')', ' and insert ', '(',
+      { kind: 'row', text: '102', column: 'orderId' }, ', ', { kind: 'row', text: '90', column: 'amount' },
+      ')', ' at the same timestamp. An update replaces the old result row.',
+    ],
+  },
+  {
+    title: 'Delete a qualifying order',
+    before: [
+      { kind: 'row', text: 'Order 103', column: 'orderId' }, ', currently ',
+      { kind: 'row', text: '$50', column: 'amount' },
+      ', is deleted. Predict the result diff and decide whether ',
+      { kind: 'row', text: 'order 102', column: 'orderId' }, ' should change too.',
+    ],
+    orderId: 103, patch: null,
+    explanation: [
+      'Deleting ', { kind: 'row', text: 'order 103', column: 'orderId' }, ' retracts its qualifying row. ',
+      { kind: 'row', text: 'Order 102', column: 'orderId' }, ' is unaffected and remains in the result.',
+    ],
+  },
 ] as const;
 
 export const stages = [
@@ -26,22 +110,79 @@ export const stages = [
   { id: 'projection', title: 'Projection', sql: 'SELECT order_id, amount', description: 'Keep only the selected columns. Opposite diffs for the same projected row at the same timestamp cancel. SELECT without DISTINCT still preserves duplicate row copies.' },
 ] as const;
 export type StageId = typeof stages[number]['id'];
-const inputExplanations = [
-  'In Orders, retract the full $30 row for order 101 and insert its $60 replacement. Only amount changes; the other fields stay the same.',
-  'In Orders, retract order 103 with Standard delivery and insert its Express delivery replacement. Its amount stays $50. The highlighted notes distinguish the two full rows.',
-  'In Orders, retract order 101 at $60 and insert its $40 replacement. The order still exists in the input; next, inspect what passes WHERE.',
-  'In Orders, replace order 102 at $80 with the full row at $90. The signed input rows show the old and new amounts.',
-  'Orders no longer contains order 103. Its full row appears in the input diffs with -1 and no replacement; the other orders remain.',
+const inputExplanations: readonly LessonTextContent[] = [
+  [
+    'In Orders, retract the full ', { kind: 'row', text: '$30', column: 'amount' }, ' row for ',
+    { kind: 'row', text: 'order 101', column: 'orderId' }, ' and insert its ',
+    { kind: 'row', text: '$60', column: 'amount' }, ' replacement. Only ',
+    { kind: 'term', text: 'amount', column: 'amount' }, ' changes; the other fields stay the same.',
+  ],
+  [
+    'In Orders, retract ', { kind: 'row', text: 'order 103', column: 'orderId' }, ' with ',
+    { kind: 'row', text: 'Standard', column: 'note' }, ' and insert its ',
+    { kind: 'row', text: 'Express', column: 'note' }, ' replacement. Its ',
+    { kind: 'term', text: 'amount', column: 'amount' }, ' stays ',
+    { kind: 'row', text: '$50', column: 'amount' }, '. The highlighted notes distinguish the two full rows.',
+  ],
+  [
+    'In Orders, retract ', { kind: 'row', text: 'order 101', column: 'orderId' }, ' at ',
+    { kind: 'row', text: '$60', column: 'amount' }, ' and insert its ',
+    { kind: 'row', text: '$40', column: 'amount' },
+    ' replacement. The order still exists in the input; next, inspect what passes ',
+    { kind: 'term', text: 'WHERE' }, '.',
+  ],
+  [
+    'In Orders, replace ', { kind: 'row', text: 'order 102', column: 'orderId' }, ' at ',
+    { kind: 'row', text: '$80', column: 'amount' }, ' with the full row at ',
+    { kind: 'row', text: '$90', column: 'amount' }, '. The signed input rows show the old and new amounts.',
+  ],
+  [
+    'Orders no longer contains ', { kind: 'row', text: 'order 103', column: 'orderId' },
+    '. Its full row appears in the input diffs with ', { kind: 'diff', text: '-1' },
+    ' and no replacement; the other orders remain.',
+  ],
 ];
-export const lessons: readonly { time: number; title: string; stage: StageId; explanation: string; before?: string }[] = [
-  { time: 0, title: 'Compute the starting result', stage: 'source', explanation: 'Start with three existing orders. The initial result is computed from all three rows. Later changes maintain that result. These stages are a teaching model of the SQL, not a physical query plan.' },
-  { time: 0, title: 'Choose rows with WHERE', stage: 'filter', explanation: 'The filter keeps orders 102 and 103. Order 101 is below $50. Order 103 is exactly $50 and passes because the predicate uses >=.' },
-  { time: 0, title: 'Choose columns with SELECT', stage: 'projection', explanation: 'Projection keeps order_id and amount. Delivery notes remain in the input but do not appear in this query result.' },
+export const lessons: readonly { time: number; title: string; stage: StageId; explanation: LessonTextContent; before?: LessonTextContent }[] = [
+  {
+    time: 0, title: 'Compute the starting result', stage: 'source',
+    explanation: [
+      'Start with ', { kind: 'count', text: 'three existing orders', column: 'count' },
+      '. The initial result is computed from ', { kind: 'count', text: 'all three rows', column: 'count' },
+      '. Later changes maintain that result. These stages are a teaching model of the SQL, not a physical query plan.',
+    ],
+  },
+  {
+    time: 0, title: 'Choose rows with WHERE', stage: 'filter',
+    explanation: [
+      'The filter keeps ', { kind: 'row', text: 'orders 102 and 103', column: 'orderId' }, '. ',
+      { kind: 'row', text: 'Order 101', column: 'orderId' }, ' is below ',
+      { kind: 'row', text: '$50', column: 'amount' }, '. ',
+      { kind: 'row', text: 'Order 103', column: 'orderId' }, ' is exactly ',
+      { kind: 'row', text: '$50', column: 'amount' }, ' and passes because the predicate uses ',
+      { kind: 'term', text: '>=' }, '.',
+    ],
+  },
+  {
+    time: 0, title: 'Choose columns with SELECT', stage: 'projection',
+    explanation: [
+      { kind: 'term', text: 'Projection' }, ' keeps ', { kind: 'term', text: 'order_id', column: 'orderId' },
+      ' and ', { kind: 'term', text: 'amount', column: 'amount' },
+      '. Notes remain in the input but do not appear in this query result.',
+    ],
+  },
   ...changes.flatMap((change, index) => [
     { time: index + 1, title: change.title, stage: 'source' as const, before: change.before, explanation: inputExplanations[index]! },
     { time: index + 1, title: `${change.title}: result`, stage: (index === 0 || index === 2 ? 'filter' : 'projection') as StageId, explanation: change.explanation },
   ]),
-  { time: changes.length, title: 'Maintain the result from changes', stage: 'projection', explanation: 'The result stays consistent with the SQL as inputs change. A source update can yield zero, one, or several result diffs. Here, order 102 remains at $90. Joins and aggregates will build on this example in later lectures.' },
+  {
+    time: changes.length, title: 'Maintain the result from changes', stage: 'projection',
+    explanation: [
+      'The result stays consistent with the SQL as inputs change. A source update can yield zero, one, or several result diffs. Here, ',
+      { kind: 'row', text: 'order 102', column: 'orderId' }, ' remains at ',
+      { kind: 'row', text: '$90', column: 'amount' },
+      '. Joins and aggregates will build on this example in later lectures.',
+    ],
+  },
 ];
 export const runDefinition = { totalChanges: changes.length, steps: lessons };
 export const lectureReference = {

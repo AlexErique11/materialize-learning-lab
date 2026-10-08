@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
-import { GuidedLabScreen } from '../../labs/components/GuidedLabScreen';
+import { LectureScreen } from '../../labs/components/LectureScreen';
 import type { ChapterDefinition } from '../chapterRegistry';
 import { BatchWorkbench } from './BatchWorkbench';
 import { GuidedSpotlight } from './GuidedSpotlight';
@@ -30,17 +30,18 @@ export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition
   const phaseLabel = beforeChange ? 'Predict the effect' : 'Explanation';
 
   return <>
-    <GuidedLabScreen chapter={chapter} title="Lecture 2" regionLabel="Lecture content" navigation={navigation}
-      className="changing-relations-page changing-relations-lecture-page" reference={lectureTwoReference} showTip="when-space"
+    <LectureScreen layout="with-tip" chapter={chapter} title="Lecture 2" regionLabel="Lecture content" navigation={navigation}
+      className="changing-relations-page changing-relations-lecture-page" reference={lectureTwoReference}
       simulation={{ completed: state.selectedTime, total: lectureTwoBatches.length,
         progressLabel: 'Changes', playing: state.playing,
         onReset: () => dispatch({ type: 'reset' }), onRun: () => dispatch({ type: 'play' }), onStartGuidedRun: () => dispatch({ type: 'start-guided' }) }}
-      workspace={<div className="relation-workspace" data-guided={state.guided}>
+      guided={state.guided} metrics={
         <RelationMetrics relation={relation} time={state.selectedTime} metricsRef={metricsRef} />
-        <BatchWorkbench relation={relation} time={state.selectedTime} applied={state.applied} previewTime={state.guided && beforeChange ? lesson.time : null}
+      } visualization={<BatchWorkbench relation={relation} time={state.selectedTime} applied={state.applied} previewTime={state.guided && beforeChange ? lesson.time : null}
           guidedPanel={state.guided ? (spotlight === 'ledger' ? 'ledger' : 'relation') : undefined}
           ledgerRef={ledgerRef} relationRef={relationRef} controlsDisabled={state.playing || state.guided}
-          highlightCopies={state.guided && state.revealed && lesson.spotlight === 'relation'} onSelectTime={(time) => dispatch({ type: 'select', time })} />
+          highlightCopies={state.guided && state.revealed && lesson.spotlight === 'relation'} onSelectTime={(time) => dispatch({ type: 'select', time })} />}
+      playback={
         <div className="relation-playback-controls" aria-label="Timestamp playback">
           {tutorialComplete && <span className="relation-tutorial-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
           <div>
@@ -49,7 +50,7 @@ export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition
             <Button aria-label="Next timestamp" data-walkthrough="next-change" disabled={state.guided || state.playing || state.selectedTime === lectureTwoBatches.length} onClick={() => dispatch({ type: 'next-change' })}><span>Next<span className="relation-playback-kind"> timestamp</span></span><ArrowRight size={14} aria-hidden="true" /></Button>
           </div>
         </div>
-      </div>} />
+      } />
     <GuidedSpotlight open={state.guided} targetRef={targetRef} step={Math.min(state.step + 1, lectureTwoSteps.length)} total={lectureTwoSteps.length}
       title={lesson.title} description={<LessonText content={beforeChange ? lesson.before! : lesson.explanation} />} phaseLabel={phaseLabel}
       onClose={() => dispatch({ type: 'close-guided' })}>

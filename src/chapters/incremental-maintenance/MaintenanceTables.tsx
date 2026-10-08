@@ -11,7 +11,7 @@ export function OrderTable({ rows, caption }: { rows: readonly Order[] | readonl
     <thead><tr><th>order_id</th>{fullRows && <th>product_id</th>}<th className="maintenance-currency">amount</th>{fullRows && <th className="maintenance-text">note</th>}</tr></thead>
     <tbody>{rows.map((row) => <tr key={row.orderId}>
       <td>{row.orderId}</td>{'productId' in row && <td>{String(row.productId)}</td>}<td className="maintenance-currency">${row.amount}</td>
-      {'note' in row && <td className="maintenance-text" aria-label={String(row.note)}><span className="maintenance-note-cell">{String(row.note).replace(' delivery', '')}</span></td>}
+      {'note' in row && <td className="maintenance-text" aria-label={String(row.note)}><span className="maintenance-note-cell">{row.note}</span></td>}
     </tr>)}<EmptyTableRows count={4 - rows.length} columns={fullRows ? 4 : 2} /></tbody>
   </Table>;
 }

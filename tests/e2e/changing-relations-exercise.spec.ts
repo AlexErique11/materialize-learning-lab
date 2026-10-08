@@ -222,7 +222,7 @@ test('the chapter lists one exercise, preserves old links, and keeps the request
   await page.getByRole('button', { name: 'About Signed diff', exact: true }).focus();
   await expect(page.getByRole('tooltip')).toContainText('not the resulting count');
   await page.keyboard.press('Escape');
-  await expect(page.getByRole('navigation', { name: 'Page navigation' }).getByRole('link', { name: /Back to chapter/ })).toHaveAttribute('href', '/labs/changing-relations');
+  await expect(page.getByRole('navigation', { name: 'Page navigation' })).toHaveCount(0);
 });
 
 test('all phases fit desktop screens with stable grids, nonbreaking labels, and usable mobile controls', async ({ page, isMobile }, testInfo) => {
