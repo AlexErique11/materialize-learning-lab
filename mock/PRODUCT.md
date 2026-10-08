@@ -1,5 +1,10 @@
 # Product
 
+This document describes the preserved exploratory SQL Time Lab prototype in
+`mock/`. It is not the current app's layout or component specification. For work
+in `src/`, follow [CLAUDE.md](../CLAUDE.md),
+[MAINTAINABILITY.md](../MAINTAINABILITY.md), and [UI_LAYOUTS.md](../UI_LAYOUTS.md).
+
 ## Register
 
 product

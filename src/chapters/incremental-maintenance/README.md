@@ -1,5 +1,10 @@
 # Incremental Maintenance
 
+Follow [CLAUDE.md](../../../CLAUDE.md) for presentation rules and
+[UI_LAYOUTS.md](../../../UI_LAYOUTS.md) for shared templates and component ownership.
+All four lectures use the `without-tip` layout through `MaintenanceLecture` and
+`LectureScreen`. Chapter-specific panels fit inside that frame.
+
 ## Lecture 1: Filters and projections
 
 Lecture 1 follows an orders relation through `WHERE amount >= 50` and
@@ -47,8 +52,8 @@ shows all three panels. No measured performance or physical-plan claims.
 
 All lecture tables reserve four rows with empty cells and fixed column widths. Empty rows are excluded from accessible data. The Changes
 tracker follows the displayed timestamp, including history navigation; applied
-timestamps remain separately tracked for playback. The shared Chapter 1 tip
-is shown only when the current content leaves enough viewport space. On desktop,
+timestamps remain separately tracked for playback. All four lectures omit the
+bottom tip and share the no-tip playback baseline. On desktop,
 Lectures 2 and 3 use the numbered stage buttons and SQL labels from Lecture 1.
 Orders + Products leads to the joined result, with INNER JOIN and ON displayed
 in the stage headers. Aggregation uses arrows through GROUP BY to COUNT/SUM.
@@ -60,8 +65,8 @@ history navigation never resize them. `RowDiffs.tsx` renders complete rows as
 inline tuples beside Chapter 1's signed badges. Matching old/new rows emphasize
 only changed fields; inserts and deletions emphasize the full row. Projection
 shows only selected columns. Both lectures share Chapter 1's
-Current logical timestamp help and Return to latest history action. On short
-desktop screens the introductory subtitle is omitted to keep controls visible.
+Current logical timestamp help and Return to latest history action. Lecture
+subtitles remain visible with the shared typography and responsive placement.
 
 Guided runs show each change in its input table before moving to its downstream
 effect at the same timestamp. The join introduction visits Orders and Products
@@ -154,17 +159,35 @@ in SQLite and checks reuse, cancellation, two-key edits, and broad-batch counts.
 
 ## Shared Chapter 2 layout
 
-All four lectures use MaintenanceLecture.tsx for metrics, numbered stage
-headers, panels, help, playback and guided runs. lecture-one.css owns common
-panel/table heights, padding, workspace gaps and diff spacing at each breakpoint.
-Lecture-specific styles only add matching highlights, mobile panel selection
-and the aggregation or comparison visualization. Desktop names and help live in the stage
-headers; mobile also shows the active panel heading.
+All four lectures use `MaintenanceLecture.tsx` to compose their metrics,
+visualization, playback, and guided runs into `LectureScreen` with `without-tip`.
+`src/labs/components/lecture-layout.css` owns the shared frame, content inset,
+metric gap, and playback placement. The footer sits near the viewport bottom
+when space allows and keeps the same baseline for Lecture 4 without metric cards.
+Adjust this template once when changing all lecture footers.
+
+The chapter's `lecture-one.css` owns common panel/table heights, padding, internal
+gaps, and diff spacing. Lecture-specific styles add matching highlights, mobile
+panel selection, and aggregation or comparison visuals. Desktop names and help
+live in the stage headers; mobile also shows the active panel heading. Preserve
+the top title and toolbar positions when changing the content below them.
+
+Guided runs reuse `LessonText` with column-tagged fragments. Column references and
+changed row-diff fields use the mapping documented in UI_LAYOUTS.md. Table header
+labels remain neutral. The unused column is named `note` in tables, highlights,
+diffs, and explanations; do not expand its name to delivery note.
+
+Controls tour comes from the shared lecture button, not a chapter-local copy.
+Top Previous/Next page links remain hidden on lectures and exercises. SQL &
+Objectives popups show objective, SQL, and documentation without Tutorial or
+Exercises buttons. The exercise status line uses 14px text and an 18px line height
+to match the established readability while preserving its footprint.
 
 chapter-two-consistency.spec.ts compares panel width, height, padding, gaps,
 stage-header height and panel position across all three pages and every playback
-state at desktop, laptop and mobile sizes. Existing lecture checks cover guided
-flow, both themes, keyboard focus and viewport fit.
+state at desktop, laptop and mobile sizes. `shared-lecture-layout.spec.ts` checks
+the shared frame and footer across all four lectures against Chapter 1's reference.
+Existing lecture checks cover guided flow, both themes, keyboard focus and viewport fit.
 
 ## Exercises (verified 2026-10-06)
 

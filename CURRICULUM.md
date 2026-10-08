@@ -4,6 +4,11 @@ This document defines the current proposed curriculum for the Materialize
 Learning Lab. It is organized around learner questions and interactive labs,
 rather than mirroring the navigation of the Materialize documentation.
 
+This is a learning-scope specification, not an inventory of shipped pages or a UI
+template. Current implementation details live in the chapter READMEs and
+`src/chapters/chapterOutline.ts`. Follow [CLAUDE.md](./CLAUDE.md) and
+[UI_LAYOUTS.md](./UI_LAYOUTS.md) for shared presentation and layout requirements.
+
 The curriculum is grounded in the current
 [Materialize documentation](https://materialize.com/docs/). Materialize changes
 over time, so each chapter must be checked against current official documentation
@@ -24,7 +29,8 @@ a complete chapter.
 
 ## Exercise progression
 
-The exercises below are curriculum specifications, not implemented activities.
+The exercises below are curriculum specifications; implemented activities may
+combine several of them into one continuous scenario, as in Chapters 1 and 2.
 Use them in order within a chapter: begin with a guided prediction, introduce a
 different behavior or failure mode, then reduce guidance for the final challenge.
 Each exercise names what the learner does and what their explanation should

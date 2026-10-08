@@ -18,6 +18,10 @@ understand, modify, and verify. Prefer simple, explicit code over cleverness.
 - Keep one source of truth for shared labels, routes, documentation URLs,
   configuration, thresholds, and status definitions. Centralize repeated conceptual
   values where it makes changes safer and clearer.
+- Keep presentation rules in CLAUDE.md and the implementation map in UI_LAYOUTS.md.
+  Chapter READMEs add chapter-specific details rather than alternate shared-layout
+  rules. Update these documents with changes to reusable templates or controls;
+  label old audits and prototypes as historical instead of treating them as policy.
 - Before adding a dependency, consider existing alternatives, maintenance, bundle
   size, security, and API stability. Do not install libraries for trivial problems.
 - Use descriptive names and readable control flow. Name values with domain meaning;
@@ -47,14 +51,20 @@ understand, modify, and verify. Prefer simple, explicit code over cleverness.
    they serve different learning goals.
 2. Make the smallest clean change, with clear boundaries and consistent styling.
    If shared presentation changes, apply it through the shared implementation so
-   all affected pages stay aligned. For chapter presentation requirements, follow
-   [CLAUDE.md](./CLAUDE.md).
+   all affected pages stay aligned. Locate the owner in [UI_LAYOUTS.md](./UI_LAYOUTS.md)
+   before editing; a request that applies to all lectures must not become separate
+   button markup or spacing fixes in each lecture. For chapter presentation
+   requirements, follow [CLAUDE.md](./CLAUDE.md).
 3. Check affected callers, realistic edge cases, and relevant tests. Scale
    verification to risk; prioritize semantic correctness and meaningful regressions.
    For UI changes, compare the affected page with its reference pages at relevant
    viewport sizes and states. Check spacing, dimensions, alignment, and responsive
    behavior as well as colors and fonts. Verify structure and equivalent behavior,
    not just the absence of overflow.
+   When spacing must stay unchanged, compare the affected title, toolbar, and panel
+   bounds before and after. For a shared template change, include every variant and
+   the visualization without metric cards; for a control change, check hover,
+   keyboard focus, and both themes as applicable.
 4. Review the diff. Remove dead code and temporary artifacts, and confirm the
    feature is easy to locate, understand, and change without unrelated knowledge.
 

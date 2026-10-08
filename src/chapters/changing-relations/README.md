@@ -1,4 +1,22 @@
-# Lecture 1: changing relations
+# Changing Relations
+
+## Shared presentation
+
+Follow [CLAUDE.md](../../../CLAUDE.md) and
+[UI_LAYOUTS.md](../../../UI_LAYOUTS.md) for shared UI rules and component ownership.
+Both lectures use `LectureScreen` with `layout="with-tip"`. The tip appears only
+when it fits; the shared frame owns the visualization and playback footprint.
+The exercise uses `ExerciseFrame` without a tip. Preserve the existing title,
+toolbar, subtitle, metric, and table positions unless a layout change is requested.
+
+Lectures use the shared Controls tour button above Start guided run, with the
+mobile title-overlap guard. Top Previous/Next page links are hidden on lectures
+and exercises; the separate change/timestamp playback controls remain. All SQL &
+Objectives popups contain objective, SQL, and documentation only, without
+Tutorial/Exercises navigation buttons. `LessonText` remains the reusable renderer
+for typed inline explanation fragments, including Chapter 2's column references.
+
+## Lecture 1 behavior
 
 The first tutorial uses a deterministic product relation and the approved split
 workbench: ledger on the left, grouped current relation on the right, metrics
@@ -32,9 +50,10 @@ highlights the two count metrics, excluding the logical-time card. Short inline
 explanations use the live tables instead of duplicated diagrams or hypothetical
 panels. Other chapters retain their existing spotlight placement.
 
-Both lectures reserve the same visualization footprint as Chapter 2's first two
-lectures, keeping playback controls and the Tip at the reference positions without
-enlarging the four-row tables. The three metric cards share equal columns and gaps;
+Both lectures define the reference visualization footprint used by the shared
+lecture layouts. Chapter 2 uses the separate no-tip footer treatment; it does not
+set Chapter 1's playback or tip positions. The four-row tables retain their size.
+The three metric cards share equal columns and gaps;
 Lecture 1's two-card guide target uses those same columns. On phones, each selected
 ledger reserves four rows so playback does not move when the timestamp changes.
 Return to latest stays in the right-hand playback group. The Tip appears only when
