@@ -228,26 +228,6 @@
   text-decoration: underline;
 }
 
-.guided-lab-reference-links {
-  display: flex;
-  gap: 12px;
-  margin-top: 20px;
-}
-
-.guided-lab-reference-links a {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  border: 1px solid var(--lab-border);
-  border-radius: 5px;
-  padding: 10px 14px;
-  color: var(--lab-purple);
-}
-
-.guided-lab-reference-links a:hover {
-  background: var(--surface-muted);
-}
-
 .guided-lab-page-navigation .chapter-content-list {
   display: flex;
   flex-wrap: wrap;

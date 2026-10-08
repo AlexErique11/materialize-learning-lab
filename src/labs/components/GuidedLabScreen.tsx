@@ -1,8 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
 import { ArrowRight, Lightbulb, Pause, Play } from 'lucide-react';
-import { Link, useLocation } from 'react-router';
+import { useLocation } from 'react-router';
 import { materializeDocumentation } from '../../app/resources';
-import { chapterSectionPath, getChapterSections } from '../../chapters/chapterOutline';
 import { chapterPath, type ChapterDefinition } from '../../chapters/chapterRegistry';
 import { SqlObjectivesPanel } from '../../components/lab/SqlObjectivesPanel';
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs';
@@ -141,18 +140,7 @@ export function GuidedLabScreen({
         open={referenceOpen}
         onClose={() => setReferenceOpen(false)}
         sql={reference?.sql}
-        objective={
-          <>
-            <p>{reference?.objective ?? chapter.description}</p>
-            <nav className="guided-lab-reference-links" aria-label="Lab sections">
-              {getChapterSections(chapter).map((section) => (
-                <Link key={section.slug} to={chapterSectionPath(chapter, section.slug)}>
-                  {section.title}<ArrowRight size={16} aria-hidden="true" />
-                </Link>
-              ))}
-            </nav>
-          </>
-        }
+        objective={<p>{reference?.objective ?? chapter.description}</p>}
         documentationLinks={reference?.documentationLinks ?? [{ label: materializeDocumentation.title, href: materializeDocumentation.href }]}
       />}
     </section>
