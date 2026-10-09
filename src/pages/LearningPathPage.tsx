@@ -2,23 +2,16 @@ import {
   ArrowRight, ChevronRight, ChevronsRight, CircleArrowRight, CircleHelp, FileText,
 } from 'lucide-react';
 import { Link } from 'react-router';
-import { coreChapters } from '../chapters/chapterRegistry';
 import { findChallenge, challengePath } from '../challenges/challengeRegistry';
 import { DOCUMENTATION_URL } from '../app/resources';
 import { Button } from '../components/ui/Button';
 import { useWalkthrough } from '../components/walkthrough/WalkthroughProvider';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
-import { ProgressBar } from '../components/ui/ProgressBar';
 import { featuredChallenges, labFeatures } from './learningPathContent';
 
-function LearningPathProgress({ total, label }: { total: number; label: string }) {
-  return (
-    <div className="learning-path-progress">
-      <div><span>Your progress</span><span>0/{total} completed</span></div>
-      <ProgressBar value={0} total={total} label={label} />
-    </div>
-  );
+function LearningPathProgress() {
+  return <div className="learning-path-progress reserved-progress" aria-hidden="true" />;
 }
 
 export function LearningPathPage() {
@@ -47,8 +40,9 @@ export function LearningPathPage() {
                 <div><h3>{title}</h3><p>{description}</p></div>
               </li>
             ))}
+            <li className="reserved-feature" aria-hidden="true" />
           </ul>
-          <LearningPathProgress total={coreChapters.length} label="Core chapters completed" />
+          <LearningPathProgress />
         </section>
         <section className="learning-path-card" aria-labelledby="challenges-title">
           <Link to="/challenges" className="learning-path-card-header" aria-labelledby="challenges-title">
@@ -56,22 +50,22 @@ export function LearningPathPage() {
             <ArrowRight className="learning-path-arrow" size={26} aria-hidden="true" />
           </Link>
           <ul className="learning-path-challenges">
-            {featuredChallenges.map(({ slug, title, description }) => {
+            {featuredChallenges.map((slug) => {
               const challenge = findChallenge(slug);
               if (!challenge) return null;
               return (
                 <li key={slug}>
                   <Link to={challengePath(challenge)}>
                     <CircleArrowRight className="learning-path-marker" size={26} strokeWidth={2.5} aria-hidden="true" />
-                    <div><h3>{title}</h3><p>{description}</p></div>
-                    <span className="learning-path-status">Not started</span>
+                    <div><h3>{challenge.title}</h3><p aria-hidden="true" /></div>
+                    <span className="learning-path-status reserved-status" aria-hidden="true" />
                     <ChevronRight className="learning-path-chevron" size={22} aria-hidden="true" />
                   </Link>
                 </li>
               );
             })}
           </ul>
-          <LearningPathProgress total={featuredChallenges.length} label="Featured challenges completed" />
+          <LearningPathProgress />
         </section>
       </div>
       <section className="learning-path-resources" aria-labelledby="resources-title">

@@ -89,11 +89,6 @@
     flex-direction: column;
   }
 
-  .page-container-fit .content-placeholder-body {
-    min-height: 0;
-    flex: 1;
-  }
-
   .page-heading {
     display: flex;
     align-items: flex-start;

@@ -1,8 +1,4 @@
 @layer components {
-  .content-placeholder-body {
-    min-height: 240px;
-  }
-
   .chapter-content-list a {
     display: flex;
     min-height: 64px;

@@ -23,7 +23,7 @@ export function SqlObjectivesPanel({
         <section>
           <h3 className="reference-title">Learning objective</h3>
           <div className="text-sm leading-relaxed text-text-muted">
-            {objective ?? 'Objectives will be added with this lab.'}
+            {objective ?? <div className="reserved-reference-line" aria-hidden="true" />}
           </div>
         </section>
         <section>
@@ -33,7 +33,7 @@ export function SqlObjectivesPanel({
               <code>{sql}</code>
             </pre>
           ) : (
-            <p className="reference-placeholder">This lab has no SQL reference yet.</p>
+            <div className="reserved-sql-reference" aria-hidden="true" />
           )}
         </section>
         <section>
@@ -50,7 +50,7 @@ export function SqlObjectivesPanel({
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-text-muted">Lab-specific references will appear here.</p>
+            <div className="reserved-reference-line" aria-hidden="true" />
           )}
         </section>
       </div>

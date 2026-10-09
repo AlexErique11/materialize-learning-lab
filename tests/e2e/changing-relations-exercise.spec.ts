@@ -206,8 +206,8 @@ test('the chapter lists one exercise, preserves old links, and keeps the request
     await expect(reference).toContainText('complete logical timestamp');
     await expect(reference).toContainText('SELECT DISTINCT product, price FROM products;');
     await expect(reference).toContainText('SUBSCRIBE products;');
-    await expect(reference.getByRole('link', { name: 'Tutorial', exact: true })).toHaveAttribute('href', '/labs/changing-relations/tutorial');
-    await expect(reference.getByRole('link', { name: 'Exercises', exact: true })).toHaveAttribute('href', '/labs/changing-relations/exercises');
+    await expect(reference.getByRole('link', { name: 'Tutorial', exact: true })).toHaveCount(0);
+    await expect(reference.getByRole('link', { name: 'Exercises', exact: true })).toHaveCount(0);
     await expect(reference.getByRole('link', { name: 'SUBSCRIBE: logical timestamps and signed diffs', exact: true })).toHaveAttribute('href', 'https://materialize.com/docs/sql/subscribe/#output');
     await page.screenshot({ path: testInfo.outputPath(`inventory-reference-${theme}.png`) });
     await page.keyboard.press('Escape');

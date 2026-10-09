@@ -6,8 +6,9 @@ rather than mirroring the navigation of the Materialize documentation.
 
 This is a learning-scope specification, not an inventory of shipped pages or a UI
 template. Current implementation details live in the chapter READMEs and
-`src/chapters/chapterOutline.ts`. Follow [CLAUDE.md](./CLAUDE.md) and
-[UI_LAYOUTS.md](./UI_LAYOUTS.md) for shared presentation and layout requirements.
+`src/chapters/chapterOutline.ts`. Follow [UI_LAYOUTS.md](./UI_LAYOUTS.md) for shared
+presentation and layout requirements and [MAINTAINABILITY.md](./MAINTAINABILITY.md)
+for the development workflow.
 
 The curriculum is grounded in the current
 [Materialize documentation](https://materialize.com/docs/). Materialize changes

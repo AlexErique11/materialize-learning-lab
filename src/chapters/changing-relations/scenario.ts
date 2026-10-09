@@ -1,4 +1,5 @@
-import type { LessonTextContent } from './LessonText';
+import { logicalTimestampHelp } from '../../components/lesson/logicalTimestampHelp';
+import type { LessonTextContent } from '../../components/lesson/LessonText';
 import type { RelationUpdate } from './simulation';
 
 interface LectureStep {
@@ -88,7 +89,7 @@ export const lectureSteps: readonly LectureStep[] = [
 export const relationHelp = {
   totalCopies: { label: 'Total row copies', text: 'The sum of Copies per row for every row currently present. Three copies of (A, $10) count as 3, even though they occupy one grouped table line.' },
   distinctRows: { label: 'Distinct full rows', text: 'The number of different full rows with at least one copy. All column values matter: (A, $10) and (A, $12) would be two distinct rows. Identical copies count once.' },
-  logicalTime: { label: 'Current logical timestamp', text: 'The logical timestamp of the state being displayed. These small t values are teaching labels, not elapsed seconds. Inspecting an earlier timestamp shows its earlier state.' },
+  logicalTime: logicalTimestampHelp,
   ledger: { label: 'Change ledger', text: 'The authored sequence of changes in this tutorial. Each record contains a logical timestamp, a signed diff, and the affected full row. Upcoming changes have not been applied yet.' },
   time: { label: 't', text: 'The logical timestamp at which this change takes effect. Each timestamp here contains one complete change. Select an applied timestamp to inspect the relation after that change.' },
   diff: { label: 'Signed diff', text: 'How much the full row’s copy count changes. +3 adds three copies; −1 retracts one copy. The diff is a change in count, not the resulting count or a price adjustment.' },

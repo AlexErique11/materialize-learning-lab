@@ -1,7 +1,7 @@
 import type { ReactNode, RefObject } from 'react';
 import { ArrowRight, Clock3 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
-import { RelationHelp } from '../changing-relations/RelationHelp';
+import { RelationHelp } from '../../components/lesson/RelationHelp';
 export interface MaintenanceStage { id: string; title: string; shortTitle?: string; sql: string; description: string; showChanges?: boolean }
 export function MaintenancePanels({ stages, layout, activeStage, setSelectedStage, mobileDiffs, setMobileDiffs, guided = false, time, timeTestId, beforeChange = false, outputChanged = false, renderRows, panelRefs }: {
  stages: readonly MaintenanceStage[]; layout?: 'comparison'; activeStage: string; setSelectedStage: (stage: string) => void;

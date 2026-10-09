@@ -9,10 +9,10 @@ import { GuidedLabScreen } from '../../labs/components/GuidedLabScreen';
 import { LectureScreen } from '../../labs/components/LectureScreen';
 import { useLectureRun } from '../../labs/useLectureRun';
 import type { ChapterDefinition } from '../chapterRegistry';
-import { RelationHelp } from '../changing-relations/RelationHelp';
-import { relationHelp } from '../changing-relations/scenario';
-import { LessonText, type LessonTextContent } from '../changing-relations/LessonText';
-import '../changing-relations/lecture-one.css';
+import { RelationHelp } from '../../components/lesson/RelationHelp';
+import { logicalTimestampHelp } from '../../components/lesson/logicalTimestampHelp';
+import { LessonText, type LessonTextContent } from '../../components/lesson/LessonText';
+import '../../styles/lesson.css';
 import './lecture-one.css';
 import './lecture-two.css';
 
@@ -47,7 +47,7 @@ export function MaintenanceLecture<Snapshot extends MaintenanceSnapshot>({ chapt
 
   return <>
     <LectureScreen layout="without-tip" chapter={chapter} title={title} regionLabel="Lecture content" navigation={navigation}
-      className={`changing-relations-page incremental-maintenance-page join-maintenance-page maintenance-lecture-page${layout === 'comparison' ? ' maintenance-comparison-lecture' : ''}`} reference={reference}
+      className={`lesson-page changing-relations-page incremental-maintenance-page join-maintenance-page maintenance-lecture-page${layout === 'comparison' ? ' maintenance-comparison-lecture' : ''}`} reference={reference}
       description={description}
       simulation={{ completed: state.guided ? state.step : state.selectedTime, total: state.guided ? lessons.length : definition.totalChanges,
         progressLabel: state.guided ? 'Tutorial' : 'Changes', playing: state.playing,
@@ -56,7 +56,7 @@ export function MaintenanceLecture<Snapshot extends MaintenanceSnapshot>({ chapt
       guided={state.guided} metrics={layout !== 'comparison' && <div className="relation-metrics" aria-label="Relation metrics">
           <WorkspaceMetric icon={<Database size={25} aria-hidden="true" />} label={<>Input rows <RelationHelp label="Input rows" text="The number of rows currently present in the input table or tables. Each row counts once; identical rows in the input are still separate copies." /></>} value={current.inputCount} />
           <WorkspaceMetric icon={<Table2 size={25} aria-hidden="true" />} label={<>Result rows <RelationHelp label="Result rows" text="The number of rows currently shown in the query result. Joins produce a row for each matching input-row combination; aggregations produce one row per group." /></>} value={current.output.length} />
-          <WorkspaceMetric icon={<Clock3 size={25} aria-hidden="true" />} label={<>{relationHelp.logicalTime.label} <RelationHelp {...relationHelp.logicalTime} /></>}
+          <WorkspaceMetric icon={<Clock3 size={25} aria-hidden="true" />} label={<>{logicalTimestampHelp.label} <RelationHelp {...logicalTimestampHelp} /></>}
             value={<span className="relation-time" data-testid={timeTestId}>t = {state.selectedTime}</span>} />
         </div>}
       visualization={<MaintenancePanels stages={stages} layout={layout} activeStage={activeStage} setSelectedStage={setSelectedStage}

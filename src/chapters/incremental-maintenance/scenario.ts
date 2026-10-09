@@ -1,4 +1,4 @@
-import type { LessonTextContent } from '../changing-relations/LessonText';
+import type { LessonTextContent } from '../../components/lesson/lessonTextTypes';
 export interface Order {
   readonly orderId: number;
   readonly productId: number;

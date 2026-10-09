@@ -1,5 +1,5 @@
+import { DiffBadge } from '../../components/lesson/DiffBadge';
 import { Fragment } from 'react';
-import { DiffBadge } from '../changing-relations/RelationWorkbench';
 import type { JoinedOrder, Product } from './join-scenario';
 import type { Diff, Order, OutputRow } from './scenario';
 

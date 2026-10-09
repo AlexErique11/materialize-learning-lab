@@ -18,7 +18,7 @@ understand, modify, and verify. Prefer simple, explicit code over cleverness.
 - Keep one source of truth for shared labels, routes, documentation URLs,
   configuration, thresholds, and status definitions. Centralize repeated conceptual
   values where it makes changes safer and clearer.
-- Keep presentation rules in CLAUDE.md and the implementation map in UI_LAYOUTS.md.
+- Keep presentation rules in UI_LAYOUTS.md and the implementation map in UI_LAYOUTS.md.
   Chapter READMEs add chapter-specific details rather than alternate shared-layout
   rules. Update these documents with changes to reusable templates or controls;
   label old audits and prototypes as historical instead of treating them as policy.
@@ -45,7 +45,7 @@ understand, modify, and verify. Prefer simple, explicit code over cleverness.
    reference page(s), then inspect their component, markup, shared styles, and
    rendered layout before editing. Reuse that implementation where practical;
    do not independently recreate a comparable page and tune it by eye afterward.
-   Follow both levels of consistency in [CLAUDE.md](./CLAUDE.md): app-wide shared
+   Follow both levels of consistency in [UI_LAYOUTS.md](./UI_LAYOUTS.md): app-wide shared
    styling across chapters, and equivalent layout and spacing for matching
    visualizations within a chapter. Keep distinct chapter visualizations when
    they serve different learning goals.
@@ -54,7 +54,7 @@ understand, modify, and verify. Prefer simple, explicit code over cleverness.
    all affected pages stay aligned. Locate the owner in [UI_LAYOUTS.md](./UI_LAYOUTS.md)
    before editing; a request that applies to all lectures must not become separate
    button markup or spacing fixes in each lecture. For chapter presentation
-   requirements, follow [CLAUDE.md](./CLAUDE.md).
+   requirements, follow [UI_LAYOUTS.md](./UI_LAYOUTS.md).
 3. Check affected callers, realistic edge cases, and relevant tests. Scale
    verification to risk; prioritize semantic correctness and meaningful regressions.
    For UI changes, compare the affected page with its reference pages at relevant

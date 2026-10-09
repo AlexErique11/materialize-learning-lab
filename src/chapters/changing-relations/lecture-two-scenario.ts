@@ -1,4 +1,4 @@
-import type { LessonTextContent } from './LessonText';
+import type { LessonTextContent } from '../../components/lesson/LessonText';
 import type { RelationUpdate, RowMultiplicity } from './simulation';
 
 export const lectureTwoInitial: readonly RowMultiplicity[] = [

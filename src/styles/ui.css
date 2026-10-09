@@ -164,62 +164,6 @@
     padding: 1.15rem;
   }
 
-  .empty-state {
-    display: flex;
-    min-height: 280px;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2.5rem 1.5rem;
-    text-align: center;
-  }
-
-  .empty-state-icon {
-    display: grid;
-    width: 48px;
-    height: 48px;
-    place-items: center;
-    margin-bottom: 1rem;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    color: var(--text-muted);
-    background: var(--surface-muted);
-  }
-
-  .empty-state-title {
-    font-size: 0.95rem;
-    font-weight: 550;
-  }
-
-  .empty-state-description {
-    max-width: 47ch;
-    margin-top: 0.6rem;
-    color: var(--text-muted);
-    font-size: 0.85rem;
-    line-height: 1.7;
-  }
-
-  .empty-state-compact {
-    min-height: 175px;
-    padding: 1.25rem 0.5rem;
-  }
-
-  .empty-state-compact .empty-state-icon {
-    width: auto;
-    height: auto;
-    margin-bottom: 1rem;
-    border: none;
-    background: transparent;
-  }
-
-  .empty-state-compact .empty-state-title {
-    font-size: 0.8rem;
-  }
-
-  .empty-state-compact .empty-state-description {
-    font-size: 0.75rem;
-  }
-
   .table-scroll {
     width: 100%;
     max-width: 100%;
@@ -272,5 +216,88 @@
 
   .dialog::backdrop {
     background: var(--overlay);
+  }
+}
+
+/* Inert reserved regions retain the established layout without suggesting content. */
+.reserved-status {
+  visibility: hidden;
+  min-width: 80px;
+  min-height: 26px;
+}
+.reserved-badge {
+  visibility: hidden;
+  width: 80px;
+  height: 23.984375px;
+}
+.reserved-feature {
+  visibility: hidden;
+  min-height: 42px;
+}
+.reserved-progress {
+  border-color: transparent;
+  min-height: 47.1875px;
+}
+.reserved-sequence-progress {
+  visibility: hidden;
+  height: 88.5px;
+}
+.reserved-controls,
+.reserved-tip {
+  visibility: hidden;
+}
+.reserved-lab-progress {
+  height: 30.5px;
+}
+.reserved-content {
+  height: 305px;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+.reserved-description {
+  min-height: 1.5em;
+}
+.reserved-overview-row {
+  min-height: 80px;
+  border-color: transparent;
+  background: none;
+}
+.reserved-sidebar-row {
+  height: 32px;
+  visibility: hidden;
+}
+.reserved-sidebar-progress {
+  height: 28px;
+}
+.reserved-reference-line {
+  height: 21px;
+}
+.reserved-sql-reference {
+  height: 60px;
+}
+.learning-path-challenges p:empty {
+  min-height: 19.6px;
+}
+@media (max-width: 639px) {
+  .reserved-lab-progress {
+    height: 30.5px;
+  }
+  .reserved-sequence-progress {
+    height: 107.6875px;
+  }
+  .reserved-feature {
+    min-height: 61.578125px;
+  }
+  .learning-path-card:first-child {
+    min-height: 454.140625px;
+  }
+  .learning-path-card:nth-child(2) {
+    min-height: 462.5625px;
+  }
+}
+@media (max-width: 767px) {
+  .reserved-overview-row {
+    min-height: 133.09375px;
   }
 }

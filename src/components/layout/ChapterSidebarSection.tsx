@@ -2,7 +2,6 @@ import { ChevronDown } from 'lucide-react';
 import { NavLink } from 'react-router';
 import {
   chapterContentPath,
-  chapterSectionPath,
   type ChapterSectionDefinition,
 } from '../../chapters/chapterOutline';
 import type { ChapterDefinition } from '../../chapters/chapterRegistry';
@@ -28,12 +27,7 @@ export function ChapterSidebarSection({ chapter, section, open, onOpenChange }: 
       </summary>
       <ol className="chapter-pages">
         {section.pages.length === 0 && (
-          <li>
-            <NavLink to={chapterSectionPath(chapter, section.slug)} end aria-label={`${section.listTitle} overview`}>
-              <span className="chapter-page-dot" aria-hidden="true" />
-              <span className="chapter-page-label">To be done</span>
-            </NavLink>
-          </li>
+          <li className="reserved-sidebar-row" aria-hidden="true" />
         )}
         {section.pages.map((page) => (
           <li key={page.slug}>

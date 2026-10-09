@@ -19,7 +19,7 @@ export function FaqPage() {
         </details>
         <details>
           <summary>Is my progress saved?</summary>
-          <p>This version provides the course structure. Exercises and completion tracking are still being built, so progress starts at zero.</p>
+          <p>Chapters 1 and 2 include interactive lectures and exercises. Question and playback progress apply within each activity; chapter and challenge completion is not tracked across the learning path.</p>
         </details>
       </section>
     </PageContainer>

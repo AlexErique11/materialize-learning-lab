@@ -1,5 +1,5 @@
 import { Check, X } from 'lucide-react';
-import type { ExerciseGrade } from '../changing-relations/useExerciseStages';
+import type { ExerciseGrade } from '../../hooks/useExerciseStages';
 import type { Checkpoint, Prediction } from './exercise-scenarios';
 
 export function ExerciseAnswers({ checkpoint, answer, grade, onEdit, accepted = false, reviewChoices = false }: {

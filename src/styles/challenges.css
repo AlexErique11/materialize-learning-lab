@@ -24,10 +24,6 @@
     background: var(--surface);
   }
 
-  .sequence-progress-bar {
-    max-width: 180px;
-  }
-
   .challenge-card {
     display: flex;
     min-width: 0;
@@ -46,9 +42,5 @@
 @media (max-width: 639px) {
   .sequence-progress {
     padding: 1.1rem;
-  }
-
-  .sequence-progress-bar {
-    max-width: none;
   }
 }

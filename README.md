@@ -1,19 +1,18 @@
 # Materialize Learning Lab   
 
 A static, browser-based learning product for developers and data engineers who
-know SQL and want to understand Materialize. [CLAUDE.md](./CLAUDE.md) defines the
-architecture; [CURRICULUM.md](./CURRICULUM.md) defines the learning sequence.
+know SQL and want to understand Materialize. [CURRICULUM.md](./CURRICULUM.md) defines the learning sequence.
 
 The app includes deterministic lectures and exercises for Chapters 1 and 2,
 guided runs, control walkthroughs, SQL references, themes, and responsive chapter
 navigation. Scenarios run locally; there is no live SQL service or Materialize
-connection. Other curriculum chapters and capstones remain registered placeholders.
-Learning-path completion totals are not yet a complete progress dashboard.
+connection. Other curriculum chapters and capstones have registered routes with empty
+reserved workspaces. Chapter and challenge completion is not tracked across the
+learning path. Working activities retain their question and playback progress.
 
 ## Contributor instructions
 
-Read [AGENTS.md](./AGENTS.md), [CLAUDE.md](./CLAUDE.md), and
-[MAINTAINABILITY.md](./MAINTAINABILITY.md). For UI changes, use
+Read [MAINTAINABILITY.md](./MAINTAINABILITY.md) for code quality and workflow. For UI changes, use
 [UI_LAYOUTS.md](./UI_LAYOUTS.md) to locate the shared templates and controls, then
 read the relevant chapter README. Preserve existing spacing unless the user asks
 to change it. Update a shared component once rather than patching each lecture.
@@ -23,7 +22,7 @@ to change it. Update a shared component once rather than patching each lecture.
 Use Node.js 22.12 or newer and npm.
 
 ```sh
-npm install
+npm ci
 npm run dev
 ```
 
@@ -51,7 +50,7 @@ fallback. No backend or persistent server is required.
 | `/labs/:chapterSlug/:sectionSlug`           | Tutorial or Exercises overview                             |
 | `/labs/:chapterSlug/:sectionSlug/:pageSlug` | Registered lecture or exercise page                        |
 | `/challenges`                               | Three capstone overviews                                   |
-| `/challenges/:challengeSlug`                | Validated challenge placeholder                            |
+| `/challenges/:challengeSlug`                | Validated challenge detail                            |
 | Other locations                             | Accessible not-found page                                  |
 
 The selected chapter expands Tutorial and Exercises in the sidebar.
@@ -62,7 +61,7 @@ uses a keyboard-operable disclosure. Chapter overviews have no bottom pagination
 Chapter 1 implements two lectures and one exercise. Chapter 2 implements four
 lectures and two exercises; its visible Exercise 2 retains the `exercise-3` URL.
 Legacy exercise URLs redirect through `ChapterContentPage`. The Time in
-Materialize chapter has two tutorial and two exercise placeholder slots.
+Materialize chapter has two tutorial and two exercise navigation slots.
 Implemented lectures and exercises omit top Previous/Next page links. Lecture
 playback retains Previous/Next change or timestamp controls. Use chapter
 navigation and overview entries to move between pages. Unknown sections/pages
@@ -79,15 +78,15 @@ src/
   labs/                Shared screens, lecture layouts and playback reducer
   components/
     layout/            Header, sidebar, breadcrumbs, page layout
-    chapter/           Content placeholders, previous/next navigation
-    lab/               Timeline, source, event, result, stream, reference, checkpoint
+    chapter/           Overview sections and previous/next navigation
+    lab/               Exercise frame, metrics, panel tabs and SQL reference
     walkthrough/       Chapter tour, lecture controls help and spotlight behavior
-    ui/                Buttons, badges, progress, empty states, panels, table, dialog
-  hooks/               Theme preference/provider and shared page-title behavior
+    lesson/            Explanation fragments, help and shared help definitions
+    ui/                Buttons, badges, progress, panels, table and dialog
+  hooks/               Theme preference/provider, page titles and exercise-stage flow
   styles/              Tokens, global base rules and styles grouped by responsibility
   domain/              Boundary for domain code shared across chapters when needed
 tests/e2e/             Chapter journeys, themes, routing, responsive checks
-mock/                  Preserved exploratory prototype; not application code
 ```
 
 ## Extending the app
@@ -114,13 +113,6 @@ mock/                  Preserved exploratory prototype; not application code
   [UI_LAYOUTS.md](./UI_LAYOUTS.md): `with-tip` for Chapter 1 and `without-tip` for
   all Chapter 2 lectures. Reuse `ExerciseFrame` for exercise controls and flow;
   keep the chapter's visualization inside the shared frame.
-- The lab workspace components remain available for future implementation but
-  are not exposed as preview routes. Compose `LabWorkspace` with the explicit
-  panel components. Panels accept display props or children; source/result
-  tables use the semantic `Table`
-  wrapper with ordinary `thead`, `tbody`, and cell elements.
-- Supply callbacks to `LabToolbar` only when the real actions exist. Missing
-  callbacks leave run/reset/guided controls disabled.
 - `SqlObjectivesPanel` accepts an objective, optional SQL text, and documentation
   links. Its popups omit Tutorial/Exercises navigation. Lectures share
   `useLectureRun` for playback and guided prediction/reveal state. `WalkthroughProvider`
@@ -153,7 +145,7 @@ mock/                  Preserved exploratory prototype; not application code
 
 `src/styles/globals.css` imports the presentation system and defines only global
 theme mappings, base rules, and reduced-motion behavior. Shared layout, UI
-primitives, chapter navigation, reusable lab workspace, challenges, and FAQ each
+primitives, chapter navigation, SQL reference, challenges, and FAQ each
 have their own stylesheets. `learning-path.css`, `guided-labs.css`, and
 `chapter-overview.css` own their corresponding page styles; `app-header.css`
 owns the complete header and uses the shared theme tokens. Preserve the existing
@@ -178,3 +170,57 @@ saved in `test-results/` for
 visual review, with traces/screenshots retained on failure.
 
 For interactive test debugging, use `npm run test:e2e:ui`.
+
+## Product and content
+
+- Teach SQL-capable newcomers to predict and explain Materialize behavior through
+  interactive simulations: Learn -> See -> Try -> Check -> Build.
+- [CURRICULUM.md](./CURRICULUM.md) defines chapter boundaries and order. Implement
+  the requested scope; do not expand into a generic SQL playground or LMS.
+- Each chapter needs a distinct objective, meaningful variations, prediction and
+  explanation exercises, and a final less-guided challenge. Order by prerequisites.
+- Ask learners to predict before revealing effects. Explain what happened, why,
+  and the misconception behind an incorrect answer. Test SQL syntax only when it
+  is a learning objective; favor understanding behavior over syntax recall.
+- Build every lecture and exercise from current official
+  [Materialize documentation](https://materialize.com/docs/). Before adding or
+  changing content or semantics, verify explanations, SQL, simulations, guided
+  steps, hints, answers, and grading against it. None may contradict documented
+  behavior. Resolve uncertainty before implementation; do not invent semantics.
+- Keep supporting links and verification notes beside each chapter: feature
+  availability (stable or preview), relevant boundary cases, and reproducible
+  SQL examples where practical. Use real queries to resolve unclear behavior.
+- Label educational simplifications and their limits without teaching false
+  behavior. Never present simulated timing, memory, or work as measured performance.
+- Preserve distinctions between logical, event, and wall-clock time; input
+  ingestion and read consistency; durable output and in-memory state. Diffs are
+  changes in full-row multiplicity, not necessarily restricted to +1 and -1.
+- Teach causality and misconceptions through synchronized views, predictions,
+  explanations, and exercises. Avoid decoration that implies false behavior.
+
+## Technical accuracy reminders
+
+Verify these distinctions when relevant; this list does not replace documentation:
+
+- Distinguish mz_now() logical query time from now() transaction system-clock time.
+- Indexes maintain full results in cluster memory; they are not secondary B-trees.
+  Replicas redundantly execute workloads rather than shard them.
+- A running object need not be fresh. Consistency does not imply all recent
+  upstream writes have been ingested.
+- Source snapshots differ from hydration. Durable materialized output does not
+  eliminate hydration; small results can require large intermediate state.
+- Exactly-once behavior depends on the whole delivery path, including downstream
+  systems.
+
+## Architecture
+
+- Static client app: Vite, React, strict TypeScript, React Router, Tailwind CSS,
+  Vitest, and Playwright. No backend or new infrastructure without a concrete need.
+- One canonical simulation state drives every related panel. Keep domain semantics
+  and deterministic state transitions in pure TypeScript, separate from rendering.
+- Keep chapter scenarios, explanations, objectives, and exercises beside their
+  chapter. Reuse appropriate shared components, hooks, and styles.
+- Preserve stable chapter and lab URLs. Use localStorage for existing local
+  progress; do not add persistence systems without a requirement.
+- Prefer pure functions, useReducer, and small hooks. Add global state libraries,
+  lesson engines, or other infrastructure only for demonstrated needs.

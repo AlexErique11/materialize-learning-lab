@@ -1,91 +1,9 @@
 @layer components {
-  .workspace-container {
-    max-width: 1440px;
-  }
-
-  .workspace-container .page-heading {
-    margin-bottom: 1.5rem;
-  }
-
-  .workspace-container h1 {
-    font-size: clamp(1.85rem, 2.75vw, 2.35rem);
-  }
-
-  .lab-toolbar {
-    margin-bottom: 1.5rem;
-    border-top: 1px solid var(--border);
-    padding-top: 1.25rem;
-  }
-
-  .lab-toolbar-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1.25rem;
-  }
-
-  .lab-progress {
-    width: 140px;
-  }
-
-  .lab-workspace {
-    display: grid;
-    gap: 1.25rem;
-  }
-
-  .timeline-region {
-    min-height: 185px;
-    border: 1px dashed var(--border-strong);
-    border-radius: 4px;
-    background: var(--surface-muted);
-  }
-
-  .lab-panel-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.25rem;
-    align-items: stretch;
-  }
-
-  .lab-panel-grid > .panel {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .lab-panel-grid .panel-body {
-    flex: 1;
-  }
-
-  .moment-readout {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 0.8rem;
-    color: var(--text-muted);
-    background: var(--surface-muted);
-  }
-
   .reference-title {
     margin-bottom: 0.75rem;
     font-size: 0.85rem;
     font-weight: 600;
   }
-
-  .reference-placeholder {
-    border: 1px dashed var(--border-strong);
-    border-radius: 4px;
-    padding: 1.25rem;
-    color: var(--text-muted);
-    background: var(--surface-muted);
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-  }
-
   .sql-reference {
     overflow-x: auto;
     border: 1px solid var(--border);
@@ -94,17 +12,5 @@
     background: var(--surface-muted);
     font-size: 0.8rem;
     line-height: 1.7;
-  }
-}
-
-@media (min-width: 1280px) {
-  .lab-panel-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 639px) {
-  .lab-panel-grid {
-    grid-template-columns: minmax(0, 1fr);
   }
 }

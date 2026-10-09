@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { inventoryBatches, inventoryInitial, inventoryUpdates } from './exercise-one-scenario';
 import { getInventoryAnswer, gradeInventoryPrediction } from './inventory-exercise';
 import { applyTimestamp, copiesOf, getRelationMetrics, relationAt } from './simulation';
-import { exerciseStageReducer, initialExerciseStage, type ExerciseGrade } from './useExerciseStages';
+import { exerciseStageReducer, initialExerciseStage, type ExerciseGrade } from '../../hooks/useExerciseStages';
 
 describe('the merged inventory exercise', () => {
   it('combines five mixed changes by full-row identity, retaining separate Mug prices', () => {

@@ -26,8 +26,8 @@ test('Chapter 1 ledgers share Lecture 1 presentation and keep history usable in 
       const rect = element.getBoundingClientRect();
       return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
     };
-    const tip = document.querySelector('.guided-lab-tip')!;
-    const tipVisible = tip.getAttribute('data-fit-hidden') !== 'true';
+    const tip = document.querySelector('.guided-lab-tip');
+    const tipVisible = tip && tip.getAttribute('data-fit-hidden') !== 'true';
     return {
       metrics: Array.from(document.querySelectorAll('.relation-metric')).map(box),
       controls: box(document.querySelector('.relation-playback-controls')!),
@@ -37,16 +37,12 @@ test('Chapter 1 ledgers share Lecture 1 presentation and keep history usable in 
   for (const viewport of viewports) {
     await page.setViewportSize(viewport);
     for (const theme of ['light', 'dark']) {
-      await page.goto('/labs/incremental-maintenance/tutorial/lecture-1');
+      await page.goto('/labs/changing-relations/tutorial/lecture-1');
       const toggle = page.getByRole('button', { name: `Switch to ${theme} mode`, exact: true });
       if (await toggle.isVisible()) await toggle.click();
-      const referenceLayout = await workspaceLayout();
-      await page.goto('/labs/changing-relations/tutorial/lecture-1');
       const description = page.locator('.guided-lab-title > p');
       if (!isMobile) await expect(description).toBeVisible();
       const chapterOneLayout = await workspaceLayout();
-      expect(chapterOneLayout.controls).toEqual(referenceLayout.controls);
-      expect(chapterOneLayout.tip).toEqual(referenceLayout.tip);
       if (!isMobile) {
         const gaps = await page.evaluate(() => {
           const heading = document.querySelector('.guided-lab-heading')!.getBoundingClientRect();
@@ -161,7 +157,7 @@ test('all lecture trackers follow the displayed change when navigating back', as
   }
 });
 
-test('Chapter 2 tables and equal panels keep their dimensions and tips appear only with room', async ({ page, isMobile }) => {
+test('Chapter 2 tables and equal panels keep their dimensions without a tip', async ({ page, isMobile }) => {
   for (const lecture of [1, 2]) {
     await page.goto(`/labs/incremental-maintenance/tutorial/lecture-${lecture}`);
     const selectStage = async (index: number) => {
@@ -196,9 +192,9 @@ test('Chapter 2 tables and equal panels keep their dimensions and tips appear on
     await page.keyboard.press('Escape');
     if (!isMobile) {
       await page.setViewportSize({ width: 1440, height: 1000 });
-      await expect(page.getByRole('complementary', { name: 'Lab tip' })).toBeVisible();
+      await expect(page.getByRole('complementary', { name: 'Lab tip' })).toHaveCount(0);
       await page.setViewportSize({ width: 1280, height: 650 });
-      await expect(page.getByRole('complementary', { name: 'Lab tip' })).toBeHidden();
+      await expect(page.getByRole('complementary', { name: 'Lab tip' })).toHaveCount(0);
     }
   }
 });

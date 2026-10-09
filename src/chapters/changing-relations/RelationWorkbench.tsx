@@ -1,9 +1,10 @@
+import { DiffBadge } from '../../components/lesson/DiffBadge';
 import { Clock3, Database, Table2, Trash2 } from 'lucide-react';
 import { useState, type ReactNode, type RefObject } from 'react';
 import { Table } from '../../components/ui/Table';
 import { PanelTabs } from '../../components/lab/PanelTabs';
 import { WorkspaceMetric } from '../../components/lab/WorkspaceMetric';
-import { RelationHelp } from './RelationHelp';
+import { RelationHelp } from '../../components/lesson/RelationHelp';
 import { relationHelp } from './scenario';
 import { copiesOf, getRelationMetrics, rowKey, type ProductRow, type RelationUpdate, type RowMultiplicity } from './simulation';
 
@@ -27,10 +28,6 @@ export function RelationMetrics({ relation, time, metricsRef, countsRef }: {
         label={<>Current logical timestamp <RelationHelp {...relationHelp.logicalTime} /></>} value={<span className="relation-time">t = {time}</span>} />
     </div>
   );
-}
-
-export function DiffBadge({ diff }: { diff: number }) {
-  return <span className={`relation-count ${diff < 0 ? 'relation-count-negative' : diff === 0 ? 'relation-count-neutral' : ''}`} aria-label={diff === 0 ? 'No net change' : `${diff < 0 ? 'Retract' : 'Add'} ${Math.abs(diff)} ${Math.abs(diff) === 1 ? 'copy' : 'copies'}`}>{diff > 0 ? '+' : diff < 0 ? '−' : ''}{Math.abs(diff)}</span>;
 }
 
 export function CurrentRelation({ relation, time, relationRef, highlightCopies, affectedRows = [], minRows = 0, children }: {

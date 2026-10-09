@@ -31,8 +31,9 @@ test('lectures and exercises keep active information and controls on screen', as
       if (path.includes('incremental-maintenance')) {
         for (let time = 0; time <= 5; time++) {
           if (time) await page.getByRole('button', { name: 'Next change', exact: true }).click();
-          for (const stage of ['1. Orders', '2. Filter', '3. Projection']) {
-            await page.getByRole('navigation', { name: 'Query stages' }).getByRole('button', { name: stage, exact: false }).click();
+          for (const [index, stage] of ['1. Orders', '2. Filter', '3. Projection'].entries()) {
+            if (isMobile) await page.getByRole('navigation', { name: 'Query stages' }).getByRole('button', { name: stage, exact: false }).click();
+            await expect(page.locator('.maintenance-panels > section').nth(index)).toBeVisible();
             await expectFits(page);
           }
         }

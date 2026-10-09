@@ -2,8 +2,7 @@
 
 ## Shared presentation
 
-Follow [CLAUDE.md](../../../CLAUDE.md) and
-[UI_LAYOUTS.md](../../../UI_LAYOUTS.md) for shared UI rules and component ownership.
+Follow [UI_LAYOUTS.md](../../../UI_LAYOUTS.md) for shared UI rules and component ownership.
 Both lectures use `LectureScreen` with `layout="with-tip"`. The tip appears only
 when it fits; the shared frame owns the visualization and playback footprint.
 The exercise uses `ExerciseFrame` without a tip. Preserve the existing title,
@@ -13,7 +12,7 @@ Lectures use the shared Controls tour button above Start guided run, with the
 mobile title-overlap guard. Top Previous/Next page links are hidden on lectures
 and exercises; the separate change/timestamp playback controls remain. All SQL &
 Objectives popups contain objective, SQL, and documentation only, without
-Tutorial/Exercises navigation buttons. `LessonText` remains the reusable renderer
+Tutorial/Exercises navigation buttons. The shared `components/lesson/LessonText` remains the reusable renderer
 for typed inline explanation fragments, including Chapter 2's column references.
 
 ## Lecture 1 behavior

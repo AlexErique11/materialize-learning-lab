@@ -1,0 +1,500 @@
+@import "../labs/components/lecture-layout.css";
+
+.guided-lab-page.lesson-page {
+  gap: 14px;
+  padding-bottom: 18px;
+}
+
+.lesson-page .guided-lab-top-row {
+  margin-bottom: 0;
+}
+
+.lesson-page .guided-lab-canvas {
+  display: block;
+  min-height: 0;
+  flex: 0;
+}
+
+.lesson-page .guided-lab-title {
+  flex: 1;
+}
+
+.lesson-page .guided-lab-title > p {
+  max-width: 55ch;
+}
+
+.lesson-page .guided-lab-controls .button:disabled {
+  opacity: .5;
+}
+
+.relation-workspace {
+  display: grid;
+  width: 100%;
+  justify-self: stretch;
+  gap: 14px;
+}
+
+.relation-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.relation-metric {
+  display: flex;
+  align-items: center;
+  gap: 17px;
+  min-height: 70px;
+  border: 1px solid var(--lab-border);
+  border-radius: 5px;
+  padding: 13px 20px;
+  background: color-mix(in srgb, var(--lab-tint) 35%, var(--lab-surface));
+}
+
+.relation-metric > svg {
+  flex-shrink: 0;
+  color: var(--lab-purple);
+}
+
+.relation-metric > div {
+  min-width: 0;
+}
+
+.relation-metric > div > span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--lab-muted);
+  font-size: 12px;
+}
+
+.relation-metric strong {
+  display: block;
+  margin-top: 3px;
+  font-size: 23px;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+
+.relation-metric .relation-time {
+  color: var(--lab-purple);
+}
+
+.relation-help {
+  display: inline-flex;
+  flex-shrink: 0;
+  vertical-align: middle;
+  color: var(--lab-muted);
+}
+
+.relation-help > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 3px;
+  color: var(--lab-muted);
+}
+
+.relation-help > button:hover, .relation-help > button[aria-expanded='true'] {
+  color: var(--lab-purple);
+  background: var(--lab-tint);
+}
+
+.relation-help-tooltip {
+  position: fixed;
+  inset: auto;
+  width: min(280px, calc(100vw - 24px));
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--lab-border);
+  border-radius: 5px;
+  color: var(--lab-text);
+  background: var(--lab-surface);
+  box-shadow: 0 6px 24px var(--overlay);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  text-align: left;
+  white-space: normal;
+  pointer-events: none;
+}
+
+.relation-help-tooltip > b {
+  display: block;
+  margin: 0 0 5px;
+  color: var(--lab-purple);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.relation-column-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+}
+
+.relation-inline {
+  display: inline;
+  border-radius: 3px;
+  padding: 1px 4px;
+  color: var(--lab-purple);
+  background: var(--lab-tint);
+  font-size: .92em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.relation-inline-row, .relation-inline-time, .relation-inline-diff {
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.relation-inline-diff, .relation-inline-count {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 12%, var(--lab-surface));
+}
+
+.relation-inline-negative {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, var(--lab-surface));
+}
+
+.relation-inline-term {
+  color: var(--lab-text);
+  background: color-mix(in srgb, var(--lab-border) 55%, var(--lab-surface));
+}
+
+.relation-panel {
+  min-width: 0;
+  border: 1px solid var(--lab-border);
+  border-radius: 5px;
+  padding: 15px;
+  background: var(--lab-surface);
+}
+
+.relation-panel h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.relation-panel-time {
+  margin-left: auto;
+  color: var(--lab-muted);
+  font-size: 11px;
+  font-weight: 400;
+  white-space: nowrap;
+}
+
+.relation-panel .table-scroll {
+  border: 1px solid var(--lab-border);
+  border-radius: 4px;
+}
+
+.relation-panel .data-table {
+  font-size: 13px;
+}
+
+.relation-panel .data-table th {
+  border: 0;
+  border-bottom: 1px solid var(--lab-border);
+  padding: 11px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--lab-muted);
+  background: color-mix(in srgb, var(--lab-tint) 35%, var(--lab-surface));
+}
+
+.relation-panel .data-table th + th, .relation-panel .data-table td + td {
+  border-left: 1px solid var(--lab-border);
+}
+
+.relation-panel .data-table td {
+  height: 40px;
+  padding: 6px 12px;
+  border-color: var(--lab-border);
+}
+
+.relation-panel .data-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.relation-panel .data-table th:first-child, .relation-panel .data-table td:first-child {
+  text-align: center;
+}
+
+.relation-panel .data-table th:nth-child(2), .relation-panel .data-table td:nth-child(2) {
+  text-align: center;
+}
+
+.relation-count {
+  display: inline-flex;
+  min-width: 38px;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 3px 8px;
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 12%, var(--lab-surface));
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.relation-count-negative {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, var(--lab-surface));
+}
+
+.relation-count-neutral {
+  color: var(--lab-muted);
+  background: var(--surface-muted);
+}
+
+.relation-row-affected {
+  background: color-mix(in srgb, var(--success) 6%, var(--lab-surface));
+}
+
+.relation-timestamp-button {
+  min-width: 28px;
+  min-height: 28px;
+  border-radius: 3px;
+  font-variant-numeric: tabular-nums;
+}
+
+.relation-timestamp-button:not(:disabled):hover {
+  background: var(--lab-tint);
+  color: var(--lab-purple);
+}
+
+.relation-table-note {
+  margin-top: 12px;
+  color: var(--lab-muted);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.relation-tutorial-complete {
+  color: var(--success);
+}
+
+@media (max-width: 1350px) {
+  .guided-lab-page.lesson-page {
+    gap: 14px;
+  }
+
+  .lesson-page .guided-lab-heading {
+    gap: 9px;
+  }
+
+  .relation-workspace {
+    gap: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .lesson-page .guided-lab-heading {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 5px 16px;
+    align-items: center;
+  }
+
+  .lesson-page .guided-lab-title {
+    display: contents;
+  }
+
+  .lesson-page .guided-lab-title h1 {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .lesson-page .guided-lab-title > p {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    max-width: none;
+    margin-top: 0;
+  }
+
+  .lesson-page .guided-lab-controls {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}
+
+@media (max-height: 740px) and (min-width: 1024px) {
+  .guided-lab-page.lesson-page {
+    gap: 8px;
+    padding-block: 8px;
+  }
+
+  .relation-workspace {
+    gap: 8px;
+  }
+
+  .relation-metric {
+    min-height: 64px;
+    padding-block: 8px;
+  }
+
+  .relation-panel {
+    padding: 9px;
+  }
+
+  .relation-panel h2 {
+    margin-bottom: 8px;
+  }
+
+  .relation-panel .data-table td {
+    height: 32px;
+    padding-block: 3px;
+  }
+
+  .relation-panel .data-table th {
+    padding-block: 8px;
+  }
+
+  .relation-table-note {
+    margin-top: 8px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1150px) {
+  .guided-lab-page.lesson-page {
+    gap: 10px;
+    padding-block: 8px;
+  }
+
+  .relation-workspace {
+    gap: 10px;
+  }
+
+  .lesson-page .guided-lab-heading {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+  }
+
+  .lesson-page .guided-lab-title {
+    display: block;
+    flex-basis: 100%;
+  }
+
+  .lesson-page .guided-lab-title h1 {
+    font-size: 30px;
+  }
+
+  .lesson-page .guided-lab-title > p {
+    margin-top: 4px;
+    font-size: 13px;
+  }
+
+  .relation-metric {
+    min-height: 64px;
+    padding: 8px 10px;
+    gap: 10px;
+  }
+
+  .relation-metric > div > span {
+    font-size: 11px;
+  }
+
+  .relation-panel {
+    padding: 10px;
+  }
+
+  .relation-panel h2 {
+    font-size: 16px;
+    margin-bottom: 8px;
+  }
+
+  .relation-panel .data-table th {
+    padding: 8px;
+    font-size: 11px;
+  }
+
+  .relation-panel .data-table td {
+    height: 34px;
+    padding-block: 3px;
+  }
+}
+
+@media (max-width: 767px) {
+  .relation-metric {
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .relation-metric > svg {
+    width: 19px;
+  }
+
+  .relation-metric > div > span {
+    font-size: 10px;
+  }
+
+  .relation-metric strong {
+    font-size: 20px;
+  }
+
+  .relation-panel {
+    padding: 12px;
+  }
+
+  .relation-panel h2 {
+    font-size: 16px;
+  }
+
+  .relation-panel-time {
+    display: none;
+  }
+
+  .relation-panel .data-table th {
+    padding-inline: 7px;
+    font-size: 10px;
+  }
+
+  .relation-panel .data-table td {
+    padding-inline: 7px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 639px) {
+  .guided-lab-page.lesson-page {
+    gap: 12px;
+  }
+
+  .relation-metrics {
+    gap: 7px;
+  }
+
+  .relation-metric {
+    min-height: 66px;
+    gap: 0;
+    padding: 9px;
+  }
+
+  .relation-metric > svg {
+    display: none;
+  }
+
+  .relation-panel .data-table th {
+    font-size: 11px;
+  }
+
+  .relation-panel .data-table td {
+    height: 38px;
+  }
+
+  .relation-panel-time {
+    display: inline;
+  }
+}

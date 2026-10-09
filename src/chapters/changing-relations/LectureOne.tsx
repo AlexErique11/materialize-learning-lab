@@ -4,7 +4,7 @@ import { Button } from '../../components/ui/Button';
 import { LectureScreen } from '../../labs/components/LectureScreen';
 import type { ChapterDefinition } from '../chapterRegistry';
 import { GuidedSpotlight } from './GuidedSpotlight';
-import { LessonText } from './LessonText';
+import { LessonText } from '../../components/lesson/LessonText';
 import { RelationMetrics, RelationWorkbench } from './RelationWorkbench';
 import { lectureReference, lectureSteps, lectureUpdates } from './scenario';
 import { relationAt } from './simulation';
@@ -38,7 +38,7 @@ export function LectureOne({ chapter, navigation }: LectureOneProps) {
   return (
     <>
       <LectureScreen layout="with-tip" chapter={chapter} title="Lecture 1" regionLabel="Lecture content" navigation={navigation}
-        className="changing-relations-page changing-relations-lecture-page" reference={lectureReference}
+        className="lesson-page changing-relations-page changing-relations-lecture-page" reference={lectureReference}
         simulation={{ completed: state.selectedTime, total: lectureUpdates.length,
           progressLabel: 'Changes', playing: state.playing,
           onReset: () => dispatch({ type: 'reset' }), onRun: () => dispatch({ type: 'play' }), onStartGuidedRun: () => dispatch({ type: 'start-guided' }) }}

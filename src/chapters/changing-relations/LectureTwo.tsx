@@ -5,7 +5,7 @@ import { LectureScreen } from '../../labs/components/LectureScreen';
 import type { ChapterDefinition } from '../chapterRegistry';
 import { BatchWorkbench } from './BatchWorkbench';
 import { GuidedSpotlight } from './GuidedSpotlight';
-import { LessonText } from './LessonText';
+import { LessonText } from '../../components/lesson/LessonText';
 import { RelationMetrics } from './RelationWorkbench';
 import { lectureTwoBatches, lectureTwoInitial, lectureTwoReference, lectureTwoRun, lectureTwoSteps, lectureTwoUpdates } from './lecture-two-scenario';
 import { relationAt } from './simulation';
@@ -31,7 +31,7 @@ export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition
 
   return <>
     <LectureScreen layout="with-tip" chapter={chapter} title="Lecture 2" regionLabel="Lecture content" navigation={navigation}
-      className="changing-relations-page changing-relations-lecture-page" reference={lectureTwoReference}
+      className="lesson-page changing-relations-page changing-relations-lecture-page" reference={lectureTwoReference}
       simulation={{ completed: state.selectedTime, total: lectureTwoBatches.length,
         progressLabel: 'Changes', playing: state.playing,
         onReset: () => dispatch({ type: 'reset' }), onRun: () => dispatch({ type: 'play' }), onStartGuidedRun: () => dispatch({ type: 'start-guided' }) }}

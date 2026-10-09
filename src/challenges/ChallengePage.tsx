@@ -1,11 +1,9 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Link, useParams } from 'react-router';
 import { chapters, chapterPath, formatChapterNumber } from '../chapters/chapterRegistry';
-import { ContentPlaceholder } from '../components/chapter/ContentPlaceholder';
 import { Breadcrumbs } from '../components/layout/Breadcrumbs';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
-import { Badge } from '../components/ui/Badge';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { findChallenge } from './challengeRegistry';
 
@@ -36,7 +34,7 @@ export function ChallengePage() {
         eyebrow={
           <>
             <span className="eyebrow">Capstone {String(challenge.number).padStart(2, '0')}</span>
-            <Badge>Not started</Badge>
+            <span className="reserved-badge" aria-hidden="true" />
           </>
         }
       />
@@ -54,7 +52,7 @@ export function ChallengePage() {
           </Link>
         </div>
       )}
-      <ContentPlaceholder title="Challenge workspace" />
+      <div className="content-placeholder reserved-content" aria-hidden="true" />
       <Link to="/challenges" className="button button-ghost mt-6">
         <ArrowLeft size={15} aria-hidden="true" />
         All challenges

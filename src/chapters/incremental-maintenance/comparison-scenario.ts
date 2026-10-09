@@ -1,4 +1,4 @@
-import type { LessonTextContent } from '../changing-relations/LessonText';
+import type { LessonTextContent } from '../../components/lesson/lessonTextTypes';
 import type { Order } from './scenario';
 import { aggregateReference } from './aggregate-scenario';
 

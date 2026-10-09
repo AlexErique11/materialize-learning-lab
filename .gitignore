@@ -16,3 +16,8 @@ test-results/
 /*.jpeg
 /*.webp
 /CHAPTER_1_2_CONSISTENCY_AUDIT.md
+
+# Local prototypes and assistant instructions.
+/mock/
+/AGENTS.md
+/CLAUDE.md

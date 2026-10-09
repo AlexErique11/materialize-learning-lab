@@ -1,31 +1,17 @@
-.guided-lab-page.staged-exercise-page { gap: 8px; padding-bottom: 8px; }
-.staged-exercise-page .relation-workspace { gap: 8px; }
+@import "../../styles/exercise.css";
+
 .staged-exercise-page:where(:not(.changing-relations-exercise-page)) .relation-panel { padding: 12px; }
+
 .staged-exercise-page .exercise-ledger th:first-child { text-align: center; }
+
 .staged-exercise-page .exercise-ledger td:nth-child(3) { text-align: left; }
 
-.exercise-question {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 18px;
-  min-height: 110px;
-  padding: 12px 16px;
-  border: 1px solid var(--lab-border);
-  border-radius: 5px;
-  background: color-mix(in srgb, var(--lab-tint) 35%, var(--lab-surface));
-}
 .changing-relations-exercise-page .exercise-question { min-height: 154px; padding-block: 16px; }
-.exercise-question-copy h2 { display: flex; align-items: center; gap: 8px; color: var(--lab-purple); font-size: 13px; line-height: 1.4; }
-.exercise-question-copy h2 > svg { flex-shrink: 0; }
-.exercise-question-copy p { margin: 6px 0 0; color: var(--lab-muted); font-size: 12px; line-height: 1.5; }
-.exercise-question[data-result='correct'] h2 { color: var(--success); }
-.exercise-question[data-result='incorrect'] h2 { color: var(--danger); }
-.exercise-question-navigation { display: flex; justify-content: flex-end; min-height: 40px; }
-.exercise-next-question { font-size: 12px; }
-.exercise-answers { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
+
 .exercise-answer-field { display: grid; justify-items: center; gap: 5px; color: var(--lab-muted); font-size: 11px; line-height: 1.3; text-align: center; }
+
 .exercise-answer-field > span:first-child { white-space: nowrap; }
+
 .exercise-answer-field input {
   width: 64px;
   height: 32px;
@@ -38,128 +24,189 @@
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
+
 .exercise-answer-field input::placeholder { color: var(--lab-muted); font-weight: 400; }
+
 .exercise-ledger-answer { display: inline-grid; vertical-align: middle; }
+
 .exercise-ledger-answer input { height: 26px; }
+
 .exercise-answer-field input:hover:not(:disabled) { border-color: var(--lab-purple); }
+
 .exercise-answer-field input:focus-visible { outline: 2px solid var(--lab-purple); outline-offset: 2px; }
+
 .exercise-answer-field input:disabled { color: var(--success); background: color-mix(in srgb, var(--success) 8%, var(--lab-surface)); }
+
 .exercise-answer-field input[aria-invalid='true'] { border-color: var(--danger); border-style: dashed; }
+
 .exercise-answer-note { max-width: 160px; color: var(--lab-muted); font-size: 11px; line-height: 1.5; }
 
 /* Chapter 2's completion presentation, scoped here to leave its implementation unchanged. */
 .chapter-one-completion-dialog { width: min(920px, calc(100% - 2rem)); border-top: 4px solid var(--accent); overflow: hidden; }
+
 .chapter-one-completion-dialog > div:first-child { background: var(--surface-muted); }
+
 .chapter-one-completion-dialog .eyebrow { color: var(--accent); }
+
 .chapter-one-completion-dialog h2 { font-size: clamp(24px, 4vw, 32px); }
+
 .chapter-one-completion-dialog .chapter-completion-intro { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: center; }
+
 .chapter-one-completion-dialog .chapter-completion-copy { display: grid; gap: 10px; color: var(--text-muted); line-height: 1.6; }
+
 .chapter-one-completion-dialog .chapter-completion-copy h3 { color: var(--text); font-size: 20px; font-weight: 650; }
+
 .chapter-one-completion-dialog .chapter-completion-art { width: 100%; }
+
 .chapter-one-completion-dialog .chapter-completion-topics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 24px; }
+
 .chapter-one-completion-dialog .chapter-completion-topics section { padding: 16px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface-muted); }
+
 .chapter-one-completion-dialog .chapter-completion-topics svg { color: var(--accent); width: 24px; height: 24px; margin-bottom: 12px; }
+
 .chapter-one-completion-dialog .chapter-completion-topics h3 { font-size: 14px; font-weight: 650; margin-bottom: 8px; }
+
 .chapter-one-completion-dialog .chapter-completion-topics p, .chapter-one-completion-dialog .chapter-completion-takeaway p { color: var(--text-muted); font-size: 14px; line-height: 1.6; }
+
 .chapter-one-completion-dialog .chapter-completion-takeaway { margin-top: 20px; border-left: 3px solid var(--accent); padding: 12px 16px; background: var(--surface-muted); }
+
 .chapter-one-completion-dialog .chapter-completion-takeaway strong { color: var(--accent); font-size: 14px; }
+
 .chapter-one-completion-dialog .chapter-completion-takeaway p { margin-top: 6px; }
+
 .chapter-one-completion-dialog .chapter-completion-next { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-top: 24px; }
+
 .chapter-one-completion-dialog .chapter-completion-next p { margin-top: 4px; font-size: 14px; font-weight: 600; }
+
 @media (max-width: 639px) {
   .chapter-one-completion-dialog > div { padding: 16px; }
+
   .chapter-one-completion-dialog .chapter-completion-intro { grid-template-columns: 1fr; }
+
   .chapter-one-completion-dialog .chapter-completion-copy, .chapter-one-completion-dialog .chapter-completion-takeaway { display: none; }
+
   .chapter-one-completion-dialog .chapter-completion-art { max-width: 180px; justify-self: center; }
+
   .chapter-one-completion-dialog .chapter-completion-topics { grid-template-columns: 1fr; margin-top: 12px; gap: 8px; }
+
   .chapter-one-completion-dialog .chapter-completion-topics section { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 6px 12px; padding: 10px; }
+
   .chapter-one-completion-dialog .chapter-completion-topics svg { grid-row: span 2; margin: 0; }
+
   .chapter-one-completion-dialog .chapter-completion-topics h3 { margin: 0; }
+
   .chapter-one-completion-dialog .chapter-completion-topics p { line-height: 1.4; }
+
   .chapter-one-completion-dialog .chapter-completion-next { align-items: stretch; flex-direction: column; margin-top: 16px; gap: 12px; }
+
   .chapter-one-completion-dialog .chapter-completion-next .button { justify-content: center; }
 }
+
 @media (min-width: 640px) and (max-height: 820px) {
   .chapter-one-completion-dialog > div { padding: 16px; }
+
   .chapter-one-completion-dialog .chapter-completion-intro { grid-template-columns: minmax(0, 1fr) 240px; }
+
   .chapter-one-completion-dialog .chapter-completion-topics { margin-top: 16px; }
+
   .chapter-one-completion-dialog .chapter-completion-topics section { padding: 12px; }
+
   .chapter-one-completion-dialog .chapter-completion-topics svg { margin-bottom: 8px; }
+
   .chapter-one-completion-dialog .chapter-completion-takeaway { margin-top: 12px; padding: 8px 12px; }
+
   .chapter-one-completion-dialog .chapter-completion-next { margin-top: 16px; }
 }
+
 @media (max-width: 639px) and (max-height: 740px) {
   .chapter-one-completion-dialog > div { padding: 12px; }
+
   .chapter-one-completion-dialog .chapter-completion-art { max-width: 140px; }
+
   .chapter-one-completion-dialog .chapter-completion-next { gap: 8px; }
 }
+
 @media (max-width: 639px) and (max-height: 640px) {
   .chapter-one-completion-dialog .chapter-completion-topics p { display: none; }
 }
+
 @media (max-height: 560px) {
   .chapter-one-completion-dialog > div { padding: 12px; }
-  .chapter-one-completion-dialog h2 { font-size: 24px; }
-  .chapter-one-completion-dialog .chapter-completion-copy p, .chapter-one-completion-dialog .chapter-completion-topics p, .chapter-one-completion-dialog .chapter-completion-takeaway, .chapter-one-completion-dialog .chapter-completion-next > div { display: none; }
-  .chapter-one-completion-dialog .chapter-completion-art { max-height: 60px; object-fit: contain; }
-  .chapter-one-completion-dialog .chapter-completion-topics { margin-top: 12px; }
-  .chapter-one-completion-dialog .chapter-completion-next { margin-top: 12px; justify-content: flex-end; }
-}
 
-@media (min-width: 640px) and (max-width: 1150px) {
-  .staged-exercise-page .guided-lab-controls { max-width: 100%; flex-wrap: wrap; }
+  .chapter-one-completion-dialog h2 { font-size: 24px; }
+
+  .chapter-one-completion-dialog .chapter-completion-copy p, .chapter-one-completion-dialog .chapter-completion-topics p, .chapter-one-completion-dialog .chapter-completion-takeaway, .chapter-one-completion-dialog .chapter-completion-next > div { display: none; }
+
+  .chapter-one-completion-dialog .chapter-completion-art { max-height: 60px; object-fit: contain; }
+
+  .chapter-one-completion-dialog .chapter-completion-topics { margin-top: 12px; }
+
+  .chapter-one-completion-dialog .chapter-completion-next { margin-top: 12px; justify-content: flex-end; }
 }
 
 @media (min-width: 1024px) and (max-height: 800px) {
   .staged-exercise-page:where(:not(.changing-relations-exercise-page)) .relation-panel { padding: 9px; }
+
   .staged-exercise-page:where(:not(.changing-relations-exercise-page)) .relation-panel h2 { margin-bottom: 8px; }
+
   .staged-exercise-page:where(:not(.changing-relations-exercise-page)) .relation-panel .data-table th { padding-block: 8px; }
+
   .staged-exercise-page:where(:not(.changing-relations-exercise-page)) .relation-panel .data-table td { height: 28px; padding-block: 1px; }
-  .staged-exercise-page .relation-table-note { display: none; }
-  .exercise-question { min-height: 100px; padding: 9px 12px; gap: 12px; }
 }
-@media (min-width: 1024px) and (max-width: 1150px) {
-  .exercise-question { gap: 10px; }
-}
+
 /* Keep the tutorial panel spacing and both data gaps intact on compact laptops. */
 @media (min-width: 1024px) and (max-height: 800px) {
   .app-shell-guided-labs .guided-lab-page.changing-relations-page.changing-relations-exercise-page[data-viewport-fit] { --chapter-one-workspace-gap: 2px; }
+
   .changing-relations-exercise-page .exercise-question { min-height: 92px; padding-block: 6px; }
+
   .changing-relations-exercise-page .exercise-question-copy p { margin-top: 2px; }
 }
+
 /* Reserve room for stacked question copy without changing the data-row gaps. */
 @media (min-width: 1151px) and (max-height: 740px) {
   .app-shell-guided-labs .guided-lab-page.changing-relations-page.changing-relations-exercise-page[data-viewport-fit] { --chapter-one-workspace-gap: 0px; }
+
   .changing-relations-exercise-page .exercise-answers .exercise-answer-field input { height: 24px; }
 }
 
 /* Match Chapter 2's navigation footer while keeping Chapter 1's data-row gaps. */
 .changing-relations-exercise-page .exercise-question-navigation { height: 40px; min-height: 40px; align-items: center; }
+
 @media (min-width: 640px) {
   .app-shell-guided-labs .guided-lab-page.changing-relations-page.changing-relations-exercise-page[data-viewport-fit] { padding-bottom: 12px; }
+
   .changing-relations-exercise-page[data-viewport-fit] .guided-lab-canvas { display: flex; flex: 1; align-items: stretch; }
+
   .changing-relations-exercise-page[data-viewport-fit] .relation-workspace { flex: 1; grid-template-rows: repeat(3, min-content) minmax(40px, 1fr); }
+
   .changing-relations-exercise-page .exercise-question-navigation { align-self: end; }
+
   .changing-relations-exercise-page .exercise-question-navigation:empty { display: flex; visibility: hidden; }
 }
+
 @media (min-width: 640px) and (min-height: 741px) {
   .app-shell-guided-labs .guided-lab-page.changing-relations-page.changing-relations-exercise-page[data-viewport-fit] { padding-bottom: 16px; }
 }
+
 @media (min-width: 640px) and (min-height: 850px) {
   .app-shell-guided-labs .guided-lab-page.changing-relations-page.changing-relations-exercise-page[data-viewport-fit] { padding-bottom: 24px; }
 }
+
 @media (max-width: 767px) {
-  .exercise-question { grid-template-columns: 1fr; gap: 12px; }
-  .exercise-answers { justify-content: flex-start; }
   .exercise-answer-note { max-width: none; }
+
   .exercise-ledger-answer input { height: 36px; }
+
   .staged-exercise-page:where(:not(.changing-relations-exercise-page)) .relation-panel .data-table td { height: 50px; }
-  .staged-exercise-page .relation-table-note { min-height: 31px; }
 }
 
 @media (max-width: 639px) {
   .changing-relations-exercise-page .exercise-ledger-answer input { height: 24px; }
-  .app-shell-guided-labs .guided-lab-page.staged-exercise-page[data-viewport-fit] .guided-lab-progress { width: 115px; }
+
   .staged-exercise-page:where(:not(.changing-relations-exercise-page)) .relation-panel h2 { margin-bottom: 8px; }
+
   .changing-relations-exercise-page .exercise-ledger h2 { margin-bottom: 8px; }
+
   .changing-relations-exercise-page:has(.exercise-question[data-result='correct']):has([data-question-open='false']) .guided-lab-controls :is([data-walkthrough='hint'], [data-walkthrough='answer'], [data-walkthrough='check']) { display: none; }
 }

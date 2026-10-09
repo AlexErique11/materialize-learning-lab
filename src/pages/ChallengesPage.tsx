@@ -4,28 +4,13 @@ import { challenges, challengePath } from '../challenges/challengeRegistry';
 import { Breadcrumbs } from '../components/layout/Breadcrumbs';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
-import { Badge } from '../components/ui/Badge';
-import { ProgressBar } from '../components/ui/ProgressBar';
 
 export function ChallengesPage() {
   return (
     <PageContainer tone="practice">
       <Breadcrumbs items={[{ label: 'Learning path', to: '/' }, { label: 'Challenges' }]} />
       <PageHeader title="Challenges" description="Capstone projects." />
-      <div className="sequence-progress">
-        <div>
-          <p className="font-medium">Capstone progress</p>
-          <p className="mt-1 text-sm text-text-muted">
-            0 / {challenges.length} challenges completed
-          </p>
-        </div>
-        <ProgressBar
-          value={0}
-          total={challenges.length}
-          label="Challenges completed"
-          className="sequence-progress-bar"
-        />
-      </div>
+      <div className="sequence-progress reserved-sequence-progress" aria-hidden="true" />
       <div className="grid gap-5 lg:grid-cols-3">
         {challenges.map((challenge) => (
           <Link key={challenge.slug} to={challengePath(challenge)} className="challenge-card">
@@ -33,7 +18,7 @@ export function ChallengesPage() {
               <span className="pathway-icon" aria-hidden="true">
                 <Layers3 size={21} />
               </span>
-              <Badge>Not started</Badge>
+              <span className="reserved-badge" aria-hidden="true" />
             </div>
             <p className="eyebrow mb-3">Capstone {String(challenge.number).padStart(2, '0')}</p>
             <h2 className="text-xl font-semibold leading-snug tracking-tight">{challenge.title}</h2>

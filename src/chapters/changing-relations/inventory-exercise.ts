@@ -1,7 +1,7 @@
-import type { LessonTextContent } from './LessonText';
+import type { LessonTextContent } from '../../components/lesson/LessonText';
 import { inventoryBatches, inventoryCheckpoints, inventoryInitial, inventoryUpdates } from './exercise-one-scenario';
 import { copiesOf, getRelationMetrics, relationAt, rowKey, type RowMultiplicity } from './simulation';
-import { parseExerciseInteger, type ExerciseGrade } from './useExerciseStages';
+import { parseExerciseInteger, type ExerciseGrade } from '../../hooks/useExerciseStages';
 
 export type InventoryPrediction = Readonly<Record<string, string>>;
 

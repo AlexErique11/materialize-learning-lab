@@ -1,7 +1,6 @@
 # Incremental Maintenance
 
-Follow [CLAUDE.md](../../../CLAUDE.md) for presentation rules and
-[UI_LAYOUTS.md](../../../UI_LAYOUTS.md) for shared templates and component ownership.
+Follow [UI_LAYOUTS.md](../../../UI_LAYOUTS.md) for shared templates and component ownership.
 All four lectures use the `without-tip` layout through `MaintenanceLecture` and
 `LectureScreen`. Chapter-specific panels fit inside that frame.
 
@@ -29,7 +28,7 @@ References checked for this implementation:
 - https://materialize.com/docs/sql/subscribe/#output — signed result updates.
 
 Playback uses the shared `labs/useLectureRun.ts` reducer. Guided completion is
-separate from applying changes. Exercises use explicit checkpoint advancement.
+separate from applying changes. Exercises use the shared `hooks/useExerciseStages.ts` for explicit checkpoint advancement.
 
 The workspace keeps the Orders → Filter → Projection dataflow and three tables,
 using Chapter 1's typography, metric cards, panel borders, and controls. Each
@@ -201,10 +200,10 @@ regions, then remove the final member of a zero-revenue group.
 `exercise-scenarios.ts` owns deterministic timestamp states, SQL, questions,
 hints, explanations and pure checkbox grading. Answers select complete-row
 diffs and affected groups; selection order does not matter. Incorrect answers
-preserve the current input state. Check Answer and Show Answer preserve the
-question and checkboxes, highlighting correct choices. Next question appears
-only after one of those actions and permits advancement after an incorrect
-prediction. Exercise 1's last checkpoint links to Exercise 2. Reset clears
+preserve the current input state. Check Answer preserves the question and checkboxes. Show Answer fills the
+canonical choices and accepts the batch. Next question appears
+only after a correct answer or Show Answer. Incorrect predictions remain at the
+current question until corrected. Exercise 1's last checkpoint links to Exercise 2. Reset clears
 answers and graded progress.
 
 `ExerciseFrame` shares Chapter 1 controls and feedback while its inventory
@@ -231,3 +230,7 @@ SQL semantics rather than a live Materialize instance. Browser tests cover manua
 answers, incorrect retries, hints, reveal, advancement, reset, highlight suppression,
 keyboard controls, themes and desktop/laptop/mobile layouts. Chapter 1 exercises
 remain covered by their existing browser tests.
+
+Regional revenue orders use the explicit `CustomerOrder` type with `customerId`;
+product scenarios retain `Order.productId`. SQLite adapters create separate order
+schemas for each scenario, independently checking the displayed customer join.
