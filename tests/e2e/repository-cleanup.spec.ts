@@ -1,13 +1,13 @@
 import { expect, test } from './fixtures';
 
-test('missing activities reserve empty space without accessible progress or controls', async ({ page }) => {
+test('homepage keeps progress placeholders while missing activities reserve empty space', async ({ page }) => {
   for (const theme of ['light', 'dark']) {
     await page.goto('/');
     await page.getByRole('button', { name: `Switch to ${theme} mode`, exact: true }).click();
-    await expect(page.getByRole('progressbar')).toHaveCount(0);
-    await expect(page.locator('.reserved-progress')).toHaveCount(2);
-    await expect(page.locator('.reserved-progress').first()).toBeEmpty();
-    await expect(page.getByText(/Track your progress|Not started|Lorem ipsum/)).toHaveCount(0);
+    await expect(page.getByRole('progressbar', { name: 'Core chapters completed' })).toHaveAttribute('value', '0');
+    await expect(page.getByRole('progressbar', { name: 'Featured challenges completed' })).toHaveAttribute('value', '0');
+    await expect(page.getByRole('heading', { name: 'Track your progress' })).toBeVisible();
+    await expect(page.getByText('Not started', { exact: true })).toHaveCount(2);
 
     await page.goto('/labs/time-in-materialize/tutorial/order-lifecycles');
     await expect(page.getByRole('heading', { name: 'Order lifecycles', exact: true })).toBeVisible();

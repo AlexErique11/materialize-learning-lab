@@ -7,6 +7,10 @@ export const labFeatures = [
     title: 'Build core skills',
     description: 'From streaming SQL to real-time applications.',
   },
+  {
+    title: 'Track your progress',
+    description: 'See what you’ve completed and pick up where you left off.',
+  },
 ] as const;
 
 // The learning path features two entry points; the full catalog stays at /challenges.

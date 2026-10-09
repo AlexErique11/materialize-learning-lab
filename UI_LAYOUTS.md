@@ -112,8 +112,10 @@ review, not an application test run.
 - `src/styles/lesson.css` owns common lesson typography, metrics, panels, tables and help.
 - `src/styles/exercise.css` owns the shared question frame and controls. Chapter 1
   keeps inventory inputs, visualization dimensions and completion styling local.
-- `src/styles/ui.css` owns inert reserved-region dimensions. Missing content and
-  learning-path completion leave empty space, excluded from focus and accessibility.
+- `src/styles/ui.css` owns inert reserved-region dimensions. Missing activity content
+  leaves empty space, excluded from focus and accessibility. The learning-path page
+  displays static progress bars, a progress feature row, and challenge status badges
+  as placeholders until completion tracking is implemented.
 
 ## Chapter style and layout
 
