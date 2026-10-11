@@ -1,4 +1,5 @@
 import { chapterPath, type ChapterDefinition } from './chapterRegistry';
+import { recordLectures } from './getting-data-in/record-scenarios';
 
 export type ChapterSectionSlug = 'tutorial' | 'exercises';
 
@@ -43,6 +44,18 @@ const sectionDefinitions: readonly Omit<ChapterSectionDefinition, 'pages'>[] = [
 
 // Navigation and overview summaries. Actual chapter content lives beside its chapter.
 const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
+  'getting-data-in': {
+    tutorial: [{
+      slug: 'lecture-1',
+      title: 'Lecture 1: From snapshot to live changes',
+      description: 'Follow an atomic initial snapshot, queued database changes, and live updates into a product table.',
+    }, ...recordLectures.map((lecture) => ({
+      slug: 'lecture-' + lecture.number,
+      title: 'Lecture ' + lecture.number + ': ' + lecture.title,
+      description: lecture.description,
+    }))],
+    exercises: [],
+  },
   'incremental-maintenance': {
     tutorial: [{
       slug: 'lecture-1',

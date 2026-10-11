@@ -9,7 +9,7 @@ and shared CSS, not independently maintained mockup files.
 | Template | Current users | Behavior |
 | --- | --- | --- |
 | `LectureScreen`, `layout="with-tip"` | Chapter 1 lectures 1–2 | Chapter 1 reference frame, metrics, visualization, playback, and bottom tip when it fits. |
-| `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4 | Same reference for upper content, no tip, and playback lower in the available viewport. |
+| `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 4 lectures 1–4 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
 | `ExerciseFrame` through `GuidedLabScreen` | Chapter 1 and Chapter 2 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
 
 `src/labs/components/LectureScreen.tsx` accepts `metrics`, `visualization`, and
@@ -23,8 +23,21 @@ responsive tokens. The no-tip template measures the available viewport and conte
 so its footer stays aligned across all four Chapter 2 lectures. In roomy fullscreen
 views, playback ends 16px above the viewport bottom, using
 `--lecture-playback-bottom-space`; compact screens adapt to available space.
-Lecture 4 omits visible metric cards but uses the same reference measurement for
+Chapter 2 Lecture 4 omits visible metric cards but uses the same reference measurement for
 footer alignment. Do not add empty visible cards to compensate.
+Chapter 4 uses two distinct visualizations in this frame, implemented locally in
+`src/chapters/getting-data-in/IngestionLayouts.tsx`. Its metrics form a compact
+status bar rather than three cards. Lecture 1 places upstream and Materialize
+tables on opposite sides of a snapshot-to-CDC bridge, with a shared ingestion
+queue below. Lectures 2–4 place the record inspector on the left, and stack signed
+changes above a wider current relation on the right. The signed ledger reserves
+two rows, its maximum replacement pair; product tables reserve four rows.
+Chapter-specific styles own these arrangements and their compact dimensions.
+On phones, tablets below 1024px, and short windows up to 1150px wide, panel
+selectors reveal one complete panel, including its relevant
+changes. Guided runs select their target panel automatically. The shared screen
+measures the whole status bar as its metrics slot to keep playback within the
+viewport.
 
 The title, subtitle, SQL & Objectives, Reset, Run/Pause, and Start guided run
 belong to the shared screen. Preserve their positions during changes to the frame
@@ -45,9 +58,10 @@ margins. Chapter-specific CSS owns the visualization inside the frame.
 | Home-page Take a tour | `src/pages/LearningPathPage.tsx`, `.learning-path-tour-button` in `src/styles/learning-path.css` |
 | SQL, objective, documentation dialog | `src/components/lab/SqlObjectivesPanel.tsx` |
 | Guided explanation fragments | `src/components/lesson/LessonText.tsx` |
+| Chapter 4 snapshot bridge and record inspector | `src/chapters/getting-data-in/IngestionLayouts.tsx`, `lecture-one.css`, `record-lectures.css` |
 | Chapter 2 column colors and common panels | `src/chapters/incremental-maintenance/lecture-one.css` |
 
-Controls tour is a single shared button for all six implemented lectures. Its
+Controls tour is a single shared button for all implemented lectures. Its
 background matches the page in both themes; its border becomes purple on hover.
 Its alignment uses the center of `[data-walkthrough="guided"]`, with a guard against
 overlapping the title when the toolbar wraps on narrow screens. Preserve native
@@ -94,6 +108,9 @@ chapter's tables and panels.
   controls, aligned Chapter 2 playback, fullscreen and compact viewport fit.
 - `tests/e2e/chapter-two-consistency.spec.ts`: equivalent Chapter 2 panel geometry
   across timestamps and screen sizes.
+- `tests/e2e/chapter-four-lecture.spec.ts` and `chapter-four-records.spec.ts`:
+  snapshot and record layouts, guided predictions, and stable viewport fit through
+  every checkpoint on desktop, tablet, and phone screens.
 - `tests/e2e/walkthrough.spec.ts`: lecture help, paused playback, and focus handling.
 - `tests/e2e/incremental-maintenance.spec.ts`, `chapter-two-exercises.spec.ts`, and
   `changing-relations-exercise.spec.ts`: chapter-specific learner journeys.

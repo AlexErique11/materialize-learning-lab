@@ -19,6 +19,9 @@ import { IncrementalLectureOne } from './incremental-maintenance/LectureOne';
 import { IncrementalLectureThree } from './incremental-maintenance/LectureThree';
 import { IncrementalLectureFour } from './incremental-maintenance/LectureFour';
 import { IncrementalLectureTwo } from './incremental-maintenance/LectureTwo';
+import { SnapshotLectureOne } from './getting-data-in/LectureOne';
+import { RecordLecture } from './getting-data-in/RecordLecture';
+import { recordLectures } from './getting-data-in/record-scenarios';
 
 export function ChapterContentPage() {
   const chapter = useOutletContext<ChapterDefinition>();
@@ -35,6 +38,14 @@ export function ChapterContentPage() {
   if (!section || (pageSlug !== undefined && !page)) return <NotFoundPage />;
 
   const navigation = getChapterNavigation(chapter, section, page);
+  if (chapter.slug === 'getting-data-in' && section.slug === 'tutorial' && page?.slug === 'lecture-1') {
+    return <SnapshotLectureOne chapter={chapter} navigation={<ChapterPagination {...navigation} showTooltips={false} />} />;
+  }
+  if (chapter.slug === 'getting-data-in' && section.slug === 'tutorial' && page) {
+    const definition = recordLectures.find((lecture) => page.slug === 'lecture-' + lecture.number);
+    if (definition) return <RecordLecture key={page.slug} chapter={chapter} definition={definition}
+      navigation={<ChapterPagination {...navigation} showTooltips={false} />} />;
+  }
   if (chapter.slug === 'incremental-maintenance' && section.slug === 'tutorial' && page?.slug === 'lecture-1') {
     return <IncrementalLectureOne chapter={chapter} navigation={<ChapterPagination {...navigation} showTooltips={false} />} />;
   }

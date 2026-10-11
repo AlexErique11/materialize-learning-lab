@@ -24,13 +24,27 @@ describe('chapter navigation outline', () => {
   });
 
   it('leaves chapters without defined content empty', () => {
-    for (const other of chapters.filter((item) => ![chapter.slug, 'incremental-maintenance', 'time-in-materialize'].includes(item.slug))) {
+    for (const other of chapters.filter((item) => ![chapter.slug, 'incremental-maintenance', 'getting-data-in', 'time-in-materialize'].includes(item.slug))) {
       expect(getChapterSections(other).map((section) => section.slug)).toEqual([
         'tutorial',
         'exercises',
       ]);
       expect(getChapterPages(other)).toEqual([]);
     }
+  });
+
+  it('registers all four Chapter 4 lectures without exercises', () => {
+    const ingestion = findChapter('getting-data-in')!;
+    const pages = getChapterPages(ingestion);
+    expect(pages.map(({ sectionSlug, slug, title }) => ({ sectionSlug, slug, title }))).toEqual([
+      { sectionSlug: 'tutorial', slug: 'lecture-1', title: 'Lecture 1: From snapshot to live changes' },
+      { sectionSlug: 'tutorial', slug: 'lecture-2', title: 'Lecture 2: Events and current values' },
+      { sectionSlug: 'tutorial', slug: 'lecture-3', title: 'Lecture 3: Keys, renames, and deletions' },
+      { sectionSlug: 'tutorial', slug: 'lecture-4', title: 'Lecture 4: CDC with before and after' },
+    ]);
+    expect(chapterContentPath(ingestion, pages[0]!)).toBe('/labs/getting-data-in/tutorial/lecture-1');
+    expect(findChapterContent(ingestion, 'tutorial', 'lecture-5')).toBeUndefined();
+    expect(findChapterSection(ingestion, 'exercises')?.pages).toEqual([]);
   });
 
   it('routes the Time in Materialize overview items into the tutorial and exercise sequence', () => {
