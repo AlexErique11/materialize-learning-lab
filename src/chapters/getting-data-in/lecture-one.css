@@ -1,5 +1,5 @@
 /* Chapter 4 keeps the shared lecture controls, with its own ingestion visualizations. */
-.getting-data-in-page { --lecture-title-spacing: 20px; --lecture-metrics-gap: 18px; --ingestion-height: 458px; --ingestion-table-height: 148px; }
+.getting-data-in-page { --lecture-title-spacing: 28px; --lecture-metrics-gap: 24px; --ingestion-height: 458px; --ingestion-table-height: 148px; }
 .getting-data-in-page .guided-lab-progress strong { white-space: nowrap; }
 .getting-data-in-page .ingestion-status-bar {
   display: flex; align-items: center; gap: 20px; min-height: 48px;
@@ -16,6 +16,12 @@
 .ingestion-checkpoint { display: inline-flex; align-items: center; gap: 6px; color: var(--lab-muted); font-size: 12px; white-space: nowrap; }
 .getting-data-in-page .lecture-visualization-content { gap: 10px; }
 .ingestion-layout { height: var(--ingestion-height); min-width: 0; }
+/* Trade unused panel space for the lecture's larger gaps without shrinking table rows. */
+.getting-data-in-page.lecture-layout-page .ingestion-layout { height: calc(var(--ingestion-height) - 12px); }
+/* Offset only the snapshot status row where its taller compact panel reduces the title gap. */
+@media (min-width: 1151px) and (max-height: 740px), (min-width: 1024px) and (max-width: 1150px) and (min-height: 701px) and (max-height: 740px) {
+  .snapshot-lecture-page .ingestion-status-bar { position: relative; top: min(4px, max(0px, calc(var(--lecture-title-spacing) - var(--lecture-content-inset)))); }
+}
 .ingestion-panel { min-width: 0; min-height: 0; }
 .ingestion-panel-heading { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
 .ingestion-panel-heading h2 { display: flex; align-items: center; gap: 8px; font-size: 18px; line-height: 1.25; font-weight: 700; }
@@ -102,6 +108,7 @@
 }
 @media (min-width: 640px) and (max-height: 740px) {
   .getting-data-in-page { --ingestion-height: 372px; --ingestion-table-height: 124px; }
+  .getting-data-in-page.lecture-layout-page .snapshot-layout { height: calc(var(--ingestion-height) - 8px); }
   .getting-data-in-page .ingestion-status-bar { min-height: 40px; }
   .getting-data-in-page .ingestion-status-bar .relation-metric { min-height: 38px; padding-block: 3px; }
   .snapshot-layout { grid-template-rows: minmax(0, 1fr) 120px; gap: 10px; }
@@ -119,7 +126,7 @@
   .getting-data-in-page .snapshot-layout .relation-count { padding-block: 0; }
 }
 @media (max-width: 1023px), (min-width: 1024px) and (max-width: 1150px) and (max-height: 700px) {
-  .getting-data-in-page { --lecture-title-spacing: 0px; --ingestion-height: 256px; --ingestion-table-height: 128px; }
+  .getting-data-in-page { --lecture-title-spacing: 8px; --ingestion-height: 256px; --ingestion-table-height: 128px; }
   .getting-data-in-page .ingestion-status-bar { gap: 0; min-height: 54px; }
   .getting-data-in-page .ingestion-status-bar .ingestion-status-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
   .getting-data-in-page .ingestion-status-bar .relation-metric { min-height: 52px; padding-block: 5px; }

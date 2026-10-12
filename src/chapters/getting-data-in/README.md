@@ -1,6 +1,6 @@
 # Getting Data In
 
-All four lectures are implemented; exercises remain unregistered. Sidebar and
+All four lectures and three exercises are implemented. Sidebar and
 overview entries live in chapterOutline.ts. LectureOne.tsx and RecordLecture.tsx
 compose the shared LectureScreen without-tip frame. IngestionLayouts.tsx owns the
 two Chapter 4 visualizations: a snapshot bridge with a CDC queue below its table
@@ -42,7 +42,8 @@ seeded rows. The Changes counter includes fixture switches. An upcoming record
 is labeled Next record until it is applied, including guided prediction steps.
 Normal playback and guided reveal/back/reset use the existing shared reducer.
 The progress count stays on one line when it reaches two digits so the toolbar
-keeps the controls stable. The simulations and shared frame are unchanged.
+keeps the controls stable. The shared frame and lecture simulation behavior are
+unchanged.
 
 The teaching sequence reads one snapshot row, captures a price update and
 deletion, finishes reading, atomically commits the original snapshot, applies
@@ -64,6 +65,45 @@ separate rows/changes toggle. The narrow Phase status uses Snapshot as the short
 display of Snapshotting. Compact desktop product tables abbreviate product_id
 to ID; the queue retains all four columns. Panel capacities and table dimensions
 stay stable through inserts, replacements, deletions, and unavailable states.
+
+## Exercises
+
+IngestionExercisePage.tsx composes the existing ExerciseFrame and the same two
+Chapter 4 workspaces. exercise-scenarios.ts owns 14 questions and fresh product
+fixtures: initial-load commitment and catch-up (four questions), producer
+contracts and CDC changes (five), and catalog repair, keys, nulls, and errors
+(five). Exercise 3 opens the shared Chapter complete dialog and links to Chapter 5.
+
+simulation.ts accepts an optional snapshot fixture while preserving the lecture
+default. record-simulation.ts accepts the fixtures/actions subset used by both
+lectures and exercises. ExerciseWorkspace.tsx renders a question's before state
+until its complete prediction is accepted, then renders its after checkpoint.
+An upcoming record is visible as evidence; its signed changes, chosen envelope,
+and future error state are not disclosed before acceptance. Independent producer
+fixtures and fresh replays are explicit, rather than live envelope conversion.
+
+exercise-grading.ts checks exact radio selections, exact unordered checkbox sets,
+and whole-number counts. ExerciseAnswers.tsx renders native accessible inputs.
+Wrong answers cannot apply changes or advance progress. Hint preserves progress;
+Show Answer fills and accepts the prediction. Questions x/y counts accepted
+questions. Reset restores the first question, initial tables, and blank answers.
+Answers are local to the current exercise, without persistent scores.
+Accepted answers mark the choices without adding a feedback row. The question
+keeps its original prompt, and navigation matches Chapter 2 Exercise 1's bottom inset.
+
+exercises.css keeps the table fields and row slots. Desktop views show three
+compact reference panels above the question, following Chapter 2's exercises.
+Up to 1150px wide or 700px high, the selected panel sits beside the question;
+metrics are available in a dialog, and answer-group buttons
+show one complete group at a time. Phones stack the panel above the question and
+allow page scrolling. Selections survive switching panels and groups. Tables
+remain complete, at normal font sizes, without internal scrolling.
+
+exercises.test.ts verifies fixture results and grading, including duplicate events,
+full replacements, mutable keys, nullable fields, tombstones, and unavailable
+relations. tests/e2e/chapter-four-exercises.spec.ts covers learner flows, keyboard
+input, references, both themes, completion navigation, and every question before
+and after acceptance across desktop, tablet, and phone viewport sizes.
 
 Verified against official documentation on 2026-10-11:
 - https://materialize.com/docs/fundamentals/concepts/snapshotting/

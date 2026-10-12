@@ -1,0 +1,104 @@
+.ingestion-exercise-root { min-width: 0; }
+.getting-data-in-exercise-page { --ingestion-height: 226px; }
+.guided-lab-page.getting-data-in-exercise-page[data-viewport-fit] .guided-lab-canvas { display: flex; flex: 1; align-items: stretch; }
+.guided-lab-page.getting-data-in-exercise-page[data-viewport-fit] .relation-workspace { display: grid; grid-template-rows: max-content max-content max-content minmax(40px, 1fr); align-content: start; gap: 10px; }
+.getting-data-in-exercise-page .ingestion-status-bar { margin-top: 12px; margin-bottom: 14px; }
+.getting-data-in-exercise-page .ingestion-status-bar .ingestion-status-metrics { gap: 28px; }
+.getting-data-in-exercise-page .ingestion-status-bar .relation-metric strong { font-size: 15px; }
+.getting-data-in-exercise-page .exercise-question { grid-template-columns: 1fr; align-content: center; min-height: 0; margin-top: 14px; padding: 10px 12px; gap: 8px; }
+.getting-data-in-exercise-page .exercise-answers { display: block; }
+.ingestion-exercise-answer-content { outline: none; }
+.ingestion-exercise-answer-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.ingestion-exercise-answer-group { padding: 0; border: 0; min-width: 0; color: var(--lab-muted); font-size: 12px; }
+.ingestion-exercise-answer-group:only-child { grid-column: 1 / -1; }
+.ingestion-exercise-answer-group legend { margin-bottom: 5px; font-weight: 650; color: var(--lab-text); }
+.ingestion-exercise-options { display: flex; flex-wrap: wrap; gap: 3px 10px; }
+.ingestion-exercise-answer-group[data-kind='checkbox'] .ingestion-exercise-options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.ingestion-exercise-options label { display: flex; align-items: center; gap: 7px; padding: 3px 5px; border: 1px solid transparent; border-radius: 4px; line-height: 1.4; }
+.ingestion-exercise-options label > span:first-of-type { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
+.ingestion-exercise-options label .relation-count { flex-shrink: 0; }
+.ingestion-exercise-options label:hover { background: var(--lab-tint); }
+.ingestion-exercise-options input { accent-color: var(--lab-purple); flex-shrink: 0; }
+.ingestion-exercise-options input[type='text'] { width: 72px; min-height: 32px; padding: 5px 8px; border: 1px solid var(--lab-border); border-radius: 4px; color: var(--lab-text); background: var(--lab-surface); font: inherit; }
+.ingestion-exercise-options input[aria-invalid='true'] { border-color: var(--danger); }
+.ingestion-exercise-options input:focus-visible { outline: 2px solid var(--lab-purple); outline-offset: 2px; }
+.ingestion-exercise-options label[data-answer='correct'] { color: var(--success); border-color: var(--success); background: color-mix(in srgb, var(--success) 8%, var(--lab-surface)); }
+.ingestion-exercise-options label[data-answer='incorrect'] { color: var(--danger); border-color: var(--danger); }
+.ingestion-exercise-choice-status { width: 13px; flex-shrink: 0; display: flex; }
+.ingestion-exercise-answer-group[disabled] { opacity: 1; }
+.getting-data-in-exercise-page .exercise-question-navigation { min-height: 40px; height: 40px; align-self: end; align-items: center; }
+.getting-data-in-exercise-page .exercise-question-navigation:empty { display: flex; }
+.getting-data-in-exercise-page .ingestion-panel .data-table tbody td { height: auto; }
+.ingestion-exercise-group-controls, .ingestion-exercise-metrics-button { display: none; }
+.ingestion-exercise-metrics-detail { display: grid; grid-template-columns: 1fr auto; gap: 16px; }
+.ingestion-exercise-metrics-detail dd { font-weight: 650; }
+.getting-data-in-exercise-page .ingestion-layout { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 1fr; gap: 12px; border: 0; }
+.getting-data-in-exercise-page .ingestion-layout .ingestion-panel { grid-column: auto; grid-row: auto; height: 100%; padding: 12px; border: 1px solid var(--lab-border); border-radius: 6px; }
+.getting-data-in-exercise-page .snapshot-ingestion { display: block; order: 1; background: none; }
+.getting-data-in-exercise-page .snapshot-destination { order: 2; }
+.getting-data-in-exercise-page .snapshot-bridge,
+.getting-data-in-exercise-page .snapshot-ingestion-summary > section,
+.getting-data-in-exercise-page .snapshot-layout .maintenance-diffs,
+.getting-data-in-exercise-page .record-summary { display: none; }
+.getting-data-in-exercise-page .snapshot-ingestion-summary { margin-bottom: 0; }
+.getting-data-in-exercise-page .ingestion-layout .ingestion-panel-heading { flex-direction: column; align-items: stretch; gap: 4px; margin-bottom: 10px; }
+.getting-data-in-exercise-page .ingestion-layout .ingestion-panel-heading h2 { font-size: 14px; }
+.getting-data-in-exercise-page .ingestion-layout .ingestion-panel-heading code { display: none; }
+.getting-data-in-exercise-page .record-input-frame { height: 172px; gap: 6px; }
+.getting-data-in-exercise-page .record-key { min-height: 32px; padding: 5px 8px; }
+.getting-data-in-exercise-page .record-relation .table-scroll { height: var(--ingestion-table-height); }
+.getting-data-in-exercise-page .snapshot-ingestion .table-scroll { height: 128px; }
+.getting-data-in-exercise-page .record-tuple-schema { display: none; }
+.getting-data-in-exercise-page .record-diff-table th:first-child { width: 44px; }
+.getting-data-in-exercise-page .snapshot-id-full { display: none; }
+.getting-data-in-exercise-page .snapshot-id-short { display: inline; }
+
+/* Match Chapter 2 Exercise 1's navigation inset at each desktop height. */
+@media (min-width: 640px) {
+  .app-shell-guided-labs .guided-lab-page.getting-data-in-exercise-page[data-viewport-fit] { padding-bottom: 12px; }
+}
+@media (min-width: 640px) and (min-height: 741px) {
+  .app-shell-guided-labs .guided-lab-page.getting-data-in-exercise-page[data-viewport-fit] { padding-bottom: 16px; }
+}
+@media (min-width: 640px) and (min-height: 850px) {
+  .app-shell-guided-labs .guided-lab-page.getting-data-in-exercise-page[data-viewport-fit] { padding-bottom: 24px; }
+}
+
+/* Compact windows keep a selected reference panel beside the answer form. */
+@media (max-width: 1150px), (max-height: 700px) {
+  .getting-data-in-exercise-page { --ingestion-height: 256px; }
+  .guided-lab-page.getting-data-in-exercise-page[data-viewport-fit] .relation-workspace { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: max-content minmax(40px, 1fr); align-items: start; }
+  .getting-data-in-exercise-page .ingestion-status-bar { display: none; }
+  .getting-data-in-exercise-page .ingestion-exercise-visualization { position: relative; grid-column: 1; }
+  .getting-data-in-exercise-page .exercise-question { grid-column: 2; align-self: stretch; margin-top: 0; }
+  .getting-data-in-exercise-page .exercise-question-navigation { grid-column: 1 / -1; }
+  .getting-data-in-exercise-page .ingestion-exercise-metrics-button { display: inline-flex; position: absolute; top: 0; right: 0; min-height: 32px; padding: 5px 8px; font-size: 12px; }
+  .getting-data-in-exercise-page .ingestion-panel-tabs { display: flex; margin-bottom: 8px; padding-right: 68px; gap: 4px; }
+  .getting-data-in-exercise-page .ingestion-panel-tabs .button { flex: 1; min-height: 32px; padding: 5px; font-size: 12px; }
+  .getting-data-in-exercise-page .ingestion-panel-tabs .button[aria-pressed='true'] { border-color: var(--lab-purple); background: var(--lab-tint); }
+  .getting-data-in-exercise-page .ingestion-layout[data-selected-stage] { display: block; }
+  .getting-data-in-exercise-page .ingestion-layout .ingestion-panel { height: 100%; }
+  .getting-data-in-exercise-page .ingestion-layout[data-selected-stage='source'] > :not([data-stage='source']),
+  .getting-data-in-exercise-page .ingestion-layout[data-selected-stage='ingestion'] > :not([data-stage='ingestion']),
+  .getting-data-in-exercise-page .ingestion-layout[data-selected-stage='record'] > :not([data-stage='record']),
+  .getting-data-in-exercise-page .ingestion-layout[data-selected-stage='changes'] > :not([data-stage='changes']),
+  .getting-data-in-exercise-page .ingestion-layout[data-selected-stage='relation'] > :not([data-stage='relation']) { display: none; }
+  .getting-data-in-exercise-page .record-changes > .record-summary { display: block; }
+  .getting-data-in-exercise-page .record-input-frame { height: 204px; }
+  .ingestion-exercise-answer-group[data-kind='checkbox'] .ingestion-exercise-options { grid-template-columns: 1fr; }
+  .ingestion-exercise-group-controls { display: flex; gap: 6px; margin-bottom: 8px; }
+  .ingestion-exercise-group-controls .button { flex: 1; min-height: 32px; padding: 5px; font-size: 12px; }
+  .ingestion-exercise-group-controls .button[aria-pressed='true'] { color: var(--lab-purple); border-color: var(--lab-purple); background: var(--lab-tint); }
+  .ingestion-exercise-answer-group[data-active='false'] { display: none; }
+  .ingestion-exercise-group-controls + .ingestion-exercise-answer-groups legend { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .ingestion-exercise-answer-groups { grid-template-columns: 1fr; gap: 10px; }
+  .ingestion-exercise-options { gap: 2px; }
+  .ingestion-exercise-options label { padding-block: 2px; }
+}
+@media (max-width: 639px) {
+  /* Keep both parts in the document on phones rather than hiding the reference. */
+  .app-shell-guided-labs .guided-lab-page.getting-data-in-exercise-page[data-viewport-fit] { height: auto; min-height: calc(100dvh - var(--header-height)); overflow: visible; }
+  .guided-lab-page.getting-data-in-exercise-page[data-viewport-fit] .relation-workspace { grid-template-columns: 1fr; grid-template-rows: max-content max-content minmax(40px, 1fr); }
+  .getting-data-in-exercise-page .exercise-question { grid-column: 1; min-height: 0; margin-top: 14px; gap: 8px; }
+  .getting-data-in-exercise-page .exercise-question-navigation .button { min-height: 36px; }
+}

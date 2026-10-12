@@ -6,12 +6,12 @@ import { type ProductDiff, type SnapshotStage } from './scenario';
 import type { SnapshotState } from './simulation';
 import { ProductTable, ProductTuple } from './ProductTable';
 
-function ProductDiffs({ entries, label, unavailable = false, snapshotCommitted = false }: {
-  entries: readonly ProductDiff[]; label: string; unavailable?: boolean; snapshotCommitted?: boolean;
+function ProductDiffs({ entries, label, unavailable = false, snapshotCommitted = false, prediction = false }: {
+  entries: readonly ProductDiff[]; label: string; unavailable?: boolean; snapshotCommitted?: boolean; prediction?: boolean;
 }) {
   return <section className="maintenance-diffs" aria-label={label}>
     <h3>{label}</h3>
-    {snapshotCommitted ? <p>Snapshot committed: <strong>{entries.length} rows</strong> added together.</p> : entries.length ? <ul>{entries.map(({ row, diff }) => {
+    {prediction ? <p>Predict the query outcome.</p> : snapshotCommitted ? <p>Snapshot committed: <strong>{entries.length} rows</strong> added together.</p> : entries.length ? <ul>{entries.map(({ row, diff }) => {
       const opposite = entries.find((entry) => entry.diff !== diff && entry.row.productId === row.productId);
       return <li key={row.productId + ':' + diff}>
         <DiffBadge diff={diff} />
@@ -46,8 +46,8 @@ function IngestionPanel({ state, highlight }: { state: SnapshotState; highlight:
   </>;
 }
 
-export function SnapshotPanelContent({ stage, state, highlight }: {
-  stage: SnapshotStage; state: SnapshotState; highlight: boolean;
+export function SnapshotPanelContent({ stage, state, highlight, predictAvailability = false, appliedLabel = 'Applied changes' }: {
+  stage: SnapshotStage; state: SnapshotState; highlight: boolean; predictAvailability?: boolean; appliedLabel?: string;
 }) {
   if (stage === 'ingestion') return <IngestionPanel state={state} highlight={highlight} />;
   if (stage === 'source') return <>
@@ -59,10 +59,11 @@ export function SnapshotPanelContent({ stage, state, highlight }: {
       <ProductTable rows={state.relation ?? []} caption="Materialize products" diffs={state.relationDiffs} highlight={highlight} />
       {state.relation === null && <div className="snapshot-table-message" role="status" aria-label="Table availability">
         <Clock3 size={22} aria-hidden="true" />
-        <strong>Snapshot in progress</strong><p>Queries waiting</p>
+        <strong>{predictAvailability ? 'Predict query availability' : 'Snapshot in progress'}</strong>
+        <p>{predictAvailability ? 'Check your answer to reveal the outcome.' : 'Queries waiting'}</p>
       </div>}
     </div>
-    <ProductDiffs entries={state.relationDiffs} label="Applied changes" unavailable={state.relation === null}
+    <ProductDiffs entries={state.relationDiffs} label={appliedLabel} unavailable={state.relation === null} prediction={predictAvailability}
       snapshotCommitted={state.relation !== null && state.records.every((record) => !record.applied)} />
   </>;
 }

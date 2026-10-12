@@ -1,5 +1,6 @@
 import { chapterPath, type ChapterDefinition } from './chapterRegistry';
 import { recordLectures } from './getting-data-in/record-scenarios';
+import { ingestionExercises } from './getting-data-in/exercise-scenarios';
 
 export type ChapterSectionSlug = 'tutorial' | 'exercises';
 
@@ -54,7 +55,12 @@ const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
       title: 'Lecture ' + lecture.number + ': ' + lecture.title,
       description: lecture.description,
     }))],
-    exercises: [],
+    exercises: ingestionExercises.map((exercise, index) => ({
+      slug: exercise.slug,
+      title: `Exercise ${index + 1}: ${exercise.title}`,
+      description: exercise.description,
+      durationMinutes: exercise.durationMinutes,
+    })),
   },
   'incremental-maintenance': {
     tutorial: [{

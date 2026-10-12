@@ -39,8 +39,8 @@ interface WorkspaceProps<S extends string> {
   renderContent: (stage: S) => ReactNode;
 }
 
-export function SnapshotWorkspace({ activeStage, setSelectedStage, guided, panelRefs, renderContent, state }:
-  WorkspaceProps<SnapshotStage> & { state: SnapshotState }) {
+export function SnapshotWorkspace({ activeStage, setSelectedStage, guided, panelRefs, renderContent, state, snapshotRowTotal = initialProducts.length, predictAvailability = false }:
+  WorkspaceProps<SnapshotStage> & { state: SnapshotState; snapshotRowTotal?: number; predictAvailability?: boolean }) {
   const [source, ingestion, relation] = snapshotStages;
   return <>
     <PanelTabs stages={snapshotStages} selected={activeStage} onSelect={setSelectedStage} guided={guided} />
@@ -63,9 +63,9 @@ export function SnapshotWorkspace({ activeStage, setSelectedStage, guided, panel
         <div className="snapshot-ingestion-summary">
           <PanelHeading stage={ingestion} icon={<Layers size={18} aria-hidden="true" />} />
           <section aria-label="Snapshot and CDC status">
-            <p>{state.snapshotRowsRead} / {initialProducts.length} starting rows read.</p>
-            <ProgressBar value={state.snapshotRowsRead} total={initialProducts.length} label="Initial snapshot rows read" />
-            <p>{state.relation === null ? 'Waiting to commit the snapshot.' : 'Snapshot committed together.'}</p>
+            <p>{state.snapshotRowsRead} / {snapshotRowTotal} starting rows read.</p>
+            <ProgressBar value={state.snapshotRowsRead} total={snapshotRowTotal} label="Initial snapshot rows read" />
+            <p>{predictAvailability ? 'Predict the query outcome.' : state.relation === null ? 'Waiting to commit the snapshot.' : 'Snapshot committed together.'}</p>
           </section>
         </div>
         {renderContent('ingestion')}
@@ -74,9 +74,10 @@ export function SnapshotWorkspace({ activeStage, setSelectedStage, guided, panel
   </>;
 }
 
-export function RecordWorkspace({ activeStage, setSelectedStage, guided, panelRefs, renderContent, envelope }:
-  WorkspaceProps<RecordStage> & { envelope: Envelope }) {
-  const stages = recordStages(envelope);
+export function RecordWorkspace({ activeStage, setSelectedStage, guided, panelRefs, renderContent, envelope, chooseEnvelope = false }:
+  WorkspaceProps<RecordStage> & { envelope: Envelope; chooseEnvelope?: boolean }) {
+  const stages = recordStages(envelope).map((stage) => chooseEnvelope && stage.id === 'changes'
+    ? { ...stage, sql: 'Choose an envelope' } : stage);
   const icons = { record: <FileInput size={18} aria-hidden="true" />, changes: <GitCompareArrows size={18} aria-hidden="true" />, relation: <Table2 size={18} aria-hidden="true" /> };
   return <>
     <PanelTabs stages={stages} selected={activeStage} onSelect={setSelectedStage} guided={guided} />

@@ -22,6 +22,8 @@ import { IncrementalLectureTwo } from './incremental-maintenance/LectureTwo';
 import { SnapshotLectureOne } from './getting-data-in/LectureOne';
 import { RecordLecture } from './getting-data-in/RecordLecture';
 import { recordLectures } from './getting-data-in/record-scenarios';
+import { ingestionExercises } from './getting-data-in/exercise-scenarios';
+import { IngestionExercisePage } from './getting-data-in/IngestionExercisePage';
 
 export function ChapterContentPage() {
   const chapter = useOutletContext<ChapterDefinition>();
@@ -38,6 +40,11 @@ export function ChapterContentPage() {
   if (!section || (pageSlug !== undefined && !page)) return <NotFoundPage />;
 
   const navigation = getChapterNavigation(chapter, section, page);
+  if (chapter.slug === 'getting-data-in' && section.slug === 'exercises' && page) {
+    return <IngestionExercisePage key={page.slug} chapter={chapter}
+      exerciseIndex={ingestionExercises.findIndex((exercise) => exercise.slug === page.slug)}
+      navigation={<ChapterPagination {...navigation} showTooltips={false} hideLinks />} />;
+  }
   if (chapter.slug === 'getting-data-in' && section.slug === 'tutorial' && page?.slug === 'lecture-1') {
     return <SnapshotLectureOne chapter={chapter} navigation={<ChapterPagination {...navigation} showTooltips={false} />} />;
   }

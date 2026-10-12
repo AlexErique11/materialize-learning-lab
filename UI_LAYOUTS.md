@@ -10,7 +10,7 @@ and shared CSS, not independently maintained mockup files.
 | --- | --- | --- |
 | `LectureScreen`, `layout="with-tip"` | Chapter 1 lectures 1–2 | Chapter 1 reference frame, metrics, visualization, playback, and bottom tip when it fits. |
 | `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 4 lectures 1–4 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
-| `ExerciseFrame` through `GuidedLabScreen` | Chapter 1 and Chapter 2 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
+| `ExerciseFrame` through `GuidedLabScreen` | Chapter 1, Chapter 2, and Chapter 4 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
 
 `src/labs/components/LectureScreen.tsx` accepts `metrics`, `visualization`, and
 `playback` slots plus the common screen props. Chapter 2 supplies them through
@@ -39,6 +39,21 @@ changes. Guided runs select their target panel automatically. The shared screen
 measures the whole status bar as its metrics slot to keep playback within the
 viewport.
 
+Chapter 4 exercises reuse the panels through `ExerciseFrame`, preserving their
+fields and row capacities. Desktop views arrange three compact reference panels
+above the question, following Chapter 2's table-and-answer arrangement.
+Chapter 4 exercises use a 24px gap between the status row and reference panels,
+matching Lecture 2, and the same 24px gap between panels and the question. Remaining
+viewport space sits before the bottom navigation.
+Accepted answers mark the choices without an extra feedback row, matching Chapter
+2 Exercise 1. The next button uses that reference's responsive bottom inset.
+Up to 1150px wide or 700px high, panel selectors show one reference beside the question;
+metrics are available in a dialog, and answer-group buttons
+reveal one complete group. Phones stack the selected panel above the question,
+allowing page scrolling so both remain accessible. Table containers do not scroll.
+Answers survive panel and group switches. Chapter-local exercise styles own this
+adaptation without changing the shared title, subtitle, or action controls.
+
 The title, subtitle, SQL & Objectives, Reset, Run/Pause, and Start guided run
 belong to the shared screen. Preserve their positions during changes to the frame
 below them. Retain the current responsive subtitle placement and panel selectors.
@@ -59,6 +74,7 @@ margins. Chapter-specific CSS owns the visualization inside the frame.
 | SQL, objective, documentation dialog | `src/components/lab/SqlObjectivesPanel.tsx` |
 | Guided explanation fragments | `src/components/lesson/LessonText.tsx` |
 | Chapter 4 snapshot bridge and record inspector | `src/chapters/getting-data-in/IngestionLayouts.tsx`, `lecture-one.css`, `record-lectures.css` |
+| Chapter 4 exercise answers and compact views | `src/chapters/getting-data-in/IngestionExercisePage.tsx`, `ExerciseAnswers.tsx`, `ExerciseWorkspace.tsx`, `exercises.css` |
 | Chapter 2 column colors and common panels | `src/chapters/incremental-maintenance/lecture-one.css` |
 
 Controls tour is a single shared button for all implemented lectures. Its

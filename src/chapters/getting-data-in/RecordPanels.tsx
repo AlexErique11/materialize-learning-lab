@@ -50,9 +50,9 @@ function Unavailable({ label, detail }: { label: string; detail: string }) {
   </div>;
 }
 
-export function RecordPanelContent({ stage, state, record, upcoming, pending, highlight }: {
+export function RecordPanelContent({ stage, state, record, upcoming, pending, highlight, neutralIdentity = false }: {
   stage: RecordStage; state: RecordState; record: IncomingRecord;
-  upcoming: boolean; pending: boolean; highlight: boolean;
+  upcoming: boolean; pending: boolean; highlight: boolean; neutralIdentity?: boolean;
 }) {
   if (stage === 'record') return <>
     <InputRecord record={record} upcoming={upcoming} highlight={highlight} diffs={state.diffs} nameKey={state.fixture.keyLabel === 'Product name'} />
@@ -88,9 +88,10 @@ export function RecordPanelContent({ stage, state, record, upcoming, pending, hi
       {state.relation === null && <Unavailable label="Relation unavailable" detail="An input error prevents queries." />}
     </div>
     <section className="record-summary" aria-label="Relation identity">
-      <h3>{state.fixture.envelope === 'UPSERT' ? 'Current keys' : 'Retained rows'}</h3>
+      <h3>{neutralIdentity ? 'Known starting rows' : state.fixture.envelope === 'UPSERT' ? 'Current keys' : 'Retained rows'}</h3>
       <p>{state.relation === null ? 'Queries wait for the input error to be corrected.'
-        : state.fixture.envelope === 'UPSERT' ? state.entries.map((entry) => entry.identity).join(', ') || 'No keys retained'
+        : neutralIdentity ? state.entries.length + ' starting row copies'
+          : state.fixture.envelope === 'UPSERT' ? state.entries.map((entry) => entry.identity).join(', ') || 'No keys retained'
           : state.entries.length + (state.fixture.envelope === 'NONE' ? ' event rows' : ' current products')}</p>
     </section>
   </>;

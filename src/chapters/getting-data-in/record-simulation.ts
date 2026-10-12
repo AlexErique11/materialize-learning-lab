@@ -17,7 +17,9 @@ export function sameProduct(left: Product, right: Product) {
     && left.price === right.price && left.note === right.note;
 }
 
-export function recordsAt(definition: RecordLectureDefinition, checkpoint: number): RecordState {
+export type RecordRun = Pick<RecordLectureDefinition, 'fixtures' | 'actions'>;
+
+export function recordsAt(definition: RecordRun, checkpoint: number): RecordState {
   if (!Number.isInteger(checkpoint) || checkpoint < 0 || checkpoint > definition.actions.length) {
     throw new RangeError('Record checkpoint is outside this lecture.');
   }

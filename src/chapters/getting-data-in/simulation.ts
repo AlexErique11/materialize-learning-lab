@@ -1,6 +1,6 @@
 import {
   initialProducts, snapshotActions,
-  type IngestionPhase, type Product, type ProductChange, type ProductDiff,
+  type IngestionPhase, type Product, type ProductChange, type ProductDiff, type SnapshotAction,
 } from './scenario';
 
 export interface CDCRecord {
@@ -33,11 +33,16 @@ function diffsFor(change: ProductChange): ProductDiff[] {
 }
 
 // Read the fixed snapshot boundary, not the upstream catalog after later writes.
-export function snapshotAt(checkpoint: number): SnapshotState {
-  if (!Number.isInteger(checkpoint) || checkpoint < 0 || checkpoint > snapshotActions.length) {
+export interface SnapshotFixture {
+  readonly initial: readonly Product[];
+  readonly actions: readonly SnapshotAction[];
+}
+
+export function snapshotAt(checkpoint: number, fixture: SnapshotFixture = { initial: initialProducts, actions: snapshotActions }): SnapshotState {
+  if (!Number.isInteger(checkpoint) || checkpoint < 0 || checkpoint > fixture.actions.length) {
     throw new RangeError('Unknown snapshot checkpoint.');
   }
-  let upstream = [...initialProducts];
+  let upstream = [...fixture.initial];
   let relation: Product[] | null = null;
   let snapshotRowsRead = 0;
   let phase: IngestionPhase = 'Snapshotting';
@@ -45,7 +50,7 @@ export function snapshotAt(checkpoint: number): SnapshotState {
   let upstreamDiffs: ProductDiff[] = [];
   let relationDiffs: ProductDiff[] = [];
 
-  for (const action of snapshotActions.slice(0, checkpoint)) {
+  for (const action of fixture.actions.slice(0, checkpoint)) {
     upstreamDiffs = [];
     relationDiffs = [];
     switch (action.kind) {
@@ -64,8 +69,8 @@ export function snapshotAt(checkpoint: number): SnapshotState {
         break;
       }
       case 'commit-snapshot':
-        relation = [...initialProducts];
-        relationDiffs = initialProducts.map((row) => ({ row, diff: 1 }));
+        relation = [...fixture.initial];
+        relationDiffs = fixture.initial.map((row) => ({ row, diff: 1 }));
         phase = records.some((record) => !record.applied) ? 'Catch-up' : 'Live';
         break;
       case 'apply-cdc': {

@@ -66,11 +66,13 @@
   min-width: 0;
 }
 
-.chapter-overview[data-chapter='incremental-maintenance'] .chapter-overview-hero {
+.chapter-overview[data-chapter='incremental-maintenance'] .chapter-overview-hero,
+.chapter-overview[data-chapter='getting-data-in'] .chapter-overview-hero {
   grid-template-columns: minmax(0, 1fr) 444px;
 }
 
-.chapter-overview[data-chapter='incremental-maintenance'] .chapter-overview-illustration {
+.chapter-overview[data-chapter='incremental-maintenance'] .chapter-overview-illustration,
+.chapter-overview[data-chapter='getting-data-in'] .chapter-overview-illustration {
   max-width: none;
 }
 
@@ -427,7 +429,8 @@
 }
 
 @media (max-width: 1350px) {
-  .chapter-overview[data-chapter='incremental-maintenance'] .chapter-overview-hero {
+  .chapter-overview[data-chapter='incremental-maintenance'] .chapter-overview-hero,
+  .chapter-overview[data-chapter='getting-data-in'] .chapter-overview-hero {
     grid-template-columns: minmax(0, 1fr) 288px;
   }
   .chapter-overview-hero {
