@@ -1,4 +1,5 @@
 import type { DocumentationLink } from '../app/resources';
+import { objectDocumentationLinks } from './views-indexes-materialized-views/resources';
 
 export interface ChapterDefinition {
   readonly number: number;
@@ -63,6 +64,8 @@ export const chapters: readonly ChapterDefinition[] = [
     title: 'Views, Indexes, and Materialized Views',
     shortTitle: 'Views, Indexes & Materialized Views',
     description: 'Choose where to save SQL, maintain results in memory, or persist them.',
+    introduction: 'Learn how regular views save SQL and indexes maintain complete results in cluster-local memory.',
+    documentationLinks: objectDocumentationLinks,
   },
   {
     number: 4,

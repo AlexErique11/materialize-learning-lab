@@ -45,13 +45,13 @@ describe('chapter page navigation', () => {
   });
 
   it('leaves an empty section with only a link to its chapter overview', () => {
-    const emptyChapter = findChapter('views-indexes-materialized-views');
-    if (!emptyChapter) throw new Error('Chapter 3 must be in the curriculum.');
+    const emptyChapter = findChapter('getting-data-in');
+    if (!emptyChapter) throw new Error('Chapter 4 must be in the curriculum.');
     const section = findChapterSection(emptyChapter, 'tutorial');
     if (!section) throw new Error('Every chapter must have a tutorial section.');
     expect(getChapterNavigation(emptyChapter, section)).toEqual({
       previous: {
-        to: '/labs/views-indexes-materialized-views', title: 'Views, Indexes & Materialized Views', label: 'Chapter overview',
+        to: '/labs/getting-data-in', title: 'Getting Data In', label: 'Chapter overview',
       },
       next: undefined,
     });

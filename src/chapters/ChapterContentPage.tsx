@@ -19,6 +19,7 @@ import { IncrementalLectureOne } from './incremental-maintenance/LectureOne';
 import { IncrementalLectureThree } from './incremental-maintenance/LectureThree';
 import { IncrementalLectureFour } from './incremental-maintenance/LectureFour';
 import { IncrementalLectureTwo } from './incremental-maintenance/LectureTwo';
+import { ObjectChapterLecture } from './views-indexes-materialized-views/ChapterLecture';
 
 export function ChapterContentPage() {
   const chapter = useOutletContext<ChapterDefinition>();
@@ -35,6 +36,10 @@ export function ChapterContentPage() {
   if (!section || (pageSlug !== undefined && !page)) return <NotFoundPage />;
 
   const navigation = getChapterNavigation(chapter, section, page);
+  if (chapter.slug === 'views-indexes-materialized-views' && section.slug === 'tutorial' && page) {
+    const index = section.pages.findIndex(item => item.slug === page.slug);
+    return <ObjectChapterLecture key={page.slug} chapter={chapter} navigation={<ChapterPagination {...navigation} showTooltips={false} hideLinks />} lectureIndex={index} />;
+  }
   if (chapter.slug === 'incremental-maintenance' && section.slug === 'tutorial' && page?.slug === 'lecture-1') {
     return <IncrementalLectureOne chapter={chapter} navigation={<ChapterPagination {...navigation} showTooltips={false} />} />;
   }

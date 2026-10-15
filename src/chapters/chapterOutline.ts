@@ -43,6 +43,13 @@ const sectionDefinitions: readonly Omit<ChapterSectionDefinition, 'pages'>[] = [
 
 // Navigation and overview summaries. Actual chapter content lives beside its chapter.
 const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
+  'views-indexes-materialized-views': {
+    tutorial: [
+      { slug: 'lecture-1', title: 'Lecture 1: Where results live', description: 'Save a view, query it, add an index, then predict how input changes update maintained state.' },
+    ],
+    exercises: [
+    ],
+  },
   'incremental-maintenance': {
     tutorial: [{
       slug: 'lecture-1',
