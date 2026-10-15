@@ -36,6 +36,34 @@ CREATE INDEX revenue_mv_b IN CLUSTER serving_b ON revenue_mv (region);
 SELECT * FROM revenue_mv;
 DROP INDEX revenue_mv_b;
 SELECT * FROM revenue_mv;`;
+export const stackedRevenueSql = 'SELECT region, SUM(amount) AS revenue FROM order_enriched GROUP BY region';
+export const stackedSql = `${inputSql}
+
+CREATE VIEW order_base AS SELECT order_id, region, amount FROM orders;
+CREATE VIEW order_enriched AS SELECT * FROM order_base WHERE amount >= 0;
+CREATE VIEW revenue_v AS ${stackedRevenueSql};
+
+-- First design: maintain the final regular view in A only.
+CREATE INDEX revenue_v_a IN CLUSTER serving_a ON revenue_v (region);
+SET CLUSTER = serving_a;
+SELECT * FROM revenue_v ORDER BY region;
+
+-- Switch to the separate transform/serving design shown next.
+-- Remove the first design's index; revenue_v remains a definition.
+DROP INDEX revenue_v_a;
+-- This creates a new object; it does not convert revenue_v.
+CREATE MATERIALIZED VIEW revenue_mv IN CLUSTER transform AS
+${stackedRevenueSql};
+CREATE INDEX revenue_mv_a IN CLUSTER serving_a ON revenue_mv (region);
+SELECT * FROM revenue_mv ORDER BY region;
+CREATE INDEX revenue_mv_b IN CLUSTER serving_b ON revenue_mv (region);
+SET CLUSTER = serving_b;
+SELECT * FROM revenue_mv ORDER BY region;
+
+-- Final completed maintenance step: North becomes 170, South stays 80.
+UPDATE orders SET amount = 120 WHERE order_id = 1;
+SELECT * FROM revenue_mv ORDER BY region;`;
+
 export interface ObjectLesson {
   readonly title: string;
   readonly shortTitle: string;
@@ -96,6 +124,23 @@ export const objectLectures: readonly ObjectLecture[] = [
       { title: 'Read durable output from B', shortTitle: 'Durable query', target: 'durable', before: ['Query ', ref('materialized', 'revenue_mv'), ' in B without an ', ref('index', 'index'), ' there. Is the maintained result accessible?'], explanation: ['Yes. ', ref('cluster', 'Transform'), ' maintains ', ref('materialized', 'revenue_mv'), ' in ', ref('materialized', 'durable storage'), ', which B can read. B does not need to rerun the original aggregation.'], snapshot: makeSnapshot(crossCluster.setup, undefined, { object: 'revenue_mv', cluster: 'b' }) },
       { title: 'Add a serving index in B', shortTitle: 'Index in B', target: 'b', before: ['Add ', ref('index', 'revenue_mv_b'), ' and query in B. Where is the full result now available locally?'], explanation: ['B’s ', ref('index', 'index'), ' makes the already-maintained output available in B’s ', ref('cluster', 'memory'), '. It does not repeat the original transformation.'], snapshot: makeSnapshot({ ...crossCluster.setup, materializedIndexes: ['b'] }, undefined, { object: 'revenue_mv', cluster: 'b' }) },
       { title: 'Remove only the index', shortTitle: 'Drop index', target: 'durable', before: ['Drop ', ref('index', 'revenue_mv_b'), '. Does the ', ref('materialized', 'materialized view'), ' disappear too?'], explanation: ['No. The local ', ref('index', 'index'), ' is removed, while ', ref('materialized', 'revenue_mv'), ' and its ', ref('materialized', 'durable output'), ' remain. B can still query that durable result.'], snapshot: makeSnapshot(crossCluster.setup, undefined, { object: 'revenue_mv', cluster: 'b' }) },
+    ],
+  },
+  {
+    title: 'Lecture 3', description: 'Choose what to maintain for one or several serving clusters.',
+    objective: 'Keep intermediate views as SQL building blocks, then choose local maintenance or shared durable output for the final result. Maintaining a materialized view still needs transform memory; creation and restarts require hydration. Chapter 10 explores recovery.',
+    sql: stackedSql, initial: makeSnapshot(), showClusterB: true, explore: true,
+    introductions: [
+      { title: 'Build a query from smaller named queries', target: 'definitions', explanation: ['A view can use another view. Here, ', ref('view', 'order_base'), ' selects the order columns, ', ref('view', 'order_enriched'), ' filters out negative amounts, and ', ref('amount', 'revenue'), ' groups the remaining ', ref('view', 'orders'), ' by ', ref('region', 'region'), '. These intermediate views organize SQL. Saving their definitions does not require keeping a separate result for each one.'], example: [ref('view', 'orders'), ' → ', ref('view', 'order_base'), ' → ', ref('view', 'order_enriched'), ' → ', ref('amount', 'revenue')] },
+      { title: 'Choose objects from the serving requirement', target: 'durable', explanation: ['“Serving” means answering application queries. If only A needs maintained results in ', ref('cluster', 'memory'), ', ', ref('index', 'index'), ' the final ', ref('view', 'regular view'), ' in A. If ', ref('cluster', 'Transform'), ' must maintain one result shared by A and B, use a final ', ref('materialized', 'materialized view'), '. If both must serve from ', ref('cluster', 'memory'), ', each also needs its own ', ref('index', 'index'), ' on that ', ref('materialized', 'materialized view'), '.'], example: ['View: reuse SQL\n', ref('index', 'Index'), ': maintain local ', ref('cluster', 'memory'), ' rows\n', ref('materialized', 'Materialized view'), ': maintain shared durable rows'] },
+    ],
+    lessons: [
+      { title: 'Organize SQL with regular views', shortTitle: 'Definitions', target: 'definitions', before: ['Only final ', ref('amount', 'revenue'), ' will be queried. Do ', ref('view', 'order_base'), ' and ', ref('view', 'order_enriched'), ' each need a separately maintained result?'], explanation: ['No. Keep these intermediate definitions as ', ref('view', 'regular views'), '. Maintaining a final dataflow can still require intermediate state; this avoids separately materializing every SQL building block.'], snapshot: makeSnapshot({ view: true, stacked: true }) },
+      { title: 'Serve one cluster from memory', shortTitle: 'One cluster', target: 'a', before: ['A alone serves this result. What makes the final view’s answer continuously available in A’s ', ref('cluster', 'memory'), '?'], explanation: ['An ', ref('index', 'index'), ' on the final ', ref('view', 'regular view'), ' maintains its full result in A. No separate durable final output is needed for this requirement.'], snapshot: makeSnapshot({ view: true, stacked: true, viewIndexes: ['a'] }, undefined, { object: 'revenue_v', cluster: 'a' }) },
+      { title: 'Choose a shared-output deployment', shortTitle: 'Share output', target: 'durable', before: ['Now consider a separate deployment: one ', ref('cluster', 'Transform'), ' cluster maintains the query for both A and B. Which object shares maintained output?'], explanation: ['Create the final ', ref('materialized', 'materialized view'), ' in ', ref('cluster', 'Transform'), '. This alternative uses ', ref('materialized', 'durable output'), ', while intermediate views stay definitions. It is a new object, not an automatic conversion of ', ref('view', 'revenue_v'), '.'], snapshot: makeSnapshot({ view: true, stacked: true, materialized: true }) },
+      { title: 'Serve A locally', shortTitle: 'Index A', target: 'a', before: ['A must serve from its own ', ref('cluster', 'memory'), '. Is ', ref('materialized', 'durable output'), ' alone enough to meet that specific requirement?'], explanation: ['Add an ', ref('index', 'index'), ' on ', ref('materialized', 'revenue_mv'), ' in A. The durable result remains the shared maintained output.'], snapshot: makeSnapshot({ view: true, stacked: true, materialized: true, materializedIndexes: ['a'] }, undefined, { object: 'revenue_mv', cluster: 'a' }) },
+      { title: 'Give B its own index', shortTitle: 'Index B', target: 'b', before: ['B must also serve from its own ', ref('cluster', 'memory'), '. Can it borrow A’s ', ref('index', 'index'), '?'], explanation: ['No. Add an ', ref('index', 'index'), ' on the same ', ref('materialized', 'revenue_mv'), ' in B. Each serving cluster owns its local result; neither reruns the original aggregate.'], snapshot: makeSnapshot({ view: true, stacked: true, materialized: true, materializedIndexes: ['a', 'b'] }, undefined, { object: 'revenue_mv', cluster: 'b' }) },
+      { title: 'Follow one update through the design', shortTitle: 'Update', target: 'b', before: [ref('orderId', 'Order 1'), ' changes to ', ref('amount', '$120'), '. What should B’s next query return after maintenance completes?'], explanation: [ref('region', 'North'), ' becomes ', ref('amount', '$170'), ' in ', ref('materialized', 'durable output'), ' and both local ', ref('index', 'indexes'), '. B reads its own ', ref('cluster', 'memory'), '. One final transformation maintains shared output; the two intermediate definitions were not separately materialized.'], snapshot: makeSnapshot({ view: true, stacked: true, materialized: true, materializedIndexes: ['a', 'b'] }, updatedOrders, { object: 'revenue_mv', cluster: 'b' }) },
     ],
   },
 ];

@@ -47,6 +47,7 @@ const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
     tutorial: [
       { slug: 'lecture-1', title: 'Lecture 1: Where results live', description: 'Save a view, query it, add an index, then predict how input changes update maintained state.' },
       { slug: 'lecture-2', title: 'Lecture 2: Query across clusters', description: 'Trace queries through local indexes, view computation and durable output. Remove an index and inspect what remains.' },
+      { slug: 'lecture-3', title: 'Lecture 3: Choose what to maintain', description: 'Keep SQL building blocks simple and design one maintained transformation for separate serving clusters.' },
     ],
     exercises: [
     ],
