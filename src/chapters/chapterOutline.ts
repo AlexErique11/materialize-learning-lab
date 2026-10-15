@@ -46,6 +46,7 @@ const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
   'views-indexes-materialized-views': {
     tutorial: [
       { slug: 'lecture-1', title: 'Lecture 1: Where results live', description: 'Save a view, query it, add an index, then predict how input changes update maintained state.' },
+      { slug: 'lecture-2', title: 'Lecture 2: Query across clusters', description: 'Trace queries through local indexes, view computation and durable output. Remove an index and inspect what remains.' },
     ],
     exercises: [
     ],

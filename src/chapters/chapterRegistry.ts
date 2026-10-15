@@ -64,7 +64,7 @@ export const chapters: readonly ChapterDefinition[] = [
     title: 'Views, Indexes, and Materialized Views',
     shortTitle: 'Views, Indexes & Materialized Views',
     description: 'Choose where to save SQL, maintain results in memory, or persist them.',
-    introduction: 'Learn how regular views save SQL and indexes maintain complete results in cluster-local memory.',
+    introduction: 'Compare saved SQL, cluster-local indexes and durable materialized output across two serving clusters.',
     documentationLinks: objectDocumentationLinks,
   },
   {

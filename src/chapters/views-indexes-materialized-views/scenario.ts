@@ -15,6 +15,27 @@ const inputSql = `-- Run each lecture's script independently in a fresh schema.
 CREATE TABLE orders (order_id INT, region TEXT, amount INT);
 INSERT INTO orders VALUES (1, 'North', 100), (2, 'North', 50), (3, 'South', 80);`;
 const localViewSql = `${inputSql}\n\n-- Save a definition, then query it without an index.\nCREATE VIEW revenue_v AS\n${revenueSql};\nSET CLUSTER = serving_a;\nSELECT * FROM revenue_v;\n-- Maintain the full result locally.\nCREATE INDEX revenue_v_a IN CLUSTER serving_a ON revenue_v (region);\nUPDATE orders SET amount = 120 WHERE order_id = 1;\nSELECT * FROM revenue_v;`;
+export const objectSql = `${inputSql}
+
+-- Build the starting diagram: a view index in A and durable output in Transform.
+CREATE VIEW revenue_v AS
+${revenueSql};
+CREATE INDEX revenue_v_a IN CLUSTER serving_a ON revenue_v (region);
+CREATE MATERIALIZED VIEW revenue_mv IN CLUSTER transform AS
+${revenueSql};
+
+-- Same regular view, different access paths.
+SET CLUSTER = serving_a;
+SELECT * FROM revenue_v;
+SET CLUSTER = serving_b;
+SELECT * FROM revenue_v;
+
+-- B reads durable output, then its own index, then durable output again.
+SELECT * FROM revenue_mv;
+CREATE INDEX revenue_mv_b IN CLUSTER serving_b ON revenue_mv (region);
+SELECT * FROM revenue_mv;
+DROP INDEX revenue_mv_b;
+SELECT * FROM revenue_mv;`;
 export interface ObjectLesson {
   readonly title: string;
   readonly shortTitle: string;
@@ -37,6 +58,7 @@ export interface ObjectLecture {
 const view = makeSnapshot({ view: true });
 const firstQuery = makeSnapshot({ view: true }, undefined, { object: 'revenue_v', cluster: 'a' });
 const indexed = makeSnapshot({ view: true, viewIndexes: ['a'] });
+const crossCluster = makeSnapshot({ view: true, viewIndexes: ['a'], materialized: true });
 
 export const objectLectures: readonly ObjectLecture[] = [
   {
@@ -57,6 +79,23 @@ export const objectLectures: readonly ObjectLecture[] = [
       { title: 'Add a local index', shortTitle: 'Add index', target: 'a', before: ['Create an ', ref('index', 'index'), ' on ', ref('view', 'revenue_v'), ' in A. Does it store only ', ref('region', 'region'), ' keys, or the full result?'], explanation: ['The ', ref('index', 'index'), ' stores the full result in ', ref('cluster', 'Cluster A'), '’s ', ref('cluster', 'memory'), ', including ', ref('region', 'region'), ' and ', ref('amount', 'revenue'), '. It maintains that result as input changes arrive.'], snapshot: { ...indexed, query: firstQuery.query } },
       { title: 'Change input before the next query', shortTitle: 'Change input', target: 'a', before: [ref('orderId', 'Order 1'), ' changes from ', ref('amount', '$100'), ' to ', ref('amount', '$120'), '. Does the ', ref('index', 'index'), ' wait for the next query before ', ref('region', 'North'), ' becomes ', ref('amount', '$170'), '?'], explanation: ['No. After this completed simulated maintenance step, A’s ', ref('index', 'index'), ' contains ', ref('region', 'North'), ' = ', ref('amount', '$170'), '. The last query still shows its earlier observation of ', ref('amount', '$150'), '; it does not refresh itself.'], snapshot: { ...makeSnapshot(indexed.setup, updatedOrders), query: firstQuery.query } },
       { title: 'Read the maintained answer', shortTitle: 'Query again', target: 'a', before: ['Query ', ref('view', 'revenue_v'), ' again in A. Must the grouped ', ref('amount', 'revenue'), ' query be rebuilt from its input?'], explanation: ['This query reads the local maintained result: ', ref('region', 'North'), ' = ', ref('amount', '$170'), ' and ', ref('region', 'South'), ' = ', ref('amount', '$80'), '. No durable query output was created by the view or its ', ref('index', 'index'), '.'], snapshot: makeSnapshot(indexed.setup, updatedOrders, { object: 'revenue_v', cluster: 'a' }) },
+    ],
+  },
+  {
+    title: 'Lecture 2', description: 'Follow the query to the state its cluster can access.',
+    objective: 'Trace local memory, fresh view computation, and durable-output reads across clusters. Compare the same completed input snapshot; real clusters can have different maintenance progress. Paths are conceptual, not physical plans or latency guarantees.',
+    sql: objectSql, initial: crossCluster, showClusterB: true, explore: true,
+    introductions: [
+      { title: 'A definition and an index have different scopes', target: 'a', explanation: ['A ', ref('view', 'regular view'), ' saves a named query. Its definition can be used from different clusters. An ', ref('index', 'index'), ' keeps that query’s result in one cluster’s ', ref('cluster', 'memory'), '. This starting setup has ', ref('view', 'revenue_v'), ' indexed in A, but no local ', ref('index', 'index'), ' in B. We will compare how each cluster answers the same query.'] },
+      { title: 'What is a materialized view?', target: 'transform', explanation: ['A ', ref('materialized', 'materialized view'), ' is a named query whose result Materialize computes and keeps up to date in ', ref('materialized', 'durable storage'), '. Unlike a ', ref('view', 'regular view'), ' alone, it maintains result rows. Here, a cluster named ', ref('cluster', 'Transform'), ' maintains ', ref('materialized', 'revenue_mv'), ': ', ref('region', 'North'), ' ', ref('amount', '$150'), ' and ', ref('region', 'South'), ' ', ref('amount', '$80'), '. Other clusters can read this shared output.'], example: [ref('view', 'Regular view'), ': saved query\n', ref('materialized', 'Materialized view'), ': saved query + maintained durable result'] },
+      { title: 'Durable output and local memory', target: 'b', explanation: [ref('materialized', 'Durable storage'), ' holds the materialized result outside any serving cluster’s local ', ref('index', 'index'), ' ', ref('cluster', 'memory'), '. B can read ', ref('materialized', 'revenue_mv'), ' from storage even without an ', ref('index', 'index'), '. Adding an ', ref('index', 'index'), ' in B makes that same output available in B’s ', ref('cluster', 'memory'), '. Removing that ', ref('index', 'index'), ' removes the local copy; it leaves the ', ref('materialized', 'materialized view'), ' available.'], example: [ref('cluster', 'Transform'), ' → durable result → local ', ref('index', 'index'), ' in B'] },
+    ],
+    lessons: [
+      { title: 'Query a local indexed view', shortTitle: 'View in A', target: 'a', before: [ref('view', 'revenue_v'), ' has an ', ref('index', 'index'), ' only in A. Which state can A use?'], explanation: ['A can read its own full indexed result from ', ref('cluster', 'memory'), '.'], snapshot: makeSnapshot(crossCluster.setup, undefined, { object: 'revenue_v', cluster: 'a' }) },
+      { title: 'Move the same query to B', shortTitle: 'View in B', target: 'b', before: ['Does querying ', ref('view', 'revenue_v'), ' from B use A’s ', ref('index', 'index'), '?'], explanation: ['No. The definition is available in B, but A’s ', ref('index', 'index'), ' is local to A. B computes the view query. For the same completed input snapshot, both return the same answer.'], snapshot: makeSnapshot(crossCluster.setup, undefined, { object: 'revenue_v', cluster: 'b' }) },
+      { title: 'Read durable output from B', shortTitle: 'Durable query', target: 'durable', before: ['Query ', ref('materialized', 'revenue_mv'), ' in B without an ', ref('index', 'index'), ' there. Is the maintained result accessible?'], explanation: ['Yes. ', ref('cluster', 'Transform'), ' maintains ', ref('materialized', 'revenue_mv'), ' in ', ref('materialized', 'durable storage'), ', which B can read. B does not need to rerun the original aggregation.'], snapshot: makeSnapshot(crossCluster.setup, undefined, { object: 'revenue_mv', cluster: 'b' }) },
+      { title: 'Add a serving index in B', shortTitle: 'Index in B', target: 'b', before: ['Add ', ref('index', 'revenue_mv_b'), ' and query in B. Where is the full result now available locally?'], explanation: ['B’s ', ref('index', 'index'), ' makes the already-maintained output available in B’s ', ref('cluster', 'memory'), '. It does not repeat the original transformation.'], snapshot: makeSnapshot({ ...crossCluster.setup, materializedIndexes: ['b'] }, undefined, { object: 'revenue_mv', cluster: 'b' }) },
+      { title: 'Remove only the index', shortTitle: 'Drop index', target: 'durable', before: ['Drop ', ref('index', 'revenue_mv_b'), '. Does the ', ref('materialized', 'materialized view'), ' disappear too?'], explanation: ['No. The local ', ref('index', 'index'), ' is removed, while ', ref('materialized', 'revenue_mv'), ' and its ', ref('materialized', 'durable output'), ' remain. B can still query that durable result.'], snapshot: makeSnapshot(crossCluster.setup, undefined, { object: 'revenue_mv', cluster: 'b' }) },
     ],
   },
 ];
