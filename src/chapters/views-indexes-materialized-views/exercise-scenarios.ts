@@ -1,6 +1,6 @@
 import type { ExerciseGrade } from '../../hooks/useExerciseStages';
-import { makeSnapshot, type ObjectSnapshot } from './simulation';
-import { objectSql } from './scenario';
+import { makeSnapshot, updatedOrders, type ObjectSnapshot } from './simulation';
+import { objectSql, stackedSql } from './scenario';
 
 interface Choice { readonly id: string; readonly label: string; readonly misconception: string }
 export interface ObjectCheckpoint {
@@ -13,6 +13,9 @@ const choice = (id: string, label: string, misconception = ''): Choice => ({ id,
 const view = makeSnapshot({ view: true });
 const indexed = makeSnapshot({ view: true, viewIndexes: ['a'] });
 const materialized = makeSnapshot({ materialized: true });
+const intermediates = makeSnapshot({ stacked: true });
+const shared = makeSnapshot({ stacked: true, materialized: true });
+const complete = makeSnapshot({ ...shared.setup, materializedIndexes: ['a', 'b'] });
 
 export const objectExercises: readonly ObjectExercise[] = [
   { title: 'Choose and inspect objects', sql: objectSql, checkpoints: [
@@ -29,6 +32,21 @@ export const objectExercises: readonly ObjectExercise[] = [
     { title: 'Move a query', question: 'New fixture: revenue_v is indexed only in A. Query it from B. Select the correct access path.', hint: 'A shared SQL definition and cluster-local index memory have different scopes.',
       choices: [choice('compute', 'B computes the saved view query'), choice('remote', 'B reads A’s index', 'A’s index is inaccessible from B.'), choice('missing', 'The view is inaccessible in B', 'Regular view definitions can be referenced across clusters.'), choice('wrong', 'B must return a different answer', 'A different access path need not change the SQL result.')], solution: ['compute'],
       explanation: 'B can reference the saved definition, but not A’s index. It computes the view query and returns the same North $150 / South $80 result.', before: indexed, after: makeSnapshot(indexed.setup, undefined, { object: 'revenue_v', cluster: 'b' }) },
+  ] },
+  { title: 'Design shared serving', sql: stackedSql, checkpoints: [
+    { title: 'Keep intermediate views simple', question: 'order_base → order_enriched → revenue. Only final revenue is served. Select what the two intermediate stages need for this requirement.', hint: 'Which stages are independently queried? Saving their definitions can be sufficient.',
+      choices: [choice('base', 'order_base as a regular view'), choice('enriched', 'order_enriched as a regular view'), choice('allmv', 'Materialize every stage', 'Separately maintaining every intermediate is unnecessary for this fixture.'), choice('allindex', 'Index every intermediate stage', 'These stages have no independent serving requirement.')], solution: ['base', 'enriched'],
+      explanation: 'Use regular views for intermediate SQL definitions. The final maintained dataflow can still have intermediate state; this does not require separately materializing each definition.', before: makeSnapshot(), after: intermediates },
+    { title: 'Maintain once, share output', question: 'Transform must maintain one final transformation for both A and B. Select the final object that provides shared maintained output.', hint: 'Which object persists results that can be read from different clusters?',
+      choices: [choice('mv', 'Final materialized view in Transform'), choice('view', 'Final regular view alone', 'A definition alone does not maintain the output.'), choice('indexa', 'Index the final view only in A', 'A’s index is not a shared result that B can read.')], solution: ['mv'],
+      explanation: 'A final materialized view in Transform maintains durable output accessible from both serving clusters. Intermediate views remain SQL building blocks.', before: intermediates, after: shared },
+    { title: 'Serve from both memories', question: 'A and B must each serve the shared result from their own memory. Select every index needed.', hint: 'Each serving cluster needs local access to the same already-maintained output.',
+      choices: [choice('a', 'Index revenue_mv in A'), choice('b', 'Index revenue_mv in B'), choice('remote', 'Share A’s index with B', 'Indexes are local, so B needs its own.'), choice('duplicate', 'Maintain two separate aggregations', 'The stated requirement asks Transform to maintain the original transformation once.')], solution: ['a', 'b'],
+      explanation: 'Create one index on revenue_mv in each serving cluster. Both indexes maintain local access to the same durable result without repeating the original aggregate.', before: shared, after: complete },
+    { title: 'Final challenge: complete architecture', question: 'New fixture: keep two SQL-only intermediates; maintain the final transformation in Transform; serve from memory in A and B. Then correct order 1 to $120. Select every required object.', hint: 'Separate SQL definitions, final durable maintenance, and each cluster’s local serving state.',
+      choices: [choice('intermediate', 'Keep intermediates as regular views'), choice('final', 'Final materialized view in Transform'), choice('a', 'Index revenue_mv in A'), choice('b', 'Index revenue_mv in B'), choice('all', 'Materialize every intermediate', 'The intermediate stages only organize SQL in this requirement.'), choice('remote', 'Use A’s index from B', 'Each serving cluster needs its own index.'), choice('sql', 'Save only the final SQL', 'A saved definition alone neither maintains durable output nor creates local memory results.')], solution: ['intermediate', 'final', 'a', 'b'],
+      explanation: 'Regular intermediates → one final materialized view in Transform → one index in A and one in B. Correcting order 1 to $120 gives North $170 / South $80 in durable output and both local indexes.',
+      before: makeSnapshot(), after: makeSnapshot(complete.setup, updatedOrders, { object: 'revenue_mv', cluster: 'b' }) },
   ] },
 ];
 

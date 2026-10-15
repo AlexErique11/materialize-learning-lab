@@ -51,6 +51,7 @@ const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
     ],
     exercises: [
       { slug: 'exercise-1', title: 'Exercise 1: Choose and inspect objects', description: 'Choose objects, remove an index and move a query between clusters across four checkpoints.', durationMinutes: 7 },
+      { slug: 'exercise-2', title: 'Exercise 2: Design shared serving', description: 'Choose intermediate and final objects, then complete a design for two serving clusters.', durationMinutes: 8 },
     ],
   },
   'incremental-maintenance': {
