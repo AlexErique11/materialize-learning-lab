@@ -20,6 +20,7 @@ import { IncrementalLectureThree } from './incremental-maintenance/LectureThree'
 import { IncrementalLectureFour } from './incremental-maintenance/LectureFour';
 import { IncrementalLectureTwo } from './incremental-maintenance/LectureTwo';
 import { ObjectChapterLecture } from './views-indexes-materialized-views/ChapterLecture';
+import { ObjectChapterExercise } from './views-indexes-materialized-views/ChapterExercise';
 
 export function ChapterContentPage() {
   const chapter = useOutletContext<ChapterDefinition>();
@@ -36,9 +37,12 @@ export function ChapterContentPage() {
   if (!section || (pageSlug !== undefined && !page)) return <NotFoundPage />;
 
   const navigation = getChapterNavigation(chapter, section, page);
-  if (chapter.slug === 'views-indexes-materialized-views' && section.slug === 'tutorial' && page) {
+  if (chapter.slug === 'views-indexes-materialized-views' && page) {
     const index = section.pages.findIndex(item => item.slug === page.slug);
-    return <ObjectChapterLecture key={page.slug} chapter={chapter} navigation={<ChapterPagination {...navigation} showTooltips={false} hideLinks />} lectureIndex={index} />;
+    const controls = <ChapterPagination {...navigation} showTooltips={false} hideLinks />;
+    return section.slug === 'tutorial'
+      ? <ObjectChapterLecture key={page.slug} chapter={chapter} navigation={controls} lectureIndex={index} />
+      : <ObjectChapterExercise key={page.slug} chapter={chapter} navigation={controls} exerciseIndex={index} />;
   }
   if (chapter.slug === 'incremental-maintenance' && section.slug === 'tutorial' && page?.slug === 'lecture-1') {
     return <IncrementalLectureOne chapter={chapter} navigation={<ChapterPagination {...navigation} showTooltips={false} />} />;

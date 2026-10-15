@@ -50,6 +50,7 @@ const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
       { slug: 'lecture-3', title: 'Lecture 3: Choose what to maintain', description: 'Keep SQL building blocks simple and design one maintained transformation for separate serving clusters.' },
     ],
     exercises: [
+      { slug: 'exercise-1', title: 'Exercise 1: Choose and inspect objects', description: 'Choose objects, remove an index and move a query between clusters across four checkpoints.', durationMinutes: 7 },
     ],
   },
   'incremental-maintenance': {

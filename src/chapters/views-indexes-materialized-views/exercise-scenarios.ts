@@ -1,0 +1,44 @@
+import type { ExerciseGrade } from '../../hooks/useExerciseStages';
+import { makeSnapshot, type ObjectSnapshot } from './simulation';
+import { objectSql } from './scenario';
+
+interface Choice { readonly id: string; readonly label: string; readonly misconception: string }
+export interface ObjectCheckpoint {
+  readonly title: string; readonly question: string; readonly hint: string;
+  readonly choices: readonly Choice[]; readonly solution: readonly string[];
+  readonly explanation: string; readonly before: ObjectSnapshot; readonly after: ObjectSnapshot;
+}
+interface ObjectExercise { readonly title: string; readonly sql: string; readonly checkpoints: readonly ObjectCheckpoint[] }
+const choice = (id: string, label: string, misconception = ''): Choice => ({ id, label, misconception });
+const view = makeSnapshot({ view: true });
+const indexed = makeSnapshot({ view: true, viewIndexes: ['a'] });
+const materialized = makeSnapshot({ materialized: true });
+
+export const objectExercises: readonly ObjectExercise[] = [
+  { title: 'Choose and inspect objects', sql: objectSql, checkpoints: [
+    { title: 'Save a definition', question: 'You need reusable regional-revenue SQL, without maintaining its result. Select the one object that meets this requirement.', hint: 'Decide whether the requirement asks you to store SQL or maintained result rows.',
+      choices: [choice('view', 'Regular view'), choice('index', 'Index', 'An index adds maintained full results in cluster memory.'), choice('mv', 'Materialized view', 'A materialized view adds maintained durable output.')], solution: ['view'],
+      explanation: 'A regular view saves the SQL definition without executing or maintaining its result. An index and a materialized view add maintained state that this requirement does not ask for.', before: makeSnapshot(), after: view },
+    { title: 'Serve one cluster', question: 'A repeatedly queries revenue_v and needs its result maintained in local memory. Select every correct statement.', hint: 'Think about both the contents of an index and the boundary of its owning cluster.',
+      choices: [choice('add', 'Add an index in A'), choice('full', 'The index stores the full result'), choice('remote', 'B can use A’s index', 'Index memory is local to the cluster that maintains it.'), choice('keys', 'Only region keys are stored', 'Materialize indexes contain complete result rows, not only keys and row pointers.')], solution: ['add', 'full'],
+      explanation: 'An index on revenue_v in A maintains all result columns in A’s memory. B cannot access A’s index.', before: view, after: indexed },
+    { title: 'Remove an index', question: 'New fixture: revenue_mv has an index in A. Drop revenue_mv_a. Select every statement that will be true.', hint: 'Which object does DROP INDEX name? Distinguish local memory from durable output.',
+      choices: [choice('removed', 'The local index is removed'), choice('durable', 'The durable result remains'), choice('query', 'A can still query revenue_mv'), choice('deleted', 'The materialized view is deleted', 'Removing an index does not remove its underlying materialized view.')], solution: ['removed', 'durable', 'query'],
+      explanation: 'Only the index is removed. revenue_mv and its durable output remain. A can still read that maintained output from storage.',
+      before: makeSnapshot({ materialized: true, materializedIndexes: ['a'] }), after: makeSnapshot(materialized.setup, undefined, { object: 'revenue_mv', cluster: 'a' }) },
+    { title: 'Move a query', question: 'New fixture: revenue_v is indexed only in A. Query it from B. Select the correct access path.', hint: 'A shared SQL definition and cluster-local index memory have different scopes.',
+      choices: [choice('compute', 'B computes the saved view query'), choice('remote', 'B reads A’s index', 'A’s index is inaccessible from B.'), choice('missing', 'The view is inaccessible in B', 'Regular view definitions can be referenced across clusters.'), choice('wrong', 'B must return a different answer', 'A different access path need not change the SQL result.')], solution: ['compute'],
+      explanation: 'B can reference the saved definition, but not A’s index. It computes the view query and returns the same North $150 / South $80 result.', before: indexed, after: makeSnapshot(indexed.setup, undefined, { object: 'revenue_v', cluster: 'b' }) },
+  ] },
+];
+
+export function gradeObjectPrediction(checkpoint: ObjectCheckpoint, selections: readonly string[]): ExerciseGrade {
+  const selected = new Set(selections);
+  const extra = [...selected].filter(id => !checkpoint.solution.includes(id));
+  const missing = checkpoint.solution.filter(id => !selected.has(id));
+  const correct = extra.length === 0 && missing.length === 0;
+  const explanation = correct ? checkpoint.explanation : selected.size === 0 ? 'Choose an answer before checking. Use the diagram and Hint to distinguish saved SQL, local memory and durable output.'
+    : extra.length ? (checkpoint.choices.find(item => item.id === extra[0])?.misconception || 'This selection does not meet the stated requirement.') + (missing.length ? ' A required choice is also missing.' : '')
+    : 'At least one required choice is missing. Check every part of the requirement: definitions, maintained output and local serving state.';
+  return { correct, title: [correct ? 'Correct prediction' : 'Recheck the object requirements'], explanation: [explanation], errors: correct ? {} : { choices: explanation } };
+}

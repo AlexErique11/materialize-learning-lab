@@ -41,7 +41,7 @@ export const chapters: readonly ChapterDefinition[] = [
     title: 'Incremental Maintenance — How One Change Travels Through SQL',
     shortTitle: 'Incremental Maintenance',
     description: 'Trace one input change through filters, joins, and aggregates.',
-    introduction: 'Explore how input changes travel through SQL filters, joins, and grouped aggregates. Follow inserts, updates, and deletions through four interactive tutorials, compare incremental maintenance with full recomputation, then practice predicting which result rows change in two exercises.',
+    introduction: 'Explore how input changes travel through SQL filters, joins, and grouped aggregates. Follow inserts, updates, and deletions through four interactive tutorials, compare incremental maintenance with full recomputation, then practice predicting which result rows change in one exercise.',
     overviewImage: '/incremental-maintenance-overview.png',
     overviewImageFit: 'contain',
     documentationLinks: [
@@ -64,7 +64,7 @@ export const chapters: readonly ChapterDefinition[] = [
     title: 'Views, Indexes, and Materialized Views',
     shortTitle: 'Views, Indexes & Materialized Views',
     description: 'Choose where to save SQL, maintain results in memory, or persist them.',
-    introduction: 'Follow three guided tutorials to choose between saved SQL, cluster-local indexes and one durable transformation shared by two serving clusters.',
+    introduction: 'Build a mental model of saved SQL, cluster-local indexes and durable materialized output. Follow one evolving diagram through three tutorials, predict object and query behavior in one exercise, then design one transformation for two independently scaled serving clusters.',
     documentationLinks: objectDocumentationLinks,
   },
   {
