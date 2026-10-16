@@ -93,7 +93,10 @@ Redesign this component once to update every lecture.
 
 Exercise controls use compact shared buttons between 640px and 1150px width.
 On tablets, the title takes a full row so the controls cannot squeeze it into a
-narrow column.
+narrow column. `src/styles/lesson.css` owns compact table and metric styles for
+laptop heights up to 900px and tablet widths. Chapter 1's exercise keeps its
+lecture's data gaps, stacks question text above answers on tablets, and uses a
+compact question on short laptops to leave room for the navigation footer.
 
 The home-page Take a tour label has a scoped 1px vertical adjustment for optical
 centering in Arial. Keep that correction local to the label; it does not change
