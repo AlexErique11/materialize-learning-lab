@@ -140,6 +140,13 @@
   min-height: 28px;
 }
 
+@media (min-width: 1024px) and (max-height: 900px), (min-width: 640px) and (max-width: 1023px) {
+  :is(.changing-relations-lecture-page, .changing-relations-exercise-page) .relation-ledger-cell { min-height: 24px; }
+  .changing-relations-lecture-page .relation-timestamp-button { min-height: 24px; }
+  .changing-relations-lecture-page .relation-ledger[data-timestamp-view='true'] .relation-ledger-header { margin-bottom: 8px; }
+  .changing-relations-lecture-page .relation-panel .data-table .relation-empty { height: calc(4 * var(--lesson-table-row-height)); }
+}
+
 .guided-lab-page.changing-relations-lecture-page .relation-ledger[data-timestamp-view='true'] .data-table tr.relation-ledger-placeholder {
   display: table-row;
 }
