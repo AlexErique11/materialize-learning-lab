@@ -45,6 +45,17 @@ const sectionDefinitions: readonly Omit<ChapterSectionDefinition, 'pages'>[] = [
 
 // Navigation and overview summaries. Actual chapter content lives beside its chapter.
 const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
+  'views-indexes-materialized-views': {
+    tutorial: [
+      { slug: 'lecture-1', title: 'Lecture 1: Where results live', description: 'Save a view, query it, add an index, then predict how input changes update maintained state.' },
+      { slug: 'lecture-2', title: 'Lecture 2: Query across clusters', description: 'Trace queries through local indexes, view computation and durable output. Remove an index and inspect what remains.' },
+      { slug: 'lecture-3', title: 'Lecture 3: Choose what to maintain', description: 'Keep SQL building blocks simple and design one maintained transformation for separate serving clusters.' },
+    ],
+    exercises: [
+      { slug: 'exercise-1', title: 'Exercise 1: Choose and inspect objects', description: 'Choose objects, remove an index and move a query between clusters across four checkpoints.', durationMinutes: 7 },
+      { slug: 'exercise-2', title: 'Exercise 2: Design shared serving', description: 'Choose intermediate and final objects, then complete a design for two serving clusters.', durationMinutes: 8 },
+    ],
+  },
   'getting-data-in': {
     tutorial: [{
       slug: 'lecture-1',

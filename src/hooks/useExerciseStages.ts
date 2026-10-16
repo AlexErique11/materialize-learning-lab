@@ -1,6 +1,6 @@
 import { useEffect, useReducer } from 'react';
 import { rememberCompletedWork } from '../components/walkthrough/walkthroughStorage';
-import type { LessonTextContent } from '../components/lesson/LessonText';
+import type { LessonTextContent } from '../components/lesson/lessonTextTypes';
 
 export interface ExerciseGrade {
   correct: boolean;

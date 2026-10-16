@@ -3,7 +3,7 @@ import { rememberCompletedWork } from '../components/walkthrough/walkthroughStor
 
 export const PLAYBACK_INTERVAL_MS = 2200;
 
-// Lectures use consecutive complete timestamps, starting from their own t = 0 state.
+// The index represents complete timestamps in Chapters 1–2 and scenario actions in Chapter 3.
 export interface LectureRunDefinition {
   readonly totalChanges: number;
   readonly steps: readonly { readonly time: number; readonly before?: unknown }[];
@@ -39,7 +39,7 @@ export function lectureRunReducer(state: LectureRunState, action: LectureRunActi
   switch (action.type) {
     case 'pause': return { ...state, playing: false };
     case 'reset': return initialRunState;
-    case 'start-guided': return { ...initialRunState, guided: true };
+    case 'start-guided': return { ...initialRunState, guided: true, revealed: !steps[0]?.before };
     case 'close-guided': return { ...state, guided: false, revealed: true };
     case 'select':
       return !state.playing && !state.guided && Number.isInteger(action.time) && action.time >= 0 && action.time <= state.applied

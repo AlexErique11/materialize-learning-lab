@@ -17,6 +17,7 @@ export function ExerciseFrame({
   pageClass,
   reference,
   mobilePanel,
+  renderWorkspace,
   progressLabel = 'Phases',
   checkpointTitle,
   question,
@@ -40,6 +41,7 @@ export function ExerciseFrame({
     | ReactNode
     | ((questionOpen: boolean, setQuestionOpen: (open: boolean) => void) => ReactNode);
   mobilePanel?: string;
+  renderWorkspace?: (parts: { visualization: ReactNode; question: ReactNode; navigation: ReactNode }) => ReactNode;
   progressLabel?: string;
   pageClass?: string;
   reference?: ComponentProps<typeof GuidedLabScreen>['reference'];
@@ -72,6 +74,66 @@ export function ExerciseFrame({
         ? 'Question'
         : 'Checkpoint';
   const [questionOpen, setQuestionOpen] = useState(true);
+  const questionSection = (
+    <section
+      id={`${formId}-question`}
+      data-walkthrough="question"
+      className="exercise-question"
+      data-result={flow.grade ? (flow.accepted ? 'correct' : 'incorrect') : 'ready'}
+      aria-labelledby={`${formId}-heading`}
+    >
+      <div className="exercise-question-copy" aria-live="polite" aria-atomic="true">
+        <h2 id={`${formId}-heading`}>
+          {flow.accepted ? (
+            <CheckCircle2 size={18} aria-hidden="true" />
+          ) : (
+            <Lightbulb size={18} aria-hidden="true" />
+          )}
+          <span>
+            <LessonText
+              content={
+                (preserveQuestion ? undefined : flow.grade?.title) ?? [
+                  `${stageLabel} ${flow.stage + 1} of ${flow.total}: ${checkpointTitle}`,
+                ]
+              }
+            />
+          </span>
+        </h2>
+
+        <p>
+          <LessonText content={questionContent} />
+        </p>
+      </div>
+
+      <div className="exercise-answers" aria-label="Your prediction">
+        {answers}
+      </div>
+    </section>
+  );
+  const questionNavigation = (
+    <div
+      className="exercise-question-navigation"
+      data-reserve-navigation={Boolean(nextExerciseLabel) || undefined}
+    >
+      {showNext && (
+        <Button
+          className="exercise-next-question"
+          variant="primary"
+          onClick={() => {
+            setQuestionOpen(true);
+            onNext();
+          }}
+        >
+          {flow.stage === flow.total - 1 && nextExerciseLabel
+            ? nextExerciseLabel
+            : 'Next question'}
+          <ArrowRight size={14} aria-hidden="true" />
+        </Button>
+      )}
+    </div>
+  );
+  const graph = typeof visualization === 'function' ? visualization(questionOpen, setQuestionOpen) : visualization;
+
   return (
     <GuidedLabScreen
       chapter={chapter}
@@ -158,74 +220,16 @@ export function ExerciseFrame({
             }
           }}
         >
-          {typeof visualization === 'function'
-            ? visualization(questionOpen, setQuestionOpen)
-            : visualization}
-          {!mobilePanel && (
-            <Button
-              className="exercise-question-toggle"
-              aria-expanded={questionOpen}
-              onClick={() => setQuestionOpen((value) => !value)}
-            >
-              {questionOpen ? 'View tables' : 'Question'}
-            </Button>
-          )}
-
-          <section
-            id={`${formId}-question`}
-            data-walkthrough="question"
-            className="exercise-question"
-            data-result={flow.grade ? (flow.accepted ? 'correct' : 'incorrect') : 'ready'}
-            aria-labelledby={`${formId}-heading`}
-          >
-            <div className="exercise-question-copy" aria-live="polite" aria-atomic="true">
-              <h2 id={`${formId}-heading`}>
-                {flow.accepted ? (
-                  <CheckCircle2 size={18} aria-hidden="true" />
-                ) : (
-                  <Lightbulb size={18} aria-hidden="true" />
-                )}
-                <span>
-                  <LessonText
-                    content={
-                      (preserveQuestion ? undefined : flow.grade?.title) ?? [
-                        `${stageLabel} ${flow.stage + 1} of ${flow.total}: ${checkpointTitle}`,
-                      ]
-                    }
-                  />
-                </span>
-              </h2>
-
-              <p>
-                <LessonText content={questionContent} />
-              </p>
-            </div>
-
-            <div className="exercise-answers" aria-label="Your prediction">
-              {answers}
-            </div>
-          </section>
-
-          <div
-            className="exercise-question-navigation"
-            data-reserve-navigation={Boolean(nextExerciseLabel) || undefined}
-          >
-            {showNext && (
-              <Button
-                className="exercise-next-question"
-                variant="primary"
-                onClick={() => {
-                  setQuestionOpen(true);
-                  onNext();
-                }}
-              >
-                {flow.stage === flow.total - 1 && nextExerciseLabel
-                  ? nextExerciseLabel
-                  : 'Next question'}
-                <ArrowRight size={14} aria-hidden="true" />
+          {renderWorkspace ? renderWorkspace({ visualization: graph, question: questionSection, navigation: questionNavigation }) : <>
+            {graph}
+            {!mobilePanel && (
+              <Button className="exercise-question-toggle" aria-expanded={questionOpen} onClick={() => setQuestionOpen(value => !value)}>
+                {questionOpen ? 'View tables' : 'Question'}
               </Button>
             )}
-          </div>
+            {questionSection}
+            {questionNavigation}
+          </>}
         </form>
       }
     />

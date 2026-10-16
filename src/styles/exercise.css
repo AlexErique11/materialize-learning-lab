@@ -31,7 +31,15 @@
 .exercise-answers { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
 
 @media (min-width: 640px) and (max-width: 1150px) {
-  .staged-exercise-page .guided-lab-controls { max-width: 100%; flex-wrap: wrap; }
+  .staged-exercise-page .guided-lab-controls { max-width: 100%; flex-wrap: wrap; gap: 8px; }
+  .staged-exercise-page .guided-lab-controls .button { font-size: 12px; padding-inline: 8px; }
+  .staged-exercise-page:not(.lecture-layout-page) .guided-lab-controls .button { height: 36px; min-height: 36px; }
+  .staged-exercise-page .guided-lab-progress { margin-right: 0; }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .staged-exercise-page .guided-lab-heading { flex-wrap: wrap; }
+  .guided-lab-page.staged-exercise-page .guided-lab-title { flex-basis: 100%; }
 }
 
 @media (min-width: 1024px) and (max-height: 800px) {

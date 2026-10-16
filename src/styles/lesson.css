@@ -498,3 +498,8 @@
     display: inline;
   }
 }
+
+/* Keep metric measurements consistent across chapters. */
+@media (min-width: 1024px) and (max-height: 900px), (min-width: 640px) and (max-width: 1023px) {
+  .relation-metric { min-height: 52px; padding-block: 2px; }
+}
