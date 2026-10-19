@@ -53,8 +53,8 @@ test('shared controls, reference dialog and playback match the previous chapter'
 
 test('exercises show the graph in the lecture position without a view switch', async ({ page, isMobile }) => {
   test.setTimeout(90_000);
-  const sizes = isMobile ? [[390, 844], [375, 667]] : [[1440, 900], [1280, 720], [1280, 650], [1024, 700]];
-  const graphGeometry = () => page.locator('.flow-canvas, .flow-input').evaluateAll(elements => elements.map(element => {
+  const sizes = isMobile ? [[390, 844], [375, 667], [610, 800]] : [[1440, 1000], [1440, 900], [1366, 768], [1280, 720], [1280, 650], [1024, 768], [1024, 700], [900, 800]];
+  const graphGeometry = () => page.locator('.flow-canvas, .flow-input, .flow-input .data-table, .flow-input thead, .flow-input tbody tr:first-child').evaluateAll(elements => elements.map(element => {
     const box = element.getBoundingClientRect();
     return { top: box.top + scrollY, left: box.left, width: box.width, height: box.height };
   }));

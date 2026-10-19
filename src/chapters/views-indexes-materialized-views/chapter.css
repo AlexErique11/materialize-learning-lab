@@ -1,3 +1,12 @@
+/* Match lecture and exercise subtitle wrapping without depending on other chapters. */
+@media (min-width: 640px) and (max-width: 1150px) {
+  .object-chapter-page .guided-lab-title { display: contents; }
+  .object-chapter-page .guided-lab-title h1 { flex: 1; min-width: 0; }
+  .app-shell-guided-labs .object-chapter-page .guided-lab-title > p { order: 1; flex-basis: 100%; margin-top: 0; max-width: none; font-size: 13px; }
+}
+@media (min-width: 1024px) and (max-width: 1150px) {
+  .object-chapter-page .guided-lab-title h1 { flex-basis: 100%; }
+}
 .object-chapter-page .object-step-sequence { display: flex; gap: 10px; min-height: 40px; }
 .object-concept-example { padding: 10px 12px; border: 1px solid var(--lab-border); border-radius: 5px; background: var(--lab-tint); color: var(--lab-text); font-size: 12px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 :is(.object-chapter-page, .object-lesson-text) :is([data-column='orderId'], [data-column='view']) { --object-reference-color: var(--lab-purple); }
@@ -95,6 +104,10 @@
 .object-answer-choices input { margin-top: 2px; accent-color: var(--lab-purple); flex-shrink: 0; }
 .object-exercise-followup { display: grid; gap: 8px; margin-top: 10px; }
 .object-reference-playback { height: var(--lecture-playback-height); visibility: hidden; }
+/* Keep the exercise actions on the lecture toolbar's row in narrow windows. */
+@media (max-width: 639px) {
+  .object-exercise-page .guided-lab-controls .button > svg { display: none; }
+}
 .object-exercise-page .object-step-explanation { visibility: hidden; }
 .object-recap { display: grid; gap: 16px; line-height: 1.6; font-size: 14px; }
 .object-recap ul { list-style: disc; padding-left: 20px; }
