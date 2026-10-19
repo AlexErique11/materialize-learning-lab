@@ -1,0 +1,118 @@
+/* Chapter 5 owns the timeline and table contents inside the unchanged shared lecture frame. */
+.temporal-lecture-page { --lecture-title-spacing: 28px; --lecture-metrics-gap: 24px; --temporal-height: 312px; }
+.temporal-lecture-page .guided-lab-progress strong { white-space: nowrap; }
+.temporal-lecture-page .temporal-status-bar { display: flex; align-items: center; gap: 28px; min-height: 48px; border-block: 1px solid var(--lab-border); }
+.temporal-status-bar .relation-metric { gap: 8px; min-height: 46px; padding: 6px 0; border: 0; border-radius: 0; background: none; }
+.temporal-status-bar .relation-metric > svg { width: 17px; height: 17px; }
+.temporal-status-bar .relation-metric > div { display: flex; align-items: center; gap: 8px; }
+.temporal-status-bar .relation-metric strong { margin: 0; font-size: 15px; white-space: nowrap; }
+.temporal-workspace { display: grid; grid-template-columns: minmax(272px, .95fr) minmax(0, 1.3fr) minmax(0, 1.15fr); grid-template-areas: 'source timeline result'; grid-template-rows: minmax(0, 1fr); height: var(--temporal-height); gap: 16px; }
+.temporal-panel { min-width: 0; min-height: 0; padding: 12px 16px; border: 1px solid var(--lab-border); border-radius: 6px; }
+.temporal-panel-timeline { grid-area: timeline; }
+.temporal-panel-source { grid-area: source; }
+.temporal-panel-result { grid-area: result; }
+.temporal-panel-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; min-height: 24px; }
+.temporal-panel-heading h2 { display: flex; align-items: center; gap: 8px; font-size: 18px; line-height: 1.25; font-weight: 700; }
+.temporal-panel-heading h2 > svg { color: var(--lab-purple); flex-shrink: 0; }
+.temporal-panel-timeline .temporal-panel-heading { flex-wrap: wrap; gap: 6px; }
+.temporal-panel-source .temporal-panel-heading, .temporal-panel-result .temporal-panel-heading { display: grid; align-content: start; gap: 4px; min-height: 44px; }
+.temporal-panel-heading code { font-size: 11px; color: var(--lab-muted); overflow-wrap: anywhere; }
+.temporal-fixture { flex-basis: 100%; font-size: 12px; color: var(--lab-muted); }
+/* Reserve two SQL lines so changing predicates never move the lifetime rows. */
+.temporal-predicate { display: block; min-height: 32px; margin-bottom: 10px; color: var(--lab-muted); font-size: 12px; line-height: 16px; overflow-wrap: anywhere; }
+.temporal-panel-tabs { display: none; }
+.temporal-panel-tabs .button[aria-pressed='true'] { color: var(--lab-purple); border-color: var(--lab-purple); background: var(--lab-tint); }
+.temporal-axis, .temporal-lane { display: grid; grid-template-columns: 40px minmax(0, 1fr) 74px; gap: 12px; align-items: center; }
+.temporal-axis { height: 16px; margin-bottom: 4px; font-size: 11px; color: var(--lab-muted); }
+.temporal-axis > div { position: relative; height: 16px; margin-inline: 3px; }
+.temporal-axis > div > span { position: absolute; transform: translateX(-50%); }
+.temporal-axis > div > span:first-child { transform: none; }
+.temporal-axis > div > span:last-child { transform: translateX(-100%); }
+.temporal-lanes { position: relative; }
+.temporal-lane { height: 22px; font-size: 12px; }
+.temporal-lane > strong { font-weight: 600; }
+.temporal-track { position: relative; height: 16px; margin-inline: 3px; border-bottom: 1px solid var(--lab-border); }
+.temporal-eligible { position: absolute; top: 3px; height: 10px; border: 1px solid var(--lab-purple); border-right-style: dashed; background: color-mix(in srgb, var(--lab-tint) 30%, var(--lab-surface)); }
+.temporal-eligible[data-inclusive='true'] { border-right: 3px solid var(--lab-purple); }
+.temporal-visible-band { position: absolute; top: 5px; height: 6px; background: var(--success); }
+.temporal-event-marker, .temporal-applied-marker { position: absolute; top: 4px; width: 8px; height: 8px; border: 1.5px solid var(--lab-purple); border-radius: 50%; background: var(--lab-surface); transform: translateX(-50%); }
+.temporal-applied-marker { top: 5px; width: 6px; height: 6px; border-radius: 0; border-color: var(--lab-muted); transform: translateX(-50%) rotate(45deg); }
+.temporal-canceled { position: absolute; top: 0; transform: translateX(-50%); color: var(--lab-muted); font-weight: 700; line-height: 16px; }
+.temporal-cursor { position: absolute; top: -4px; bottom: -3px; width: 1px; background: var(--lab-purple); pointer-events: none; }
+.temporal-row-status { color: var(--lab-muted); font-size: 11px; }
+.temporal-row-status[data-visible='true'] { color: var(--success); }
+.temporal-empty-lane { color: var(--lab-muted); }
+.temporal-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 8px; font-size: 11px; color: var(--lab-muted); }
+.temporal-clocks { margin-bottom: 10px; padding-block: 6px 8px; border-bottom: 1px solid var(--lab-border); }
+.temporal-clocks dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.temporal-clocks dt { display: flex; align-items: center; gap: 3px; font-size: 12px; line-height: 20px; color: var(--lab-muted); white-space: nowrap; }
+.temporal-clocks dd { margin: 3px 0 0; font-size: 17px; line-height: 22px; font-variant-numeric: tabular-nums; color: var(--lab-purple); white-space: nowrap; }
+.temporal-panel .table-scroll { height: 120px; overflow: clip; border: 1px solid var(--lab-border); border-radius: 4px; }
+.temporal-panel .data-table { width: 100%; height: 100%; table-layout: fixed; font-size: 13px; }
+.temporal-panel .data-table :is(th, td) { padding: 3px 8px; text-align: left; font-variant-numeric: tabular-nums; border-color: var(--lab-border); }
+.temporal-panel .data-table th { height: 28px; font-size: 12px; font-weight: 600; color: var(--lab-muted); background: color-mix(in srgb, var(--lab-tint) 32%, var(--lab-surface)); }
+.temporal-panel .data-table td { height: 30px; }
+.temporal-panel .data-table :is(th, td) + :is(th, td) { border-left: 1px solid var(--lab-border); }
+.temporal-panel .data-table tr:last-child td { border-bottom: 0; }
+.temporal-panel .data-table tr[data-placeholder='true'] td::before { content: '\00a0'; }
+.temporal-panel .data-table td[data-changed='true'] { background: var(--lab-tint); font-weight: 600; color: var(--temporal-column-color); }
+.temporal-source-note { margin-top: 12px; color: var(--lab-muted); font-size: 12px; line-height: 1.4; }
+.temporal-diffs { margin-top: 8px; padding-top: 6px; border-top: 1px solid var(--lab-border); font-size: 12px; }
+.temporal-diffs h3 { display: flex; justify-content: space-between; gap: 8px; height: 18px; font-weight: 600; }
+.temporal-diffs h3 > span { color: var(--lab-muted); font-weight: 400; }
+.temporal-diffs li { display: flex; align-items: center; gap: 8px; height: 20px; color: var(--lab-muted); }
+.temporal-tuple { font-family: var(--font-mono); font-size: 12px; white-space: nowrap; }
+.temporal-tuple [data-changed='true'] { color: var(--temporal-column-color); font-weight: 600; }
+:is(.temporal-lecture-page, .temporal-lesson-text) [data-column='eventId'] { --temporal-column-color: var(--success); }
+:is(.temporal-lecture-page, .temporal-lesson-text) :is([data-column='eventTime'], [data-column='expiresAt']) { --temporal-column-color: var(--lab-purple); }
+.temporal-lesson-text [data-column] { color: var(--temporal-column-color); }
+.temporal-workspace[data-guided='true'] .temporal-panel[data-active='true'] { outline: 1px solid var(--lab-purple); outline-offset: -1px; }
+@media (max-width: 1350px) {
+  .temporal-panel-heading { gap: 6px; }
+  .temporal-panel-result .temporal-panel-heading code { font-size: 10px; }
+  .temporal-fixture { font-size: 11px; }
+}
+@media (max-width: 1279px), (max-height: 620px) {
+  .temporal-lecture-page { --temporal-height: 256px; }
+  .temporal-lecture-page .temporal-status-bar { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .temporal-status-bar .relation-metric { gap: 5px; }
+  .temporal-status-bar .relation-metric > div { display: block; }
+  .temporal-status-bar .relation-metric > svg { display: none; }
+  .temporal-status-bar .relation-metric strong { margin-top: 3px; }
+  .temporal-panel-tabs { display: flex; gap: 6px; }
+  .temporal-panel-tabs .button { flex: 1; min-height: 30px; padding: 5px 8px; font-size: 12px; }
+  .temporal-workspace { display: block; }
+  .temporal-panel { height: 100%; }
+  .temporal-panel-timeline { padding-block: 10px; }
+  .temporal-panel-source .temporal-panel-heading, .temporal-panel-result .temporal-panel-heading { display: flex; min-height: 24px; }
+  .temporal-workspace[data-selected-stage='timeline'] > :not([data-stage='timeline']),
+  .temporal-workspace[data-selected-stage='source'] > :not([data-stage='source']),
+  .temporal-workspace[data-selected-stage='result'] > :not([data-stage='result']) { display: none; }
+  .temporal-panel-timeline .temporal-panel-heading { flex-wrap: wrap; margin-bottom: 6px; }
+  .temporal-fixture { flex-basis: 100%; }
+  .temporal-predicate { margin-top: 0; margin-bottom: 4px; min-height: 32px; }
+  .temporal-axis { margin-bottom: 4px; }
+  .temporal-legend { margin-top: 6px; }
+  .temporal-clocks { margin-bottom: 6px; padding-block: 4px 6px; }
+  .temporal-lane { height: 28px; }
+  .temporal-panel-result .temporal-panel-heading code { font-size: 11px; }
+}
+@media (max-width: 639px) {
+  .temporal-lecture-page { --lecture-title-spacing: 0px; --lecture-metrics-gap: 10px; --temporal-height: 248px; }
+  .temporal-status-bar .relation-metric > div > span { font-size: 11px; min-height: 28px; align-items: flex-start; }
+  .temporal-status-bar .relation-metric strong { font-size: 14px; }
+  .temporal-panel { padding: 10px 12px; }
+  .temporal-panel-heading h2 { font-size: 16px; }
+  .temporal-panel-source .temporal-panel-heading code, .temporal-panel-result .temporal-panel-heading code { display: none; }
+  .temporal-fixture { font-size: 11px; }
+  .temporal-axis, .temporal-lane { grid-template-columns: 30px minmax(0, 1fr) 54px; gap: 8px; }
+  .temporal-row-status { font-size: 10px; }
+  .temporal-legend { gap: 5px 10px; font-size: 10px; }
+  .temporal-clocks dl { gap: 8px; }
+  .temporal-clocks dt { font-size: 11px; }
+  .temporal-clocks dd { font-size: 14px; }
+  .temporal-tuple { font-size: 11px; }
+  .temporal-panel .data-table :is(th, td) { padding-inline: 5px; }
+  .temporal-panel .data-table th { font-size: 11px; }
+  .temporal-panel .data-table td { font-size: 12px; }
+}
