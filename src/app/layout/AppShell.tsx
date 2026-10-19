@@ -3,7 +3,8 @@ import { Outlet, ScrollRestoration, useLocation } from 'react-router';
 import { WalkthroughProvider } from '../../components/walkthrough/WalkthroughProvider';
 import { AppHeader } from '../../components/layout/AppHeader';
 import { LabEntryTransition } from '../../components/lab/LabEntryTransition';
-import { LabReturnTransition } from '../../components/lab/LabReturnTransition';
+import { AreaTransition } from '../../motion/AreaTransition';
+import { UiMotion } from '../../motion/UiMotion';
 
 export function AppShell() {
   const mainRef = useRef<HTMLElement>(null);
@@ -18,7 +19,8 @@ export function AppShell() {
   return (
     <div className={`app-shell${isLearningPath ? ' app-shell-learning-path' : ''}${isGuidedLab ? ' app-shell-guided-labs' : ''}`}>
       <WalkthroughProvider>
-        <LabReturnTransition />
+        <UiMotion />
+        <AreaTransition />
         <a className="skip-link" href="#main-content">
           Skip to content
         </a>

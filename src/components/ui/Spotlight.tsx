@@ -1,6 +1,8 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { Lightbulb, X } from 'lucide-react';
 import { Button } from './Button';
+import { useDialogMotion } from '../../motion/useDialogMotion';
+import { animateMotion, reveal } from '../../motion/motion';
 
 interface SpotlightProps {
   open: boolean;
@@ -33,14 +35,16 @@ export function Spotlight({ open, targetRef, step, total, title, description, ph
   const [geometry, setGeometry] = useState<SpotlightGeometry | null>(null);
   const titleId = useId();
   const descriptionId = useId();
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
-    return () => { if (dialog.open) dialog.close(); };
-  }, [open]);
+  const requestClose = useDialogMotion(dialogRef, open, onClose, cardRef);
+  const previousStep = useRef('');
+  useLayoutEffect(() => {
+    const key = `${step}:${title}:${phaseLabel}`;
+    if (open && previousStep.current && previousStep.current !== key) {
+      reveal(cardRef.current, 'guide-step');
+      animateMotion(dialogRef.current?.querySelector('.relation-guide-hole') ?? null, 'guide-target', [{ opacity: 0.3 }, { opacity: 1 }]);
+    }
+    previousStep.current = open ? key : '';
+  }, [open, step, title, phaseLabel]);
 
   const currentTarget = targetRef.current;
   useLayoutEffect(() => {
@@ -109,7 +113,7 @@ export function Spotlight({ open, targetRef, step, total, title, description, ph
 
   return (
     <dialog ref={dialogRef} className="relation-guide" aria-labelledby={titleId} aria-describedby={descriptionId}
-      onCancel={(event) => { event.preventDefault(); onClose(); }}>
+      onCancel={(event) => { event.preventDefault(); requestClose(); }}>
       {geometry && <>
         <div className="relation-guide-shade" style={{ top: 0, left: 0, width: '100%', height: geometry.top }} />
         <div className="relation-guide-shade" style={{ top: geometry.top, left: 0, width: geometry.left, height: geometry.height }} />
@@ -121,7 +125,7 @@ export function Spotlight({ open, targetRef, step, total, title, description, ph
         <div className="relation-guide-card-heading">
           <Lightbulb size={22} aria-hidden="true" />
           <h2 id={titleId}>{title}</h2>
-          <Button variant="ghost" className="relation-guide-close" aria-label={closeLabel} onClick={onClose} autoFocus><X size={17} aria-hidden="true" /></Button>
+          <Button variant="ghost" className="relation-guide-close" aria-label={closeLabel} onClick={requestClose} autoFocus><X size={17} aria-hidden="true" /></Button>
         </div>
         <div className="relation-guide-phase">{phaseLabel}</div>
         <p id={descriptionId}>{description}</p>

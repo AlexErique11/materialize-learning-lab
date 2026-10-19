@@ -1,11 +1,14 @@
 import { HelpCircle } from 'lucide-react';
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { animateMotion } from '../../motion/motion';
 
 export function RelationHelp({ label, text }: { label: string; text: string }) {
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const tooltipRef = useRef<HTMLSpanElement>(null);
   const [open, setOpen] = useState(false);
+  const openRef = useRef(open);
+  openRef.current = open;
   const [position, setPosition] = useState({ left: 0, top: 0 });
 
   useLayoutEffect(() => {
@@ -13,7 +16,12 @@ export function RelationHelp({ label, text }: { label: string; text: string }) {
     const trigger = triggerRef.current;
     if (!tooltip || !trigger) return;
     if (!open) {
-      if (tooltip.matches(':popover-open')) tooltip.hidePopover();
+      if (tooltip.matches(':popover-open')) {
+        const animation = animateMotion(tooltip, 'tooltip', [{ opacity: 1 }, { opacity: 0 }], 100);
+        const finish = () => { if (!openRef.current && tooltip.matches(':popover-open')) tooltip.hidePopover(); };
+        if (animation) void animation.finished.then(finish, finish);
+        else finish();
+      }
       return;
     }
     // The native top layer keeps help visible outside the table's overflow container.
@@ -33,10 +41,10 @@ export function RelationHelp({ label, text }: { label: string; text: string }) {
       setPosition({ left, top });
     };
     measure();
+    animateMotion(tooltip, 'tooltip', [{ opacity: 0 }, { opacity: 1 }], 120);
     window.addEventListener('resize', measure);
     window.addEventListener('scroll', measure, true);
     return () => {
-      tooltip.hidePopover();
       window.removeEventListener('resize', measure);
       window.removeEventListener('scroll', measure, true);
     };

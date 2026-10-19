@@ -77,7 +77,8 @@ test('browser Back returns smoothly and Forward retains the original labs histor
   await expect(page).toHaveURL('/labs/changing-relations');
   await expect(page.getByRole('heading', { name: 'Changing Relations', exact: true })).toBeVisible();
   await expect(page.locator('.lab-intro-screen')).toHaveCount(0);
-  expect(await returnCount(page)).toBe(1);
+  expect(await returnCount(page)).toBe(2);
+  await expect(page.locator('.lab-return-snapshot')).toHaveCount(0);
 });
 
 test('returning with reduced motion navigates immediately without a transition', async ({ page }) => {
@@ -112,14 +113,14 @@ test('returning from a scrolled lab preserves the outgoing sidebar position', as
   await expect(page.locator('.lab-intro-screen')).toHaveCount(0);
 });
 
-test('direct home entry and returning from challenges remain immediate', async ({ page }) => {
+test('direct home entry is immediate and challenges use the shared return transition', async ({ page }) => {
   await observeReturns(page);
   await page.goto('/');
   expect(await returnCount(page)).toBe(0);
   await page.goto('/challenges');
   await page.getByRole('link', { name: 'Materialize Learning Lab home', exact: true }).click();
   await expect(page).toHaveURL('/');
-  expect(await returnCount(page)).toBe(0);
+  expect(await returnCount(page)).toBe(1);
   await expect(page.locator('.lab-return-snapshot')).toHaveCount(0);
 });
 

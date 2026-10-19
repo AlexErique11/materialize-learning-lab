@@ -1,15 +1,20 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { useBlocker, useLocation, type BlockerFunction } from 'react-router';
-import '../../styles/lab-return.css';
+import { useWalkthrough } from '../components/walkthrough/WalkthroughProvider';
+import { isLabIntroEntry } from '../components/lab/LabEntryTransition';
+import '../styles/lab-return.css';
 
-interface ReturnRun {
+interface AreaRun {
   fromKey: string;
+  toPath: string;
+  committedKey?: string;
+  direction: number;
   snapshot: HTMLElement;
   animations: Animation[];
   finish: () => void;
 }
 
-function captureLab() {
+function captureArea() {
   const main = document.getElementById('main-content')!;
   const bounds = main.getBoundingClientRect();
   const headerBottom = document.querySelector('header')!.getBoundingClientRect().bottom;
@@ -39,7 +44,20 @@ function captureLab() {
   }
   const view = document.createElement('div');
   view.className = 'lab-return-view';
+  const backgrounds = [main, main.closest('.app-shell')!, document.documentElement];
+  view.style.background = backgrounds.map((element) => getComputedStyle(element).backgroundColor)
+    .find((color) => color !== 'rgba(0, 0, 0, 0)' && color !== 'transparent') ?? 'var(--background)';
   view.append(copy);
+  const footer = document.querySelector<HTMLElement>('.app-footer');
+  if (footer) {
+    const footerBounds = footer.getBoundingClientRect();
+    const footerCopy = footer.cloneNode(true) as HTMLElement;
+    Object.assign(footerCopy.style, {
+      position: 'absolute', top: `${footerBounds.top - headerBottom}px`, left: `${footerBounds.left}px`,
+      width: `${footerBounds.width}px`, height: `${footerBounds.height}px`, margin: '0',
+    });
+    view.append(footerCopy);
+  }
   snapshot.append(view);
   document.body.append(snapshot);
   const originals = [main, ...main.querySelectorAll<HTMLElement>('*')];
@@ -51,31 +69,47 @@ function captureLab() {
   return snapshot;
 }
 
-export function LabReturnTransition() {
+function area(path: string) {
+  if (path === '/') return 'path';
+  if (path === '/labs' || path.startsWith('/labs/')) return 'labs';
+  if (path === '/challenges' || path.startsWith('/challenges/')) return 'challenges';
+  return null;
+}
+
+export function AreaTransition() {
   const location = useLocation();
-  const runRef = useRef<ReturnRun | null>(null);
+  const { open: tourOpen } = useWalkthrough();
+  const runRef = useRef<AreaRun | null>(null);
   const blocker = useBlocker(useCallback<BlockerFunction>(({ currentLocation, nextLocation }) => (
-    currentLocation.pathname.startsWith('/labs/')
-    && nextLocation.pathname === '/'
+    Boolean(area(currentLocation.pathname) && area(nextLocation.pathname))
+    && area(currentLocation.pathname) !== area(nextLocation.pathname)
+    && !tourOpen
+    && !isLabIntroEntry(nextLocation)
     && !document.querySelector('.lab-intro-screen')
-  ), []));
+  ), [tourOpen]));
 
   useEffect(() => () => runRef.current?.finish(), []);
 
   useLayoutEffect(() => {
     const run = runRef.current;
-    if (!run || location.key === run.fromKey) return;
-    if (location.pathname !== '/') {
+    if (!run) return;
+    if (run.committedKey) {
+      if (location.key !== run.committedKey) run.finish();
+      return;
+    }
+    if (location.key === run.fromKey) return;
+    if (location.pathname !== run.toPath) {
       run.finish();
       return;
     }
+    run.committedKey = location.key;
     const main = document.getElementById('main-content')!;
     // An opaque outgoing sheet reveals the destination without overlapping its text.
     run.animations = [
-      run.snapshot.querySelector('.lab-return-view')!.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(100%)' }], {
+      run.snapshot.querySelector('.lab-return-view')!.animate([{ transform: 'translateX(0)' }, { transform: `translateX(${run.direction * 100}%)` }], {
         id: 'lab-return-out', duration: 360, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'both',
       }),
-      main.animate([{ transform: 'translateX(-24px)' }, { transform: 'translateX(0)' }], {
+      main.animate([{ transform: `translateX(${-run.direction * 24}px)` }, { transform: 'translateX(0)' }], {
         id: 'lab-return-in', duration: 360, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', fill: 'both',
       }),
     ];
@@ -90,9 +124,11 @@ export function LabReturnTransition() {
       return;
     }
 
-    const run: ReturnRun = {
+    const run: AreaRun = {
       fromKey: location.key,
-      snapshot: captureLab(),
+      toPath: blocker.location.pathname,
+      direction: area(blocker.location.pathname) === 'path' ? 1 : -1,
+      snapshot: captureArea(),
       animations: [],
       finish: () => {
         if (runRef.current !== run) return;

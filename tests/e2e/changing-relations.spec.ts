@@ -117,7 +117,7 @@ test('six guided steps explain the live tables and predict each effect', async (
       await expect(guide).toHaveAccessibleName(title);
       await expect(guide).toContainText((index + 1) + ' of 6');
       await expect(guide.locator('.relation-diagram')).toHaveCount(0);
-      await expect(page.locator('.guided-lab-progress span')).toHaveText('Changes');
+      await expect(page.locator('.guided-lab-progress > div > span')).toHaveText('Changes');
       const progress = page.getByRole('progressbar', { name: 'Changes progress' });
       await expect(progress).toHaveAttribute('max', '4');
       const beforeTime = index >= 1 && index <= 4 ? index - 1 : index === 5 ? 4 : 0;
