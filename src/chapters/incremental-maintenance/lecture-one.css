@@ -115,7 +115,7 @@
 @media (min-width: 640px) and (max-height: 740px) {
  .incremental-maintenance-page:not(.maintenance-lecture-page) .guided-lab-title > p { display: none; }
  .incremental-maintenance-page .relation-metric { min-height: 52px; padding-block: 2px; }
- .app-shell-guided-labs .guided-lab-page.incremental-maintenance-page[data-viewport-fit] { padding-bottom: 2px; }
+ .app-shell-guided-labs .guided-lab-page.incremental-maintenance-page:not(.lecture-layout-page)[data-viewport-fit] { padding-bottom: 2px; }
 }
 @media (max-width: 639px) {
  .app-shell-guided-labs .guided-lab-page.incremental-maintenance-page.join-maintenance-page[data-viewport-fit] { padding-block: 4px 0; }
@@ -138,9 +138,5 @@
   .maintenance-lecture-page .guided-lab-title h1 { flex-basis: 100%; }
 }
 @media (max-width: 639px) {
-  .app-shell-guided-labs .maintenance-lecture-page[data-viewport-fit] .guided-lab-title { display: contents; }
-  .maintenance-lecture-page .guided-lab-title h1 { grid-column: 1; grid-row: 1; }
-  .app-shell-guided-labs .maintenance-lecture-page[data-viewport-fit] .guided-lab-title > p { display: block; grid-column: 1 / -1; grid-row: 3; margin-top: 0; max-width: none; }
-  .maintenance-lecture-page .guided-lab-controls { grid-row: 2; }
   .maintenance-lecture-page:not(.maintenance-comparison-lecture) .maintenance-panels > .relation-panel { height: 224px; }
 }

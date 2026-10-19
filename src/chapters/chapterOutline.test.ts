@@ -24,12 +24,28 @@ describe('chapter navigation outline', () => {
   });
 
   it('leaves chapters without defined content empty', () => {
-    for (const other of chapters.filter((item) => ![chapter.slug, 'incremental-maintenance', 'getting-data-in', 'time-in-materialize'].includes(item.slug))) {
+    for (const other of chapters.filter((item) => ![chapter.slug, 'incremental-maintenance', 'views-indexes-materialized-views', 'getting-data-in', 'time-in-materialize'].includes(item.slug))) {
       expect(getChapterSections(other).map((section) => section.slug)).toEqual([
         'tutorial',
         'exercises',
       ]);
       expect(getChapterPages(other)).toEqual([]);
+    }
+  });
+
+  it('registers Chapter 3 alongside Chapter 4 with lectures before exercises', () => {
+    const objects = findChapter('views-indexes-materialized-views')!;
+    const pages = getChapterPages(objects);
+    expect(pages.map(({ sectionSlug, slug }) => ({ sectionSlug, slug }))).toEqual([
+      { sectionSlug: 'tutorial', slug: 'lecture-1' },
+      { sectionSlug: 'tutorial', slug: 'lecture-2' },
+      { sectionSlug: 'tutorial', slug: 'lecture-3' },
+      { sectionSlug: 'exercises', slug: 'exercise-1' },
+      { sectionSlug: 'exercises', slug: 'exercise-2' },
+    ]);
+    for (const page of pages) {
+      expect(findChapterContent(objects, page.sectionSlug, page.slug)).toEqual(page);
+      expect(chapterContentPath(objects, page)).toBe(`/labs/views-indexes-materialized-views/${page.sectionSlug}/${page.slug}`);
     }
   });
 

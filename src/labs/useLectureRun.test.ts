@@ -5,6 +5,16 @@ import { runDefinition } from '../chapters/incremental-maintenance/scenario';
 import { joinRunDefinition } from '../chapters/incremental-maintenance/join-scenario';
 import { initialRunState, lectureRunReducer } from './useLectureRun';
 
+it('keeps the initial snapshot when the first guided action starts with a prediction', () => {
+  const definition = { totalChanges: 1, steps: [{ time: 1, before: 'Predict what is maintained' }] };
+  const prediction = lectureRunReducer(initialRunState, { type: 'start-guided' }, definition);
+  expect(prediction).toMatchObject({ guided: true, revealed: false, selectedTime: 0 });
+  expect(lectureRunReducer(prediction, { type: 'next' }, definition)).toEqual(prediction);
+  const revealed = lectureRunReducer(prediction, { type: 'reveal' }, definition);
+  expect(revealed).toMatchObject({ revealed: true, selectedTime: 1 });
+  expect(lectureRunReducer(revealed, { type: 'back' }, definition)).toEqual(prediction);
+});
+
 describe.each([
   ['Chapter 1 Lecture 1', { steps: lectureSteps, totalChanges: lectureUpdates.length }],
   ['Chapter 1 Lecture 2', { steps: lectureTwoSteps, totalChanges: lectureTwoBatches.length }],

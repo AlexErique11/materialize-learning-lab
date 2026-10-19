@@ -9,8 +9,8 @@ and shared CSS, not independently maintained mockup files.
 | Template | Current users | Behavior |
 | --- | --- | --- |
 | `LectureScreen`, `layout="with-tip"` | Chapter 1 lectures 1–2 | Chapter 1 reference frame, metrics, visualization, playback, and bottom tip when it fits. |
-| `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 4 lectures 1–4; Chapter 5 lectures 1–4 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
-| `ExerciseFrame` through `GuidedLabScreen` | Chapter 1, Chapter 2, Chapter 4, and Chapter 5 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
+| `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 3 lectures 1–3; Chapter 4 lectures 1–4; Chapter 5 lectures 1–4 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
+| `ExerciseFrame` through `GuidedLabScreen` | Chapter 1–5 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
 
 `src/labs/components/LectureScreen.tsx` accepts `metrics`, `visualization`, and
 `playback` slots plus the common screen props. Chapter 2 supplies them through
@@ -18,11 +18,18 @@ and shared CSS, not independently maintained mockup files.
 components compose the same screen directly. Choose a template and populate its
 slots when adding a lecture; do not copy its frame into the new page.
 
+`LectureWorkspace` owns that frame independently of the page controls.
+`ExerciseFrame.renderWorkspace` can compose its visualization, question, and
+navigation slots with this same frame. Questions supplied through
+`afterVisualization` follow the graph without changing its measured upper inset.
+
 `src/labs/components/lecture-layout.css` owns lecture frame dimensions and
 responsive tokens. The no-tip template measures the available viewport and content
 so its footer stays aligned across all four Chapter 2 lectures. In roomy fullscreen
 views, playback ends 16px above the viewport bottom, using
 `--lecture-playback-bottom-space`; compact screens adapt to available space.
+Short desktop views share 2px of page-bottom padding through
+`--lecture-page-padding-bottom`; chapter CSS must not override that bottom spacing.
 Chapter 2 Lecture 4 omits visible metric cards but uses the same reference measurement for
 footer alignment. Do not add empty visible cards to compensate.
 Chapter 4 uses two distinct visualizations in this frame, implemented locally in
@@ -87,7 +94,7 @@ The filter-choice question conceals the reference predicate until acceptance.
 | Surface | Implementation |
 | --- | --- |
 | Title, toolbar, subtitle, reference popup composition | `src/labs/components/GuidedLabScreen.tsx`, `src/styles/guided-labs.css` |
-| Lecture frame and footer placement | `src/labs/components/LectureScreen.tsx`, `src/labs/components/lecture-layout.css` |
+| Lecture frame and footer placement | `src/labs/components/LectureScreen.tsx`, `src/labs/components/LectureWorkspace.tsx`, `src/labs/components/lecture-layout.css` |
 | Exercise controls and question frame | `src/components/lab/ExerciseFrame.tsx` |
 | Lecture Controls tour appearance and alignment | `src/components/walkthrough/LectureControlsTourButton.tsx`, `src/styles/spotlight.css`, `.guided-lab-help-slot` in `src/styles/guided-labs.css` |
 | Lecture help slot and hidden page-link footprint | `src/components/chapter/ChapterPagination.tsx` |
@@ -106,6 +113,13 @@ Its alignment uses the center of `[data-walkthrough="guided"]`, with a guard aga
 overlapping the title when the toolbar wraps on narrow screens. Preserve native
 keyboard focus styling and focus restoration after the walkthrough closes.
 Redesign this component once to update every lecture.
+
+Exercise controls use compact shared buttons between 640px and 1150px width.
+On tablets, the title takes a full row so the controls cannot squeeze it into a
+narrow column. `src/styles/lesson.css` owns compact table and metric styles for
+laptop heights up to 900px and tablet widths. Chapter 1's exercise keeps its
+lecture's data gaps, stacks question text above answers on tablets, and uses a
+compact question on short laptops to leave room for the navigation footer.
 
 The home-page Take a tour label has a scoped 1px vertical adjustment for optical
 centering in Arial. Keep that correction local to the label; it does not change
@@ -160,6 +174,19 @@ when changing controls. Documentation-only changes need link and consistency
 review, not an application test run.
 
 ## Additional shared ownership
+
+- Chapter 3's `views-indexes-materialized-views/FlowGraph.tsx`,
+  `flowGraphModel.ts` and `chapter.css` own its input/compute/index/storage graph,
+  shared by lectures and exercises. Solid purple maintenance paths, dashed teal
+  query reads and dotted definition links connect HTML cards through SVG.
+  Transform has a compute boundary separate from durable storage. Narrow windows
+  use an overview and selected detail panel. Its actions are scenario steps, not
+  logical timestamps. The shared lecture and exercise frames still own controls.
+  `ObjectQueryControls.tsx` owns the query row and its inert reservation for
+  Lecture 1 and exercises, so its responsive footprint stays consistent. Chapter 3
+  exercises reuse `LectureWorkspace` with the same graph styles and reserved step
+  row. The graph and question are visible together, without a View graph switch.
+  Questions follow the graph and can extend the page below the viewport.
 
 - `src/components/lesson/lessonTextTypes.ts` owns JSX-independent explanation types.
 - `src/components/lesson/RelationHelp.tsx` owns accessible relation help;
@@ -221,7 +248,9 @@ review, not an application test run.
   preserving familiar page structure. Changes to shared patterns must be applied
   consistently to affected pages; do not redesign a single page without an
   explicit user request or a concrete learning or accessibility need.
-- Lectures and exercises must fit the viewport without page or workspace scrolling.
+- Lectures and exercises must fit the viewport without page or workspace scrolling,
+  except Chapter 3 exercises where the requested lecture graph position takes
+  priority and questions remain below the visible graph.
   Never scale the page or shrink fonts to fit content. Remove redundant information
   or move supporting detail into guided explanations and SQL & Objectives.
 - Keep table and panel dimensions stable as rows change, using empty rows where
