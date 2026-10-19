@@ -11,6 +11,8 @@ and shared CSS, not independently maintained mockup files.
 | `LectureScreen`, `layout="with-tip"` | Chapter 1 lectures 1–2 | Chapter 1 reference frame, metrics, visualization, playback, and bottom tip when it fits. |
 | `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 3 lectures 1–3; Chapter 4 lectures 1–4 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
 | `ExerciseFrame` through `GuidedLabScreen` | Chapter 1–4 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
+| `LectureScreen`, `layout="without-tip"` | Chapter 6 lectures 1–3 | Existing title, toolbar, metrics and playback frame with chapter-owned aligned progress lanes. |
+| `ExerciseFrame` through `GuidedLabScreen` | Chapter 6 exercises 1–3 | Existing exercise actions and question flow with the same progress lanes and selected detail. |
 
 `src/labs/components/LectureScreen.tsx` accepts `metrics`, `visualization`, and
 `playback` slots plus the common screen props. Chapter 2 supplies them through
@@ -151,6 +153,34 @@ when changing controls. Documentation-only changes need link and consistency
 review, not an application test run.
 
 ## Additional shared ownership
+
+- Chapter 6's `progress-and-freshness/ProgressLanes.tsx` and `chapter.css` own
+  aligned Orders/Payments/Paid orders lanes and the optional downstream Revenue
+  lane. Solid markers show actual frontiers, dashed markers the input limit,
+  diamonds observed changes, and dotted lines the simulated wall clock. A single
+  scale positions every lane. Compact views keep the dependency lanes together;
+  stage buttons select the evidence detail. Lectures reuse `LectureScreen`
+  without-tip and its playback baseline. All three lecture diagrams reserve four
+  equal lane rows so introducing Revenue does not shift metrics or panel bounds.
+  Phone subtitles reserve two lines up to 480px; the lag legend shares the normal
+  caption footprint. Chapter CSS owns these matching visualization dimensions.
+  Exercises use the same four-row diagram and reuse `ExerciseFrame` actions
+  and questions, with `LectureWorkspace` measuring their bottom navigation.
+  View question / View diagram swaps panels in the same grid cell, retaining
+  their footprint and predictions without page or panel scrolling. The shared
+  exercise frame exposes its question-view state to the workspace slot; other
+  chapters keep their existing initial view. Short windows expose metrics in
+  the same dialog as lectures.
+  Document scrolling and overscroll are locked only while a Chapter 6 exercise
+  is present. Short tablet windows use a compact header and place evidence in
+  the question view to keep all controls accessible within the viewport.
+  Chapter CSS changes visualization content only; shared controls
+  retain their existing ownership and positions.
+
+- `LectureScreen` marks no-tip lectures with `lecture-subtitle-layout`.
+  `lecture-layout.css` owns their tablet subtitle wrapping, extracted from the
+  original Chapter 2 styling so new lectures retain the same title and toolbar
+  positions without importing chapter-specific CSS.
 
 - Chapter 3's `views-indexes-materialized-views/FlowGraph.tsx`,
   `flowGraphModel.ts` and `chapter.css` own its input/compute/index/storage graph,

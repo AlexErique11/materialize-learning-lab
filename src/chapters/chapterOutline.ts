@@ -1,6 +1,8 @@
 import { chapterPath, type ChapterDefinition } from './chapterRegistry';
 import { recordLectures } from './getting-data-in/record-scenarios';
 import { ingestionExercises } from './getting-data-in/exercise-scenarios';
+import { progressLectures } from './progress-and-freshness/lecture-scenarios';
+import { progressExercises } from './progress-and-freshness/exercise-scenarios';
 
 export type ChapterSectionSlug = 'tutorial' | 'exercises';
 
@@ -45,6 +47,10 @@ const sectionDefinitions: readonly Omit<ChapterSectionDefinition, 'pages'>[] = [
 
 // Navigation and overview summaries. Actual chapter content lives beside its chapter.
 const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
+  'progress-and-freshness': {
+    tutorial: progressLectures.map((lecture, index) => ({ slug: `lecture-${index + 1}`, title: `Lecture ${index + 1}: ${lecture.title}`, description: lecture.description })),
+    exercises: progressExercises.map((exercise, index) => ({ slug: exercise.slug, title: `Exercise ${index + 1}: ${exercise.title}`, description: exercise.description, durationMinutes: [6, 7, 9][index] })),
+  },
   'views-indexes-materialized-views': {
     tutorial: [
       { slug: 'lecture-1', title: 'Lecture 1: Where results live', description: 'Save a view, query it, add an index, then predict how input changes update maintained state.' },

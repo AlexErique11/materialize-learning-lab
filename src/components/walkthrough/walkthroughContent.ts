@@ -27,13 +27,19 @@ export function getLectureWalkthrough(path: string): WalkthroughStep[] | null {
   const currentChapter = findChapter(parts[1]);
   if (parts.length !== 4 || parts[0] !== 'labs' || parts[2] !== 'tutorial'
     || !currentChapter || !findChapterContent(currentChapter, parts[2], parts[3])) return null;
-  const nextLabel = path === chapterTourPaths.lectureTwo ? 'Next timestamp' : 'Next change';
-  const scenarioSteps = currentChapter.slug === 'views-indexes-materialized-views';
+  const independentCases = currentChapter.slug === 'progress-and-freshness' && parts[3] === 'lecture-3';
+  const nextLabel = independentCases ? 'Next case' : path === chapterTourPaths.lectureTwo ? 'Next timestamp' : 'Next change';
+  const scenarioSteps = ['views-indexes-materialized-views', 'progress-and-freshness'].includes(currentChapter.slug);
+  const stepDescription = independentCases
+    ? 'Open the next independent case with fresh starting values. These examples are separate incidents, so a lower frontier does not mean progress moved backward. Previous case revisits the prior example.'
+    : currentChapter.slug === 'progress-and-freshness'
+    ? 'Advance one scenario action at a time: report input progress, observe a change, or process maintained work. Step numbers are not logical timestamps. Previous change inspects earlier steps.'
+    : scenarioSteps ? 'Advance one completed scenario action at a time. These object-creation and query steps are not logical timestamps. Previous change inspects earlier steps.' : 'Advance manually, one complete timestamp at a time. When inspecting earlier history, move forward through changes already applied.';
   return [
     { path, target: 'run', title: 'Run and Pause', description: 'Run plays changes automatically. Pause stops playback so you can inspect the current state. Opening this help also pauses playback.', unavailable: 'This tutorial is unfinished, so playback is unavailable.' },
     { path, target: 'guided', title: 'Start guided run', description: 'Restart the scenario with lesson explanations. Show effect reveals a change; Next continues the lesson. Finish the guided lesson to complete tutorial progress.', unavailable: 'This tutorial is unfinished, so a guided run is unavailable.' },
     { path, target: 'sql', title: 'SQL & Objectives', description: 'Open the learning objective, SQL reference, and documentation for this lecture.' },
-    { path, target: 'next-change', title: nextLabel, description: scenarioSteps ? 'Advance one completed scenario action at a time. These object-creation and query steps are not logical timestamps. Previous change inspects earlier steps.' : 'Advance manually, one complete timestamp at a time. When inspecting earlier history, move forward through changes already applied.', unavailable: 'All changes have been applied. Reset or replay the scenario to explore it again.' },
+    { path, target: 'next-change', title: nextLabel, description: stepDescription, unavailable: 'All changes have been applied. Reset or replay the scenario to explore it again.' },
   ];
 }
 

@@ -18,6 +18,7 @@ export function ExerciseFrame({
   reference,
   mobilePanel,
   renderWorkspace,
+  initialQuestionOpen = true,
   progressLabel = 'Phases',
   checkpointTitle,
   question,
@@ -41,7 +42,8 @@ export function ExerciseFrame({
     | ReactNode
     | ((questionOpen: boolean, setQuestionOpen: (open: boolean) => void) => ReactNode);
   mobilePanel?: string;
-  renderWorkspace?: (parts: { visualization: ReactNode; question: ReactNode; navigation: ReactNode }) => ReactNode;
+  renderWorkspace?: (parts: { visualization: ReactNode; question: ReactNode; navigation: ReactNode; questionOpen: boolean; setQuestionOpen: (open: boolean) => void }) => ReactNode;
+  initialQuestionOpen?: boolean;
   progressLabel?: string;
   pageClass?: string;
   reference?: ComponentProps<typeof GuidedLabScreen>['reference'];
@@ -73,7 +75,7 @@ export function ExerciseFrame({
       : progressLabel === 'Questions'
         ? 'Question'
         : 'Checkpoint';
-  const [questionOpen, setQuestionOpen] = useState(true);
+  const [questionOpen, setQuestionOpen] = useState(initialQuestionOpen);
   const questionSection = (
     <section
       id={`${formId}-question`}
@@ -220,7 +222,7 @@ export function ExerciseFrame({
             }
           }}
         >
-          {renderWorkspace ? renderWorkspace({ visualization: graph, question: questionSection, navigation: questionNavigation }) : <>
+          {renderWorkspace ? renderWorkspace({ visualization: graph, question: questionSection, navigation: questionNavigation, questionOpen, setQuestionOpen }) : <>
             {graph}
             {!mobilePanel && (
               <Button className="exercise-question-toggle" aria-expanded={questionOpen} onClick={() => setQuestionOpen(value => !value)}>

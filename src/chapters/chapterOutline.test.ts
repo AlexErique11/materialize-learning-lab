@@ -24,13 +24,21 @@ describe('chapter navigation outline', () => {
   });
 
   it('leaves chapters without defined content empty', () => {
-    for (const other of chapters.filter((item) => ![chapter.slug, 'incremental-maintenance', 'views-indexes-materialized-views', 'getting-data-in', 'time-in-materialize'].includes(item.slug))) {
+    for (const other of chapters.filter((item) => ![chapter.slug, 'incremental-maintenance', 'views-indexes-materialized-views', 'getting-data-in', 'time-in-materialize', 'progress-and-freshness'].includes(item.slug))) {
       expect(getChapterSections(other).map((section) => section.slug)).toEqual([
         'tutorial',
         'exercises',
       ]);
       expect(getChapterPages(other)).toEqual([]);
     }
+  });
+
+  it('registers all Chapter 6 lectures and exercises in teaching order', () => {
+    const progress = findChapter('progress-and-freshness')!;
+    expect(getChapterPages(progress).map(page => `${page.sectionSlug}/${page.slug}`)).toEqual([
+      'tutorial/lecture-1', 'tutorial/lecture-2', 'tutorial/lecture-3',
+      'exercises/exercise-1', 'exercises/exercise-2', 'exercises/exercise-3',
+    ]);
   });
 
   it('registers Chapter 3 alongside Chapter 4 with lectures before exercises', () => {

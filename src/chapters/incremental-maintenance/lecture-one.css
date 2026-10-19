@@ -129,14 +129,6 @@
   .maintenance-lecture-page:not(.maintenance-comparison-lecture) .maintenance-panels .data-table th { padding-block: 6px; }
   .maintenance-lecture-page:not(.maintenance-comparison-lecture) .maintenance-panels .data-table td { height: 28px; }
 }
-@media (min-width: 640px) and (max-width: 1150px) {
-  .maintenance-lecture-page .guided-lab-title { display: contents; }
-  .maintenance-lecture-page .guided-lab-title h1 { flex: 1; min-width: 0; }
-  .maintenance-lecture-page .guided-lab-title > p { order: 1; flex-basis: 100%; margin-top: 0; max-width: none; }
-}
-@media (min-width: 1024px) and (max-width: 1150px) {
-  .maintenance-lecture-page .guided-lab-title h1 { flex-basis: 100%; }
-}
 @media (max-width: 639px) {
   .maintenance-lecture-page:not(.maintenance-comparison-lecture) .maintenance-panels > .relation-panel { height: 224px; }
 }
