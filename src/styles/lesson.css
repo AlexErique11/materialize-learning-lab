@@ -498,3 +498,12 @@
     display: inline;
   }
 }
+
+/* Keep the same compact table and metric template across chapters. */
+@media (min-width: 1024px) and (max-height: 900px), (min-width: 640px) and (max-width: 1023px) {
+  .relation-metric { min-height: 52px; padding-block: 2px; }
+  .relation-panel { --lesson-table-row-height: 29px; padding: 9px; }
+  .relation-panel h2 { margin-bottom: 8px; }
+  .relation-panel .data-table th { padding-block: 8px; }
+  .relation-panel .data-table td { height: var(--lesson-table-row-height); padding-block: 1px; }
+}

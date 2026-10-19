@@ -28,11 +28,12 @@ export function getLectureWalkthrough(path: string): WalkthroughStep[] | null {
   if (parts.length !== 4 || parts[0] !== 'labs' || parts[2] !== 'tutorial'
     || !currentChapter || !findChapterContent(currentChapter, parts[2], parts[3])) return null;
   const nextLabel = path === chapterTourPaths.lectureTwo ? 'Next timestamp' : 'Next change';
+  const scenarioSteps = currentChapter.slug === 'views-indexes-materialized-views';
   return [
     { path, target: 'run', title: 'Run and Pause', description: 'Run plays changes automatically. Pause stops playback so you can inspect the current state. Opening this help also pauses playback.', unavailable: 'This tutorial is unfinished, so playback is unavailable.' },
     { path, target: 'guided', title: 'Start guided run', description: 'Restart the scenario with lesson explanations. Show effect reveals a change; Next continues the lesson. Finish the guided lesson to complete tutorial progress.', unavailable: 'This tutorial is unfinished, so a guided run is unavailable.' },
     { path, target: 'sql', title: 'SQL & Objectives', description: 'Open the learning objective, SQL reference, and documentation for this lecture.' },
-    { path, target: 'next-change', title: nextLabel, description: 'Advance manually, one complete timestamp at a time. When inspecting earlier history, move forward through changes already applied.', unavailable: 'All changes have been applied. Reset or replay the scenario to explore it again.' },
+    { path, target: 'next-change', title: nextLabel, description: scenarioSteps ? 'Advance one completed scenario action at a time. These object-creation and query steps are not logical timestamps. Previous change inspects earlier steps.' : 'Advance manually, one complete timestamp at a time. When inspecting earlier history, move forward through changes already applied.', unavailable: 'All changes have been applied. Reset or replay the scenario to explore it again.' },
   ];
 }
 

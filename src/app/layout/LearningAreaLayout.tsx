@@ -15,7 +15,7 @@ export function LearningAreaLayout() {
   const sidebarGeneration = useRef(0);
   const { pathname } = useLocation();
   const { open: tourOpen } = useWalkthrough();
-  useChangeMotion(contentRef, pathname, !tourOpen && !document.querySelector('.lab-intro-screen'), 'route', -4);
+  useChangeMotion(contentRef, pathname, !tourOpen && !document.querySelector('.lab-intro-screen'), 'route', 0);
   const toggleSidebar = () => {
     const content = contentRef.current;
     const left = content?.getBoundingClientRect().left ?? 0;

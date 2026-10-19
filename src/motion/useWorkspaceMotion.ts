@@ -1,7 +1,7 @@
 import { useLayoutEffect, type RefObject } from 'react';
 import { animateMotion, reducedMotion } from './motion';
 
-const valueSelector = 'tbody td, .relation-metric strong, .temporal-clocks dd, .ingestion-checkpoint';
+const valueSelector = 'tbody td, .relation-metric strong, .temporal-clocks dd, .ingestion-checkpoint, [data-motion-value]';
 
 export function useWorkspaceMotion(ref: RefObject<HTMLElement | null>, route: string) {
   useLayoutEffect(() => {

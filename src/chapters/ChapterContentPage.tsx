@@ -28,6 +28,8 @@ import { TemporalLecture } from './time-in-materialize/TemporalLecture';
 import { temporalLectures } from './time-in-materialize/scenarios';
 import { temporalExercises } from './time-in-materialize/exercise-scenarios';
 import { TemporalExercisePage } from './time-in-materialize/TemporalExercisePage';
+import { ObjectChapterLecture } from './views-indexes-materialized-views/ChapterLecture';
+import { ObjectChapterExercise } from './views-indexes-materialized-views/ChapterExercise';
 
 export function ChapterContentPage() {
   const chapter = useOutletContext<ChapterDefinition>();
@@ -59,6 +61,13 @@ export function ChapterContentPage() {
     const definition = temporalLectures.find((lecture) => page.slug === 'lecture-' + lecture.number);
     if (definition) return <TemporalLecture key={page.slug} chapter={chapter} definition={definition}
       navigation={<ChapterPagination {...navigation} showTooltips={false} />} />;
+  }
+  if (chapter.slug === 'views-indexes-materialized-views' && page) {
+    const index = section.pages.findIndex(item => item.slug === page.slug);
+    const controls = <ChapterPagination {...navigation} showTooltips={false} hideLinks />;
+    return section.slug === 'tutorial'
+      ? <ObjectChapterLecture key={page.slug} chapter={chapter} navigation={controls} lectureIndex={index} />
+      : <ObjectChapterExercise key={page.slug} chapter={chapter} navigation={controls} exerciseIndex={index} />;
   }
   if (chapter.slug === 'getting-data-in' && section.slug === 'exercises' && page) {
     return <IngestionExercisePage key={page.slug} chapter={chapter}

@@ -152,3 +152,117 @@ test('reduced motion keeps dialogs, disclosures, values and progress immediate',
   ))).toEqual([]);
   await expect(page.locator('.progress-motion-fill').last()).toHaveCSS('transition-duration', '0s');
 });
+
+const objectsPath = '/labs/views-indexes-materialized-views';
+
+test('Chapter 3 sidebar navigation preserves the measured graph and playback frame', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'The expanded desktop sidebar exercises the measured full-page frame.');
+  await page.goto(`${objectsPath}/tutorial/lecture-1`);
+  const geometry = () => page.evaluate(() => ({
+    canvas: document.querySelector('.flow-canvas')!.getBoundingClientRect().top + scrollY,
+    playback: document.querySelector('.relation-playback-controls')!.getBoundingClientRect().top + scrollY,
+    pageHeight: document.documentElement.scrollHeight,
+  }));
+  const before = await geometry();
+  for (const lecture of [2, 3, 1]) {
+    await page.locator(`.chapter-pages a[href="${objectsPath}/tutorial/lecture-${lecture}"]:visible`).click();
+    await expect(page).toHaveURL(`${objectsPath}/tutorial/lecture-${lecture}`);
+    await expect.poll(geometry).toEqual(before);
+  }
+});
+
+test('Chapter 3 query routes animate only after an action and retain exact answers', async ({ page, isMobile }) => {
+  await observeMotion(page);
+  await page.goto(`${objectsPath}/tutorial/lecture-2`);
+  await expect(page.locator(`${isMobile ? '.flow-overview' : '.flow-connectors'} [data-flow-edge]`).first()).toBeAttached();
+  expect(await page.evaluate(() => (
+    (window as unknown as { motionEvents: string[] }).motionEvents.filter((id) => id.startsWith('ui-motion-flow-'))
+  ))).toEqual([]);
+  const canvas = await page.locator('.flow-canvas').boundingBox();
+  const result = page.getByTestId('object-query-result');
+  await page.getByRole('button', { name: 'Run query', exact: true }).click();
+  await expect(result).toContainText('Local memory');
+  await expectMotion(page, 'flow-query');
+  await page.getByLabel('Query cluster', { exact: true }).selectOption('b');
+  await page.getByRole('button', { name: 'Run query', exact: true }).click();
+  await expect(result).toContainText('Compute query');
+  await expectMotion(page, 'flow-object');
+  await expectMotion(page, 'flow-edge');
+  await page.getByLabel('Query object', { exact: true }).selectOption('revenue_mv');
+  await page.getByRole('button', { name: 'Run query', exact: true }).click();
+  await expect(result).toContainText('Durable storage');
+  await expect(result).toContainText('North $150');
+  expect(await page.locator('.flow-canvas').boundingBox()).toEqual(canvas);
+});
+
+test('Chapter 3 object updates keep past query snapshots and support Back', async ({ page, isMobile }) => {
+  await observeMotion(page);
+  await page.goto(`${objectsPath}/tutorial/lecture-1`);
+  const next = page.getByRole('button', { name: 'Next change', exact: true });
+  await next.click();
+  await expectMotion(page, isMobile ? 'flow-panel' : 'value');
+  await next.click();
+  await next.click();
+  await expectMotion(page, 'flow-object');
+  const index = page.getByRole('region', { name: 'Cluster A view index result', exact: true });
+  if (isMobile) await page.locator('.flow-overview').getByRole('button', { name: 'Cluster A', exact: true }).click();
+  await expect(index).toContainText('$150');
+  await next.click();
+  await expect(index).toContainText('$170');
+  await expect(page.getByTestId('object-query-result')).toContainText('North $150');
+  await page.getByRole('button', { name: 'Previous change', exact: true }).click();
+  await expect(index).toContainText('$150');
+});
+
+test('Chapter 3 exercises retain question motion inside the new workspace frame', async ({ page }) => {
+  await observeMotion(page);
+  await page.goto(`${objectsPath}/exercises/exercise-1`);
+  const graphBox = () => page.locator('.flow-canvas').evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    return { top: box.top + scrollY, height: box.height, width: box.width };
+  });
+  const before = await graphBox();
+  await page.getByRole('button', { name: 'Hint', exact: true }).click();
+  await expectMotion(page, 'feedback');
+  await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+  await expect(page.getByRole('progressbar', { name: 'Exercise questions completed' })).toHaveAttribute('value', '1');
+  await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  await expectMotion(page, 'question');
+  await expect(page.locator('.exercise-question h2')).toContainText('Question 2');
+  expect(await graphBox()).toEqual(before);
+  await expect(page.locator('.exercise-question-navigation')).toHaveCount(1);
+});
+
+test('compact flow navigation stays anchored while a button is pressed', async ({ page }) => {
+  await observeMotion(page);
+  await page.setViewportSize({ width: 1024, height: 768 });
+  await page.goto(`${objectsPath}/tutorial/lecture-2`);
+  const button = page.locator('.flow-overview').getByRole('button', { name: 'Cluster B', exact: true });
+  const before = (await button.boundingBox())!;
+  const transform = await button.evaluate((element) => getComputedStyle(element).transform);
+  await page.mouse.move(before.x + before.width / 2, before.y + before.height / 2);
+  await page.mouse.down();
+  try {
+    await expect(button).toHaveCSS('transform', transform);
+    const pressed = (await button.boundingBox())!;
+    expect(pressed.x).toBeCloseTo(before.x, 1);
+    expect(Math.abs(pressed.y - before.y)).toBeLessThanOrEqual(1.1);
+  } finally { await page.mouse.up(); }
+  await expect(page.locator('.flow-cluster-b')).toBeVisible();
+  await expectMotion(page, 'flow-panel');
+  await button.focus();
+  await page.keyboard.press('Enter');
+  await expect(button).toHaveAttribute('aria-pressed', 'true');
+});
+
+test('Chapter 3 reduced motion updates graph objects, edges and query answers immediately', async ({ page }) => {
+  await observeMotion(page);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(`${objectsPath}/tutorial/lecture-2`);
+  await page.getByLabel('Query cluster', { exact: true }).selectOption('b');
+  await page.getByRole('button', { name: 'Run query', exact: true }).click();
+  await expect(page.getByTestId('object-query-result')).toContainText('Compute query');
+  expect(await page.evaluate(() => (
+    (window as unknown as { motionEvents: string[] }).motionEvents.filter((id) => id.startsWith('ui-motion-'))
+  ))).toEqual([]);
+});

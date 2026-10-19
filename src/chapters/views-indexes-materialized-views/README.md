@@ -1,0 +1,103 @@
+# Views, Indexes, and Materialized Views
+
+Three lectures develop one evolving flow graph: save SQL, run a
+query, add a local index, update input, then introduce durable output and a second
+serving cluster. Two exercises contain eight checkpoints and end with a complete
+shared-serving design. The final challenge starts with an unsolved new fixture.
+
+Guided runs start with explanation-only concept pages before prediction/reveal.
+Lecture 1 introduces the input/query, regular views, clusters, indexes and durable
+output; Lecture 2 explains materialized views and storage versus memory; Lecture 3
+explains intermediate views and serving requirements. These pages keep the initial
+diagram unchanged. Back, close and restart work across the introduction/action
+boundary; introductions never create objects or count as scenario changes.
+
+`ObjectQueryControls` supplies the same responsive query-controls row to lectures
+and exercises. Lecture 1 and both exercises reserve it invisibly and inertly.
+Both exercises reuse `LectureWorkspace` and the lecture graph styles, including
+the reserved scenario-step row and shared responsive subtitle layout. Narrow
+exercise toolbars omit decorative button icons to match the lecture row count.
+Graphs stay visible in the lecture position;
+questions follow below and the page scrolls when they exceed the viewport.
+
+Guided prose and examples use explicit `LessonTextContent` references. Order IDs
+and regular-view names use purple, regions and materialized-view references use
+teal, amounts/revenue use amber, and indexes/cluster references use green. Graph
+table values use the same field colors; headers stay neutral. The
+`object-lesson-text` wrapper also scopes these colors inside the shared spotlight.
+
+`scenario.ts` owns lectures and reference SQL; `resources.ts` owns official links;
+`exercise-scenarios.ts` owns requirements, hints, distractors and exact-set grading.
+`simulation.ts` derives grouped revenue and query paths. The current input/setup
+drives every maintained-result panel. Query observations are separately captured
+and explicitly labeled: an already-returned query result does not refresh itself.
+
+`FlowGraph` is shared between lectures and exercises. Its HTML cards show saved
+definitions, input, serving-cluster compute and memory, a separate Transform
+cluster, and external durable output. `flowGraphModel.ts` derives maintenance,
+definition and query-read edges from the supplied simulation snapshot. SVG
+connectors anchor to the actual card bounds and adapt to resizing. The graph
+does not advance the simulation or infer a physical execution plan.
+
+Purple solid arrows show maintenance, teal dashed arrows show query reads and
+returned results, and muted dotted links connect definitions to compute. Result
+tables always use the current fixture; the last-query inspector retains its own
+captured rows. The query strip reserves its populated height before any query
+runs so the shared lecture frame does not shift the graph when the first answer
+appears. Node headings expose explanations through keyboard-operable buttons.
+Narrow windows combine a compact graph overview with one readable detail panel;
+guided steps automatically select their target. Reduced motion disables row
+animations and uses a static tint. `ChapterLecture` composes
+`LectureScreen` without-tip and the shared `useLectureRun`/`Spotlight` flow.
+`ChapterExercise` uses `ExerciseFrame` and `useExerciseStages`. Follow
+[UI_LAYOUTS.md](../../../UI_LAYOUTS.md) for shared ownership and templates.
+
+Compact graph spacing starts at 880px viewport height, including laptop windows
+just above 800px. At widths up to 1150px, the overview/detail layout leaves room
+for wrapped shared controls. Short windows reduce secondary graph navigation
+while retaining lecture tables, query controls and playback buttons without page scrolling.
+
+## Semantic verification — 2026-10-15
+
+- [Views](https://materialize.com/docs/fundamentals/concepts/views/): regular views
+  store definitions; indexed views maintain cluster-local memory results;
+  materialized views persist maintained output accessible across clusters.
+- [Indexes](https://materialize.com/docs/fundamentals/concepts/indexes/): indexes
+  maintain full rows, not keys/pointers. Indexes on materialized views make
+  already-maintained output local without repeating the original transformation.
+- [CREATE VIEW](https://materialize.com/docs/sql/create-view/),
+  [CREATE INDEX](https://materialize.com/docs/sql/create-index/),
+  [CREATE MATERIALIZED VIEW](https://materialize.com/docs/sql/create-materialized-view/)
+  verify the displayed SQL and IN CLUSTER syntax.
+- [DROP INDEX](https://materialize.com/docs/sql/drop-index/): remove the index;
+  the underlying view/materialized view remains. No dependent objects are modeled.
+- [SELECT](https://materialize.com/docs/sql/select/): grouped revenue reference.
+
+The SQL panel includes an orders fixture to run independently in a fresh schema,
+with already-existing transform/serving_a/serving_b clusters and object-creation
+permissions. These SQL cluster names map to Transform/A/B in the graph. All used features are stable;
+preview replacement/retention features are excluded. Lecture 3 contrasts separate
+deployment choices; it does not claim to convert a regular view into a materialized
+view. Its reference script explicitly drops the first design's index before
+creating the shared-output design, then runs the final order correction and query.
+SQL building-block views need not be separately materialized, but a final
+maintained dataflow can still retain intermediate state. Each serving index also
+requires its own memory and maintenance.
+
+## Educational limits
+
+Steps are completed scenario actions, not logical timestamps or timing claims.
+Canonical snapshots omit ingestion delay, hydration and asynchronous maintenance;
+no latest-upstream-data guarantee is taught. Query routes illustrate this fixture
+with no alternate indexes; they are not a physical optimizer plan or guaranteed
+latency. Durable output does not eliminate transform memory or hydration.
+Displayed row order is illustrative, not a promise from SELECT without ORDER BY.
+
+Simulation tests execute the displayed plain and stacked SELECTs independently
+in SQLite, including negative amounts filtered by order_enriched, zero values,
+duplicate inputs, empty groups and empty input. They also check local-versus-remote
+paths, index removal, past observations, grading and final state. SQLite checks
+ordinary SELECT semantics; Materialize-specific DDL/storage claims are checked
+against the official documentation, not a live Materialize instance.
+Browser journeys cover guided predictions, exploration, history, exercise retries,
+reveal/reset/completion, both themes, keyboard access and viewport geometry.
