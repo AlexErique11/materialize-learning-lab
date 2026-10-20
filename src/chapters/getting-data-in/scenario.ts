@@ -51,6 +51,7 @@ interface SnapshotLesson {
   readonly time: number;
   readonly stage: SnapshotStage;
   readonly focus?: 'snapshot-progress';
+  readonly related?: readonly (SnapshotStage | 'metrics')[];
   readonly title: string;
   readonly before?: LessonTextContent;
   readonly explanation: LessonTextContent;
@@ -66,7 +67,7 @@ export const snapshotLessons: readonly SnapshotLesson[] = [
     ],
   },
   {
-    time: 1, stage: 'ingestion', focus: 'snapshot-progress', title: 'Read the first snapshot row',
+    time: 1, stage: 'ingestion', focus: 'snapshot-progress', title: 'Read the first snapshot row', related: ['ingestion'],
     before: ['The snapshot will read ', { kind: 'row', text: 'Coffee', column: 'name' },
       ' first. Will reading one row make that product queryable?'],
     explanation: [
@@ -82,7 +83,7 @@ export const snapshotLessons: readonly SnapshotLesson[] = [
     ],
   },
   {
-    time: 2, stage: 'source', title: 'An update arrives during loading',
+    time: 2, stage: 'source', title: 'An update arrives during loading', related: ['ingestion', 'metrics'],
     before: [
       { kind: 'row', text: 'Coffee', column: 'name' }, ' changes from ',
       { kind: 'row', text: '$8', column: 'price' }, ' to ',
@@ -94,7 +95,7 @@ export const snapshotLessons: readonly SnapshotLesson[] = [
     ],
   },
   {
-    time: 3, stage: 'source', title: 'A deletion arrives too',
+    time: 3, stage: 'source', title: 'A deletion arrives too', related: ['ingestion', 'metrics'],
     before: [
       'The upstream database deletes ', { kind: 'row', text: 'Mug', column: 'name' },
       '. Should it also disappear from the snapshot taken before this deletion?',
@@ -106,7 +107,7 @@ export const snapshotLessons: readonly SnapshotLesson[] = [
     ],
   },
   {
-    time: 4, stage: 'ingestion', focus: 'snapshot-progress', title: 'Finish reading the starting rows',
+    time: 4, stage: 'ingestion', focus: 'snapshot-progress', title: 'Finish reading the starting rows', related: ['ingestion'],
     before: ['Read the remaining snapshot rows. Predict whether the queued update and deletion change that starting snapshot.'],
     explanation: [
       'All ', { kind: 'count', text: '3 / 3', column: 'count' },
@@ -114,7 +115,7 @@ export const snapshotLessons: readonly SnapshotLesson[] = [
     ],
   },
   {
-    time: 5, stage: 'relation', title: 'Commit the snapshot together',
+    time: 5, stage: 'relation', title: 'Commit the snapshot together', related: ['metrics', 'ingestion'],
     before: [
       'The initial snapshot will commit atomically. Predict the visible catalog, including ',
       { kind: 'row', text: 'Coffee at $8', column: 'price' }, ' and ',
@@ -127,7 +128,7 @@ export const snapshotLessons: readonly SnapshotLesson[] = [
     ],
   },
   {
-    time: 6, stage: 'relation', title: 'Catch up the price update',
+    time: 6, stage: 'relation', title: 'Catch up the price update', related: ['metrics', 'ingestion'],
     before: [
       'Apply the queued ', { kind: 'row', text: 'Coffee', column: 'name' },
       ' update. Will the table contain both prices or one current product?',
@@ -139,7 +140,7 @@ export const snapshotLessons: readonly SnapshotLesson[] = [
     ],
   },
   {
-    time: 7, stage: 'relation', title: 'Catch up the deletion',
+    time: 7, stage: 'relation', title: 'Catch up the deletion', related: ['metrics', 'ingestion'],
     before: [
       'Apply the queued deletion of ', { kind: 'row', text: 'Mug', column: 'name' },
       '. Predict the rows that remain and the pending-change count.',
@@ -152,7 +153,7 @@ export const snapshotLessons: readonly SnapshotLesson[] = [
     ],
   },
   {
-    time: 8, stage: 'source', title: 'Continue with a live insertion',
+    time: 8, stage: 'source', title: 'Continue with a live insertion', related: ['relation'],
     before: [
       'PostgreSQL adds ', { kind: 'row', text: 'Cocoa', column: 'name' }, ' at ',
       { kind: 'row', text: '$6', column: 'price' }, '. Does Materialize need another full snapshot?',

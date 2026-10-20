@@ -8,6 +8,7 @@ interface LectureStep {
   readonly explanation: LessonTextContent;
   readonly before?: LessonTextContent;
   readonly spotlight: 'ledger' | 'relation' | 'metrics';
+  readonly related?: readonly ('ledger' | 'relation' | 'metrics')[];
 }
 
 export const lectureUpdates: readonly RelationUpdate[] = [
@@ -40,7 +41,7 @@ export const lectureSteps: readonly LectureStep[] = [
     ],
   },
   {
-    time: 2, title: 'A different row adds a distinct value', spotlight: 'relation',
+    time: 2, title: 'A different row adds a distinct value', spotlight: 'relation', related: ['metrics'],
     before: [
       'Next, ', { kind: 'diff', text: '+1' }, ' adds ', { kind: 'row', text: '(B, $14)' },
       '. Will the copies of ', { kind: 'row', text: '(A, $10)' }, ' change?',
@@ -52,7 +53,7 @@ export const lectureSteps: readonly LectureStep[] = [
     ],
   },
   {
-    time: 3, title: 'Total copies and distinct rows differ', spotlight: 'metrics',
+    time: 3, title: 'Total copies and distinct rows differ', spotlight: 'metrics', related: ['relation'],
     before: [
       { kind: 'diff', text: '+2' }, ' adds two copies of ', { kind: 'row', text: '(C, $20)' },
       '. How will ', { kind: 'term', text: 'Total row copies' }, ' and ',
@@ -65,7 +66,7 @@ export const lectureSteps: readonly LectureStep[] = [
     ],
   },
   {
-    time: 4, title: 'Zero-copy rows are removed', spotlight: 'relation',
+    time: 4, title: 'Zero-copy rows are removed', spotlight: 'relation', related: ['metrics'],
     before: [
       { kind: 'diff', text: '−1' }, ' retracts the last copy of ', { kind: 'row', text: '(B, $14)' },
       '. What remains when its count reaches ', { kind: 'count', text: '0' }, '?',

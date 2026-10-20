@@ -1,3 +1,4 @@
+import { advanceGuidedLesson } from './guided-run';
 import { expect, test } from './fixtures';
 import { joinLessons } from '../../src/chapters/incremental-maintenance/join-scenario';
 
@@ -65,13 +66,13 @@ test('guided join lecture predicts each effect, finishes, restores focus and pau
     }
     await expect(page.getByTestId('join-time')).toHaveText(`t = ${lesson.time}`);
     const target = await page.locator(`.join-panels > section:nth-child(${lesson.stage === 'orders' ? 1 : lesson.stage === 'products' ? 2 : 3})`).boundingBox();
-    const hole = await dialog.locator('.relation-guide-hole').boundingBox();
+    const hole = await dialog.locator('.relation-guide-hole').first().boundingBox();
     expect(hole!.x).toBeLessThanOrEqual(target!.x);
     expect(hole!.x + hole!.width).toBeGreaterThanOrEqual(target!.x + target!.width);
     const card = await dialog.locator('.relation-guide-card').boundingBox();
     expect(card!.y).toBeGreaterThanOrEqual(0);
     expect(card!.y + card!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
-    await dialog.getByRole('button', { name: index === joinLessons.length - 1 ? 'Finish tutorial' : 'Next', exact: true }).click();
+    await advanceGuidedLesson(page, index === joinLessons.length - 1);
   }
   await expect(page.getByText('Tutorial completed', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Start guided run', exact: true })).toBeFocused();

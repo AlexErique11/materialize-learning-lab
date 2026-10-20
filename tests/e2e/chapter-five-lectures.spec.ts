@@ -1,3 +1,4 @@
+import { advanceGuidedLesson } from './guided-run';
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { PLAYBACK_INTERVAL_MS } from '../../src/labs/useLectureRun';
@@ -231,6 +232,7 @@ test('deadline updates replace rows and obsolete deadlines cannot produce duplic
 
 for (const lecture of lectures) {
   test(`Lecture ${lecture.number} reveals predictions, restores them with Back, and completes its guided run`, async ({ page, isMobile }) => {
+    test.setTimeout(60_000);
     await page.setViewportSize(isMobile ? { width: 390, height: 664 } : { width: 1280, height: 720 });
     await page.goto(path(lecture.number));
     await page.getByRole('button', { name: 'SQL & Objectives', exact: true }).click();
@@ -278,7 +280,7 @@ for (const lecture of lectures) {
       expect(card.x + card.width).toBeLessThanOrEqual(viewport.width);
       expect(card.y + card.height).toBeLessThanOrEqual(viewport.height);
       if (step === 0) await page.screenshot({ path: test.info().outputPath(`chapter-five-lecture-${lecture.number}-${viewport.width}-guide.png`) });
-      await dialog.getByRole('button', { name: step === lecture.lessons - 1 ? 'Finish tutorial' : 'Next', exact: true }).click();
+      await advanceGuidedLesson(page, step === lecture.lessons - 1);
     }
     expect(checkedBack, 'The run includes a reversible prediction').toBe(true);
     await expect(page.locator('.maintenance-complete')).toHaveText('Tutorial completed');

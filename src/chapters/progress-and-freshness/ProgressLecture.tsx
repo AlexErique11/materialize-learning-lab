@@ -7,6 +7,7 @@ import { useWalkthrough } from '../../components/walkthrough/WalkthroughProvider
 import { Button } from '../../components/ui/Button';
 import { Spotlight } from '../../components/ui/Spotlight';
 import { LessonText } from '../../components/lesson/LessonText';
+import { useGuidedFocus } from '../../components/lesson/useGuidedFocus';
 import { progressText } from './lessonText';
 import { ProgressLanes } from './ProgressLanes';
 import { playbackExplanation, playbackFrames, progressLectures } from './lecture-scenarios';
@@ -21,7 +22,8 @@ export function ProgressLecture({ chapter, navigation, lectureIndex }: { chapter
   const { state, dispatch } = useLectureRun(definition);
   const { open: helpOpen } = useWalkthrough();
   const [selected, setSelected] = useState<LaneId>(lectureIndex === 2 ? 'revenue' : 'orders');
-  const refs = { axis: useRef<HTMLElement>(null), orders: useRef<HTMLElement>(null), payments: useRef<HTMLElement>(null), join: useRef<HTMLElement>(null), revenue: useRef<HTMLElement>(null), detail: useRef<HTMLElement>(null) };
+  const refs = { axis: useRef<HTMLElement>(null), orders: useRef<HTMLElement>(null), payments: useRef<HTMLElement>(null), join: useRef<HTMLElement>(null), revenue: useRef<HTMLElement>(null), detail: useRef<HTMLElement>(null),
+    metrics: useRef<HTMLDivElement>(null), lag: useRef<HTMLElement>(null), lanes: useRef<HTMLElement>(null) };
   const lesson = lecture.lessons[Math.min(state.step, lecture.lessons.length - 1)]!;
   const currentLesson = state.selectedTime > 0 ? lecture.lessons[state.selectedTime - 1]! : undefined;
   const frames = playbackFrames(lecture);
@@ -29,12 +31,18 @@ export function ProgressLecture({ chapter, navigation, lectureIndex }: { chapter
   const normalStep = frames.filter(item => item.time <= state.selectedTime).length;
   const action = frame?.lesson.action;
   const actionLane = action?.type === 'frontier' || action?.type === 'observe' ? action.lane
-    : frame?.lesson.target === 'detail' || frame?.lesson.target === 'axis' ? 'revenue' : frame?.lesson.target;
+    : frame?.lesson.target === 'detail' || frame?.lesson.target === 'axis' || frame?.lesson.target === 'metrics' || frame?.lesson.target === 'lag' || frame?.lesson.target === 'lanes' ? 'revenue' : frame?.lesson.target;
   const current = currentLesson?.snapshot ?? lecture.initial;
   const caseStudy = currentLesson?.caseStudy ?? lecture.initialCase;
   const pending = state.guided && !state.revealed;
   const target = state.guided ? lesson.target : undefined;
-  const active = target && target !== 'axis' && target !== 'detail' ? target : selected;
+  const primary = pending ? lesson.target : lesson.focus ?? lesson.target;
+  const focus = useGuidedFocus(`${state.guided}:${state.step}:${state.revealed}`, [primary, ...(!pending ? lesson.related ?? [] : [])], refs,
+    { axis: 'Logical-time axis', lanes: 'Aligned progress lanes', orders: 'Orders', payments: 'Payments', join: 'Paid orders', revenue: 'Revenue', detail: 'Current evidence', metrics: 'Progress overview', lag: 'Lag breakdown' });
+  const lane = state.guided ? focus.id : target;
+  const active = lane === 'orders' || lane === 'payments' || lane === 'join' || lane === 'revenue' ? lane
+    : target === 'orders' || target === 'payments' || target === 'join' || target === 'revenue' ? target : selected;
+  const guidedPrevious = !pending && lesson.action.type !== 'fixture' ? state.step > 0 ? lecture.lessons[state.step - 1]!.snapshot : lecture.initial : undefined;
   useEffect(() => { if (helpOpen) dispatch({ type: 'pause' }); }, [helpOpen, dispatch]);
   // Keep concept-only checkpoints in the guide, while normal playback shows actions.
   useEffect(() => {
@@ -58,7 +66,7 @@ export function ProgressLecture({ chapter, navigation, lectureIndex }: { chapter
         onInspect={() => dispatch({ type: 'pause' })}
         showLimit={currentLesson?.showLimit ?? lectureIndex === 2} upcoming={pending}
         caseLabel={caseStudy?.label}
-        previous={state.guided || action?.type === 'fixture' ? undefined : frame?.previous}
+        previous={state.guided ? guidedPrevious : action?.type === 'fixture' ? undefined : frame?.previous}
         activity={!state.guided && frame && actionLane ? { lane: actionLane, text: playbackExplanation(frame.lesson, frame.previous) } : undefined}
         caption={pending ? `Predict · ${lesson.title}` : caseStudy?.transition ?? (frame ? `Step ${normalStep}: ${frame.lesson.title}` : 'Next change / Run: arrivals and progress. Key explains symbols.')} />}
       playback={<div className="relation-playback-controls" aria-label="Scenario playback">
@@ -68,12 +76,11 @@ export function ProgressLecture({ chapter, navigation, lectureIndex }: { chapter
           <Button data-walkthrough="next-change" disabled={state.guided || state.playing || normalStep === frames.length} onClick={() => move(true)}>{caseStudy ? 'Next case' : 'Next change'}<ArrowRight size={14} aria-hidden="true" /></Button>
         </div>
       </div>} />
-    <Spotlight open={state.guided} targetRef={refs[lesson.target]} step={Math.min(state.step + 1, lecture.lessons.length)} total={lecture.lessons.length}
+    <Spotlight open={state.guided} {...focus.props} step={Math.min(state.step + 1, lecture.lessons.length)} total={lecture.lessons.length}
       title={lesson.title} description={<span className="progress-lesson-text"><LessonText content={progressText(pending ? lesson.before! : lesson.explanation)} /></span>}
-      phaseLabel={pending ? 'Predict the effect' : 'Explanation'} visual={null} onClose={() => dispatch({ type: 'close-guided' })}>
-      <Button disabled={state.step === 0 && (!lesson.before || !state.revealed)} onClick={() => dispatch({ type: 'back' })}>Back</Button>
-      {pending ? <Button variant="primary" onClick={() => dispatch({ type: 'reveal' })}>Show effect</Button>
-        : <Button variant="primary" onClick={() => dispatch({ type: 'next' })}>{state.step === lecture.lessons.length - 1 ? 'Finish tutorial' : 'Next'}</Button>}
-    </Spotlight>
+      phaseLabel={pending ? 'Predict the effect' : 'Explanation'} visual={null} onClose={() => dispatch({ type: 'close-guided' })}
+      navigation={{ backDisabled: state.step === 0 && (!lesson.before || !state.revealed), onBack: () => dispatch({ type: 'back' }),
+        onNext: () => dispatch({ type: pending ? 'reveal' : 'next' }),
+        nextLabel: pending ? 'Show effect' : state.step === lecture.lessons.length - 1 ? 'Finish tutorial' : 'Next' }} />
   </>;
 }

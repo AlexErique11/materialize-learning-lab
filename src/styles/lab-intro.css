@@ -1,0 +1,168 @@
+.lab-intro-screen {
+  --intro-background: oklch(97% 0.015 300);
+  --intro-text: oklch(26% 0.055 300);
+  --intro-muted: oklch(50% 0.055 300);
+  position: fixed;
+  inset: 0;
+  top: var(--header-height);
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow: hidden;
+  background: var(--intro-background);
+  color: var(--intro-text);
+  opacity: 1;
+  transform: translateX(0);
+  transition-property: transform;
+  animation-name: lab-intro-screen-arrive;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
+}
+
+:root[data-theme='dark'] .lab-intro-screen {
+  --intro-background: oklch(20% 0.035 300);
+  --intro-text: oklch(94% 0.018 300);
+  --intro-muted: oklch(73% 0.055 300);
+}
+
+.lab-intro-content {
+  display: grid;
+  justify-items: center;
+  gap: 20px;
+  transform: translateY(-12px);
+}
+
+.lab-intro-art {
+  position: relative;
+  width: min(260px, 62vw, 45vh);
+  aspect-ratio: 360 / 390;
+}
+
+.lab-intro-flask {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  animation: lab-intro-arrive 260ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.lab-intro-vessel {
+  transform-origin: 180px 350px;
+  animation: lab-intro-react 1140ms 80ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.lab-intro-liquid {
+  transform-origin: 180px 230px;
+  animation: lab-intro-slosh 1100ms 100ms ease-out both;
+}
+
+.lab-intro-bubble {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: lab-intro-rise 940ms cubic-bezier(0.32, 0.1, 0.45, 1) both;
+}
+
+.lab-intro-bubble-one { animation-delay: 140ms; }
+.lab-intro-bubble-two { animation-delay: 300ms; }
+.lab-intro-bubble-three { animation-delay: 460ms; }
+
+.lab-intro-escaped-bubble {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+  animation: lab-intro-escape 460ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.lab-intro-escaped-bubble-one { animation-delay: 850ms; }
+.lab-intro-escaped-bubble-two { animation-delay: 1030ms; }
+
+.lab-intro-shadow {
+  position: absolute;
+  inset: auto 21% 3%;
+  height: 7px;
+  border-radius: 50%;
+  background: oklch(55% 0.09 300 / 0.12);
+  transform: scaleX(0.9);
+}
+
+.lab-intro-copy { text-align: center; }
+
+.lab-intro-label {
+  margin: 0 0 7px;
+  color: var(--intro-muted);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+}
+
+.lab-intro-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.025em;
+}
+
+.lab-intro-screen[data-phase='revealing'] {
+  transform: translateX(-100%);
+  pointer-events: none;
+}
+
+@keyframes lab-intro-arrive {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes lab-intro-screen-arrive {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes lab-intro-react {
+  0%, 100% { transform: rotate(0); }
+  17% { transform: rotate(-3deg); }
+  34% { transform: rotate(3deg); }
+  52% { transform: rotate(-2deg); }
+  70% { transform: rotate(1deg); }
+  85% { transform: rotate(-0.4deg); }
+}
+
+@keyframes lab-intro-slosh {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(4deg); }
+  40% { transform: rotate(-4deg); }
+  60% { transform: rotate(2deg); }
+  80% { transform: rotate(-1deg); }
+}
+
+@keyframes lab-intro-rise {
+  0% { opacity: 0; transform: translateY(0) scale(0.6); }
+  16% { opacity: 1; }
+  72% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-139px) scale(0.9); }
+}
+
+@keyframes lab-intro-escape {
+  0% { opacity: 0; transform: translateY(0) scale(0.7); }
+  20% { opacity: 0.8; }
+  100% { opacity: 0; transform: translateY(-28px) scale(1); }
+}
+
+@media (max-height: 500px) {
+  .lab-intro-content { gap: 8px; transform: none; }
+  .lab-intro-art { width: min(190px, 43vh); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lab-intro-screen { animation: none; transition: none; transform: none; }
+  .lab-intro-flask,
+  .lab-intro-vessel,
+  .lab-intro-liquid,
+  .lab-intro-bubble,
+  .lab-intro-escaped-bubble { animation: none; }
+}

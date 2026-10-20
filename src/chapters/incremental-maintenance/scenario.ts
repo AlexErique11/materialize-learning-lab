@@ -142,7 +142,7 @@ const inputExplanations: readonly LessonTextContent[] = [
     ' and no replacement; the other orders remain.',
   ],
 ];
-export const lessons: readonly { time: number; title: string; stage: StageId; explanation: LessonTextContent; before?: LessonTextContent }[] = [
+export const lessons: readonly { time: number; title: string; stage: StageId; related?: readonly (StageId | 'metrics')[]; explanation: LessonTextContent; before?: LessonTextContent }[] = [
   {
     time: 0, title: 'Compute the starting result', stage: 'source',
     explanation: [
@@ -172,7 +172,8 @@ export const lessons: readonly { time: number; title: string; stage: StageId; ex
   },
   ...changes.flatMap((change, index) => [
     { time: index + 1, title: change.title, stage: 'source' as const, before: change.before, explanation: inputExplanations[index]! },
-    { time: index + 1, title: `${change.title}: result`, stage: (index === 0 || index === 2 ? 'filter' : 'projection') as StageId, explanation: change.explanation },
+    { time: index + 1, title: `${change.title}: result`, stage: (index === 0 || index === 2 ? 'filter' : 'projection') as StageId,
+      related: (index === 0 || index === 2 ? ['projection'] : index === 1 ? ['filter'] : index === 4 ? ['metrics'] : []) as (StageId | 'metrics')[], explanation: change.explanation },
   ]),
   {
     time: changes.length, title: 'Maintain the result from changes', stage: 'projection',

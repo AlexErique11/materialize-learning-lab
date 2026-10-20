@@ -1,3 +1,4 @@
+import { advanceGuidedLesson } from './guided-run';
 import { expect, test } from './fixtures';
 import { lessons } from '../../src/chapters/incremental-maintenance/scenario';
 
@@ -94,7 +95,7 @@ test('guided lecture predicts effects, completes, restores focus and keeps SQL a
     expect(card!.x).toBeGreaterThanOrEqual(0);
     expect(card!.x + card!.width).toBeLessThanOrEqual(page.viewportSize()!.width);
     expect(card!.y + card!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
-    await dialog.getByRole('button', { name: index === lessons.length - 1 ? 'Finish tutorial' : 'Next', exact: true }).click();
+    await advanceGuidedLesson(page, index === lessons.length - 1);
   }
   await expect(page.locator('.maintenance-complete')).toHaveText('Tutorial completed');
   await expect(page.getByRole('button', { name: 'Start guided run', exact: true })).toBeFocused();

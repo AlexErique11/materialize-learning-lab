@@ -23,6 +23,6 @@ export function ChapterCompletionDialog({ chapter, open, onClose }: {
       <section><RefreshCw aria-hidden="true" /><h3>Updates &amp; batches</h3><p>Replace old row values with new ones, and explain why an unchanged total can still hide a changed relation.</p></section>
     </div>
     <div className="chapter-completion-takeaway"><strong>The key idea</strong><p>The current relation is the starting state plus the net signed diffs for each full row. Apply complete timestamp batches, and distinguish a change in copies from a change in row values.</p></div>
-    {nextChapter && <div className="chapter-completion-next"><div><span className="eyebrow">Up next · Chapter {nextChapter.number}</span><p>{nextChapter.shortTitle}</p></div><Button variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button></div>}
+    {nextChapter && <div className="chapter-completion-next"><div><span className="eyebrow">Up next · Chapter {nextChapter.number}</span><p>{nextChapter.shortTitle}</p></div><Button data-dialog-primary aria-keyshortcuts="Enter" variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button></div>}
   </Dialog>;
 }

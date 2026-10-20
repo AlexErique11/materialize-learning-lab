@@ -3,6 +3,8 @@ import { ArrowRight, Database, FileCode2, Layers, Search, Settings2 } from 'luci
 import { Button } from '../../components/ui/Button';
 import { Table } from '../../components/ui/Table';
 import { RelationHelp } from '../../components/lesson/RelationHelp';
+import { useChangeMotion } from '../../motion/useChangeMotion';
+import { useFlowEdgeMotion, useFlowGraphMotion } from './useFlowGraphMotion';
 import { flowEdges, panelDescriptions, panelNames, type FlowEdge, type FlowNodeId } from './flowGraphModel';
 import { revenueFor, pathDescriptions, type DiagramPanel, type ObjectSnapshot, type QueryObservation, type RevenueRow, type ServingCluster } from './simulation';
 
@@ -13,7 +15,9 @@ function RevenueTable({ rows, caption }: { rows: readonly RevenueRow[]; caption:
 
 function Connectors({ edges, canvasRef }: { edges: readonly FlowEdge[]; canvasRef: RefObject<HTMLDivElement | null> }) {
   const markerId = useId().replace(/:/g, '');
-  const [paths, setPaths] = useState<readonly { edge: FlowEdge; d: string }[]>([]);
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [paths, setPaths] = useState<readonly { edge: FlowEdge; d: string }[] | null>(null);
+  useFlowEdgeMotion(svgRef, paths !== null);
   useEffect(() => {
     const canvas = canvasRef.current!;
     const measure = () => {
@@ -60,9 +64,9 @@ function Connectors({ edges, canvasRef }: { edges: readonly FlowEdge[]; canvasRe
     window.addEventListener('resize', measure);
     return () => { observer.disconnect(); window.removeEventListener('resize', measure); };
   }, [edges, canvasRef]);
-  return <svg className="flow-connectors" aria-label="Maintenance, definition and query connections" role="img">
+  return <svg ref={svgRef} className="flow-connectors" aria-label="Maintenance, definition and query connections" role="img">
     <defs>{(['maintenance', 'query', 'definition'] as const).map(kind => <marker key={kind} id={`${markerId}-${kind}`} markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto-start-reverse"><path d="M 0 0 L 7 3.5 L 0 7 Z" className={`flow-arrow-${kind}`} /></marker>)}</defs>
-    {paths.map(({ edge, d }) => <path key={edge.id} d={d} className={`flow-edge flow-edge-${edge.kind}`} markerEnd={`url(#${markerId}-${edge.kind})`}
+    {paths?.map(({ edge, d }) => <path key={edge.id} d={d} data-flow-edge={edge.id} className={`flow-edge flow-edge-${edge.kind}`} markerEnd={`url(#${markerId}-${edge.kind})`}
       data-source={edge.source} data-target={edge.target} data-kind={edge.kind}><title>{edge.label}</title></path>)}
   </svg>;
 }
@@ -75,15 +79,17 @@ const nodePanel = (node: FlowNodeId): DiagramPanel => node.startsWith('a-') ? 'a
 function Overview({ panels, edges, selected, onSelect }: { panels: readonly DiagramPanel[]; edges: readonly FlowEdge[]; selected: DiagramPanel; onSelect: (panel: DiagramPanel) => void }) {
   const seen = new Set<string>();
   const arrowId = useId().replace(/:/g, '');
+  const svgRef = useRef<SVGSVGElement>(null);
+  useFlowEdgeMotion(svgRef);
   return <nav className="flow-overview" aria-label="Flow graph overview">
-    <svg viewBox="0 0 100 104" preserveAspectRatio="none" aria-hidden="true"><defs>{(['maintenance', 'query', 'definition'] as const).map(kind => <marker key={kind} id={`${arrowId}-${kind}`} markerWidth="3" markerHeight="3" refX="3" refY="1.5" orient="auto"><path d="M 0 0 L 3 1.5 L 0 3 Z" className={`flow-arrow-${kind}`} /></marker>)}</defs>{edges.map(edge => {
+    <svg ref={svgRef} viewBox="0 0 100 104" preserveAspectRatio="none" aria-hidden="true"><defs>{(['maintenance', 'query', 'definition'] as const).map(kind => <marker key={kind} id={`${arrowId}-${kind}`} markerWidth="3" markerHeight="3" refX="3" refY="1.5" orient="auto"><path d="M 0 0 L 3 1.5 L 0 3 Z" className={`flow-arrow-${kind}`} /></marker>)}</defs>{edges.map(edge => {
       const source = nodePanel(edge.source), target = nodePanel(edge.target);
       const key = `${edge.kind}-${source}-${target}`;
       if (source === target || seen.has(key)) return null;
       seen.add(key);
       const [x1, y1] = overviewPositions[source], [x2, y2] = overviewPositions[target];
       const endX = x2 - (x2 > x1 ? 9 : -9);
-      return <path key={key} d={`M ${x1} ${y1} H ${(x1 + x2) / 2} V ${y2} H ${endX}`} className={`flow-edge flow-edge-${edge.kind}`} vectorEffect="non-scaling-stroke" markerEnd={`url(#${arrowId}-${edge.kind})`} />;
+      return <path key={key} data-flow-edge={key} d={`M ${x1} ${y1} H ${(x1 + x2) / 2} V ${y2} H ${endX}`} className={`flow-edge flow-edge-${edge.kind}`} vectorEffect="non-scaling-stroke" markerEnd={`url(#${arrowId}-${edge.kind})`} />;
     })}</svg>
     {panels.map(panel => <Button key={panel} aria-pressed={selected === panel} style={{ left: `${overviewPositions[panel][0]}%`, top: `${overviewPositions[panel][1]}%` }} onClick={() => onSelect(panel)}>{panelNames[panel]}</Button>)}
   </nav>;
@@ -94,6 +100,10 @@ export function FlowGraph({ snapshot, showClusterB, selectedPanel, onSelectPanel
   panelRefs?: Partial<Record<DiagramPanel, RefObject<HTMLElement | null>>>; query?: QueryObservation | null; pending?: boolean; compact?: boolean;
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
+  const graphRef = useRef<HTMLDivElement>(null);
+  const queryRef = useRef<HTMLDivElement>(null);
+  useFlowGraphMotion(graphRef, selectedPanel);
+  useChangeMotion(queryRef, query, true, 'flow-query', 0);
   const { setup } = snapshot;
   const rows = revenueFor(snapshot.orders, setup.stacked);
   const finalDefinitions = [setup.view ? 'revenue_v' : '', setup.materialized ? 'revenue_mv' : ''].filter(Boolean).join(' · ');
@@ -114,22 +124,22 @@ export function FlowGraph({ snapshot, showClusterB, selectedPanel, onSelectPanel
       {heading(id, <Layers size={15} aria-hidden="true" />, 'Local compute & memory')}
       <div className="flow-cluster-body">
         <div className="flow-compute flow-card" data-flow-node={`${id}-compute`} data-present={viewIndex || computing}>
-          <Settings2 size={17} aria-hidden="true" /><strong>{viewIndex ? 'Maintain view' : computing ? 'Compute query' : 'Query compute'}</strong>
-          <span>{viewIndex ? 'GROUP BY region' : computing ? 'Run saved SQL here' : 'Idle'}</span>
-          <small>{viewIndex ? 'On input changes' : computing ? 'For the last query' : 'No view computation'}</small>
+          <Settings2 size={17} aria-hidden="true" /><strong data-motion-value>{viewIndex ? 'Maintain view' : computing ? 'Compute query' : 'Query compute'}</strong>
+          <span data-motion-value>{viewIndex ? 'GROUP BY region' : computing ? 'Run saved SQL here' : 'Idle'}</span>
+          <small data-motion-value>{viewIndex ? 'On input changes' : computing ? 'For the last query' : 'No view computation'}</small>
         </div>
         <div className="flow-indexes">
           {viewIndex && <div className="flow-card flow-index" data-flow-node={`${id}-view-index`}><strong><Layers size={13} aria-hidden="true" />revenue_v_{id}</strong><span>Full result · memory</span><RevenueTable rows={rows} caption={`${panelNames[id]} view index result`} /></div>}
           {mvIndex && <div className="flow-card flow-index" data-flow-node={`${id}-mv-index`}><strong><Layers size={13} aria-hidden="true" />revenue_mv_{id}</strong><span>Durable output · local copy</span><RevenueTable rows={rows} caption={`${panelNames[id]} materialized view index result`} /></div>}
-          {!viewIndex && !mvIndex && <div className="flow-card flow-empty"><Layers size={18} aria-hidden="true" /><strong>No local index</strong><span>Other clusters’ indexes<br />are unavailable here</span></div>}
+          {!viewIndex && !mvIndex && <div className="flow-card flow-empty" data-motion-value><Layers size={18} aria-hidden="true" /><strong>No local index</strong><span>Other clusters’ indexes<br />are unavailable here</span></div>}
         </div>
       </div>
-      <div className="flow-query-endpoint" data-flow-node={`${id}-query`} data-active={observing}>
+      <div className="flow-query-endpoint" data-motion-value data-flow-node={`${id}-query`} data-active={observing}>
         <Search size={12} aria-hidden="true" />{observing ? `SELECT ${query.object}` : `Queries in ${id.toUpperCase()}`}<span>{observing ? query.path === 'memory' ? 'Local memory' : query.path === 'storage' ? 'Durable storage' : query.path === 'compute' ? 'Compute query' : 'Unavailable' : 'Ready'}</span>
       </div>
     </section>;
   };
-  return <div className="object-diagram flow-graph" data-testid="object-diagram" data-selected-panel={selectedPanel} data-cross-cluster={showClusterB} data-pending={pending}>
+  return <div ref={graphRef} className="object-diagram flow-graph" data-testid="object-diagram" data-selected-panel={selectedPanel} data-cross-cluster={showClusterB} data-pending={pending}>
     <div className="flow-legend" aria-label="Connection legend"><span><i className="flow-key-maintenance" />Maintenance</span><span><i className="flow-key-query" />Last query read</span><span><i className="flow-key-definition" />SQL definition</span><small>Completed steps · lag and hydration omitted</small></div>
     <Overview panels={panels} edges={edges} selected={selectedPanel} onSelect={onSelectPanel} />
     {compact && <label className="flow-panel-picker">Inspect<select aria-label="Diagram panel" value={selectedPanel} onChange={event => onSelectPanel(event.target.value as DiagramPanel)}>{panels.map(panel => <option key={panel} value={panel}>{panelNames[panel]}</option>)}</select></label>}
@@ -137,7 +147,7 @@ export function FlowGraph({ snapshot, showClusterB, selectedPanel, onSelectPanel
       <Connectors edges={edges} canvasRef={canvasRef} />
       <section ref={panelRefs?.definitions} className="flow-panel flow-definitions" data-panel="definitions" data-flow-node="definitions" aria-label="Saved definitions">
         {heading('definitions', <FileCode2 size={15} aria-hidden="true" />, 'SQL definitions, not result rows')}
-        <code>{definitions || 'No objects created · start with a SQL definition'}</code>
+        <code data-motion-value>{definitions || 'No objects created · start with a SQL definition'}</code>
       </section>
       <section ref={panelRefs?.input} className="flow-panel flow-input" data-panel="input" data-flow-node="input" aria-label="Input">
         {heading('input', <Database size={15} aria-hidden="true" />)}<strong className="flow-object-name">orders</strong>
@@ -147,16 +157,16 @@ export function FlowGraph({ snapshot, showClusterB, selectedPanel, onSelectPanel
       {cluster('a')}{showClusterB && cluster('b')}
       <section ref={panelRefs?.transform} className="flow-panel flow-transform" data-panel="transform" data-flow-node="transform" data-present={setup.materialized} aria-label="Transform">
         {heading('transform', <Settings2 size={15} aria-hidden="true" />, 'Compute cluster')}
-        <strong>{setup.materialized ? 'Maintain revenue_mv' : 'No materialized view'}</strong>
-        <code>{setup.materialized ? 'GROUP BY region · SUM(amount)' : 'No durable-output computation'}</code>
+        <strong data-motion-value>{setup.materialized ? 'Maintain revenue_mv' : 'No materialized view'}</strong>
+        <code data-motion-value>{setup.materialized ? 'GROUP BY region · SUM(amount)' : 'No durable-output computation'}</code>
       </section>
       <section ref={panelRefs?.durable} className="flow-panel flow-durable" data-panel="durable" data-flow-node="durable" data-present={setup.materialized} aria-label="Durable output">
         {heading('durable', <Database size={15} aria-hidden="true" />, 'Outside serving memory')}
-        {setup.materialized ? <><strong className="flow-object-name">revenue_mv</strong><RevenueTable rows={rows} caption="Durable materialized output" /></> : <div className="flow-empty"><strong>Not created</strong><span>No persisted query output</span></div>}
+        {setup.materialized ? <><strong className="flow-object-name">revenue_mv</strong><RevenueTable rows={rows} caption="Durable materialized output" /></> : <div className="flow-empty" data-motion-value><strong>Not created</strong><span>No persisted query output</span></div>}
       </section>
     </div>
-    <div className="flow-inspector"><strong>{panelNames[selectedPanel]}</strong><span>{panelDescriptions[selectedPanel]}</span></div>
-    {(!compact || query) && <div className="object-query-result" aria-live="polite" data-testid="object-query-result">
+    <div className="flow-inspector" data-motion-value><strong>{panelNames[selectedPanel]}</strong><span>{panelDescriptions[selectedPanel]}</span></div>
+    {(!compact || query) && <div ref={queryRef} className="object-query-result" aria-live="polite" data-testid="object-query-result">
       <strong><Search size={14} aria-hidden="true" />{query ? compact ? `Query ${query.cluster.toUpperCase()}` : `Last query · Cluster ${query.cluster.toUpperCase()}` : 'No query run yet'}</strong>
       {query ? <>{!compact && <span className="object-query-route"><code>{query.object}</code><ArrowRight size={14} aria-hidden="true" />{query.path === 'memory' ? 'Local memory' : query.path === 'compute' ? 'Compute query' : query.path === 'storage' ? 'Durable storage' : 'Unavailable'}</span>}
         {compact && <span className="object-query-route">{query.path === 'memory' ? 'Memory' : query.path === 'compute' ? 'Compute' : query.path === 'storage' ? 'Storage' : 'Unavailable'}</span>}

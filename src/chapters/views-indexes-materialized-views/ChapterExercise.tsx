@@ -66,7 +66,7 @@ export function ObjectChapterExercise({ chapter, navigation, exerciseIndex }: { 
       <div className="object-recap"><p>You designed one transformation with two serving clusters.</p>
         <ul><li><strong>Regular views</strong> save SQL definitions.</li><li><strong>Indexes</strong> maintain complete results in their own cluster’s memory.</li><li><strong>Materialized views</strong> maintain durable output readable across clusters.</li></ul>
         <p>Removing a serving index leaves the materialized view and its durable result available. Maintaining that output still uses transform memory; creation and restarts require hydration.</p>
-        {nextChapter && <Button variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button>}
+        {nextChapter && <Button data-dialog-primary aria-keyshortcuts="Enter" variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button>}
       </div>
     </Dialog>
   </>;

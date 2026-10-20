@@ -176,6 +176,12 @@
   font-size: 14px;
   gap: 7px;
   color: var(--lab-muted);
+  transition: color 140ms ease;
+}
+
+.app-shell-guided-labs .sidebar-back:hover,
+.app-shell-guided-labs .sidebar-back:focus-visible {
+  color: var(--lab-text);
 }
 
 .sidebar-title {

@@ -1,6 +1,10 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { useId, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { IconButton } from './IconButton';
+import { useDialogMotion } from '../../motion/useDialogMotion';
+import { useLabShortcuts } from '../../hooks/useLabShortcuts';
+
+const dialogShortcuts = { Enter: '[data-dialog-primary]' };
 
 interface DialogProps {
   open: boolean;
@@ -15,14 +19,10 @@ export function Dialog({ open, onClose, title, eyebrow, children, className = ''
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
 
-  useEffect(() => {
-    const dialog = ref.current;
-    if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
-    return () => {
-      if (dialog.open) dialog.close();
-    };
+  const requestClose = useDialogMotion(ref, open, onClose);
+  useLabShortcuts(ref, dialogShortcuts, open);
+  useLayoutEffect(() => {
+    if (open) ref.current?.querySelector<HTMLButtonElement>('[data-dialog-primary]')?.focus({ preventScroll: true });
   }, [open]);
 
   return (
@@ -32,7 +32,7 @@ export function Dialog({ open, onClose, title, eyebrow, children, className = ''
       className={`dialog ${className}`}
       onCancel={(event) => {
         event.preventDefault();
-        onClose();
+        requestClose();
       }}
     >
       <div className="flex items-start justify-between gap-4 border-b border-border p-6">
@@ -42,7 +42,7 @@ export function Dialog({ open, onClose, title, eyebrow, children, className = ''
             {title}
           </h2>
         </div>
-        <IconButton label={`Close ${title}`} onClick={onClose} autoFocus>
+        <IconButton data-dialog-close label={`Close ${title}`} onClick={requestClose} autoFocus>
           <X size={18} />
         </IconButton>
       </div>

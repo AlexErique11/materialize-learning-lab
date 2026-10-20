@@ -16,6 +16,26 @@ import { useWalkthrough } from '../../components/walkthrough/WalkthroughProvider
 import { Button } from '../../components/ui/Button';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { usePageTitle } from '../../hooks/usePageTitle';
+import { useLabShortcuts } from '../../hooks/useLabShortcuts';
+import { useWorkspaceMotion } from '../../motion/useWorkspaceMotion';
+
+const lectureShortcuts = {
+  ArrowRight: '[data-walkthrough="next-change"]',
+  // The playback pair shares this order for changes, timestamps, and cases.
+  ArrowLeft: '.relation-playback-controls button:has(+ button[data-walkthrough="next-change"])',
+  ' ': '[data-walkthrough="run"]',
+  r: '[data-shortcut="reset"]',
+  s: '.sql-objectives-panel [data-dialog-close], [data-walkthrough="sql"]',
+  Enter: '[data-walkthrough="guided"]',
+};
+const exerciseShortcuts = {
+  Enter: '[data-walkthrough="check"]:not(:disabled), [data-shortcut="exercise-forward"]',
+  ArrowRight: '[data-shortcut="exercise-forward"]',
+  r: '[data-shortcut="reset"]',
+  s: '.sql-objectives-panel [data-dialog-close], [data-walkthrough="sql"]',
+  h: '[data-walkthrough="hint"]',
+  'Control+Enter': '[data-walkthrough="answer"]',
+};
 
 interface SimulationControls {
   completed: number;
@@ -91,11 +111,13 @@ export function GuidedLabScreen({
   const [tipFits, setTipFits] = useState(false);
   const fitViewport = Boolean(simulation || controls);
   const available = Boolean(simulation || controls);
+  useLabShortcuts(pageRef, simulation ? lectureShortcuts : exerciseShortcuts, available);
   const { open: helpOpen } = useWalkthrough();
   useEffect(() => {
     if (helpOpen) setReferenceOpen(false);
   }, [helpOpen]);
   const { pathname } = useLocation();
+  useWorkspaceMotion(pageRef, pathname);
   useLayoutEffect(() => {
     if (showTip !== 'when-space') return;
     const page = pageRef.current;
@@ -187,7 +209,7 @@ export function GuidedLabScreen({
               <div className="guided-lab-progress reserved-lab-progress" aria-hidden="true" />
             ))}
           {showReference && (
-            <Button data-walkthrough="sql" onClick={() => setReferenceOpen(true)}>
+            <Button data-walkthrough="sql" aria-keyshortcuts="S" onClick={() => setReferenceOpen(true)}>
               SQL &amp; Objectives
             </Button>
           )}
@@ -195,11 +217,11 @@ export function GuidedLabScreen({
             controls.actions
           ) : (
             <>
-              <Button disabled={!simulation} onClick={simulation?.onReset}>
+              <Button data-shortcut="reset" aria-keyshortcuts="R" disabled={!simulation} onClick={simulation?.onReset}>
                 Reset
               </Button>
 
-              <Button data-walkthrough="run" disabled={!simulation} onClick={simulation?.onRun}>
+              <Button data-walkthrough="run" aria-keyshortcuts="Space" disabled={!simulation} onClick={simulation?.onRun}>
                 {simulation?.playing ? (
                   <Pause size={13} aria-hidden="true" />
                 ) : (
@@ -210,6 +232,7 @@ export function GuidedLabScreen({
 
               <Button
                 data-walkthrough="guided"
+                aria-keyshortcuts="Enter"
                 variant="primary"
                 disabled={!simulation}
                 onClick={simulation?.onStartGuidedRun}

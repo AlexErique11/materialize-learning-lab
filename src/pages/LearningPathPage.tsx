@@ -33,7 +33,7 @@ export function LearningPathPage() {
       />
       <div className="learning-path-grid">
         <section className="learning-path-card" aria-labelledby="guided-labs-title">
-          <Link to="/labs" className="learning-path-card-header" aria-labelledby="guided-labs-title">
+          <Link to="/labs" state={{ labIntro: true }} className="learning-path-card-header" aria-labelledby="guided-labs-title">
             <div>
               <h2 id="guided-labs-title">Guided labs</h2>
               <p>Step-by-step tutorials to learn the core concepts of Materialize.</p>

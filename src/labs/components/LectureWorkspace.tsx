@@ -22,7 +22,8 @@ export function LectureWorkspace({ layout, metrics, visualization, playback, gui
     const measure = () => {
       const css = getComputedStyle(workspace);
       const number = (name: string) => parseFloat(css.getPropertyValue(name));
-      const metricsHeight = workspace.querySelector('.relation-metrics')?.getBoundingClientRect().height ?? 0;
+      const metricsElement = workspace.querySelector('.relation-metrics');
+      const metricsHeight = metricsElement?.classList.contains('relation-guide-detached-target') ? 0 : metricsElement?.getBoundingClientRect().height ?? 0;
       const referenceMetricsHeight = workspace.querySelector('.lecture-metric-measure .relation-metric')!.getBoundingClientRect().height;
       const playbackHeight = workspace.querySelector('.relation-playback-controls')!.getBoundingClientRect().height;
       const pagePadding = parseFloat(getComputedStyle(workspace.closest('.guided-lab-page')!).paddingBottom);

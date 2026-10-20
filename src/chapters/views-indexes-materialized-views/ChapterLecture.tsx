@@ -7,6 +7,8 @@ import { useWalkthrough } from '../../components/walkthrough/WalkthroughProvider
 import { Button } from '../../components/ui/Button';
 import { Spotlight } from '../../components/ui/Spotlight';
 import { LessonText } from '../../components/lesson/LessonText';
+import { useGuidedFocus } from '../../components/lesson/useGuidedFocus';
+import { panelNames } from './flowGraphModel';
 import { FlowGraph } from './FlowGraph';
 import { ObjectQueryControls } from './ObjectQueryControls';
 import { documentationLinks, objectLectures } from './scenario';
@@ -39,7 +41,9 @@ export function ObjectChapterLecture({ chapter, navigation, lectureIndex }: { ch
   useEffect(() => {
     if (state.selectedTime > 0) setSelectedPanel(lecture.lessons[state.selectedTime - 1]!.target);
   }, [state.selectedTime, lecture]);
-  const activePanel = introduction?.target ?? (state.guided ? lesson.target : selectedPanel);
+  const focus = useGuidedFocus(`${guided}:${introductionIndex}:${state.step}:${state.revealed}`,
+    [introduction?.target ?? lesson.target, ...(!introduction && !pending ? lesson.related ?? [] : [])], refs, panelNames);
+  const activePanel = guided ? focus.id : selectedPanel;
   const query = !guided && exploredQuery?.step === state.selectedTime ? exploredQuery.observation : current.query;
   const reset = () => { dispatch({ type: 'reset' }); setIntroductionIndex(null); setExploredQuery(null); setSelectedPanel('input'); setQueryObject('revenue_v'); setQueryCluster('a'); };
   const nextIntroduction = () => {
@@ -69,17 +73,16 @@ export function ObjectChapterLecture({ chapter, navigation, lectureIndex }: { ch
           <Button disabled={guided || state.playing || state.selectedTime === 0} onClick={() => { setExploredQuery(null); dispatch({ type: 'previous-change' }); }}><ArrowLeft size={14} aria-hidden="true" />Previous change</Button>
           <Button data-walkthrough="next-change" disabled={guided || state.playing || state.selectedTime === lecture.lessons.length} onClick={() => { setExploredQuery(null); dispatch({ type: 'next-change' }); }}>Next change<ArrowRight size={14} aria-hidden="true" /></Button></div>
       </div>} />
-    <Spotlight open={guided} targetRef={refs[introduction?.target ?? lesson.target]} step={introductionIndex === null ? lecture.introductions.length + Math.min(state.step + 1, lecture.lessons.length) : introductionIndex + 1} total={lecture.introductions.length + lecture.lessons.length}
+    <Spotlight open={guided} {...focus.props} step={introductionIndex === null ? lecture.introductions.length + Math.min(state.step + 1, lecture.lessons.length) : introductionIndex + 1} total={lecture.introductions.length + lecture.lessons.length}
       title={introduction?.title ?? lesson.title} description={<span className="object-lesson-text"><LessonText content={introduction?.explanation ?? (pending ? lesson.before : lesson.explanation)} /></span>} phaseLabel={introduction ? 'Learn the concept' : pending ? 'Predict the effect' : 'Explanation'}
       visual={introduction?.example ? <pre className="object-concept-example object-lesson-text"><code><LessonText content={introduction.example} /></code></pre> : null}
-      onClose={() => { setIntroductionIndex(null); dispatch({ type: 'close-guided' }); }}>
-      <Button disabled={introductionIndex === 0} onClick={() => {
+      onClose={() => { setIntroductionIndex(null); dispatch({ type: 'close-guided' }); }}
+      navigation={{ backDisabled: introductionIndex === 0, onBack: () => {
         if (introductionIndex !== null) setIntroductionIndex(introductionIndex - 1);
         else if (state.step === 0 && pending) { dispatch({ type: 'reset' }); setIntroductionIndex(lecture.introductions.length - 1); }
         else dispatch({ type: 'back' });
-      }}>Back</Button>
-      {introduction ? <Button variant="primary" onClick={nextIntroduction}>{introductionIndex === lecture.introductions.length - 1 ? 'Try the changes' : 'Next'}</Button>
-        : pending ? <Button variant="primary" onClick={() => dispatch({ type: 'reveal' })}>Show effect</Button> : <Button variant="primary" onClick={() => dispatch({ type: 'next' })}>{state.step === lecture.lessons.length - 1 ? 'Finish tutorial' : 'Next'}</Button>}
-    </Spotlight>
+      }, onNext: () => { if (introduction) nextIntroduction(); else dispatch({ type: pending ? 'reveal' : 'next' }); },
+      nextLabel: introduction ? introductionIndex === lecture.introductions.length - 1 ? 'Try the changes' : 'Next'
+        : pending ? 'Show effect' : state.step === lecture.lessons.length - 1 ? 'Finish tutorial' : 'Next' }} />
   </>;
 }

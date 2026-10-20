@@ -20,17 +20,20 @@ test('chapter overview lists collapse independently and start their content', as
   await expect(page.getByRole('heading', { name: chapter.shortTitle, exact: true })).toBeVisible();
   const tutorialList = page.getByRole('list', { name: 'Tutorials list' });
   const exerciseList = page.getByRole('list', { name: 'Exercises list' });
-  await expect(tutorialList.getByRole('listitem')).toHaveCount(2);
-  await expect(exerciseList.getByRole('listitem')).toHaveCount(2);
+  const tutorials = getChapterPages(chapter).filter((item) => item.sectionSlug === 'tutorial');
+  const exercises = getChapterPages(chapter).filter((item) => item.sectionSlug === 'exercises');
+  await expect(tutorialList.getByRole('listitem')).toHaveCount(tutorials.length);
+  await expect(exerciseList.getByRole('listitem')).toHaveCount(exercises.length);
   const resourcesToggle = page.locator('.chapter-learn-more > summary');
   const resourcesList = page.getByRole('list', { name: 'Documentation links' });
   await expect(resourcesList).not.toBeVisible();
   await resourcesToggle.focus();
   await page.keyboard.press('Enter');
   await expect(resourcesList).toBeVisible();
-  await expect(resourcesList.getByRole('link')).toHaveCount(3);
-  await expect(resourcesList.getByRole('link', { name: 'Temporal filters (time windows)' })).toHaveAttribute('href', 'https://materialize.com/docs/transform-data/patterns/temporal-filters/');
-  await expect(resourcesList.getByRole('link', { name: 'now() and mz_now() functions' })).toHaveAttribute('href', 'https://materialize.com/docs/sql/functions/now_and_mz_now/');
+  await expect(resourcesList.getByRole('link')).toHaveCount(chapter.documentationLinks!.length);
+  for (const resource of chapter.documentationLinks!) {
+    await expect(resourcesList.getByRole('link', { name: resource.title, exact: true })).toHaveAttribute('href', resource.href);
+  }
   await page.keyboard.press('Enter');
   await expect(resourcesList).not.toBeVisible();
   await expect(tutorialList).toBeVisible();
@@ -49,17 +52,17 @@ test('chapter overview lists collapse independently and start their content', as
   await expect(tutorialList).toBeVisible();
   await exerciseToggle.click();
   await expect(exerciseList).toBeVisible();
-  await page.getByRole('link', { name: 'Start tutorial: Order lifecycles', exact: true }).click();
-  await expect(page).toHaveURL('/labs/time-in-materialize/tutorial/order-lifecycles');
-  await expect(page.getByRole('heading', { name: 'Order lifecycles', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: `Start tutorial: ${tutorials[0]!.title}`, exact: true }).click();
+  await expect(page).toHaveURL(chapterContentPath(chapter, tutorials[0]!));
+  await expect(page.locator('.guided-lab-title h1')).toBeVisible();
   if (isMobile) await page.locator('.mobile-sidebar > summary').click();
   await page.getByRole('navigation', { name: 'Chapters' }).getByRole('link', { name: 'Time in Materialize overview', exact: true }).click();
   await expect(page).toHaveURL(chapterPath(chapter));
   await expect(tutorialList).toBeVisible();
   await expect(exerciseList).toBeVisible();
-  await page.getByRole('link', { name: 'Start exercise: Query order timelines', exact: true }).click();
-  await expect(page).toHaveURL('/labs/time-in-materialize/exercises/query-order-timelines');
-  await expect(page.getByRole('heading', { name: 'Query order timelines', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: `Start exercise: ${exercises[0]!.title}`, exact: true }).click();
+  await expect(page).toHaveURL(chapterContentPath(chapter, exercises[0]!));
+  await expect(page.locator('.guided-lab-title h1')).toBeVisible();
   const dimensions = await page.evaluate(() => ({ width: document.documentElement.scrollWidth, viewport: innerWidth }));
   expect(dimensions.width).toBeLessThanOrEqual(dimensions.viewport);
 });
@@ -83,6 +86,7 @@ test('overview illustrations keep a consistent frame when sections collapse near
         for (const section of await page.locator('.chapter-overview-section').all()) {
           if (await section.evaluate((el) => el.hasAttribute('open')) !== expanded)
             await section.locator('summary').click();
+          await expect(section).toHaveJSProperty('open', expanded);
         }
         const geometry = await page.locator('.chapter-overview-hero').evaluate((hero) => {
           const text = hero.querySelector('div')!.getBoundingClientRect();
@@ -197,7 +201,7 @@ test('section overviews have their own URLs and only registered pages', async ({
   await expect(page.getByRole('heading', { name: 'Exercises', exact: true })).toBeVisible();
   await expect(page.locator('.guided-lab-canvas')).toBeEmpty();
   await expect(page.locator('.guided-lab-canvas')).toHaveAttribute('aria-hidden', 'true');
-  await expect(page.getByRole('list', { name: 'Exercises pages' }).getByRole('link')).toHaveCount(2);
+  await expect(page.getByRole('list', { name: 'Exercises pages' }).getByRole('link')).toHaveCount(getChapterPages(other).filter((item) => item.sectionSlug === 'exercises').length);
 });
 
 test('sidebar subsections are keyboard-operable and reflect the active page', async ({

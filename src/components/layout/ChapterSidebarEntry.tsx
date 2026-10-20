@@ -4,6 +4,7 @@ import { NavLink, useLocation, useParams } from 'react-router';
 import { getChapterSections } from '../../chapters/chapterOutline';
 import { chapterPath, formatChapterNumber, type ChapterDefinition } from '../../chapters/chapterRegistry';
 import { ChapterSidebarSection } from './ChapterSidebarSection';
+import { AnimatedRegion } from '../../motion/AnimatedRegion';
 
 interface ChapterSidebarEntryProps {
   chapter: ChapterDefinition;
@@ -74,7 +75,7 @@ export function ChapterSidebarEntry({ chapter, compact }: ChapterSidebarEntryPro
         )}
       </div>
       {!compact && (
-        <div id={branchId} className="chapter-sections" hidden={!expanded}>
+        <AnimatedRegion id={branchId} className="chapter-sections" open={expanded}>
           <NavLink to={chapterPath(chapter)} end className="chapter-overview-link" aria-label={`${chapter.shortTitle} overview`}>
             <span className="chapter-group-dot" aria-hidden="true" />Overview
           </NavLink>
@@ -87,7 +88,7 @@ export function ChapterSidebarEntry({ chapter, compact }: ChapterSidebarEntryPro
               onOpenChange={(open) => setSectionOpen(section.slug, open)}
             />
           ))}
-        </div>
+        </AnimatedRegion>
       )}
     </li>
   );

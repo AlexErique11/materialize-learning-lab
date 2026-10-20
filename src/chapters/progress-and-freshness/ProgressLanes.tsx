@@ -10,8 +10,8 @@ import { LagLegend } from './LagLegend';
 
 function ExerciseEvidenceMetrics({ snapshot: s }: { snapshot: ProgressSnapshot }) {
   return s.clock === undefined || s.journey ? null : <dl className="progress-metric-strip" aria-label="Progress metrics">
-    <div><dt>Clock</dt><dd>{s.clock} s</dd></div>
-    {s.queryMs !== undefined && <div><dt>Query</dt><dd>{s.queryMs < 1000 ? `${s.queryMs} ms` : `${s.queryMs / 1000} s`}</dd></div>}
+    <div><dt>Clock</dt><dd data-motion-value>{s.clock} s</dd></div>
+    {s.queryMs !== undefined && <div><dt>Query</dt><dd data-motion-value>{s.queryMs < 1000 ? `${s.queryMs} ms` : `${s.queryMs / 1000} s`}</dd></div>}
   </dl>;
 }
 const laneIcons = { orders: Database, payments: Database, join: GitMerge, revenue: Sigma };
@@ -66,17 +66,18 @@ export function ProgressLanes({ snapshot: s, selected, onSelect, refs, showLimit
       <Icon className="progress-stage-icon" size={16} aria-hidden="true" />
       <strong className="progress-stage-full">{laneNames[lane]}</strong><strong className="progress-stage-short">{lane === 'join' ? 'Join' : laneNames[lane]}</strong><span className="progress-stage-subtitle">{laneSql[lane]}</span>
     </Button>; })}</nav></div>
-    <div ref={panelRef} className="progress-lane-panel" aria-label="Aligned progress lanes">
+    <div ref={element => { panelRef.current = element; if (refs?.metrics) refs.metrics.current = element; }} className="progress-lane-panel" aria-label="Aligned progress lanes">
       <section ref={refs?.axis} className="progress-axis" aria-label={s.clock === undefined ? 'Logical time axis' : 'Clock-aligned logical time axis'}>
         <span>{s.clock === undefined ? 'Logical time' : 'Logical time (s)'}</span><div>{[0, 4, 8, 12, 16, 20, 24].map(t => <span key={t} style={position(t, max)}>{t}</span>)}</div>
       </section>
-      <div className="progress-lane-rows">{lanes.map(lane => {
+      <div ref={element => { if (refs?.lanes) refs.lanes.current = element; }} className="progress-lane-rows">{lanes.map(lane => {
         const actual = s.frontiers[lane];
         const derived = showLimit && (lane === 'join' || lane === 'revenue') ? inputLimit(s, lane) : undefined;
         const caughtUp = derived === actual;
         const changes = s.observed[lane] ?? [];
         const times = [...new Set(changes.map(change => change.logicalTime))];
-        const changed = previous && (previous.frontiers[lane] !== actual || (previous.observed[lane]?.length ?? 0) !== changes.length);
+        const changed = previous && (previous.frontiers[lane] !== actual || (previous.observed[lane]?.length ?? 0) !== changes.length
+          || ((lane === 'join' || lane === 'revenue') && derived !== undefined && inputLimit(previous, lane) !== derived));
         return <section key={lane} ref={refs?.[lane]} className="progress-lane" data-selected={selected === lane} data-changed={Boolean(changed)} data-testid={`lane-${lane}`} aria-label={`${laneNames[lane]}: frontier ${actual}; complete before ${actual}${derived !== undefined ? `; input limit ${derived}` : ''}`}>
           <div className="progress-lane-name"><strong data-column={lane}>{laneNames[lane]}</strong><span>Complete &lt; {actual}</span></div>
           <div className="progress-track">
@@ -91,7 +92,7 @@ export function ProgressLanes({ snapshot: s, selected, onSelect, refs, showLimit
             {times.map(time => {
               const atTime = changes.filter(change => change.logicalTime === time);
               return <span key={time} role="img" className="progress-observed" style={position(time, max)} data-testid="observed-change" aria-label={`${atTime.length} ${atTime.length === 1 ? 'change' : 'changes'} observed at logical time ${time}`}
-                title={`Order IDs ${atTime.map(change => change.orderId).join(', ')}: changes seen at logical time ${time}. This is not a completeness guarantee.`}><i className="progress-observed-diamond" aria-hidden="true" /><span>{time}{atTime.length > 1 ? ` ×${atTime.length}` : ''}</span></span>;
+                title={`Order IDs ${atTime.map(change => change.orderId).join(', ')}: changes seen at logical time ${time}. This is not a completeness guarantee.`}><i className="progress-observed-diamond" aria-hidden="true" /><span data-motion-value>{time}{atTime.length > 1 ? ` ×${atTime.length}` : ''}</span></span>;
             })}
             {s.clock !== undefined && <span className="progress-wallclock" style={position(s.clock, max)} aria-label={`Wall clock ${s.clock}`} />}
           </div>
@@ -105,15 +106,15 @@ export function ProgressLanes({ snapshot: s, selected, onSelect, refs, showLimit
         {s.clock !== undefined && <span title={`Simulated wall clock: ${s.clock} s`}><i className="progress-key-clock" /><span className="progress-legend-full">Wall clock: {s.clock} s</span><span className="progress-legend-short">{s.clock} s</span></span>}<span><CircleHelp size={13} aria-hidden="true" />Key</span>
       </button>
     </div>
-    {compact ? <section className="progress-detail progress-exercise-evidence" aria-label="Current evidence" data-testid="progress-detail"><ExerciseEvidenceMetrics snapshot={s} /><p><LessonText content={progressText(compactEvidence)} /></p></section> : <section ref={refs?.detail} className="progress-detail" aria-labelledby={`${id}-detail`} data-testid="progress-detail">
-      <div className="progress-detail-heading"><strong id={`${id}-detail`} data-testid={caseLabel ? 'progress-case-label' : undefined}><LessonText content={progressText(caseLabel ?? `${laneNames[selected]} · frontier ${f}${unit}`)} /></strong>
-        {s.queryMs !== undefined && <span>Query: <strong className="progress-data-value" data-column="queryLatency">{s.queryMs < 1000 ? `${s.queryMs} ms` : `${s.queryMs / 1000} s`}</strong></span>}</div>
-      <p><LessonText content={progressText(detail)} /></p>
-      {lag && s.clock !== undefined && !s.journey && !s.evidence && <p className="progress-lag-breakdown"><LessonText content={[
+    {compact ? <section className="progress-detail progress-exercise-evidence" aria-label="Current evidence" data-testid="progress-detail"><ExerciseEvidenceMetrics snapshot={s} /><p data-motion-value><LessonText content={progressText(compactEvidence)} /></p></section> : <section ref={refs?.detail} className="progress-detail" aria-labelledby={`${id}-detail`} data-testid="progress-detail">
+      <div className="progress-detail-heading"><strong data-motion-value id={`${id}-detail`} data-testid={caseLabel ? 'progress-case-label' : undefined}><LessonText content={progressText(caseLabel ?? `${laneNames[selected]} · frontier ${f}${unit}`)} /></strong>
+        {s.queryMs !== undefined && <span>Query: <strong data-motion-value className="progress-data-value" data-column="queryLatency">{s.queryMs < 1000 ? `${s.queryMs} ms` : `${s.queryMs / 1000} s`}</strong></span>}</div>
+      <p data-motion-value><LessonText content={progressText(detail)} /></p>
+      {lag && s.clock !== undefined && !s.journey && !s.evidence && <p data-motion-value className="progress-lag-breakdown"><LessonText content={[
         { kind: 'term', text: `Local ${lag.local} s`, column: 'localLag' }, ' · ', { kind: 'term', text: `inherited ${lag.inherited} s`, column: 'inheritedLag' }, ' · ', { kind: 'term', text: `source ${lag.source} s`, column: 'lag' },
       ]} /></p>}
     </section>}
-    {!compact && (caseLabel ? <LagLegend snapshot={s} /> : <p className="progress-caption" aria-live="polite" data-upcoming={upcoming}><LessonText content={progressText(caption)} /></p>)}
+    {!compact && (caseLabel ? <LagLegend snapshot={s} sectionRef={refs?.lag} /> : <p data-motion-value className="progress-caption" aria-live="polite" data-upcoming={upcoming}><LessonText content={progressText(caption)} /></p>)}
     <Dialog open={keyOpen} onClose={() => setKeyOpen(false)} title="Diagram key" eyebrow="How to read the lanes">
       <dl className="progress-symbol-definitions">
         <div><dt><i className="progress-key-solid" />Purple circle · actual frontier</dt><dd>At frontier 12, all changes before 12 are complete. Time 12 itself is still open. The circle is a boundary, not a row count.</dd></div>
