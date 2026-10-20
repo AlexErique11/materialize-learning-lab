@@ -50,6 +50,7 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
       const outsideSpace = parseFloat(getComputedStyle(panel).marginBottom) || 0;
       const panelHeight = panel.getBoundingClientRect().height + outsideSpace;
       const evidenceHeight = evidence.getBoundingClientRect().height;
+      const headerTop = anchor - root.querySelector<HTMLElement>('.progress-stage-row')!.getBoundingClientRect().height - (innerHeight <= 740 ? 4 : 8);
       root.style.setProperty('--exercise-diagram-top', `${anchor}px`);
       let placed = false;
       for (const split of [false, true]) {
@@ -58,9 +59,9 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
         const copyHeight = copy.getBoundingClientRect().height;
         const answerHeight = answers.getBoundingClientRect().height;
         for (const evidenceAbove of [false, true]) {
-          const evidenceTop = evidenceAbove ? anchor - evidenceHeight - gap : anchor + panelHeight + gap;
+          const evidenceTop = evidenceAbove ? headerTop - evidenceHeight - gap : anchor + panelHeight + gap;
           const questionTop = anchor + panelHeight + gap + (evidenceAbove ? 0 : evidenceHeight + gap);
-          const copyTop = split ? anchor - copyHeight - gap - (evidenceAbove ? evidenceHeight + gap : 0) : questionTop;
+          const copyTop = split ? headerTop - copyHeight - gap - (evidenceAbove ? evidenceHeight + gap : 0) : questionTop;
           const bottom = questionTop + (split ? answerHeight : questionHeight);
           if (copyTop < promptLimit || evidenceTop < 0 || bottom > limit) continue;
           root.style.setProperty('--exercise-evidence-top', `${evidenceTop}px`);
@@ -80,11 +81,20 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
         root.style.setProperty('--exercise-answer-width', `${origin.width - Math.max(144, next?.width ?? 0) - 8}px`);
         const answerTop = footerBox.bottom - origin.top - answers.getBoundingClientRect().height;
         const copyHeight = copy.getBoundingClientRect().height;
-        let copyTop = anchor - copyHeight - gap;
-        if (copyTop < promptLimit && copyHeight <= anchor - promptLimit) copyTop = promptLimit;
+        let copyTop = headerTop - copyHeight - gap;
+        if (copyTop < promptLimit && copyHeight <= headerTop - promptLimit) copyTop = promptLimit;
         root.style.setProperty('--exercise-question-top', `${answerTop}px`);
         root.style.setProperty('--exercise-prompt-top', `${copyTop}px`);
         let evidenceTop = anchor + panelHeight + gap;
+        // The omitted fourth lane leaves usable space below a three-lane box.
+        // Keep longer feedback there when the new headers fill the upper gap.
+        const belowPanel = anchor + panel.getBoundingClientRect().height + gap;
+        const aboveHeaders = headerTop - evidenceHeight - gap;
+        if (copyTop < promptLimit && belowPanel + copyHeight + gap <= answerTop) {
+          copyTop = belowPanel;
+          if (aboveHeaders >= promptLimit) evidenceTop = aboveHeaders;
+          root.style.setProperty('--exercise-prompt-top', `${copyTop}px`);
+        }
         if (copyTop < promptLimit && evidenceTop + evidenceHeight + gap + copyHeight + gap <= answerTop) {
           copyTop = evidenceTop + evidenceHeight + gap;
           root.style.setProperty('--exercise-prompt-top', `${copyTop}px`);

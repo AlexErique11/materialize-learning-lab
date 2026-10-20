@@ -8,7 +8,7 @@ import { Button } from '../../components/ui/Button';
 import { Spotlight } from '../../components/ui/Spotlight';
 import { LessonText } from '../../components/lesson/LessonText';
 import { progressText } from './lessonText';
-import { ProgressLanes, ProgressMetrics } from './ProgressLanes';
+import { ProgressLanes } from './ProgressLanes';
 import { playbackExplanation, playbackFrames, progressLectures } from './lecture-scenarios';
 import { referenceLinks, objective, progressSql } from './resources';
 import type { LaneId } from './simulation';
@@ -54,7 +54,6 @@ export function ProgressLecture({ chapter, navigation, lectureIndex }: { chapter
       reference={{ objective: `${lecture.title}. ${objective}`, sql: progressSql, documentationLinks: referenceLinks }}
       simulation={{ completed: state.guided ? state.step : normalStep + (caseStudy ? 1 : 0), total: state.guided ? lecture.lessons.length : frames.length + (caseStudy ? 1 : 0), progressLabel: state.guided ? 'Tutorial' : 'Steps', playing: state.playing,
         onReset: reset, onRun: () => { if (!state.playing && normalStep === frames.length) dispatch({ type: 'reset' }); dispatch({ type: 'play' }); }, onStartGuidedRun: () => { reset(); dispatch({ type: 'start-guided' }); } }}
-      metrics={<ProgressMetrics snapshot={current} />}
       visualization={<ProgressLanes snapshot={current} selected={active} onSelect={setSelected} refs={refs}
         onInspect={() => dispatch({ type: 'pause' })}
         showLimit={currentLesson?.showLimit ?? lectureIndex === 2} upcoming={pending}

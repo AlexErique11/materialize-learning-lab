@@ -204,6 +204,9 @@ review, not an application test run.
   outside space keeps the top edge, existing rows and surrounding content fixed.
   Phone subtitles reserve two lines up to 480px; the lag legend shares the normal
   caption footprint. Chapter CSS owns these matching visualization dimensions.
+  Chapter 6 lecture headers use compact icons and titles with a selected underline;
+  there are no metric cards or Metrics popup. The diagram key includes the clock
+  value, while frontiers and lag stay in their existing lanes and evidence areas.
   Exercises reuse `ExerciseFrame` actions and questions with all relevant lanes
   permanently visible with the question. `ProgressExerciseWorkspace` measures the
   actual matching lecture once on entry/resize to share its complete diagram

@@ -13,7 +13,7 @@ same diagram rather than a separate dashboard design.
   prediction prompts, named spotlight targets, and explicit independent fixtures.
 - `exercise-scenarios.ts`: 13 questions across boundary evidence, join progress,
   and three dashboard diagnoses; exact answer sets and misconception feedback.
-- `ProgressLanes.tsx`: shared stage selectors, metrics, accessible HTML lanes,
+- `ProgressLanes.tsx`: stage headers, exercise evidence, accessible HTML lanes,
   marker legend, and selected-object evidence. One scale positions every marker.
 - `ProgressLecture.tsx`: shared `LectureScreen` without-tip frame, `useLectureRun`,
   `Spotlight`, prediction/reveal, playback, and controls-tour pause behavior.
@@ -70,10 +70,13 @@ retain the relationship between all inputs and output, while stage buttons choos
 the detail. Both themes use common tokens; marker shapes and explicit text
 duplicate color meaning. Guides spotlight actual lanes or the evidence section.
 
-All three lecture diagrams reserve four equally sized lane rows. Lectures 1–2
-leave the final row available for Revenue, introduced in Lecture 3. This keeps
-metrics, stage selectors, axes, common lanes and evidence panels aligned across
-lectures. Phone subtitles reserve two lines up to 480px wide. The compact lag
+All lanes use the same row dimensions. Lectures 1–2 omit the fourth row inside
+the box and retain equivalent space outside it, so introducing Revenue does not
+move the shared surrounding content. Lectures have no metric cards or Metrics
+popup. Stage selectors use simple icon-and-title headers with a subtle active
+underline; subtitles appear when space permits. Clock values are in the diagram
+key, alongside the existing frontier and lag information. Phone subtitles reserve
+two lines up to 480px wide. The compact lag
 legend uses one line when space permits, matching the normal caption footprint.
 Exercises retain every relevant lane with the same dimensions and spacing as lectures.
 
@@ -90,7 +93,7 @@ boundary, green completed range, observed-change diamonds, orange input limit,
 orange pending-processing range, and optional wall clock. Coincident input and
 actual frontiers share one centered marker and timestamp, retaining the orange
 outline around the purple circle. Opening
-the key or metrics pauses lecture playback. Compact exercises keep the Key
+the key pauses lecture playback. Compact exercises keep the Key
 control available even when the rest of the legend is condensed.
 
 Normal playback visits state-changing actions only (six in Lecture 1), with an
@@ -125,7 +128,9 @@ Frontier values stay on their lanes; clock, query duration and additional eviden
 share one compact strip below the diagram. The normal exercise navigation inset reserves
 the footer. Reference positions are measured only on entry and window resize, so
 hints, errors and accepted answers cannot recenter the lanes.
-Lectures retain their stage selectors and metric cards. Three-row boxes are one
+Lectures and exercises share the same stage headers without metric cards. Exercise
+headers sit above the fixed diagram; short screens use compact header padding.
+Three-row boxes are one
 row shorter; outside spacing preserves all other positions, including questions.
 Compact exercises use native selects for single answers, checkboxes for multiple
 answers, and one row of numeric fields for timing questions. In the shortest

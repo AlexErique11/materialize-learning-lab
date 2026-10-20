@@ -136,13 +136,15 @@ test('Chapter 6 controls match reference geometry and all lecture checkpoints fi
 test('Chapter 6 lectures keep matching positions while three-row boxes are shorter', async ({ page, isMobile }) => {
   test.setTimeout(120_000);
   const differences: unknown[] = [];
-  const selectors = ['.relation-metrics', '.progress-stage-row', '.progress-lane-panel', '.progress-axis', '[data-testid="lane-orders"]', '[data-testid="lane-payments"]', '[data-testid="lane-join"]', '.progress-detail', '.progress-caption'];
+  const selectors = ['.progress-stage-row', '.progress-lane-panel', '.progress-axis', '[data-testid="lane-orders"]', '[data-testid="lane-payments"]', '[data-testid="lane-join"]', '.progress-detail', '.progress-caption'];
   for (const viewport of isMobile ? [{ width: 390, height: 844 }, { width: 610, height: 668 }] : [{ width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1024, height: 768 }]) {
     await page.setViewportSize(viewport);
     let reference: Record<string, { x: number; y: number; width: number; height: number } | null> | undefined;
     for (let index = 0; index < 3; index++) {
       await page.goto(`${base}/tutorial/lecture-${index + 1}`);
       await expect(page.getByTestId('progress-workspace')).toBeVisible();
+      await expect(page.locator('.relation-metrics')).toHaveCount(0);
+      await expect(page.getByRole('button', { name: 'Metrics', exact: true })).toHaveCount(0);
       const bounds: Record<string, { x: number; y: number; width: number; height: number } | null> = {};
       for (const selector of selectors) bounds[selector] = await page.locator(selector).boundingBox();
       if (!reference) reference = bounds;
@@ -355,6 +357,14 @@ test('Chapter 6 combined exercise layouts fit every question and feedback withou
           const docked = await page.locator('.progress-exercise-layout').getAttribute('data-dock-answers') === 'true';
           const inLegend = await page.locator('.progress-exercise-layout').getAttribute('data-legend-evidence') === 'true';
           const regions = await Promise.all(['.progress-lane-panel', '.progress-exercise-evidence', '.exercise-question-copy', '.exercise-answers'].map(selector => page.locator(selector).boundingBox()));
+          const headers = page.getByRole('navigation', { name: 'Progress details' });
+          await expect(headers.getByRole('button')).toHaveCount(index === 2 ? 4 : 3);
+          const headerBox = (await headers.boundingBox())!;
+          expect(headerBox.y + headerBox.height).toBeLessThanOrEqual(currentDiagram.y);
+          for (const region of regions) {
+            const overlap = Math.min(headerBox.y + headerBox.height, region!.y + region!.height) - Math.max(headerBox.y, region!.y);
+            expect(overlap).toBeLessThanOrEqual(1);
+          }
           for (const [i, region] of regions.entries()) {
             expect(region!.y + region!.height, `${viewport.width}x${viewport.height}: exercise ${index + 1}, question ${step + 1}`).toBeLessThanOrEqual(footer.y + (docked && i === 3 ? footer.height : 0));
             for (const [offset, other] of regions.slice(i + 1).entries()) {

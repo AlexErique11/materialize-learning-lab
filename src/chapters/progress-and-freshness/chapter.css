@@ -1,15 +1,13 @@
 .progress-stages { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .progress-stage-row { display: flex; align-items: stretch; gap: 8px; }
 .progress-stage-row > nav { flex: 1; min-width: 0; }
-.progress-metrics-button { display: none; }
-.progress-metrics-list > div { display: flex; justify-content: space-between; gap: 16px; padding-block: 8px; border-bottom: 1px solid var(--lab-border); }
-.progress-metrics-list dd { font-weight: 700; font-variant-numeric: tabular-nums; }
 .progress-stages:has(> :nth-child(4)) { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.progress-stages .button { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 3px; min-width: 0; min-height: 49px; padding: 8px 12px; text-align: left; white-space: normal; }
-.progress-stages strong { font-size: 12px; }
+.progress-stages .button { position: relative; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 3px; min-width: 0; min-height: 49px; padding: 8px 12px 8px 38px; text-align: left; white-space: normal; }
+.progress-stages strong { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.progress-stages .progress-stage-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--lab-purple); }
 .progress-stages .progress-stage-short { display: none; }
 .progress-stages .button > span { font-size: 11px; color: var(--lab-muted); }
-.progress-stages .button[aria-pressed='true'] { border-color: var(--lab-purple); background: var(--lab-tint); color: var(--lab-purple); }
+.progress-stages .button[aria-pressed='true'] { border-color: var(--lab-border); background: var(--lab-tint); color: var(--lab-purple); box-shadow: inset 0 -2px var(--lab-purple); }
 .progress-workspace { display: grid; gap: 10px; min-width: 0; }
 .progress-lane-panel { padding: 12px 18px; border: 1px solid var(--lab-border); border-radius: 5px; background: var(--lab-surface); margin-bottom: var(--progress-unused-row, 0px); }
 /* The unused row becomes outside space, preserving every surrounding anchor. */
@@ -111,17 +109,14 @@ html:has(.progress-exercise-page), body:has(.progress-exercise-page) {
   .progress-chapter-page .progress-detail { min-height: 64px; }
   .progress-chapter-page .progress-caption { min-height: 18px; }
 }
-@media (max-height: 740px) {
-  .progress-chapter-page .lecture-workspace > .relation-metrics { display: none; }
-  .progress-chapter-page .progress-metrics-button { display: inline-flex; min-height: 35px; padding: 5px 7px; font-size: 12px; }
-}
 @media (max-width: 1150px), (max-height: 800px) {
   .progress-legend .progress-legend-full { display: none; }
   .progress-legend .progress-legend-short { display: inline; }
   .progress-stages .progress-stage-full { display: none; }
   .progress-stages .progress-stage-short { display: block; }
-  .progress-stages .button { min-height: 39px; padding: 6px 2px; }
-  .progress-stages .button > span { display: none; }
+  .progress-stages .button { min-height: 39px; padding: 6px 8px 6px 36px; }
+  .progress-stages .progress-stage-icon { left: 10px; }
+  .progress-stages .progress-stage-subtitle { display: none; }
   .progress-lane-panel { padding: 10px 12px; }
   .progress-lane { min-height: 40px; }
   .progress-detail { min-height: 80px; }
@@ -136,6 +131,7 @@ html:has(.progress-exercise-page), body:has(.progress-exercise-page) {
   .progress-axis, .progress-lane { grid-template-columns: 84px minmax(0, 1fr); gap: 5px; }
   .progress-stages { gap: 5px; }
   .progress-stages .button { min-height: 35px; padding: 5px 2px; }
+  .progress-stages .progress-stage-icon { display: none; }
   .progress-stages strong { font-size: 11px; }
   .progress-lane-panel { padding: 8px; }
   .progress-lane-name { padding-left: 2px; }
@@ -263,3 +259,26 @@ html:has(.progress-exercise-page), body:has(.progress-exercise-page) {
 .progress-exercise-page:has([data-dock-answers='true']) .exercise-question-navigation { pointer-events: auto; }
 .progress-exercise-layout[data-legend-evidence='true'] .progress-exercise-evidence { left: var(--exercise-evidence-left); right: auto; width: var(--exercise-evidence-width); padding: 0; border: 0; background: none; }
 .progress-exercise-layout[data-split-question='true'] .exercise-question-copy { padding-block: 0; }
+
+/* Share lecture headers without shifting the exercise diagram or navigation. */
+.progress-exercise-page .progress-workspace { position: relative; }
+.progress-exercise-page .progress-stage-row { position: absolute; top: 0; left: 0; right: 0; transform: translateY(calc(-100% - 8px)); }
+
+@media (max-height: 740px) {
+  .progress-exercise-page .progress-stage-row { transform: translateY(calc(-100% - 4px)); }
+  .progress-exercise-page .progress-stages .button { min-height: 20px; padding-block: 1px; gap: 0; }
+  .progress-exercise-page .progress-stages strong { line-height: 16px; }
+  .staged-exercise-page.progress-exercise-page .guided-lab-controls .button { height: 32px; min-height: 32px; }
+}
+
+
+@media (max-width: 639px) and (max-height: 740px) {
+  .progress-exercise-page .guided-lab-controls { row-gap: 2px; }
+}
+
+@media (min-width: 640px) and (max-height: 740px) {
+  .progress-exercise-layout[data-dock-answers='true'] .exercise-question-copy { line-height: 18px; }
+  .progress-exercise-layout[data-dock-answers='true'] .exercise-question-copy h2 { display: inline; margin-right: 8px; }
+  .progress-exercise-layout[data-dock-answers='true'] .exercise-question-copy h2 > svg { display: inline; vertical-align: middle; margin-right: 6px; }
+  .progress-exercise-layout[data-dock-answers='true'] .exercise-question-copy p { display: inline; }
+}
