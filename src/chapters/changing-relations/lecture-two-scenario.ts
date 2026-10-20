@@ -37,6 +37,7 @@ interface LectureTwoStep {
   readonly explanation: LessonTextContent;
   readonly before?: LessonTextContent;
   readonly spotlight: 'ledger' | 'relation';
+  readonly related?: readonly ('ledger' | 'relation' | 'metrics')[];
 }
 
 export const lectureTwoSteps: readonly LectureTwoStep[] = [
@@ -74,7 +75,7 @@ export const lectureTwoSteps: readonly LectureTwoStep[] = [
     ],
   },
   {
-    time: 3, title: 'Combine matching diffs, cancel opposite ones', spotlight: 'relation',
+    time: 3, title: 'Combine matching diffs, cancel opposite ones', spotlight: 'relation', related: ['metrics'],
     before: [
       'At ', { kind: 'time', text: 't = 3' }, ', sum the diffs separately for each full row. ',
       'What do ', { kind: 'diff', text: '+2 − 1' }, ' for ', { kind: 'row', text: '(A, $10)' },

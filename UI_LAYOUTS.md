@@ -110,6 +110,24 @@ The filter-choice question conceals the reference predicate until acceptance.
 
 ## Shared component ownership
 
+`AreaTransition` owns navigation within Guided Labs and between app areas.
+Overview, lecture and exercise navigation uses an 80ms fade of the frozen outgoing
+content to the page's own background, then a 140ms reveal of the settled destination.
+The destination's visible images, fonts and diagram layout settle behind the opaque
+surface. Header and sidebar remain visible; live content is never transformed.
+Sidebar indicators keep their color feedback in `src/styles/motion.css`.
+Direct loads and reduced-motion navigation update immediately. Forward area
+navigation slides the outgoing view left. Returning to Learning path slides that
+page in from the left over the stationary outgoing view. Other returns slide
+the outgoing view right. Explicit
+Guided Labs entry eases the loading screen in over the preserved source page for
+220ms, keeps its flask reaction, then slides that screen left.
+Both use the 320ms timing and easing in `src/motion/motion.ts`. The destination
+stays fully opaque and stationary so diagrams retain their measured geometry.
+The header stays fixed. Inert snapshots preserve source backgrounds,
+scroll positions and SVG references inside a clipped viewport. Reduced motion
+skips slides and the reaction delay.
+
 | Surface | Implementation |
 | --- | --- |
 | Title, toolbar, subtitle, reference popup composition | `src/labs/components/GuidedLabScreen.tsx`, `src/styles/guided-labs.css` |
@@ -150,6 +168,23 @@ visualization are separate. The app header has no placeholder for the old questi
 mark. The SQL popup has no Tutorial or Exercises links.
 
 ## Guided text and tables
+
+`Spotlight` owns guide placement, masking, and related-region navigation.
+Lessons name a primary target and optional `related` targets; `useGuidedFocus`
+connects those names to panel refs and the existing responsive panel selector.
+Predictions expose only their primary target. After Show effect, up to three
+separate regions are exposed together when the viewport has room for the card
+without covering them. Otherwise Next/Back inspect each region in order before
+advancing the lesson. The inspection buttons also allow direct selection.
+Inspection changes only the target, never the simulation checkpoint or time.
+Back from the first region retains the lesson's existing prediction/rewind
+behavior. Keep related targets in causal order and include changed counts,
+status, or limits when the explanation depends on them. Avoid adding every
+unchanged panel. The mask leaves separate clear openings, keeping unrelated
+content dimmed. Controls tours continue to use their existing single target.
+When a compact frame hides a required summary, inspect that same summary as a
+temporary floating target. The normal frame and its measured metric space stay
+unchanged, and the summary returns to its responsive state when focus moves on.
 
 Chapter 2 uses `LessonTextContent` fragments with an optional `column` key and
 `data-column` styling. Its shared mapping is:
@@ -244,6 +279,9 @@ review, not an application test run.
 
 - `src/components/lesson/lessonTextTypes.ts` owns JSX-independent explanation types.
 - `src/components/lesson/RelationHelp.tsx` owns accessible relation help;
+  pointer tooltips expand subtly from the trigger with the shared motion easing
+  (160ms in, 100ms out), reversing from their current appearance on quick hovers.
+  Keyboard focus and reduced-motion preferences show help immediately.
   `logicalTimestampHelp.ts` contains the cross-chapter timestamp definition.
 - `src/hooks/useExerciseStages.ts` owns exercise-stage state, grading types and integer parsing.
 - `src/styles/lesson.css` owns common lesson typography, metrics, panels, tables and help.

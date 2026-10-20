@@ -10,11 +10,9 @@ export function ProgressBar({ value, total, label, className = '' }: ProgressBar
   const max = total > 0 ? total : 1;
   const current = Math.max(0, Math.min(value, total > 0 ? total : 0));
   return (
-    <progress
-      className={`progress-bar ${className}`}
-      max={max}
-      value={current}
-      aria-label={label}
-    />
+    <span className={`progress-bar progress-motion ${className}`}>
+      <progress className="progress-semantic" max={max} value={current} aria-label={label} />
+      <i className="progress-motion-fill" aria-hidden="true" style={{ transform: `scaleX(${current / max})` }} />
+    </span>
   );
 }

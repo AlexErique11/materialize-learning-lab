@@ -105,9 +105,10 @@ function LifetimeChart({ state, rowSlots }: { state: TemporalSnapshot; rowSlots:
   </div>;
 }
 
-export function TemporalWorkspace({ state, activeStage, onSelectStage, guided, highlight, hasClocks, refs, clockRef, diffRef, upcoming, initial, concealPredicate = false }: {
+export function TemporalWorkspace({ state, activeStage, onSelectStage, guided, highlight, highlightStages, hasClocks, refs, clockRef, diffRef, upcoming, initial, concealPredicate = false }: {
   state: TemporalSnapshot; activeStage: TemporalStage; onSelectStage: (stage: TemporalStage) => void; guided: boolean;
   highlight: boolean; hasClocks: boolean;
+  highlightStages?: readonly TemporalStage[];
   refs: Record<TemporalStage, RefObject<HTMLElement | null>>; clockRef: RefObject<HTMLDivElement | null>; diffRef: RefObject<HTMLElement | null>;
   upcoming: TemporalAction | undefined;
   initial: boolean;
@@ -121,7 +122,7 @@ export function TemporalWorkspace({ state, activeStage, onSelectStage, guided, h
     <div className="temporal-workspace" data-selected-stage={activeStage} data-guided={guided} data-walkthrough="lecture-workspace">
       <section ref={refs.source} className="temporal-panel temporal-panel-source" data-stage="source" data-active={guided && activeStage === 'source'} aria-label="Source events">
         <header className="temporal-panel-heading"><h2><Database size={18} aria-hidden="true" />Source events<RelationHelp label="Source events" text="The input rows currently present. Expiration changes the filtered result, not this table. Event timestamps are row data; input application times are shown on the timeline." /></h2><code>FROM events</code></header>
-        <EventTable state={state} result={false} highlight={highlight && activeStage === 'source'} />
+        <EventTable state={state} result={false} highlight={highlight && (activeStage === 'source' || Boolean(highlightStages?.includes('source')))} />
         <p className="temporal-source-note">{upcoming ? `Next: ${upcoming.kind === 'switch-fixture' ? 'new query fixture' : upcoming.kind === 'advance' ? 'advance logical time' : upcoming.kind + ' input'} at ${formatTemporalTime(nextTime!)}` : 'Expiration does not delete source rows.'}</p>
       </section>
       <section ref={refs.timeline} className="temporal-panel temporal-panel-timeline" data-stage="timeline" data-active={guided && activeStage === 'timeline'} data-testid="temporal-timeline" aria-label="Row lifetimes">
@@ -134,7 +135,7 @@ export function TemporalWorkspace({ state, activeStage, onSelectStage, guided, h
       </section>
       <section ref={refs.result} className="temporal-panel temporal-panel-result" data-stage="result" data-active={guided && activeStage === 'result'} aria-label="Current result">
         <header className="temporal-panel-heading"><h2><Table2 size={18} aria-hidden="true" />Current result<RelationHelp label="Current result" text="Rows passing this fixture's temporal predicate at the displayed logical time. The signed changes below are one complete logical timestamp. New query fixtures start a separate result." /></h2><code>SELECT event_id, event_ts{state.predicate === 'explicit-deadline' ? ', expires_at' : ''}</code></header>
-        <EventTable state={state} result highlight={highlight && activeStage === 'result'} />
+        <EventTable state={state} result highlight={highlight && (activeStage === 'result' || Boolean(highlightStages?.includes('result')))} />
         <ResultChanges state={state} diffRef={diffRef} initial={initial} />
       </section>
     </div>

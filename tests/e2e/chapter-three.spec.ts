@@ -1,3 +1,4 @@
+import { advanceGuidedLesson } from './guided-run';
 import { expect, test } from './fixtures';
 import { objectExercises } from '../../src/chapters/views-indexes-materialized-views/exercise-scenarios';
 import { objectLectures } from '../../src/chapters/views-indexes-materialized-views/scenario';
@@ -158,7 +159,7 @@ test('each lecture gates effects behind predictions and completes its guided flo
       await expect(page.locator('.relation-guide-phase')).toHaveText('Explanation');
       await expect(page.locator('.relation-guide-card p .relation-inline[data-column]').first()).toBeVisible();
       expect(await page.locator('.object-diagram').innerText()).not.toBe(before);
-      await page.getByRole('button', { name: step === total! - 1 ? 'Finish tutorial' : 'Next', exact: true }).click();
+      await advanceGuidedLesson(page, step === total! - 1);
     }
     await expect(page.getByText('Tutorial completed', { exact: true })).toBeVisible();
     await page.getByRole('button', { name: 'Reset', exact: true }).click();

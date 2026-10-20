@@ -24,7 +24,7 @@ export const comparisonStages = [
   { id: 'incremental', title: 'Incremental maintenance', shortTitle: 'Maintain', sql: 'Signed changes + retained group state', description: 'This teaching algorithm retains count and sum by product. It consolidates changes to the selected product and amount, then applies their signed contributions to affected groups.', showChanges: false },
 ] as const;
 
-export const comparisonLessons: readonly { time: number; title: string; stage: 'orders' | 'recompute' | 'incremental'; explanation: LessonTextContent; before?: LessonTextContent }[] = [
+export const comparisonLessons: readonly { time: number; title: string; stage: 'orders' | 'recompute' | 'incremental'; related?: readonly ('orders' | 'recompute' | 'incremental')[]; explanation: LessonTextContent; before?: LessonTextContent }[] = [
   {
     time: 0, stage: 'orders', title: 'One query, the same inputs',
     explanation: [
@@ -160,7 +160,7 @@ export const comparisonLessons: readonly { time: number; title: string; stage: '
     ],
   },
   {
-    time: 4, stage: 'recompute', title: 'Compare the whole batch',
+    time: 4, stage: 'recompute', related: ['incremental'], title: 'Compare the whole batch',
     explanation: [
       'Recomputation processes ', { kind: 'count', text: 'six current contributions', column: 'count' },
       '. Maintenance applies ', { kind: 'count', text: 'twelve signed contributions', column: 'count' },

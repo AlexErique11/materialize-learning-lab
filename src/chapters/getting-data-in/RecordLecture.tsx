@@ -16,6 +16,7 @@ import { recordsAt } from './record-simulation';
 import '../../styles/lesson.css';
 import '../incremental-maintenance/lecture-one.css';
 import '../incremental-maintenance/lecture-two.css';
+import { useGuidedFocus } from '../../components/lesson/useGuidedFocus';
 import './lecture-one.css';
 import './record-lectures.css';
 
@@ -28,16 +29,19 @@ export function RecordLecture({ chapter, navigation, definition }: {
   const recordRef = useRef<HTMLElement>(null);
   const changesRef = useRef<HTMLElement>(null);
   const relationRef = useRef<HTMLElement>(null);
-  const refs = { record: recordRef, changes: changesRef, relation: relationRef };
+  const metricsRef = useRef<HTMLDivElement>(null);
+  const refs = { record: recordRef, changes: changesRef, relation: relationRef, metrics: metricsRef };
   useEffect(() => { if (helpOpen) dispatch({ type: 'pause' }); }, [helpOpen, dispatch]);
   const lesson = definition.lessons[Math.min(state.step, definition.lessons.length - 1)]!;
-  const activeStage = state.guided ? lesson.stage : selectedStage;
   const current = recordsAt(definition, state.selectedTime);
   const pending = Boolean(lesson.before) && !state.revealed && state.guided;
   const preview = pending ? definition.actions[lesson.time - 1] : null;
   const record = preview?.kind === 'record' ? preview.record : current.record ?? current.fixture.records[0]!;
   const upcoming = pending || current.record === null;
   const complete = state.step === definition.lessons.length;
+  const focus = useGuidedFocus(`${state.guided}:${state.step}:${state.revealed}`, [lesson.stage, ...(!pending ? lesson.related ?? [] : [])], refs,
+    { record: 'Incoming record', changes: 'Interpreted changes', relation: 'Current relation', metrics: 'Records and rows' });
+  const activeStage = state.guided ? focus.id === 'metrics' ? lesson.stage : focus.id : selectedStage;
 
   return <>
     <LectureScreen layout="without-tip" chapter={chapter} title={'Lecture ' + definition.number} regionLabel="Lecture content" navigation={navigation}
@@ -49,7 +53,7 @@ export function RecordLecture({ chapter, navigation, definition }: {
         onReset: () => { setSelectedStage('record'); dispatch({ type: 'reset' }); },
         onRun: () => dispatch({ type: 'play' }), onStartGuidedRun: () => dispatch({ type: 'start-guided' }) }}
       guided={state.guided}
-      metrics={<div className="relation-metrics ingestion-status-bar"><div className="ingestion-status-metrics" aria-label="Record metrics">
+      metrics={<div className="relation-metrics ingestion-status-bar"><div ref={metricsRef} className="ingestion-status-metrics" aria-label="Record metrics">
         <WorkspaceMetric icon={<FileInput size={25} aria-hidden="true" />}
           label={<>Records read <RelationHelp label="Records read" text="Incoming messages read within this fixture. Switching to a separate fixture resets this count and its starting catalog. Playback Changes also includes those fixture transitions." /></>}
           value={<span data-testid="records-read">{current.recordsRead}</span>} />
@@ -63,7 +67,7 @@ export function RecordLecture({ chapter, navigation, definition }: {
       visualization={<RecordWorkspace activeStage={activeStage} setSelectedStage={setSelectedStage}
         guided={state.guided} envelope={current.fixture.envelope} panelRefs={refs}
         renderContent={(stage) => <RecordPanelContent stage={stage} state={current} record={record}
-          upcoming={upcoming} pending={pending} highlight={state.guided && state.revealed && activeStage === stage} />} />}
+          upcoming={upcoming} pending={pending} highlight={state.guided && state.revealed && (activeStage === stage || Boolean(lesson.related?.includes(stage)))} />} />}
       playback={<div className="relation-playback-controls" aria-label="Change playback">
         {complete && <span className="relation-tutorial-complete maintenance-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
         <div>
@@ -75,14 +79,13 @@ export function RecordLecture({ chapter, navigation, definition }: {
             onClick={() => dispatch({ type: 'next-change' })}>Next change<ArrowRight size={14} aria-hidden="true" /></Button>
         </div>
       </div>} />
-    <Spotlight open={state.guided} targetRef={refs[lesson.stage]} placement="above-first"
+    <Spotlight open={state.guided} {...focus.props} placement="above-first"
       step={Math.min(state.step + 1, definition.lessons.length)} total={definition.lessons.length}
       title={lesson.title} description={<span className="maintenance-lesson-text snapshot-lesson-text"><LessonText content={pending ? lesson.before! : lesson.explanation} /></span>}
       phaseLabel={pending ? 'Predict the effect' : 'Explanation'} visual={null}
-      onClose={() => dispatch({ type: 'close-guided' })}>
-      <Button disabled={state.step === 0} onClick={() => dispatch({ type: 'back' })}>Back</Button>
-      {pending ? <Button variant="primary" onClick={() => dispatch({ type: 'reveal' })}>Show effect</Button>
-        : <Button variant="primary" onClick={() => dispatch({ type: 'next' })}>{state.step === definition.lessons.length - 1 ? 'Finish tutorial' : 'Next'}</Button>}
-    </Spotlight>
+      onClose={() => dispatch({ type: 'close-guided' })}
+      navigation={{ backDisabled: state.step === 0, onBack: () => dispatch({ type: 'back' }),
+        onNext: () => dispatch({ type: pending ? 'reveal' : 'next' }),
+        nextLabel: pending ? 'Show effect' : state.step === definition.lessons.length - 1 ? 'Finish tutorial' : 'Next' }} />
   </>;
 }

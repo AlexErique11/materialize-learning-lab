@@ -1,10 +1,11 @@
-import { useId, useState, type ComponentProps, type ReactNode } from 'react';
+import { useId, useRef, useState, type ComponentProps, type ReactNode } from 'react';
 import { ArrowRight, CheckCircle2, Eye, Lightbulb } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { ProgressBar } from '../ui/ProgressBar';
 import { GuidedLabScreen } from '../../labs/components/GuidedLabScreen';
 import type { ChapterDefinition } from '../../chapters/chapterRegistry';
 import { LessonText, type LessonTextContent } from '../lesson/LessonText';
+import { useChangeMotion } from '../../motion/useChangeMotion';
 import type { useExerciseStages } from '../../hooks/useExerciseStages';
 import '../../styles/exercise.css';
 export function ExerciseFrame({
@@ -76,15 +77,20 @@ export function ExerciseFrame({
         ? 'Question'
         : 'Checkpoint';
   const [questionOpen, setQuestionOpen] = useState(initialQuestionOpen);
+  const questionRef = useRef<HTMLElement>(null);
+  const copyRef = useRef<HTMLDivElement>(null);
+  useChangeMotion(questionRef, flow.stage, true, 'question', 0);
+  useChangeMotion(copyRef, `${flow.hintOpen}:${flow.grade ? flow.accepted ? 'accepted' : 'incorrect' : 'ready'}`, true, 'feedback', 0);
   const questionSection = (
     <section
+      ref={questionRef}
       id={`${formId}-question`}
       data-walkthrough="question"
       className="exercise-question"
       data-result={flow.grade ? (flow.accepted ? 'correct' : 'incorrect') : 'ready'}
       aria-labelledby={`${formId}-heading`}
     >
-      <div className="exercise-question-copy" aria-live="polite" aria-atomic="true">
+      <div ref={copyRef} className="exercise-question-copy" aria-live="polite" aria-atomic="true">
         <h2 id={`${formId}-heading`}>
           {flow.accepted ? (
             <CheckCircle2 size={18} aria-hidden="true" />

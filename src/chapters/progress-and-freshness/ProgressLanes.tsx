@@ -10,15 +10,15 @@ import { LessonText } from '../../components/lesson/LessonText';
 import { progressText } from './lessonText';
 import { LagLegend } from './LagLegend';
 
-export function ProgressMetrics({ snapshot: s, compact = false }: { snapshot: ProgressSnapshot; compact?: boolean }) {
+export function ProgressMetrics({ snapshot: s, compact = false, metricsRef }: { snapshot: ProgressSnapshot; compact?: boolean; metricsRef?: RefObject<HTMLDivElement | null> }) {
   const entries = s.clock === undefined
     ? [{ label: 'Orders frontier', value: s.frontiers.orders }, { label: 'Payments frontier', value: s.frontiers.payments }, { label: 'Paid orders frontier', value: s.frontiers.join }]
     : [{ label: 'Simulated wall clock', value: `${s.clock} s` }, { label: 'Revenue frontier', value: `${s.frontiers.revenue} s` }, { label: 'Revenue wall-clock lag', value: `${lagFor(s, 'revenue').wallclock} s` }];
   if (compact) return s.clock === undefined || s.journey ? null : <dl className="progress-metric-strip" aria-label="Progress metrics">
-    <div><dt>Clock</dt><dd>{s.clock} s</dd></div>
-    {s.queryMs !== undefined && <div><dt>Query</dt><dd>{s.queryMs < 1000 ? `${s.queryMs} ms` : `${s.queryMs / 1000} s`}</dd></div>}
+    <div><dt>Clock</dt><dd data-motion-value>{s.clock} s</dd></div>
+    {s.queryMs !== undefined && <div><dt>Query</dt><dd data-motion-value>{s.queryMs < 1000 ? `${s.queryMs} ms` : `${s.queryMs / 1000} s`}</dd></div>}
   </dl>;
-  return <div className="relation-metrics" aria-label="Progress metrics">{entries.map((entry, index) => {
+  return <div ref={metricsRef} className="relation-metrics" aria-label="Progress metrics">{entries.map((entry, index) => {
     const Icon = [Database, Clock3, Gauge][index]!;
     return <WorkspaceMetric key={entry.label} icon={<Icon size={25} aria-hidden="true" />} label={<>{entry.label}<RelationHelp label={entry.label}
       text={s.clock === undefined ? 'A write frontier F guarantees all changes at logical timestamps strictly below F are complete. Time F remains open.' : index === 0 ? 'This fixture aligns logical timestamps with a simulated wall clock, displayed in seconds. Values are illustrative.' : index === 1 ? 'Revenue is complete strictly before its write frontier. The boundary itself remains open.' : 'The difference between the simulated wall clock and Revenue’s write frontier. This is separate from query duration.'} /></>}
@@ -80,13 +80,14 @@ export function ProgressLanes({ snapshot: s, selected, onSelect, refs, showLimit
       <section ref={refs?.axis} className="progress-axis" aria-label={s.clock === undefined ? 'Logical time axis' : 'Clock-aligned logical time axis'}>
         <span>{s.clock === undefined ? 'Logical time' : 'Logical time (s)'}</span><div>{[0, 4, 8, 12, 16, 20, 24].map(t => <span key={t} style={position(t, max)}>{t}</span>)}</div>
       </section>
-      <div className="progress-lane-rows">{lanes.map(lane => {
+      <div ref={element => { if (refs?.lanes) refs.lanes.current = element; }} className="progress-lane-rows">{lanes.map(lane => {
         const actual = s.frontiers[lane];
         const derived = showLimit && (lane === 'join' || lane === 'revenue') ? inputLimit(s, lane) : undefined;
         const caughtUp = derived === actual;
         const changes = s.observed[lane] ?? [];
         const times = [...new Set(changes.map(change => change.logicalTime))];
-        const changed = previous && (previous.frontiers[lane] !== actual || (previous.observed[lane]?.length ?? 0) !== changes.length);
+        const changed = previous && (previous.frontiers[lane] !== actual || (previous.observed[lane]?.length ?? 0) !== changes.length
+          || ((lane === 'join' || lane === 'revenue') && derived !== undefined && inputLimit(previous, lane) !== derived));
         return <section key={lane} ref={refs?.[lane]} className="progress-lane" data-selected={selected === lane} data-changed={Boolean(changed)} data-testid={`lane-${lane}`} aria-label={`${laneNames[lane]}: frontier ${actual}; complete before ${actual}${derived !== undefined ? `; input limit ${derived}` : ''}`}>
           <div className="progress-lane-name"><strong data-column={lane}>{laneNames[lane]}</strong><span>Complete &lt; {actual}</span></div>
           <div className="progress-track">
@@ -101,7 +102,7 @@ export function ProgressLanes({ snapshot: s, selected, onSelect, refs, showLimit
             {times.map(time => {
               const atTime = changes.filter(change => change.logicalTime === time);
               return <span key={time} role="img" className="progress-observed" style={position(time, max)} data-testid="observed-change" aria-label={`${atTime.length} ${atTime.length === 1 ? 'change' : 'changes'} observed at logical time ${time}`}
-                title={`Order IDs ${atTime.map(change => change.orderId).join(', ')}: changes seen at logical time ${time}. This is not a completeness guarantee.`}><i className="progress-observed-diamond" aria-hidden="true" /><span>{time}{atTime.length > 1 ? ` ×${atTime.length}` : ''}</span></span>;
+                title={`Order IDs ${atTime.map(change => change.orderId).join(', ')}: changes seen at logical time ${time}. This is not a completeness guarantee.`}><i className="progress-observed-diamond" aria-hidden="true" /><span data-motion-value>{time}{atTime.length > 1 ? ` ×${atTime.length}` : ''}</span></span>;
             })}
             {s.clock !== undefined && <span className="progress-wallclock" style={position(s.clock, max)} aria-label={`Wall clock ${s.clock}`} />}
           </div>
@@ -115,15 +116,15 @@ export function ProgressLanes({ snapshot: s, selected, onSelect, refs, showLimit
         {s.clock !== undefined && <span><i className="progress-key-clock" /><span className="progress-legend-full">Wall clock</span><span className="progress-legend-short">Clock</span></span>}<span><CircleHelp size={13} aria-hidden="true" />Key</span>
       </button>
     </div>
-    {compact ? <section className="progress-detail progress-exercise-evidence" aria-label="Current evidence" data-testid="progress-detail"><ProgressMetrics snapshot={s} compact /><p><LessonText content={progressText(compactEvidence)} /></p></section> : <section ref={refs?.detail} className="progress-detail" aria-labelledby={`${id}-detail`} data-testid="progress-detail">
-      <div className="progress-detail-heading"><strong id={`${id}-detail`} data-testid={caseLabel ? 'progress-case-label' : undefined}><LessonText content={progressText(caseLabel ?? `${laneNames[selected]} · frontier ${f}${unit}`)} /></strong>
-        {s.queryMs !== undefined && <span>Query: <strong className="progress-data-value" data-column="queryLatency">{s.queryMs < 1000 ? `${s.queryMs} ms` : `${s.queryMs / 1000} s`}</strong></span>}</div>
-      <p><LessonText content={progressText(detail)} /></p>
-      {lag && s.clock !== undefined && !s.journey && !s.evidence && <p className="progress-lag-breakdown"><LessonText content={[
+    {compact ? <section className="progress-detail progress-exercise-evidence" aria-label="Current evidence" data-testid="progress-detail"><ProgressMetrics snapshot={s} compact /><p data-motion-value><LessonText content={progressText(compactEvidence)} /></p></section> : <section ref={refs?.detail} className="progress-detail" aria-labelledby={`${id}-detail`} data-testid="progress-detail">
+      <div className="progress-detail-heading"><strong data-motion-value id={`${id}-detail`} data-testid={caseLabel ? 'progress-case-label' : undefined}><LessonText content={progressText(caseLabel ?? `${laneNames[selected]} · frontier ${f}${unit}`)} /></strong>
+        {s.queryMs !== undefined && <span>Query: <strong data-motion-value className="progress-data-value" data-column="queryLatency">{s.queryMs < 1000 ? `${s.queryMs} ms` : `${s.queryMs / 1000} s`}</strong></span>}</div>
+      <p data-motion-value><LessonText content={progressText(detail)} /></p>
+      {lag && s.clock !== undefined && !s.journey && !s.evidence && <p data-motion-value className="progress-lag-breakdown"><LessonText content={[
         { kind: 'term', text: `Local ${lag.local} s`, column: 'localLag' }, ' · ', { kind: 'term', text: `inherited ${lag.inherited} s`, column: 'inheritedLag' }, ' · ', { kind: 'term', text: `source ${lag.source} s`, column: 'lag' },
       ]} /></p>}
     </section>}
-    {!compact && (caseLabel ? <LagLegend snapshot={s} /> : <p className="progress-caption" aria-live="polite" data-upcoming={upcoming}><LessonText content={progressText(caption)} /></p>)}
+    {!compact && (caseLabel ? <LagLegend snapshot={s} sectionRef={refs?.lag} /> : <p data-motion-value className="progress-caption" aria-live="polite" data-upcoming={upcoming}><LessonText content={progressText(caption)} /></p>)}
     <Dialog open={metricsOpen} onClose={() => setMetricsOpen(false)} title="Current progress">
       <dl className="progress-metrics-list">{lanes.map(lane => <div key={lane}><dt>{laneNames[lane]} frontier</dt><dd>{s.frontiers[lane]}{unit}</dd></div>)}
         {s.clock !== undefined && <><div><dt>Simulated wall clock</dt><dd>{s.clock} s</dd></div><div><dt>Revenue wall-clock lag</dt><dd>{lagFor(s, 'revenue').wallclock} s</dd></div></>}

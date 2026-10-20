@@ -16,6 +16,7 @@ import { useWalkthrough } from '../../components/walkthrough/WalkthroughProvider
 import { Button } from '../../components/ui/Button';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { usePageTitle } from '../../hooks/usePageTitle';
+import { useWorkspaceMotion } from '../../motion/useWorkspaceMotion';
 
 interface SimulationControls {
   completed: number;
@@ -96,6 +97,7 @@ export function GuidedLabScreen({
     if (helpOpen) setReferenceOpen(false);
   }, [helpOpen]);
   const { pathname } = useLocation();
+  useWorkspaceMotion(pageRef, pathname);
   useLayoutEffect(() => {
     if (showTip !== 'when-space') return;
     const page = pageRef.current;

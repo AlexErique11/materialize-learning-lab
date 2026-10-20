@@ -1,3 +1,4 @@
+import { advanceGuidedLesson } from './guided-run';
 import { expect, test } from './fixtures';
 import type { Page } from '@playwright/test';
 import { snapshotLessons, snapshotRunDefinition } from '../../src/chapters/getting-data-in/scenario';
@@ -110,8 +111,8 @@ test('guided predictions reveal the relevant state, fit the viewport and restore
       ? page.getByTestId('snapshot-read-metric') : page.locator('.ingestion-layout [data-stage="' + lesson.stage + '"]');
     const bounds = (await target.boundingBox())!;
     const aboveFits = bounds.y - card!.height - 20 >= 12;
-    if (aboveFits) expect(card!.y + card!.height).toBeLessThanOrEqual(bounds.y);
-    await dialog.getByRole('button', { name: index === snapshotLessons.length - 1 ? 'Finish tutorial' : 'Next', exact: true }).click();
+    if (aboveFits && await dialog.locator('.relation-guide-hole').count() === 1) expect(card!.y + card!.height).toBeLessThanOrEqual(bounds.y);
+    await advanceGuidedLesson(page, index === snapshotLessons.length - 1);
   }
   await expect(page.locator('.maintenance-complete')).toHaveText('Tutorial completed');
   await expect(page.getByRole('button', { name: 'Start guided run', exact: true })).toBeFocused();

@@ -92,6 +92,24 @@
   color: var(--lab-muted);
   font-size: 11px;
 }
+.relation-guide-focus { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 10px; }
+.relation-guide-focus .button { min-height: 26px; padding: 3px 7px; font-size: 11px; }
+.relation-guide-focus .button[aria-pressed='true'] { color: var(--lab-purple); background: var(--lab-tint); }
+.relation-guide-focus > span { color: var(--lab-muted); font-size: 11px; margin-left: auto; }
+.relation-guide-detached-target {
+  display: grid !important;
+  position: fixed;
+  inset: 60% 12px auto;
+  z-index: 20;
+  width: min(740px, calc(100vw - 24px));
+  margin-inline: auto;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--lab-border);
+  border-radius: 5px;
+  background: var(--lab-surface);
+}
 @media (max-width: 639px) {
   .relation-guide-card {
     padding: 13px;

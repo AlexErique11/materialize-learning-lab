@@ -12,6 +12,7 @@ import type { ChapterDefinition } from '../chapterRegistry';
 import { RelationHelp } from '../../components/lesson/RelationHelp';
 import { logicalTimestampHelp } from '../../components/lesson/logicalTimestampHelp';
 import { LessonText, type LessonTextContent } from '../../components/lesson/LessonText';
+import { useGuidedFocus } from '../../components/lesson/useGuidedFocus';
 import '../../styles/lesson.css';
 import './lecture-one.css';
 import './lecture-two.css';
@@ -23,7 +24,7 @@ interface MaintenanceLectureProps<Snapshot extends MaintenanceSnapshot> {
   chapter: ChapterDefinition; navigation: ReactNode; title: string; description: string; timeTestId: string;
   definition: Parameters<typeof useLectureRun>[0];
   layout?: 'comparison';
-  lessons: readonly { time: number; title: string; stage: string; explanation: LessonTextContent; before?: LessonTextContent }[];
+  lessons: readonly { time: number; title: string; stage: string; related?: readonly string[]; explanation: LessonTextContent; before?: LessonTextContent }[];
   stages: readonly { id: string; title: string; shortTitle?: string; sql: string; description: string; showChanges?: boolean }[];
   reference: NonNullable<ComponentProps<typeof GuidedLabScreen>['reference']>;
   snapshot: (time: number) => Snapshot;
@@ -37,13 +38,17 @@ export function MaintenanceLecture<Snapshot extends MaintenanceSnapshot>({ chapt
   const ordersRef = useRef<HTMLElement>(null);
   const productsRef = useRef<HTMLElement>(null);
   const resultRef = useRef<HTMLElement>(null);
-  const refs = { [stages[0]!.id]: ordersRef, [stages[1]!.id]: productsRef, [stages[2]!.id]: resultRef };
+  const metricsRef = useRef<HTMLDivElement>(null);
+  const refs = { [stages[0]!.id]: ordersRef, [stages[1]!.id]: productsRef, [stages[2]!.id]: resultRef, metrics: metricsRef };
   useEffect(() => { if (helpOpen) dispatch({ type: 'pause' }); }, [helpOpen, dispatch]);
   useEffect(() => { if (state.guided) setMobileDiffs(false); }, [state.guided]);
   const lesson = lessons[Math.min(state.step, lessons.length - 1)]!;
-  const activeStage = state.guided ? lesson.stage : selectedStage;
   const current = snapshot(state.selectedTime);
   const beforeChange = Boolean(lesson.before) && !state.revealed;
+  const focus = useGuidedFocus(`${state.guided}:${state.step}:${state.revealed}`,
+    [lesson.stage, ...(!beforeChange ? lesson.related ?? [] : [])], refs,
+    Object.fromEntries([...stages.map(stage => [stage.id, stage.title]), ['metrics', 'Row counts']]), ['metrics']);
+  const activeStage = state.guided ? focus.id === 'metrics' ? lesson.stage : focus.id : selectedStage;
 
   return <>
     <LectureScreen layout="without-tip" chapter={chapter} title={title} regionLabel="Lecture content" navigation={navigation}
@@ -53,7 +58,7 @@ export function MaintenanceLecture<Snapshot extends MaintenanceSnapshot>({ chapt
         progressLabel: state.guided ? 'Tutorial' : 'Changes', playing: state.playing,
         onReset: () => { setSelectedStage(stages[0]!.id); setMobileDiffs(false); dispatch({ type: 'reset' }); },
         onRun: () => dispatch({ type: 'play' }), onStartGuidedRun: () => dispatch({ type: 'start-guided' }) }}
-      guided={state.guided} metrics={layout !== 'comparison' && <div className="relation-metrics" aria-label="Relation metrics">
+      guided={state.guided} metrics={layout !== 'comparison' && <div ref={metricsRef} className="relation-metrics" aria-label="Relation metrics">
           <WorkspaceMetric icon={<Database size={25} aria-hidden="true" />} label={<>Input rows <RelationHelp label="Input rows" text="The number of rows currently present in the input table or tables. Each row counts once; identical rows in the input are still separate copies." /></>} value={current.inputCount} />
           <WorkspaceMetric icon={<Table2 size={25} aria-hidden="true" />} label={<>Result rows <RelationHelp label="Result rows" text="The number of rows currently shown in the query result. Joins produce a row for each matching input-row combination; aggregations produce one row per group." /></>} value={current.output.length} />
           <WorkspaceMetric icon={<Clock3 size={25} aria-hidden="true" />} label={<>{logicalTimestampHelp.label} <RelationHelp {...logicalTimestampHelp} /></>}
@@ -73,12 +78,11 @@ export function MaintenanceLecture<Snapshot extends MaintenanceSnapshot>({ chapt
           </div>
         </div>
       } />
-    <Spotlight open={state.guided} targetRef={refs[lesson.stage]!} step={Math.min(state.step + 1, lessons.length)} total={lessons.length}
+    <Spotlight open={state.guided} {...focus.props} step={Math.min(state.step + 1, lessons.length)} total={lessons.length}
       title={lesson.title} description={<span className="maintenance-lesson-text"><LessonText content={beforeChange ? lesson.before! : lesson.explanation} /></span>} phaseLabel={beforeChange ? 'Predict the effect' : 'Explanation'}
-      visual={null} onClose={() => dispatch({ type: 'close-guided' })}>
-      <Button disabled={state.step === 0} onClick={() => dispatch({ type: 'back' })}>Back</Button>
-      {beforeChange ? <Button variant="primary" onClick={() => dispatch({ type: 'reveal' })}>Show effect</Button>
-        : <Button variant="primary" onClick={() => dispatch({ type: 'next' })}>{state.step === lessons.length - 1 ? 'Finish tutorial' : 'Next'}</Button>}
-    </Spotlight>
+      visual={null} onClose={() => dispatch({ type: 'close-guided' })}
+      navigation={{ backDisabled: state.step === 0, onBack: () => dispatch({ type: 'back' }),
+        onNext: () => dispatch({ type: beforeChange ? 'reveal' : 'next' }),
+        nextLabel: beforeChange ? 'Show effect' : state.step === lessons.length - 1 ? 'Finish tutorial' : 'Next' }} />
   </>;
 }

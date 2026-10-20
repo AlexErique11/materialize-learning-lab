@@ -1,3 +1,4 @@
+import { advanceGuidedLesson } from './guided-run';
 import { expectChapterOneGuideLayout } from './chapter-one-guide';
 import { expect, test } from './fixtures';
 
@@ -117,7 +118,7 @@ test('six guided steps explain the live tables and predict each effect', async (
       await expect(guide).toHaveAccessibleName(title);
       await expect(guide).toContainText((index + 1) + ' of 6');
       await expect(guide.locator('.relation-diagram')).toHaveCount(0);
-      await expect(page.locator('.guided-lab-progress span')).toHaveText('Changes');
+      await expect(page.locator('.guided-lab-progress > div > span')).toHaveText('Changes');
       const progress = page.getByRole('progressbar', { name: 'Changes progress' });
       await expect(progress).toHaveAttribute('max', '4');
       const beforeTime = index >= 1 && index <= 4 ? index - 1 : index === 5 ? 4 : 0;
@@ -136,7 +137,7 @@ test('six guided steps explain the live tables and predict each effect', async (
         if (index === 3) {
           await expect(guide.locator('p')).toContainText('4 → 6');
           await expect(guide.locator('p')).toContainText('2 → 3');
-          const targets = await page.locator('.relation-guide-hole').evaluate(hole => {
+          const targets = await page.locator('.relation-guide-hole').first().evaluate(hole => {
             const bounds = hole.getBoundingClientRect();
             const time = document.querySelector('[data-testid="logical-time"]')!.getBoundingClientRect();
             return { timeLeft: time.left, right: bounds.right };
@@ -151,7 +152,7 @@ test('six guided steps explain the live tables and predict each effect', async (
       }
       await expect(page.getByTestId('total-copies').locator('strong')).toHaveText(totals[index]!);
       await expect(page.getByTestId('distinct-rows').locator('strong')).toHaveText(distinct[index]!);
-      await guide.getByRole('button', { name: index === 5 ? 'Finish tutorial' : 'Next', exact: true }).click();
+      await advanceGuidedLesson(page, index === 5);
     }
     await expect(page.getByRole('dialog')).not.toBeVisible();
     await expect(page.locator('.relation-tutorial-complete')).toHaveText('Tutorial completed');
@@ -231,7 +232,7 @@ test('playback and all guide phases fit laptop screens and work in dark mode', a
         await guide.getByRole('button', { name: 'Show effect', exact: true }).click();
         await expectChapterOneGuideLayout(page);
       }
-      await guide.getByRole('button', { name: step === guideTitles.length - 1 ? 'Finish tutorial' : 'Next', exact: true }).click();
+      await advanceGuidedLesson(page, step === guideTitles.length - 1);
     }
   }
   await page.setViewportSize({ width: 1366, height: 768 });

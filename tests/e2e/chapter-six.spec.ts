@@ -1,3 +1,4 @@
+import { advanceGuidedLesson } from './guided-run';
 import { expect, test } from './fixtures';
 import { playbackFrames, progressLectures } from '../../src/chapters/progress-and-freshness/lecture-scenarios';
 import { progressExercises } from '../../src/chapters/progress-and-freshness/exercise-scenarios';
@@ -29,6 +30,7 @@ test('Chapter 6 overview exposes every activity and the controls tour pauses pla
 });
 for (const [index, lecture] of progressLectures.entries()) {
   test(`Chapter 6 lecture ${index + 1}: guided predictions, back, reset and reference`, async ({ page }) => {
+    test.setTimeout(60_000);
     await page.goto(`${base}/tutorial/lecture-${index + 1}`);
     await page.getByRole('button', { name: 'SQL & Objectives', exact: true }).click();
     await expect(page.getByRole('dialog', { name: 'SQL & Objectives' })).toContainText('mz_internal.mz_frontiers');
@@ -53,7 +55,7 @@ for (const [index, lecture] of progressLectures.entries()) {
         const size = page.viewportSize()!;
         return Boolean(card && card.x >= 0 && card.y >= 0 && card.x + card.width <= size.width + 1 && card.y + card.height <= size.height + 1);
       }, { message: 'Every guided explanation must fit within the viewport' }).toBe(true);
-      await dialog.getByRole('button', { name: step === lecture.lessons.length - 1 ? 'Finish tutorial' : 'Next', exact: true }).click();
+      await advanceGuidedLesson(page, step === lecture.lessons.length - 1);
     }
     await expect(page.getByRole('dialog')).toHaveCount(0);
     await expect(page.getByText('Tutorial completed', { exact: true })).toBeVisible();

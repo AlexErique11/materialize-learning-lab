@@ -1,3 +1,4 @@
+import { advanceGuidedLesson } from './guided-run';
 import { expect, test } from './fixtures';
 import { aggregateLessons } from '../../src/chapters/incremental-maintenance/aggregate-scenario';
 const path = '/labs/incremental-maintenance/tutorial/lecture-3';
@@ -34,7 +35,7 @@ test('aggregation predictions reveal full result batches and finish with keyboar
     await expect(page.getByTestId('aggregate-time')).toHaveText('t = ' + lesson.time);
     const card = await dialog.locator('.relation-guide-card').boundingBox();
     expect(card!.y + card!.height).toBeLessThanOrEqual(page.viewportSize()!.height);
-    await dialog.getByRole('button', { name: index === aggregateLessons.length - 1 ? 'Finish tutorial' : 'Next', exact: true }).click();
+    await advanceGuidedLesson(page, index === aggregateLessons.length - 1);
   }
   await expect(page.getByText('Tutorial completed', { exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Start guided run', exact: true })).toBeFocused();
