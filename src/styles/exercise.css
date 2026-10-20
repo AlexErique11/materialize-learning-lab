@@ -1,4 +1,11 @@
+.app-shell-guided-labs { --exercise-navigation-inset: 12px; }
 .guided-lab-page.staged-exercise-page { gap: 8px; padding-bottom: 8px; }
+@media (min-width: 640px) and (min-height: 741px) {
+  .app-shell-guided-labs { --exercise-navigation-inset: 16px; }
+}
+@media (min-width: 640px) and (min-height: 850px) {
+  .app-shell-guided-labs { --exercise-navigation-inset: 24px; }
+}
 
 .staged-exercise-page .relation-workspace { gap: 8px; }
 

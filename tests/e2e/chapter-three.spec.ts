@@ -51,35 +51,81 @@ test('shared controls, reference dialog and playback match the previous chapter'
   await expect(page.getByRole('button', { name: 'Lecture controls walkthrough', exact: true })).toBeFocused();
 });
 
-test('exercises show the graph in the lecture position without a view switch', async ({ page, isMobile }) => {
-  test.setTimeout(90_000);
-  const sizes = isMobile ? [[390, 844], [375, 667]] : [[1440, 900], [1280, 720], [1280, 650], [1024, 700]];
+test('tables and questions stay visible together without scrolling and match Chapter 2 navigation', async ({ page, isMobile }) => {
+  test.setTimeout(240_000);
+  const sizes = isMobile ? [[390, 844], [375, 667], [610, 668]] : [[1536, 714], [1917, 893], [1440, 900], [1366, 768], [1280, 720], [1280, 650], [1024, 768], [1024, 700], [900, 800]];
   const graphGeometry = () => page.locator('.flow-canvas, .flow-input').evaluateAll(elements => elements.map(element => {
     const box = element.getBoundingClientRect();
-    return { top: box.top + scrollY, left: box.left, width: box.width, height: box.height };
+    return { left: box.left, width: box.width };
   }));
   for (const [width, height] of sizes) {
     await page.setViewportSize({ width: width!, height: height! });
     await page.goto(`${chapterPath}/tutorial/lecture-2`);
     const reference = await graphGeometry();
-    const queryRowHeight = (await page.locator('.object-query-controls').boundingBox())!.height;
+    const lectureInputTop = (await page.locator('.flow-input').boundingBox())!.y;
+    await page.goto('/labs/incremental-maintenance/exercises/exercise-1');
+    await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+    const referenceNext = (await page.getByRole('button', { name: 'Next question', exact: true }).boundingBox())!;
     for (const exercise of [1, 2]) {
       await page.goto(`${chapterPath}/exercises/exercise-${exercise}`);
-      await expect(page.getByRole('button', { name: /^(View graph|Question|View tables)$/ })).toHaveCount(0);
-      const row = page.locator('.object-query-controls');
-      expect((await row.boundingBox())!.height).toBe(queryRowHeight);
-      await expect(row).toHaveAttribute('inert', '');
+      if (height! > 880) expect(Math.abs((await page.locator('.flow-input').boundingBox())!.y - lectureInputTop)).toBeLessThanOrEqual(1);
+      if (width === 1536 && height === 714) {
+        expect(await page.locator('.object-exercise-workspace').evaluate(element => parseFloat(getComputedStyle(element).paddingTop))).toBeGreaterThanOrEqual(60);
+      }
+      await expect(page.getByRole('button', { name: /^(View tables|Show tables|Question)$/ })).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Run query', exact: true })).toHaveCount(0);
-      for (let stage = 0; stage < 4; stage++) {
+      const fit = async () => {
         await expect(page.locator('.flow-canvas')).toBeVisible();
         await expect(page.locator('.exercise-question')).toBeVisible();
+        const graph = (await page.locator('.flow-graph').boundingBox())!;
+        const question = (await page.locator('.exercise-question').boundingBox())!;
+        const footer = (await page.locator('.object-exercise-footer').boundingBox())!;
+        expect(graph.y + graph.height).toBeLessThanOrEqual(question.y);
+        expect(question.y + question.height, `${width}×${height}, exercise ${exercise}`).toBeLessThanOrEqual(footer.y);
+        for (const element of await page.locator('.flow-panel:visible, .flow-graph .table-scroll:visible, .exercise-question').all()) {
+          expect(await element.evaluate(node => node.scrollHeight <= node.clientHeight + 1), (await element.getAttribute('class')) ?? 'Table content').toBe(true);
+        }
+      };
+      for (let stage = 0; stage < 4; stage++) {
+        await fit();
+        const footer = (await page.locator('.object-exercise-footer').boundingBox())!;
         await expect.poll(graphGeometry).toEqual(reference);
-        await page.locator('.exercise-question').scrollIntoViewIfNeeded();
+        await page.mouse.move(width! - 35, height! / 2);
+        await page.mouse.wheel(0, 900);
+        await page.keyboard.press('PageDown');
+        expect(await page.evaluate(() => scrollY)).toBe(0);
+        await expect.poll(graphGeometry).toEqual(reference);
+          const tablePositions = () => page.locator('.flow-canvas, .flow-panel:visible, .flow-input table').evaluateAll(elements => elements.map(element => {
+            const box = element.getBoundingClientRect();
+            return { left: box.left, top: box.top, width: box.width, height: box.height };
+          }));
+          const beforeReveal = await tablePositions();
         await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
         await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'correct');
+          await expect.poll(tablePositions, 'Revealing an answer must not move the diagram or its input table').toEqual(beforeReveal);
+        await expect(page.locator('.exercise-question')).toBeVisible();
+        await fit();
+        if (width! <= 1150) {
+          for (const panel of ['a', 'b', 'durable', 'transform', 'definitions']) {
+            await page.getByLabel('Diagram panel', { exact: true }).selectOption(panel);
+            await fit();
+          }
+          await page.getByLabel('Diagram panel', { exact: true }).selectOption('input');
+        }
+        const next = (await page.getByRole('button', { name: stage < 3 ? 'Next question' : exercise === 1 ? 'Exercise 2' : 'Finish chapter', exact: true }).boundingBox())!;
+        if (!isMobile) {
+          const inset = height! >= 850 ? 24 : height! >= 741 ? 16 : 12;
+          expect(height! - next.y - next.height, `${width}×${height}`).toBeCloseTo(inset, 0);
+        }
+        else expect(next.y).toBe(footer.y + (footer.height - next.height) / 2);
+        expect(next.x + next.width).toBeCloseTo(referenceNext.x + referenceNext.width, 0);
+        expect(next.height).toBe(referenceNext.height);
         await expect.poll(graphGeometry).toEqual(reference);
+        if ((width === 1366 || (width === 1280 && height === 650)) && exercise === 2 && stage === 3) await page.screenshot({ path: test.info().outputPath(`combined-exercise-${width}x${height}.png`) });
         if (stage < 3) await page.getByRole('button', { name: 'Next question', exact: true }).click();
       }
+      await page.goto(`${chapterPath}/tutorial/lecture-2`);
+      expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).not.toBe('clip');
     }
   }
 });
@@ -215,6 +261,7 @@ test('graph connects each query to its actual source and preserves past answers'
 
 test('manual answers, incorrect retries, hints and the final design work', async ({ page, isMobile }) => {
   test.setTimeout(90_000);
+  if (!isMobile) await page.setViewportSize({ width: 1366, height: 768 });
   for (const [exerciseIndex, exercise] of objectExercises.entries()) {
     await page.goto(`${chapterPath}/exercises/exercise-${exerciseIndex + 1}`);
     for (const [stage, checkpoint] of exercise.checkpoints.entries()) {
@@ -234,11 +281,12 @@ test('manual answers, incorrect retries, hints and the final design work', async
       if (stage < exercise.checkpoints.length - 1) await page.getByRole('button', { name: 'Next question', exact: true }).click();
     }
     if (isMobile) {
-      await page.locator('.flow-overview').getByRole('button', { name: 'Cluster B', exact: true }).click();
+      await page.getByLabel('Diagram panel', { exact: true }).selectOption('b');
       await expect(page.locator('.flow-cluster-b')).toBeVisible();
     }
     if (exerciseIndex === 1) {
       await expect(page.getByTestId('object-query-result')).toContainText('North $170');
+      if (!isMobile) await page.screenshot({ path: test.info().outputPath('combined-exercise-final.png') });
       await page.getByRole('button', { name: 'Finish chapter', exact: true }).click();
       await expect(page.getByRole('dialog', { name: 'You finished Chapter 3' })).toBeVisible();
       await page.keyboard.press('Escape');

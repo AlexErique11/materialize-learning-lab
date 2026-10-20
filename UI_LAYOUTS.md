@@ -22,6 +22,13 @@ slots when adding a lecture; do not copy its frame into the new page.
 `ExerciseFrame.renderWorkspace` can compose its visualization, question, and
 navigation slots with this same frame. Questions supplied through
 `afterVisualization` follow the graph without changing its measured upper inset.
+Chapter 3 exercises compose the shared graph and question together in a compact
+workspace with a reserved next-button footer. The graph retains the lecture panel
+columns, with less vertical spacing and no lecture-only toolbar reservations.
+Narrow windows select a reference panel while keeping the question visible below.
+Chapter 3 owns this viewport fit and route-scoped scroll lock.
+Chapter 3 uses the shared exercise navigation inset: 12px by default, 16px on
+desktop windows at least 741px high, and 24px from 850px.
 
 `src/labs/components/lecture-layout.css` owns lecture frame dimensions and
 responsive tokens. The no-tip template measures the available viewport and content

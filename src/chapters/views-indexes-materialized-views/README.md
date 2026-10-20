@@ -12,11 +12,14 @@ explains intermediate views and serving requirements. These pages keep the initi
 diagram unchanged. Back, close and restart work across the introduction/action
 boundary; introductions never create objects or count as scenario changes.
 
-`ObjectQueryControls` supplies the same responsive query-controls row to lectures
-and exercises. Lecture 1 and both exercises reserve it invisibly and inertly.
-Both exercises reuse `LectureWorkspace` and the lecture graph styles, including
-the reserved scenario-step row. Graphs stay visible in the lecture position;
-questions follow below and the page scrolls when they exceed the viewport.
+`ObjectQueryControls` supplies the responsive query-controls row to lectures.
+Lecture 1 reserves it invisibly and inertly.
+Both exercises reuse `FlowGraph`, with the diagram, question and answers visible
+together. Exercise spacing removes the lecture-only scenario and query controls
+and compacts the graph vertically while retaining its panel columns and table rows.
+Narrow windows use a panel selector above the selected reference table, with the
+question always below it. The navigation footer reserves its space and matches the
+earlier exercises' bottom-right controls. The exercise route disables page scrolling.
 
 Guided prose and examples use explicit `LessonTextContent` references. Order IDs
 and regular-view names use purple, regions and materialized-view references use
@@ -99,3 +102,8 @@ ordinary SELECT semantics; Materialize-specific DDL/storage claims are checked
 against the official documentation, not a live Materialize instance.
 Browser journeys cover guided predictions, exploration, history, exercise retries,
 reveal/reset/completion, both themes, keyboard access and viewport geometry.
+Exercise workspaces stretch to the available canvas height so answer explanations
+cannot recenter the diagram or move its tables.
+The exercise's upper gap brings tables down toward the lecture position. It uses
+viewport height rather than answer height and contracts on shorter windows to
+leave room for the longest explanation and the fixed navigation footer.

@@ -1,3 +1,12 @@
+/* Both page types reserve the same responsive heading and subtitle rows. */
+@media (min-width: 640px) and (max-width: 1150px) {
+  .object-chapter-page .guided-lab-title { display: contents; }
+  .object-chapter-page .guided-lab-title h1 { flex: 1; min-width: 0; }
+  .app-shell-guided-labs .object-chapter-page .guided-lab-title > p { order: 1; flex-basis: 100%; margin-top: 0; max-width: none; font-size: 13px; }
+}
+@media (min-width: 1024px) and (max-width: 1150px) {
+  .object-chapter-page .guided-lab-title h1 { flex-basis: 100%; }
+}
 .object-chapter-page .object-step-sequence { display: flex; gap: 10px; min-height: 40px; }
 .object-concept-example { padding: 10px 12px; border: 1px solid var(--lab-border); border-radius: 5px; background: var(--lab-tint); color: var(--lab-text); font-size: 12px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
 :is(.object-chapter-page, .object-lesson-text) :is([data-column='orderId'], [data-column='view']) { --object-reference-color: var(--lab-purple); }
@@ -87,15 +96,33 @@
 .object-query-controls label { display: flex; align-items: center; gap: 8px; }
 .object-query-controls select { color: var(--lab-text); background: var(--lab-surface); border: 1px solid var(--lab-border); border-radius: 5px; padding: 6px; }
 .object-query-controls .button { font-size: 12px; min-height: 30px; }
-.object-exercise-page .exercise-question { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 14px; }
+.object-exercise-page .exercise-question { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 14px; flex-shrink: 0; }
 .object-exercise-page .exercise-answers { display: grid; gap: 8px; }
 .object-answer-choices { border: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; min-width: 0; font-size: 12px; }
 .object-answer-choices legend { padding: 0; margin-bottom: 6px; font-weight: 650; color: var(--lab-muted); }
 .object-answer-choices label { display: flex; align-items: start; gap: 6px; }
 .object-answer-choices input { margin-top: 2px; accent-color: var(--lab-purple); flex-shrink: 0; }
-.object-exercise-followup { display: grid; gap: 8px; margin-top: 10px; }
-.object-reference-playback { height: var(--lecture-playback-height); visibility: hidden; }
-.object-exercise-page .object-step-explanation { visibility: hidden; }
+/* Share the page between the diagram, prediction and reserved navigation footer. */
+html:has(.object-exercise-page), body:has(.object-exercise-page) { height: 100dvh; overflow: clip; overscroll-behavior: none; }
+.object-exercise-page { position: relative; }
+.app-shell-guided-labs .object-exercise-page[data-viewport-fit] { height: var(--page-available-height); min-height: 0; align-content: start; }
+/* Override shared canvas centering: feedback changes the form's content height. */
+.object-exercise-page .guided-lab-canvas { display: flex; flex: 1; min-height: 0; align-items: stretch; }
+.object-exercise-page form.relation-workspace { display: flex; flex: 1; min-height: 0; }
+/* Keep the lecture-like upper gap independent of the current answer's height.
+   Reserve room for the longest explanation and the navigation before adding it. */
+.object-exercise-workspace { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 10px; padding-top: clamp(0px, calc(100dvh - 868px), 94px); padding-bottom: calc(40px + var(--exercise-navigation-inset)); }
+.object-exercise-workspace > .flow-graph { flex-shrink: 0; }
+.object-exercise-page .flow-inspector { display: none; }
+.flow-panel-picker { display: none; }
+.object-exercise-footer { position: absolute; bottom: var(--exercise-navigation-inset); left: 28px; right: 28px; display: flex; justify-content: flex-end; align-items: center; height: 40px; }
+.object-exercise-page .exercise-question-navigation { display: flex; align-items: center; height: 40px; min-height: 40px; }
+.object-exercise-page .exercise-question-navigation:empty { display: flex; visibility: hidden; }
+@media (max-width: 639px) {
+  .object-exercise-page .guided-lab-controls .button > svg { display: none; }
+  .object-exercise-footer { left: 16px; right: 16px; }
+  .object-exercise-footer .button { min-height: 36px; padding-inline: 8px; font-size: 12px; }
+}
 .object-recap { display: grid; gap: 16px; line-height: 1.6; font-size: 14px; }
 .object-recap ul { list-style: disc; padding-left: 20px; }
 .object-recap .button { justify-self: end; }
@@ -136,7 +163,7 @@
   .flow-overview .button[aria-pressed='true'] { border-color: var(--lab-purple); color: var(--lab-purple); background: var(--lab-tint); }
   .flow-canvas { height: 178px; }
   .flow-canvas > .flow-connectors { display: none; }
-  .flow-panel { display: none; position: absolute; inset: 0; width: 100%; height: 178px; padding: 10px; }
+  .flow-panel { display: none; position: absolute; inset: 0; width: 100%; height: 178px; min-height: 0; padding: 10px; }
   .flow-graph[data-cross-cluster='false'] .flow-cluster-a { width: 100%; }
   .flow-graph[data-selected-panel='definitions'] .flow-definitions,
   .flow-graph[data-selected-panel='input'] .flow-input,
@@ -190,5 +217,68 @@
   .object-chapter-page.lecture-layout-page .flow-canvas { height: 282px; }
   .object-chapter-page.lecture-layout-page .flow-cluster { top: 65px; }
   .object-chapter-page.lecture-layout-page :is(.flow-transform, .flow-durable) { top: 210px; }
+}
+/* Compact exercises retain the lecture's panel columns and complete table rows. */
+@media (min-width: 1151px) and (max-height: 960px) {
+  .object-exercise-page .flow-panel { padding: 7px; gap: 3px; }
+  .object-exercise-page .flow-card { padding: 5px; }
+  .object-exercise-page .flow-cluster-body { gap: 17px; }
+  .object-exercise-page .flow-compute > svg, .object-exercise-page .flow-location-label, .object-exercise-page .flow-index > span { display: none; }
+  .object-exercise-page .flow-index .data-table thead { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
+  .object-exercise-page .flow-durable .flow-object-name { top: 9px; }
+  .object-chapter-page.object-exercise-page .flow-canvas { height: 254px; }
+  .object-exercise-workspace { padding-top: clamp(0px, calc(100dvh - 704px), 184px); }
+  .object-exercise-page .flow-definitions { height: 45px; padding-block: 4px; }
+  .object-chapter-page.object-exercise-page .flow-cluster { top: 48px; height: 124px; }
+  .object-exercise-page .flow-input { top: 48px; min-height: 124px; }
+  .object-exercise-page .flow-input-note, .object-exercise-page .flow-input > .flow-object-name { display: none; }
+  .object-chapter-page.object-exercise-page .flow-transform, .object-chapter-page.object-exercise-page .flow-durable { top: 182px; height: 72px; }
+  .object-exercise-page .object-query-result { padding-block: 6px; }
+  .object-exercise-page .flow-legend { display: none; }
+  .object-exercise-page .exercise-question { min-height: 0; padding: 8px 12px; }
+}
+@media (min-width: 640px) and (max-height: 740px) {
+  .object-exercise-workspace { gap: 6px; }
+  .object-exercise-page .exercise-question { padding-block: 6px; }
+  .object-exercise-page .guided-lab-title { display: contents; }
+  .object-exercise-page .guided-lab-title h1 { flex: 1; white-space: nowrap; }
+  .object-exercise-page .guided-lab-heading { gap: 8px; }
+  .object-exercise-page .guided-lab-controls { gap: 8px; }
+  .app-shell-guided-labs .object-exercise-page .guided-lab-title > p { display: none; }
+}
+@media (min-width: 1151px) and (max-height: 740px) {
+  .object-exercise-workspace { padding-top: clamp(0px, calc(100dvh - 650px), 94px); }
+}
+@media (max-width: 1150px) {
+  .object-exercise-page .flow-overview, .object-exercise-page .flow-legend { display: none; }
+  .object-exercise-workspace { padding-top: clamp(0px, calc(100dvh - 752px), 94px); }
+  .object-exercise-page .flow-panel-picker { display: flex; align-items: center; gap: 8px; color: var(--lab-muted); font-size: 12px; }
+  .flow-panel-picker select { border: 1px solid var(--lab-border); border-radius: 5px; background: var(--lab-surface); color: var(--lab-text); font: inherit; padding: 4px 8px; }
+  .object-exercise-page .exercise-question { min-height: 0; padding: 8px 10px; gap: 8px; }
+}
+@media (max-width: 639px) {
+  .app-shell-guided-labs .object-exercise-page[data-viewport-fit] { grid-template-rows: max-content max-content minmax(0, 1fr); gap: 4px; padding-block: 4px 0; }
+  .object-exercise-page .guided-lab-title { display: contents; }
+  .object-exercise-page .guided-lab-title h1 { grid-row: 1; grid-column: 1; }
+  .object-exercise-page .guided-lab-controls { grid-row: 2; row-gap: 4px; }
+  .object-exercise-page .guided-lab-canvas { grid-row: 3; }
+  .app-shell-guided-labs .object-exercise-page .guided-lab-title > p { display: none; }
+  .object-exercise-page .flow-canvas, .object-exercise-page .flow-panel { height: 124px; padding: 6px; gap: 3px; }
+  .object-exercise-page .flow-input > .flow-object-name, .object-exercise-page .flow-input-note, .object-exercise-page .flow-location-label { display: none; }
+  .object-exercise-page .flow-durable > .flow-object-name { display: none; }
+  .object-exercise-page .flow-durable { --flow-row-height: 20px; }
+  .object-exercise-page .object-query-result { min-height: 0; padding: 4px 6px; font-size: 11px; gap: 4px; }
+  .object-exercise-page .object-query-result > strong { flex-basis: auto; }
+  .object-exercise-page .object-query-result > span:last-of-type { flex: 1; }
+  .object-exercise-page .exercise-question { padding: 4px 8px; gap: 4px; }
+  .object-exercise-page .exercise-question-copy p { margin-top: 4px; }
+  .object-exercise-page .object-answer-choices { gap: 4px 8px; }
+  .object-exercise-page .object-answer-choices legend { margin-bottom: 4px; }
+  .object-exercise-workspace { gap: 4px; padding-top: clamp(0px, calc(100dvh - 688px), 156px); }
+}
+@media (max-width: 639px) and (max-height: 700px) {
+  .object-exercise-page .flow-graph { gap: 2px; }
+  .object-exercise-page .flow-canvas, .object-exercise-page .flow-panel { height: 120px; padding-block: 4px; }
+  .object-exercise-page .object-query-result { padding-block: 2px; }
 }
 @media (prefers-reduced-motion: reduce) { .flow-result-row { animation: none; background: color-mix(in srgb, var(--lab-tint) 30%, transparent); } }

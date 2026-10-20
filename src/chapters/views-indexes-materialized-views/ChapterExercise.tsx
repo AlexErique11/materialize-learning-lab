@@ -8,8 +8,6 @@ import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
 import { useExerciseStages } from '../../hooks/useExerciseStages';
 import { FlowGraph } from './FlowGraph';
-import { ObjectQueryControls } from './ObjectQueryControls';
-import { LectureWorkspace } from '../../labs/components/LectureWorkspace';
 import { documentationLinks } from './scenario';
 import { gradeObjectPrediction, objectExercises } from './exercise-scenarios';
 import type { DiagramPanel } from './simulation';
@@ -32,16 +30,12 @@ export function ObjectChapterExercise({ chapter, navigation, exerciseIndex }: { 
       pageClass="lesson-page staged-exercise-page object-chapter-page object-exercise-page lecture-layout-page" flow={flow} progressLabel="Questions"
       reference={{ objective: 'Choose objects and explain their state locations before revealing the effect. Scenario fixtures change when the question says “New fixture”. The final challenge builds a complete shared-serving design.', sql: exercise.sql, documentationLinks }}
       checkpointTitle={checkpoint.title} question={[checkpoint.question]} hint={[checkpoint.hint]} nextExerciseLabel={lastExercise ? 'Finish chapter' : 'Exercise 2'}
-      visualization={<>
-        <div className="object-step-sequence" aria-hidden="true" inert />
-        <ObjectQueryControls />
-        <FlowGraph snapshot={flow.accepted ? checkpoint.after : checkpoint.before} showClusterB selectedPanel={panel} onSelectPanel={setPanel} pending={!flow.accepted} />
-        <p className="object-step-explanation" aria-hidden="true" />
-      </>}
-      renderWorkspace={({ visualization, question, navigation: questionNavigation }) => <LectureWorkspace layout="without-tip" guided={false}
-        visualization={visualization}
-        afterVisualization={<div className="object-exercise-followup">{question}{questionNavigation}</div>}
-        playback={<div className="relation-playback-controls object-reference-playback" aria-hidden="true" inert />} />}
+      visualization={<FlowGraph snapshot={flow.accepted ? checkpoint.after : checkpoint.before} showClusterB compact selectedPanel={panel} onSelectPanel={setPanel} pending={!flow.accepted} />}
+      renderWorkspace={({ visualization, question, navigation: questionNavigation }) => <div className="object-exercise-workspace">
+        {visualization}
+        {question}
+        <div className="object-exercise-footer">{questionNavigation}</div>
+      </div>}
       answers={<><fieldset className="object-answer-choices" disabled={flow.accepted}><legend>Select {checkpoint.solution.length === 1 ? 'one answer' : 'every correct statement'}</legend>
         {checkpoint.choices.map(item => <label key={item.id}><input type="checkbox" checked={selected.includes(item.id)} onChange={event => { const checked = event.target.checked;
           setAnswers(previous => ({ ...previous, [flow.stage]: checked ? [...selected, item.id] : selected.filter(id => id !== item.id) })); flow.dispatch({ type: 'edit' }); }} />{item.label}</label>)}
