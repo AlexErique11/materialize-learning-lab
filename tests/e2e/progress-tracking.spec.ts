@@ -93,11 +93,25 @@ for (const chapter of chapters) {
   });
 }
 
-test('both bars count whole chapters while activity dots and other tabs stay in sync', async ({ page, context }) => {
+test('both bars count whole chapters while chapter badges, activity dots and other tabs stay in sync', async ({ page, context, isMobile }, testInfo) => {
   test.setTimeout(60_000);
   const lecture = '/labs/changing-relations/tutorial/lecture-1';
+  const chapterLink = (target: Page) => target.locator('#main-content .chapter-link-row > a[href="/labs/changing-relations"]').first();
   await page.goto(lecture);
+  const badgeStyle = await chapterLink(page).locator('.chapter-link-number').evaluate(el => {
+    const style = getComputedStyle(el);
+    return { fill: style.backgroundColor, color: style.color, border: style.borderColor };
+  });
+  let compactFill = '';
+  let compactColor = '';
+  if (!isMobile) {
+    await page.getByRole('button', { name: 'Collapse chapter navigation', exact: true }).click();
+    compactFill = await chapterLink(page).locator('.chapter-link-number').evaluate(el => getComputedStyle(el).backgroundColor);
+    compactColor = await chapterLink(page).locator('.chapter-link-number').evaluate(el => getComputedStyle(el).color);
+    await page.getByRole('button', { name: 'Expand chapter navigation', exact: true }).click();
+  }
   await finishTutorial(page);
+  await expect(chapterLink(page)).not.toHaveAttribute('data-completed', 'true');
   const successColor = await tutorialBadge(page).evaluate(el => getComputedStyle(el).color);
   const activeDot = page.locator(`#main-content .chapter-pages a[href="${lecture}"] .chapter-page-dot`).first();
   expect(await activeDot.evaluate(el => getComputedStyle(el).backgroundColor)).not.toBe(successColor);
@@ -115,9 +129,30 @@ test('both bars count whole chapters while activity dots and other tabs stay in 
   const other = await context.newPage();
   await other.goto('/labs/changing-relations');
   await expect(progress(other)).toHaveAttribute('value', '0');
+  await expect(chapterLink(other)).not.toHaveAttribute('data-completed', 'true');
   await page.goto('/labs/changing-relations/tutorial/lecture-2');
   await finishTutorial(page);
   await expect(progress(other)).toHaveAttribute('value', '1');
+  await expect(chapterLink(other)).toHaveAttribute('data-completed', 'true');
+  const number = chapterLink(page).locator('.chapter-link-number');
+  await expect(number).toHaveCSS('color', badgeStyle.color);
+  await expect(number).toHaveCSS('border-color', badgeStyle.border);
+  await expect(number).toHaveCSS('background-color', badgeStyle.fill);
+  if (!isMobile) {
+    await page.getByRole('button', { name: 'Collapse chapter navigation', exact: true }).click();
+    await expect(number).toHaveCSS('background-color', compactFill);
+    await expect(number).toHaveCSS('color', compactColor);
+    await expect(chapterLink(page)).toHaveAttribute('data-completed', 'true');
+    await page.getByRole('button', { name: 'Expand chapter navigation', exact: true }).click();
+    await page.screenshot({ path: testInfo.outputPath('chapter-completed-badge.png') });
+  }
+  const neutralFill = await other.locator('#main-content .chapter-link-row > a[href="/labs/incremental-maintenance"] .chapter-link-number').first().evaluate(el => getComputedStyle(el).backgroundColor);
+  await other.goto('/labs/incremental-maintenance');
+  await expect(chapterLink(other).locator('.chapter-link-number')).toHaveCSS('color', successColor);
+  await expect(chapterLink(other).locator('.chapter-link-number')).not.toHaveCSS('background-color', neutralFill);
+  if (!isMobile) await other.screenshot({ path: testInfo.outputPath('chapter-completed-inactive-badge.png') });
+  await other.reload();
+  await expect(chapterLink(other)).toHaveAttribute('data-completed', 'true');
   await page.goto('/');
   await expect(pathProgress).toHaveAttribute('value', '1');
   await page.reload();

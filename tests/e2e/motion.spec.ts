@@ -26,20 +26,38 @@ async function expectMotion(page: Page, name: string) {
   ), `ui-motion-${name}`)).toBe(true);
 }
 
-test('SQL dialogs animate both directions and restore keyboard focus after repeated use', async ({ page }) => {
+test('SQL dialogs close on backdrop clicks, preserve content interactions and restore focus', async ({ page }) => {
   await observeMotion(page);
-  await page.goto('/labs/getting-data-in/tutorial/lecture-2');
-  const trigger = page.getByRole('button', { name: 'SQL & Objectives', exact: true });
-  const dialog = page.getByRole('dialog', { name: 'SQL & Objectives', exact: true });
-  for (let index = 0; index < 2; index += 1) {
-    await trigger.click();
-    await expect(dialog).toBeVisible();
-    await expectMotion(page, 'dialog-enter');
-    await page.keyboard.press('Escape');
-    await expect(dialog).not.toBeVisible();
-    await expect(trigger).toBeFocused();
+  for (const path of ['/labs/getting-data-in/tutorial/lecture-2', '/labs/changing-relations/exercises/exercise-1']) {
+    await page.goto(path);
+    const answer = path.includes('/exercises/') ? page.getByRole('textbox').first() : null;
+    if (answer) await answer.fill('2');
+    const trigger = page.getByRole('button', { name: 'SQL & Objectives', exact: true });
+    const dialog = page.getByRole('dialog', { name: 'SQL & Objectives', exact: true });
+    for (const action of ['escape', 'backdrop', 'close button']) {
+      await trigger.click();
+      await expect(dialog).toBeVisible();
+      await expectMotion(page, 'dialog-enter');
+      if (action === 'escape') await page.keyboard.press('Escape');
+      else if (action === 'close button') await dialog.getByRole('button', { name: 'Close SQL & Objectives', exact: true }).click();
+      else {
+        const title = dialog.getByRole('heading', { name: 'SQL & Objectives', exact: true });
+        await title.click();
+        await expect(dialog).toBeVisible();
+        const box = (await title.boundingBox())!;
+        await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+        await page.mouse.down();
+        await page.mouse.move(8, 8, { steps: 4 });
+        await page.mouse.up();
+        await expect(dialog).toBeVisible();
+        await page.mouse.click(8, 8);
+      }
+      await expect(dialog).not.toBeVisible();
+      await expect(trigger).toBeFocused();
+      await expectMotion(page, 'dialog-exit');
+      if (answer) await expect(answer).toHaveValue('2');
+    }
   }
-  await expectMotion(page, 'dialog-exit');
 });
 
 test('guided steps keep their placement and soften explanations and metric changes', async ({ page }) => {

@@ -122,7 +122,14 @@ Finishing a guided run earns tutorial completion; normal playback does not.
 Show Answer. Reset, replay, navigation and reload preserve earned completion.
 `useLectureRun` exposes the saved completion state to every lecture template.
 Sidebar activity dots turn green when completed, with purple taking precedence
-on the current page. Exercise completion uses the existing tutorial checkmark
+on the current page. Completed lecture and exercise labels use the same muted
+green as completed chapter titles; the current page label stays purple.
+Completed chapters share that same completion calculation:
+their number boxes gain a very light green fill, light green border and green
+number when unselected. The selected chapter keeps the normal purple styling,
+including in compact navigation. Completed, unselected chapter titles use a
+muted green, while selected titles keep their normal purple navigation color.
+Exercise completion uses the existing tutorial checkmark
 and success color, anchored to the shared navigation inset at the lower left
 (28px on desktop, 16px on phones) without shifting questions or metrics.
 Completed Chapter 6 activities keep compact docked answers above this footer,
@@ -158,7 +165,8 @@ skips slides and the reaction delay.
 | Lecture help slot and hidden page-link footprint | `src/components/chapter/ChapterPagination.tsx` |
 | Docs and theme controls | `src/components/layout/AppHeader.tsx`, `src/styles/app-header.css` |
 | Home-page Take a tour | `src/pages/LearningPathPage.tsx`, `.learning-path-tour-button` in `src/styles/learning-path.css` |
-| SQL, objective, documentation dialog | `src/components/lab/SqlObjectivesPanel.tsx` |
+| Learning path documentation banner | `src/pages/LearningPathPage.tsx`, `.learning-path-documentation` in `src/styles/learning-path.css`; two faint diagonal bands echo the logo, text and the Open docs link share the cards' horizontal insets, and content stacks on phones; spacing separates it from the cards without a divider |
+| SQL, objective, documentation dialog | `src/components/lab/SqlObjectivesPanel.tsx`, `src/components/ui/Dialog.tsx`; SQL panels opt into backdrop-click dismissal through the existing close animation and focus restoration, while content clicks and drags from inside stay open |
 | Guided explanation fragments | `src/components/lesson/LessonText.tsx` |
 | Chapter 4 snapshot bridge and record inspector | `src/chapters/getting-data-in/IngestionLayouts.tsx`, `lecture-one.css`, `record-lectures.css` |
 | Chapter 4 exercise answers and compact views | `src/chapters/getting-data-in/IngestionExercisePage.tsx`, `ExerciseAnswers.tsx`, `ExerciseWorkspace.tsx`, `exercises.css` |

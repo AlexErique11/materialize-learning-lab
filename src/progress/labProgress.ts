@@ -2,9 +2,11 @@ import { chapterContentPath, getChapterPages } from '../chapters/chapterOutline'
 import { coreChapters } from '../chapters/chapterRegistry';
 
 export const LAB_PROGRESS_KEY = 'materialize-learning-lab-progress-v1';
-const chapterActivities = coreChapters.map(chapter =>
-  getChapterPages(chapter).map(page => chapterContentPath(chapter, page)));
-export const labActivityPaths = chapterActivities.flat();
+const chapterActivities = coreChapters.map(chapter => ({
+  slug: chapter.slug,
+  paths: getChapterPages(chapter).map(page => chapterContentPath(chapter, page)),
+}));
+export const labActivityPaths = chapterActivities.flatMap(chapter => chapter.paths);
 const knownPaths = new Set(labActivityPaths);
 const listeners = new Set<() => void>();
 let completed: readonly string[] = [];
@@ -13,9 +15,11 @@ let memoryOnly = false;
 
 export function getLabChapterProgress(completedPaths: readonly string[]) {
   const paths = new Set(completedPaths);
+  const completedChapterSlugs = chapterActivities.filter(chapter =>
+    chapter.paths.length > 0 && chapter.paths.every(path => paths.has(path))).map(chapter => chapter.slug);
   return {
-    completed: chapterActivities.filter(activities =>
-      activities.length > 0 && activities.every(path => paths.has(path))).length,
+    completedChapterSlugs,
+    completed: completedChapterSlugs.length,
     total: coreChapters.length,
   };
 }

@@ -302,6 +302,17 @@
   background: transparent;
 }
 
+.app-shell-guided-labs .chapter-link-row > a[data-completed='true']:not(.chapter-selected) .chapter-link-number {
+  color: var(--success);
+  border-color: color-mix(in oklch, var(--success) 35%, var(--lab-border));
+  background: color-mix(in oklch, var(--success) 8%, var(--lab-surface));
+}
+
+.app-shell-guided-labs .chapter-link-row > a[data-completed='true']:not(.chapter-selected) .chapter-link-label,
+.app-shell-guided-labs .chapter-pages a[data-completed='true']:not([aria-current='page']) .chapter-page-label {
+  color: color-mix(in oklch, var(--success) 65%, var(--lab-muted));
+}
+
 .chapter-link-label {
   font-weight: 500;
 }

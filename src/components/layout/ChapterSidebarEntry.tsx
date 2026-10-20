@@ -5,6 +5,7 @@ import { getChapterSections } from '../../chapters/chapterOutline';
 import { chapterPath, formatChapterNumber, type ChapterDefinition } from '../../chapters/chapterRegistry';
 import { ChapterSidebarSection } from './ChapterSidebarSection';
 import { AnimatedRegion } from '../../motion/AnimatedRegion';
+import { useLabProgress } from '../../hooks/useLabProgress';
 
 interface ChapterSidebarEntryProps {
   chapter: ChapterDefinition;
@@ -12,6 +13,8 @@ interface ChapterSidebarEntryProps {
 }
 
 export function ChapterSidebarEntry({ chapter, compact }: ChapterSidebarEntryProps) {
+  const { completedChapterSlugs } = useLabProgress();
+  const completed = completedChapterSlugs.includes(chapter.slug);
   const { chapterSlug, sectionSlug } = useParams();
   const { pathname } = useLocation();
   const selected = chapter.slug === chapterSlug;
@@ -44,6 +47,8 @@ export function ChapterSidebarEntry({ chapter, compact }: ChapterSidebarEntryPro
           to={chapterPath(chapter)}
           end
           className={selected ? 'chapter-selected' : undefined}
+          data-completed={completed || undefined}
+          aria-description={completed ? 'Completed' : undefined}
           aria-label={`${number} ${chapter.shortTitle}`}
           aria-current={compact ? undefined : false}
           aria-expanded={!compact ? expanded : undefined}

@@ -383,11 +383,12 @@ test('chapter sidebar preserves open groups and toggles from the chapter body', 
 });
 
 test('chapter row and badge sizes stay consistent after selection', async ({ page, isMobile }) => {
+  const main = page.locator('#main-content');
   const chapter = coreChapters[1];
   if (!chapter) throw new Error('Chapter 2 must be in the curriculum.');
   await page.goto(chapterPath(firstChapter));
-  if (isMobile) await page.locator('.mobile-sidebar > summary').click();
-  const chapterLink = page.getByRole('navigation', { name: 'Chapters' }).getByRole('link', { name: `02 ${chapter.shortTitle}`, exact: true });
+  if (isMobile) await main.locator('.mobile-sidebar > summary').click();
+  const chapterLink = main.getByRole('navigation', { name: 'Chapters' }).getByRole('link', { name: `02 ${chapter.shortTitle}`, exact: true });
   const measure = () => chapterLink.evaluate((el) => {
     const box = el.getBoundingClientRect();
     const badge = el.querySelector('.chapter-link-number')!;
@@ -398,7 +399,7 @@ test('chapter row and badge sizes stay consistent after selection', async ({ pag
   const before = await measure();
   await chapterLink.click();
   await expect(page).toHaveURL(chapterPath(chapter));
-  if (isMobile) await page.locator('.mobile-sidebar > summary').click();
+  if (isMobile) await main.locator('.mobile-sidebar > summary').click();
   expect(await measure()).toEqual(before);
 });
 
@@ -610,10 +611,10 @@ test('learning path and content pages fit desktop viewports without hiding navig
             `Learning path at ${viewport.width} × ${viewport.height}`,
           ).toBeLessThanOrEqual(dimensions.viewportHeight);
         }
-        await expect(page.getByRole('region', { name: 'Help & resources' }).getByRole('link', { name: /Community/ })).toHaveCount(0);
+        await expect(page.getByRole('link', { name: /FAQ/ })).toHaveCount(0);
         const documentation = page
-          .getByRole('region', { name: 'Help & resources' })
-          .getByRole('link', { name: /Documentation/ });
+          .getByRole('region', { name: 'Documentation', exact: true })
+          .getByRole('link', { name: 'Open docs', exact: true });
         await documentation.scrollIntoViewIfNeeded();
         await expect(documentation).toBeVisible();
       }
@@ -629,8 +630,8 @@ test('learning path and content pages fit desktop viewports without hiding navig
     // Stacked cards may scroll on a small screen; all content must remain reachable.
     await page.goto('/');
     const documentation = page
-      .getByRole('region', { name: 'Help & resources' })
-      .getByRole('link', { name: /Documentation/ });
+      .getByRole('region', { name: 'Documentation', exact: true })
+      .getByRole('link', { name: 'Open docs', exact: true });
     await documentation.scrollIntoViewIfNeeded();
     await expect(documentation).toBeVisible();
   }

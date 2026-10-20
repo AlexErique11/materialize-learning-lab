@@ -26,12 +26,14 @@ describe('saved lab progress', () => {
     const chapter = labActivityPaths.filter(path => path.startsWith('/labs/changing-relations/'));
     const tutorials = chapter.filter(path => path.includes('/tutorial/'));
     const exercises = chapter.filter(path => path.includes('/exercises/'));
-    expect(getLabChapterProgress([])).toEqual({ completed: 0, total: 12 });
+    expect(getLabChapterProgress([])).toEqual({ completedChapterSlugs: [], completed: 0, total: 12 });
     expect(getLabChapterProgress(tutorials).completed).toBe(0);
     expect(getLabChapterProgress(exercises).completed).toBe(0);
     expect(getLabChapterProgress([...chapter, ...chapter, '/labs/unknown/tutorial/lecture-1']))
-      .toEqual({ completed: 1, total: 12 });
-    expect(getLabChapterProgress(labActivityPaths)).toEqual({ completed: 6, total: 12 });
+      .toEqual({ completedChapterSlugs: ['changing-relations'], completed: 1, total: 12 });
+    expect(getLabChapterProgress(labActivityPaths)).toMatchObject({ completed: 6, total: 12 });
+    expect(getLabChapterProgress(tutorials).completedChapterSlugs).toEqual([]);
+    expect(getLabChapterProgress(exercises).completedChapterSlugs).toEqual([]);
   });
 
   it('saves completion once and restores it in a fresh session', async () => {

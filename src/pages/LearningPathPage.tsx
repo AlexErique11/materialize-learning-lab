@@ -1,5 +1,5 @@
 import {
-  ArrowRight, ChevronRight, ChevronsRight, CircleArrowRight, CircleHelp, FileText,
+  ArrowRight, ChevronRight, ChevronsRight, CircleArrowRight, FileText,
 } from 'lucide-react';
 import { Link } from 'react-router';
 import { useLabProgress } from '../hooks/useLabProgress';
@@ -75,19 +75,18 @@ export function LearningPathPage() {
           <LearningPathProgress total={featuredChallenges.length} label="Featured challenges completed" />
         </section>
       </div>
-      <section className="learning-path-resources" aria-labelledby="resources-title">
-        <header><h2 id="resources-title">Help &amp; resources</h2><p>Everything you need to succeed on your learning journey.</p></header>
-        <div className="learning-path-resource-grid">
-          <a className="learning-path-resource" href={DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">
-            <FileText size={32} aria-hidden="true" />
-            <div><h3>Documentation</h3><p>Read the full Materialize docs.</p></div>
-            <ArrowRight className="learning-path-arrow" size={23} aria-hidden="true" />
+      <section className="learning-path-resources" aria-labelledby="documentation-title">
+        <div className="learning-path-documentation">
+          <div className="learning-path-documentation-copy">
+            <p className="learning-path-eyebrow">Help &amp; resources</p>
+            <h2 id="documentation-title">Documentation</h2>
+            <p>Explore the full Materialize docs to dive deeper, learn core concepts, and use them side by side with the lab as you work.</p>
+          </div>
+          <a className="button button-primary learning-path-docs-link" href={DOCUMENTATION_URL} target="_blank" rel="noopener noreferrer">
+            <FileText size={18} aria-hidden="true" />
+            <span>Open docs</span>
+            <ArrowRight size={20} aria-hidden="true" />
           </a>
-          <Link to="/faq" className="learning-path-resource" target="_blank" rel="noopener noreferrer">
-            <CircleHelp size={32} aria-hidden="true" />
-            <div><h3>FAQ</h3><p>Common questions about labs and challenges.</p></div>
-            <ArrowRight className="learning-path-arrow" size={23} aria-hidden="true" />
-          </Link>
         </div>
       </section>
     </PageContainer>

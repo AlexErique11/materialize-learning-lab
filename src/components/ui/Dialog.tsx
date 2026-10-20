@@ -6,6 +6,11 @@ import { useLabShortcuts } from '../../hooks/useLabShortcuts';
 
 const dialogShortcuts = { Enter: '[data-dialog-primary]' };
 
+function isOutsideDialog(dialog: HTMLDialogElement, x: number, y: number) {
+  const bounds = dialog.getBoundingClientRect();
+  return x < bounds.left || x > bounds.right || y < bounds.top || y > bounds.bottom;
+}
+
 interface DialogProps {
   open: boolean;
   onClose: () => void;
@@ -13,10 +18,12 @@ interface DialogProps {
   eyebrow?: string;
   children: ReactNode;
   className?: string;
+  closeOnBackdrop?: boolean;
 }
 
-export function Dialog({ open, onClose, title, eyebrow, children, className = '' }: DialogProps) {
+export function Dialog({ open, onClose, title, eyebrow, children, className = '', closeOnBackdrop = false }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
+  const pointerStartedOutside = useRef(false);
   const titleId = useId();
 
   const requestClose = useDialogMotion(ref, open, onClose);
@@ -30,6 +37,16 @@ export function Dialog({ open, onClose, title, eyebrow, children, className = ''
       ref={ref}
       aria-labelledby={titleId}
       className={`dialog ${className}`}
+      onPointerDown={(event) => {
+        pointerStartedOutside.current = closeOnBackdrop && event.target === event.currentTarget
+          && isOutsideDialog(event.currentTarget, event.clientX, event.clientY);
+      }}
+      onClick={(event) => {
+        const startedOutside = pointerStartedOutside.current;
+        pointerStartedOutside.current = false;
+        if (closeOnBackdrop && startedOutside && event.target === event.currentTarget
+          && isOutsideDialog(event.currentTarget, event.clientX, event.clientY)) requestClose();
+      }}
       onCancel={(event) => {
         event.preventDefault();
         requestClose();
