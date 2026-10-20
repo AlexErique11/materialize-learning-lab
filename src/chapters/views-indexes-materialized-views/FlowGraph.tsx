@@ -89,9 +89,9 @@ function Overview({ panels, edges, selected, onSelect }: { panels: readonly Diag
   </nav>;
 }
 
-export function FlowGraph({ snapshot, showClusterB, selectedPanel, onSelectPanel, panelRefs, query = snapshot.query, pending = false }: {
+export function FlowGraph({ snapshot, showClusterB, selectedPanel, onSelectPanel, panelRefs, query = snapshot.query, pending = false, compact = false }: {
   snapshot: ObjectSnapshot; showClusterB: boolean; selectedPanel: DiagramPanel; onSelectPanel: (panel: DiagramPanel) => void;
-  panelRefs?: Partial<Record<DiagramPanel, RefObject<HTMLElement | null>>>; query?: QueryObservation | null; pending?: boolean;
+  panelRefs?: Partial<Record<DiagramPanel, RefObject<HTMLElement | null>>>; query?: QueryObservation | null; pending?: boolean; compact?: boolean;
 }) {
   const canvasRef = useRef<HTMLDivElement>(null);
   const { setup } = snapshot;
@@ -132,6 +132,7 @@ export function FlowGraph({ snapshot, showClusterB, selectedPanel, onSelectPanel
   return <div className="object-diagram flow-graph" data-testid="object-diagram" data-selected-panel={selectedPanel} data-cross-cluster={showClusterB} data-pending={pending}>
     <div className="flow-legend" aria-label="Connection legend"><span><i className="flow-key-maintenance" />Maintenance</span><span><i className="flow-key-query" />Last query read</span><span><i className="flow-key-definition" />SQL definition</span><small>Completed steps · lag and hydration omitted</small></div>
     <Overview panels={panels} edges={edges} selected={selectedPanel} onSelect={onSelectPanel} />
+    {compact && <label className="flow-panel-picker">Inspect<select aria-label="Diagram panel" value={selectedPanel} onChange={event => onSelectPanel(event.target.value as DiagramPanel)}>{panels.map(panel => <option key={panel} value={panel}>{panelNames[panel]}</option>)}</select></label>}
     <div className="flow-canvas" ref={canvasRef}>
       <Connectors edges={edges} canvasRef={canvasRef} />
       <section ref={panelRefs?.definitions} className="flow-panel flow-definitions" data-panel="definitions" data-flow-node="definitions" aria-label="Saved definitions">
@@ -155,11 +156,12 @@ export function FlowGraph({ snapshot, showClusterB, selectedPanel, onSelectPanel
       </section>
     </div>
     <div className="flow-inspector"><strong>{panelNames[selectedPanel]}</strong><span>{panelDescriptions[selectedPanel]}</span></div>
-    <div className="object-query-result" aria-live="polite" data-testid="object-query-result">
-      <strong><Search size={14} aria-hidden="true" />{query ? `Last query · Cluster ${query.cluster.toUpperCase()}` : 'No query run yet'}</strong>
-      {query ? <><span className="object-query-route"><code>{query.object}</code><ArrowRight size={14} aria-hidden="true" />{query.path === 'memory' ? 'Local memory' : query.path === 'compute' ? 'Compute query' : query.path === 'storage' ? 'Durable storage' : 'Unavailable'}</span>
+    {(!compact || query) && <div className="object-query-result" aria-live="polite" data-testid="object-query-result">
+      <strong><Search size={14} aria-hidden="true" />{query ? compact ? `Query ${query.cluster.toUpperCase()}` : `Last query · Cluster ${query.cluster.toUpperCase()}` : 'No query run yet'}</strong>
+      {query ? <>{!compact && <span className="object-query-route"><code>{query.object}</code><ArrowRight size={14} aria-hidden="true" />{query.path === 'memory' ? 'Local memory' : query.path === 'compute' ? 'Compute query' : query.path === 'storage' ? 'Durable storage' : 'Unavailable'}</span>}
+        {compact && <span className="object-query-route">{query.path === 'memory' ? 'Memory' : query.path === 'compute' ? 'Compute' : query.path === 'storage' ? 'Storage' : 'Unavailable'}</span>}
         <span>{query.path === 'unavailable' ? 'Object not created · query cannot run' : query.rows.map(row => `${row.region} $${row.revenue}`).join(' · ') || 'Empty result'}</span><small>Snapshot · updates only when queried</small>
         <RelationHelp label="Last query observation" text={`${pathDescriptions[query.path]} This is the last query’s answer, not a live result. Completed steps omit ingestion lag and hydration. Connectors illustrate access paths, not physical execution plans or timing.`} /></> : <span>Run a query to trace its route and capture an answer.</span>}
-    </div>
+    </div>}
   </div>;
 }

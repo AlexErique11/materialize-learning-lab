@@ -9,13 +9,17 @@ test('homepage keeps progress placeholders while missing activities reserve empt
     await expect(page.getByRole('heading', { name: 'Track your progress' })).toBeVisible();
     await expect(page.getByText('Not started', { exact: true })).toHaveCount(2);
 
-    await page.goto('/labs/time-in-materialize/tutorial/order-lifecycles');
-    await expect(page.getByRole('heading', { name: 'Order lifecycles', exact: true })).toBeVisible();
+    await page.goto('/labs/progress-and-freshness/tutorial');
+    await expect(page.getByRole('heading', { name: 'Tutorial', exact: true })).toBeVisible();
     await expect(page.locator('.guided-lab-canvas')).toBeEmpty();
     await expect(page.locator('.reserved-controls')).toHaveAttribute('inert', '');
-    await expect(page.getByRole('progressbar')).toHaveCount(0);
+    await expect(page.locator('.guided-lab-heading').getByRole('progressbar')).toHaveCount(0);
     await expect(page.getByRole('button', { name: /Reset|Run|SQL & Objectives/ })).toHaveCount(0);
-    await expect(page.locator('.sidebar-progress').first()).toBeEmpty();
+    const sidebarProgress = page.locator('.sidebar-progress').first();
+    await expect(sidebarProgress.locator('progress')).toHaveAttribute('aria-label', 'Core chapters completed');
+    await expect(sidebarProgress.locator('progress')).toHaveAttribute('value', '0');
+    await expect(sidebarProgress.locator('progress')).toHaveAttribute('max', '12');
+    await expect(sidebarProgress).toHaveText('0/12 completed');
     await expect(page.getByText(/To be done|0 \/ 4/)).toHaveCount(0);
 
     await page.goto('/labs/changing-relations/tutorial/lecture-1');

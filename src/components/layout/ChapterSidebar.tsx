@@ -7,6 +7,7 @@ import {
   type ChapterDefinition,
 } from '../../chapters/chapterRegistry';
 import { IconButton } from '../ui/IconButton';
+import { ProgressBar } from '../ui/ProgressBar';
 import { ChapterSidebarEntry } from './ChapterSidebarEntry';
 
 function ChapterLinks({ items, compact = false }: { items: readonly ChapterDefinition[]; compact?: boolean }) {
@@ -28,7 +29,10 @@ function SidebarContent({ compact = false }: { compact?: boolean }) {
           <Link to="/labs" className="sidebar-title">
             Guided labs
           </Link>
-          <div className="sidebar-progress reserved-sidebar-progress" aria-hidden="true" />
+          <div className="sidebar-progress">
+            <ProgressBar value={0} total={coreChapters.length} label="Core chapters completed" />
+            <p>0/{coreChapters.length} completed</p>
+          </div>
         </>
       )}
       <nav aria-label="Chapters">

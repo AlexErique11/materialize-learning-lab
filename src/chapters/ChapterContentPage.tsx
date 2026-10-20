@@ -24,6 +24,10 @@ import { RecordLecture } from './getting-data-in/RecordLecture';
 import { recordLectures } from './getting-data-in/record-scenarios';
 import { ingestionExercises } from './getting-data-in/exercise-scenarios';
 import { IngestionExercisePage } from './getting-data-in/IngestionExercisePage';
+import { TemporalLecture } from './time-in-materialize/TemporalLecture';
+import { temporalLectures } from './time-in-materialize/scenarios';
+import { temporalExercises } from './time-in-materialize/exercise-scenarios';
+import { TemporalExercisePage } from './time-in-materialize/TemporalExercisePage';
 import { ObjectChapterLecture } from './views-indexes-materialized-views/ChapterLecture';
 import { ObjectChapterExercise } from './views-indexes-materialized-views/ChapterExercise';
 import { ProgressLecture } from './progress-and-freshness/ProgressLecture';
@@ -33,6 +37,12 @@ export function ChapterContentPage() {
   const chapter = useOutletContext<ChapterDefinition>();
   const { sectionSlug, pageSlug } = useParams();
   // Preserve existing bookmarks after merging exercises in either chapter.
+  if (chapter.slug === 'time-in-materialize' && sectionSlug === 'exercises' && ['query-order-timelines', 'build-a-real-time-dashboard'].includes(pageSlug ?? '')) {
+    return <Navigate to={`/labs/time-in-materialize/exercises/exercise-${pageSlug === 'query-order-timelines' ? 1 : 3}`} replace />;
+  }
+  if (chapter.slug === 'time-in-materialize' && sectionSlug === 'tutorial' && ['order-lifecycles', 'working-with-logical-time'].includes(pageSlug ?? '')) {
+    return <Navigate to={`/labs/time-in-materialize/tutorial/lecture-${pageSlug === 'order-lifecycles' ? 1 : 2}`} replace />;
+  }
   if (['changing-relations', 'incremental-maintenance'].includes(chapter.slug) && sectionSlug === 'exercises' && pageSlug === 'exercise-2') {
     return <Navigate to={chapterContentPath(chapter, findChapterContent(chapter, 'exercises', 'exercise-1')!)} replace />;
   }
@@ -50,6 +60,16 @@ export function ChapterContentPage() {
     return section.slug === 'tutorial'
       ? <ProgressLecture key={page.slug} chapter={chapter} navigation={controls} lectureIndex={index} />
       : <ProgressExercisePage key={page.slug} chapter={chapter} navigation={controls} exerciseIndex={index} />;
+  }
+  if (chapter.slug === 'time-in-materialize' && section.slug === 'exercises' && page) {
+    return <TemporalExercisePage key={page.slug} chapter={chapter}
+      exerciseIndex={temporalExercises.findIndex((exercise) => exercise.slug === page.slug)}
+      navigation={<ChapterPagination {...navigation} showTooltips={false} hideLinks />} />;
+  }
+  if (chapter.slug === 'time-in-materialize' && section.slug === 'tutorial' && page) {
+    const definition = temporalLectures.find((lecture) => page.slug === 'lecture-' + lecture.number);
+    if (definition) return <TemporalLecture key={page.slug} chapter={chapter} definition={definition}
+      navigation={<ChapterPagination {...navigation} showTooltips={false} />} />;
   }
   if (chapter.slug === 'views-indexes-materialized-views' && page) {
     const index = section.pages.findIndex(item => item.slug === page.slug);

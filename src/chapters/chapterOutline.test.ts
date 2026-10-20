@@ -80,11 +80,13 @@ describe('chapter navigation outline', () => {
     if (!time) throw new Error('Time in Materialize must be in the curriculum.');
     const pages = getChapterPages(time);
     expect(pages.map((page) => page.title)).toEqual([
-      'Order lifecycles', 'Working with logical time',
-      'Query order timelines', 'Build a real-time dashboard',
+      'Lecture 1: Time can change the result', 'Lecture 2: When should a row become visible?',
+      'Lecture 3: When events arrive late', 'Lecture 4: Changing a row’s lifetime',
+      'Exercise 1: Read clocks and boundaries', 'Exercise 2: Keep changing deadlines correct',
+      'Exercise 3: Build a reliable recent-events view',
     ]);
     expect(pages.map((page) => page.sectionSlug)).toEqual([
-      'tutorial', 'tutorial', 'exercises', 'exercises',
+      'tutorial', 'tutorial', 'tutorial', 'tutorial', 'exercises', 'exercises', 'exercises',
     ]);
     for (const page of pages) {
       expect(findChapterContent(time, page.sectionSlug, page.slug)).toEqual(page);

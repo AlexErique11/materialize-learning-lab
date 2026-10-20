@@ -9,10 +9,8 @@ and shared CSS, not independently maintained mockup files.
 | Template | Current users | Behavior |
 | --- | --- | --- |
 | `LectureScreen`, `layout="with-tip"` | Chapter 1 lectures 1–2 | Chapter 1 reference frame, metrics, visualization, playback, and bottom tip when it fits. |
-| `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 3 lectures 1–3; Chapter 4 lectures 1–4 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
-| `ExerciseFrame` through `GuidedLabScreen` | Chapter 1–4 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
-| `LectureScreen`, `layout="without-tip"` | Chapter 6 lectures 1–3 | Existing title, toolbar, metrics and playback frame with chapter-owned aligned progress lanes. |
-| `ExerciseFrame` through `GuidedLabScreen` | Chapter 6 exercises 1–3 | Existing exercise actions and question flow with the same progress lanes and selected detail. |
+| `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 3 lectures 1–3; Chapter 4 lectures 1–4; Chapter 5 lectures 1–4 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
+| `ExerciseFrame` through `GuidedLabScreen` | Chapter 1–5 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
 
 `src/labs/components/LectureScreen.tsx` accepts `metrics`, `visualization`, and
 `playback` slots plus the common screen props. Chapter 2 supplies them through
@@ -24,6 +22,13 @@ slots when adding a lecture; do not copy its frame into the new page.
 `ExerciseFrame.renderWorkspace` can compose its visualization, question, and
 navigation slots with this same frame. Questions supplied through
 `afterVisualization` follow the graph without changing its measured upper inset.
+Chapter 3 exercises compose the shared graph and question together in a compact
+workspace with a reserved next-button footer. The graph retains the lecture panel
+columns, with less vertical spacing and no lecture-only toolbar reservations.
+Narrow windows select a reference panel while keeping the question visible below.
+Chapter 3 owns this viewport fit and route-scoped scroll lock.
+Chapter 3 uses the shared exercise navigation inset: 12px by default, 16px on
+desktop windows at least 741px high, and 24px from 850px.
 
 `src/labs/components/lecture-layout.css` owns lecture frame dimensions and
 responsive tokens. The no-tip template measures the available viewport and content
@@ -69,6 +74,28 @@ below them. Retain the current responsive subtitle placement and panel selectors
 Change requested frame spacing through its template rather than page-specific
 margins. Chapter-specific CSS owns the visualization inside the frame.
 
+Chapter 5 uses the same no-tip frame through `TemporalLecture.tsx`. A compact
+source/result/logical-time strip sits above Source, Row lifetimes, and Current
+result panels arranged in one row. Tables reserve three rows; the result panel
+reserves two signed diffs. Lecture 1 shows clock samples and its single lifetime
+bar together. The timeline reserves two SQL lines to keep its rows aligned as
+predicates wrap. All four lectures share the same outer dimensions. Below 1280px
+wide or at heights up to 620px, panel selectors show one complete panel and follow
+the active guided step. Actual logical time is separate from playback indices.
+
+Chapter 5 exercises reuse these panels and `ExerciseFrame` for a 4/4/5-question
+sequence. Desktop and laptop views keep all three reference panels visible above
+the question, with clock samples inside Exercise 1's Row lifetimes panel, as in
+Lecture 1. The summary strip contains only the three metrics. Roomy views use
+a 24px gap before the question. Shorter views tighten panel spacing and place
+the prompt beside its answers within the question box below the metrics; panels
+are never replaced with selectors on these screens. The existing bottom-right
+navigation stays aligned with other chapters. Phones switch between the question
+and reference panels and offer a Metrics dialog without losing answers. Table rows
+keep the lecture dimensions. Accepted predictions update the known state and
+replace the question's description with feedback, without adding a feedback row.
+The filter-choice question conceals the reference predicate until acceptance.
+
 ## Shared component ownership
 
 | Surface | Implementation |
@@ -84,6 +111,7 @@ margins. Chapter-specific CSS owns the visualization inside the frame.
 | Guided explanation fragments | `src/components/lesson/LessonText.tsx` |
 | Chapter 4 snapshot bridge and record inspector | `src/chapters/getting-data-in/IngestionLayouts.tsx`, `lecture-one.css`, `record-lectures.css` |
 | Chapter 4 exercise answers and compact views | `src/chapters/getting-data-in/IngestionExercisePage.tsx`, `ExerciseAnswers.tsx`, `ExerciseWorkspace.tsx`, `exercises.css` |
+| Chapter 5 temporal exercises and compact views | `src/chapters/time-in-materialize/TemporalExercisePage.tsx`, `TemporalExerciseAnswers.tsx`, `TemporalExerciseWorkspace.tsx`, `exercises.css` |
 | Chapter 2 column colors and common panels | `src/chapters/incremental-maintenance/lecture-one.css` |
 
 Controls tour is a single shared button for all implemented lectures. Its
