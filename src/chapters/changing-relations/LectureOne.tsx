@@ -19,7 +19,7 @@ interface LectureOneProps {
 }
 
 export function LectureOne({ chapter, navigation }: LectureOneProps) {
-  const { state, dispatch } = useLectureRun();
+  const { state, dispatch, completed: tutorialComplete } = useLectureRun();
   const { open: helpOpen } = useWalkthrough();
   useEffect(() => { if (helpOpen) dispatch({ type: 'pause' }); }, [helpOpen, dispatch]);
   const ledgerRef = useRef<HTMLElement>(null);
@@ -28,7 +28,6 @@ export function LectureOne({ chapter, navigation }: LectureOneProps) {
   const countsRef = useRef<HTMLDivElement>(null);
   const lesson = lectureSteps[Math.min(state.step, lectureSteps.length - 1)]!;
   const relation = relationAt(lectureUpdates, state.selectedTime);
-  const tutorialComplete = state.step === lectureSteps.length;
   const inspectingHistory = state.selectedTime !== state.applied;
   const beforeChange = Boolean(lesson.before) && !state.revealed;
   const explanation = beforeChange ? lesson.before! : lesson.explanation;

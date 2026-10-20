@@ -10,6 +10,7 @@ import {
 import { IconButton } from '../ui/IconButton';
 import { ProgressBar } from '../ui/ProgressBar';
 import { ChapterSidebarEntry } from './ChapterSidebarEntry';
+import { useLabProgress } from '../../hooks/useLabProgress';
 
 function ChapterLinks({ items, compact = false }: { items: readonly ChapterDefinition[]; compact?: boolean }) {
   return (
@@ -20,6 +21,7 @@ function ChapterLinks({ items, compact = false }: { items: readonly ChapterDefin
 }
 
 function SidebarContent({ compact = false }: { compact?: boolean }) {
+  const progress = useLabProgress();
   return (
     <div className={`sidebar-content${compact ? ' sidebar-content-compact' : ''}`}>
       {!compact && (
@@ -31,8 +33,8 @@ function SidebarContent({ compact = false }: { compact?: boolean }) {
             Guided labs
           </Link>
           <div className="sidebar-progress">
-            <ProgressBar value={0} total={coreChapters.length} label="Core chapters completed" />
-            <p>0/{coreChapters.length} completed</p>
+            <ProgressBar value={progress.completed} total={progress.total} label="Core chapters completed" />
+            <p>{progress.completed}/{progress.total} completed</p>
           </div>
         </>
       )}

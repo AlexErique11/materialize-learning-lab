@@ -23,7 +23,7 @@ import './record-lectures.css';
 export function RecordLecture({ chapter, navigation, definition }: {
   chapter: ChapterDefinition; navigation: ReactNode; definition: RecordLectureDefinition;
 }) {
-  const { state, dispatch } = useLectureRun({ totalChanges: definition.actions.length, steps: definition.lessons });
+  const { state, dispatch, completed: complete } = useLectureRun({ totalChanges: definition.actions.length, steps: definition.lessons });
   const { open: helpOpen } = useWalkthrough();
   const [selectedStage, setSelectedStage] = useState('record');
   const recordRef = useRef<HTMLElement>(null);
@@ -38,7 +38,6 @@ export function RecordLecture({ chapter, navigation, definition }: {
   const preview = pending ? definition.actions[lesson.time - 1] : null;
   const record = preview?.kind === 'record' ? preview.record : current.record ?? current.fixture.records[0]!;
   const upcoming = pending || current.record === null;
-  const complete = state.step === definition.lessons.length;
   const focus = useGuidedFocus(`${state.guided}:${state.step}:${state.revealed}`, [lesson.stage, ...(!pending ? lesson.related ?? [] : [])], refs,
     { record: 'Incoming record', changes: 'Interpreted changes', relation: 'Current relation', metrics: 'Records and rows' });
   const activeStage = state.guided ? focus.id === 'metrics' ? lesson.stage : focus.id : selectedStage;

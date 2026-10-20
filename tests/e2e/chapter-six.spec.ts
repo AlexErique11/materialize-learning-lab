@@ -378,7 +378,7 @@ test('Chapter 6 combined exercise layouts fit every question and feedback withou
           }
           if (docked) {
             const button = await page.locator('.progress-exercise-playback').evaluate(footer => footer.querySelector('button')?.getBoundingClientRect().toJSON());
-            if (button) expect(regions[3]!.x + regions[3]!.width).toBeLessThanOrEqual(button.x);
+            if (button && regions[3]!.y + regions[3]!.height > button.y) expect(regions[3]!.x + regions[3]!.width).toBeLessThanOrEqual(button.x);
           }
           if (inLegend) {
             const evidence = regions[1]!;

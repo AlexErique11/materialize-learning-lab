@@ -75,11 +75,15 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
       if (!placed) {
         root.dataset.splitQuestion = 'true';
         root.dataset.dockAnswers = 'true';
+        const evidenceHeight = evidence.getBoundingClientRect().height;
         const origin = root.getBoundingClientRect();
         const footerBox = footer.getBoundingClientRect();
         const next = footer.querySelector('button')?.getBoundingClientRect();
-        root.style.setProperty('--exercise-answer-width', `${origin.width - Math.max(144, next?.width ?? 0) - 8}px`);
-        const answerTop = footerBox.bottom - origin.top - answers.getBoundingClientRect().height;
+        const completed = Boolean(root.closest('.progress-exercise-page')!.querySelector('.exercise-completion'));
+        // Completed activities keep the footer label; compact answers use the row above it.
+        root.style.setProperty('--exercise-answer-width', `${completed ? origin.width : origin.width - Math.max(144, next?.width ?? 0) - 8}px`);
+        const answerBottom = completed ? footerBox.top - 1 : footerBox.bottom;
+        const answerTop = answerBottom - origin.top - answers.getBoundingClientRect().height;
         const copyHeight = copy.getBoundingClientRect().height;
         let copyTop = headerTop - copyHeight - gap;
         if (copyTop < promptLimit && copyHeight <= headerTop - promptLimit) copyTop = promptLimit;
@@ -90,6 +94,7 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
         // Keep longer feedback there when the new headers fill the upper gap.
         const belowPanel = anchor + panel.getBoundingClientRect().height + gap;
         const aboveHeaders = headerTop - evidenceHeight - gap;
+        if (completed && evidenceTop + evidenceHeight + gap > answerTop && belowPanel + evidenceHeight + gap <= answerTop) evidenceTop = belowPanel;
         if (copyTop < promptLimit && belowPanel + copyHeight + gap <= answerTop) {
           copyTop = belowPanel;
           if (aboveHeaders >= promptLimit) evidenceTop = aboveHeaders;
@@ -112,8 +117,8 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
             root.style.setProperty('--exercise-evidence-left', `${legendBox.left - origin.left}px`);
             root.style.setProperty('--exercise-evidence-width', `${width}px`);
             const height = evidence.getBoundingClientRect().height;
-            root.style.setProperty('--exercise-evidence-top', `${legendBox.bottom + outsideSpace - origin.top - height}px`);
-            placed = height <= legendBox.height && anchor + panelHeight + gap <= answerTop;
+            root.style.setProperty('--exercise-evidence-top', `${legendBox.bottom + (completed ? 0 : outsideSpace) - origin.top - height}px`);
+            placed = height <= legendBox.height && anchor + (completed ? panel.getBoundingClientRect().height : panelHeight) + gap <= answerTop;
           }
         }
       }

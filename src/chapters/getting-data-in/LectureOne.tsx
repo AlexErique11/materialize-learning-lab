@@ -20,7 +20,7 @@ import '../incremental-maintenance/lecture-two.css';
 import './lecture-one.css';
 
 export function SnapshotLectureOne({ chapter, navigation }: { chapter: ChapterDefinition; navigation: ReactNode }) {
-  const { state, dispatch } = useLectureRun(snapshotRunDefinition);
+  const { state, dispatch, completed: tutorialComplete } = useLectureRun(snapshotRunDefinition);
   const { open: helpOpen } = useWalkthrough();
   const [selectedStage, setSelectedStage] = useState('source');
   const sourceRef = useRef<HTMLElement>(null);
@@ -36,7 +36,6 @@ export function SnapshotLectureOne({ chapter, navigation }: { chapter: ChapterDe
   const lesson = snapshotLessons[Math.min(state.step, snapshotLessons.length - 1)]!;
   const current = snapshotAt(state.selectedTime);
   const beforeChange = Boolean(lesson.before) && !state.revealed;
-  const tutorialComplete = state.step === snapshotLessons.length;
   const primary = lesson.focus === 'snapshot-progress' ? 'progress' : lesson.stage;
   const focus = useGuidedFocus(`${state.guided}:${state.step}:${state.revealed}`, [primary, ...(!beforeChange ? lesson.related ?? [] : [])], refs,
     { source: 'Upstream database', ingestion: 'Ingestion', relation: 'Materialize table', metrics: 'Ingestion status', progress: 'Snapshot progress' });

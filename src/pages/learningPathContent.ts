@@ -9,7 +9,7 @@ export const labFeatures = [
   },
   {
     title: 'Track your progress',
-    description: 'See what you’ve completed and pick up where you left off.',
+    description: 'Keep track of completed tutorials and exercises as you learn.',
   },
 ] as const;
 

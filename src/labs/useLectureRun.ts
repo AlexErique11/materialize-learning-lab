@@ -1,5 +1,6 @@
 import { useEffect, useReducer } from 'react';
 import { rememberCompletedWork } from '../components/walkthrough/walkthroughStorage';
+import { useActivityCompletion } from '../hooks/useLabProgress';
 
 export const PLAYBACK_INTERVAL_MS = 2200;
 
@@ -89,6 +90,7 @@ export function lectureRunReducer(state: LectureRunState, action: LectureRunActi
 
 export function useLectureRun(definition: LectureRunDefinition) {
   const [state, dispatch] = useReducer((current: LectureRunState, action: LectureRunAction) => lectureRunReducer(current, action, definition), initialRunState);
+  const completed = useActivityCompletion('tutorial', state.step === definition.steps.length);
   useEffect(() => {
     if (!state.playing) return;
     const timeout = window.setTimeout(() => dispatch({ type: 'tick' }), PLAYBACK_INTERVAL_MS);
@@ -97,5 +99,5 @@ export function useLectureRun(definition: LectureRunDefinition) {
   useEffect(() => {
     if (state.step === definition.steps.length) rememberCompletedWork();
   }, [state.step, definition.steps.length]);
-  return { state, dispatch };
+  return { state, dispatch, completed };
 }

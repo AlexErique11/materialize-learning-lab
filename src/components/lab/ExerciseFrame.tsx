@@ -7,6 +7,7 @@ import type { ChapterDefinition } from '../../chapters/chapterRegistry';
 import { LessonText, type LessonTextContent } from '../lesson/LessonText';
 import { useChangeMotion } from '../../motion/useChangeMotion';
 import type { useExerciseStages } from '../../hooks/useExerciseStages';
+import { useActivityCompletion } from '../../hooks/useLabProgress';
 import '../../styles/exercise.css';
 export function ExerciseFrame({
   chapter,
@@ -62,6 +63,7 @@ export function ExerciseFrame({
   onNext: () => void;
   onReset: () => void;
 }) {
+  const completed = useActivityCompletion('exercises', flow.complete);
   const showNext = flow.accepted && (!flow.complete || Boolean(nextExerciseLabel));
   const questionContent =
     preserveQuestion && (!flow.grade || flow.accepted)
@@ -218,6 +220,7 @@ export function ExerciseFrame({
           </>
         ),
       }}
+      completion={completed && <span className="exercise-completion relation-tutorial-complete" role="status"><CheckCircle2 size={14} aria-hidden="true" />Exercise completed</span>}
       workspace={
         <form
           id={formId}

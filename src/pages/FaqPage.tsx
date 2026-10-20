@@ -19,7 +19,7 @@ export function FaqPage() {
         </details>
         <details>
           <summary>Is my progress saved?</summary>
-          <p>Chapters 1 and 2 include interactive lectures and exercises. Question and playback progress apply within each activity; chapter and challenge completion is not tracked across the learning path.</p>
+          <p>Completed tutorials and exercises are saved in this browser. Your Guided labs and Learning path progress bars count completed core chapters: finish all tutorials and exercises in a chapter to earn one completion. Completed activities stay marked when you return or reset a practice session. Individual answers and playback positions restart when you revisit an activity. Challenge completion is not tracked yet.</p>
         </details>
       </section>
     </PageContainer>

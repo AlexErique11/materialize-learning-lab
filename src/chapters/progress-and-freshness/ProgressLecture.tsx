@@ -19,7 +19,7 @@ import './chapter.css';
 export function ProgressLecture({ chapter, navigation, lectureIndex }: { chapter: ChapterDefinition; navigation: ReactNode; lectureIndex: number }) {
   const lecture = progressLectures[lectureIndex]!;
   const definition = { totalChanges: lecture.lessons.length, steps: lecture.lessons.map((lesson, index) => ({ time: index + 1, before: lesson.before })) };
-  const { state, dispatch } = useLectureRun(definition);
+  const { state, dispatch, completed } = useLectureRun(definition);
   const { open: helpOpen } = useWalkthrough();
   const [selected, setSelected] = useState<LaneId>(lectureIndex === 2 ? 'revenue' : 'orders');
   const refs = { axis: useRef<HTMLElement>(null), orders: useRef<HTMLElement>(null), payments: useRef<HTMLElement>(null), join: useRef<HTMLElement>(null), revenue: useRef<HTMLElement>(null), detail: useRef<HTMLElement>(null),
@@ -70,7 +70,7 @@ export function ProgressLecture({ chapter, navigation, lectureIndex }: { chapter
         activity={!state.guided && frame && actionLane ? { lane: actionLane, text: playbackExplanation(frame.lesson, frame.previous) } : undefined}
         caption={pending ? `Predict · ${lesson.title}` : caseStudy?.transition ?? (frame ? `Step ${normalStep}: ${frame.lesson.title}` : 'Next change / Run: arrivals and progress. Key explains symbols.')} />}
       playback={<div className="relation-playback-controls" aria-label="Scenario playback">
-        {state.step === lecture.lessons.length && <span className="relation-tutorial-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
+        {completed && <span className="relation-tutorial-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
         <div>{state.selectedTime !== state.applied && <Button disabled={state.guided || state.playing} onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
           <Button disabled={state.guided || state.playing || normalStep === 0} onClick={() => move(false)}><ArrowLeft size={14} aria-hidden="true" />{caseStudy ? 'Previous case' : 'Previous change'}</Button>
           <Button data-walkthrough="next-change" disabled={state.guided || state.playing || normalStep === frames.length} onClick={() => move(true)}>{caseStudy ? 'Next case' : 'Next change'}<ArrowRight size={14} aria-hidden="true" /></Button>

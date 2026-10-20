@@ -18,7 +18,7 @@ import './chapter.css';
 
 export function ObjectChapterLecture({ chapter, navigation, lectureIndex }: { chapter: ChapterDefinition; navigation: ReactNode; lectureIndex: number }) {
   const lecture = objectLectures[lectureIndex]!;
-  const { state, dispatch } = useLectureRun({ totalChanges: lecture.lessons.length, steps: lecture.lessons.map((lesson, index) => ({ time: index + 1, before: lesson.before })) });
+  const { state, dispatch, completed } = useLectureRun({ totalChanges: lecture.lessons.length, steps: lecture.lessons.map((lesson, index) => ({ time: index + 1, before: lesson.before })) });
   const { open: helpOpen } = useWalkthrough();
   const [introductionIndex, setIntroductionIndex] = useState<number | null>(null);
   const [selectedPanel, setSelectedPanel] = useState<DiagramPanel>('input');
@@ -68,7 +68,7 @@ export function ObjectChapterLecture({ chapter, navigation, lectureIndex }: { ch
         <p className="object-step-explanation" aria-live="polite"><LessonText content={[state.selectedTime === 0 ? 'Start a guided run to learn the objects, then predict their effects.' : `Step ${state.selectedTime}: ${lecture.lessons[state.selectedTime - 1]!.title}`]} /></p>
       </>}
       playback={<div className="relation-playback-controls object-playback" aria-label="Scenario playback">
-        {state.step === lecture.lessons.length && <span className="relation-tutorial-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
+        {completed && <span className="relation-tutorial-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
         <div>{state.selectedTime !== state.applied && <Button disabled={guided || state.playing} onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
           <Button disabled={guided || state.playing || state.selectedTime === 0} onClick={() => { setExploredQuery(null); dispatch({ type: 'previous-change' }); }}><ArrowLeft size={14} aria-hidden="true" />Previous change</Button>
           <Button data-walkthrough="next-change" disabled={guided || state.playing || state.selectedTime === lecture.lessons.length} onClick={() => { setExploredQuery(null); dispatch({ type: 'next-change' }); }}>Next change<ArrowRight size={14} aria-hidden="true" /></Button></div>

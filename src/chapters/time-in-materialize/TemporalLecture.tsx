@@ -17,7 +17,7 @@ import '../../styles/lesson.css';
 import './temporal.css';
 
 export function TemporalLecture({ chapter, definition, navigation }: { chapter: ChapterDefinition; definition: TemporalLectureDefinition; navigation: ReactNode }) {
-  const { state, dispatch } = useLectureRun({ totalChanges: definition.actions.length, steps: definition.lessons });
+  const { state, dispatch, completed: complete } = useLectureRun({ totalChanges: definition.actions.length, steps: definition.lessons });
   const { open: helpOpen } = useWalkthrough();
   const [selectedStage, setSelectedStage] = useState<TemporalStage>('timeline');
   const timelineRef = useRef<HTMLElement>(null);
@@ -37,7 +37,6 @@ export function TemporalLecture({ chapter, definition, navigation }: { chapter: 
     { timeline: 'Row lifetimes', source: 'Source events', result: 'Current result', clock: 'Logical time', clocks: 'Clock samples', metrics: 'Source and result counts' });
   const activeStage = state.guided ? focus.id === 'source' || focus.id === 'result' || focus.id === 'timeline' ? focus.id : lesson.stage : selectedStage;
   const upcoming = pending ? definition.actions[lesson.time - 1] : undefined;
-  const complete = state.step === definition.lessons.length;
 
   return <>
     <LectureScreen layout="without-tip" chapter={chapter} title={'Lecture ' + definition.number} description={definition.description}

@@ -2,7 +2,7 @@ import {
   ArrowRight, ChevronRight, ChevronsRight, CircleArrowRight, CircleHelp, FileText,
 } from 'lucide-react';
 import { Link } from 'react-router';
-import { coreChapters } from '../chapters/chapterRegistry';
+import { useLabProgress } from '../hooks/useLabProgress';
 import { findChallenge, challengePath } from '../challenges/challengeRegistry';
 import { DOCUMENTATION_URL } from '../app/resources';
 import { Button } from '../components/ui/Button';
@@ -12,16 +12,17 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { ProgressBar } from '../components/ui/ProgressBar';
 import { featuredChallenges, labFeatures } from './learningPathContent';
 
-function LearningPathProgress({ total, label }: { total: number; label: string }) {
+function LearningPathProgress({ value = 0, total, label }: { value?: number; total: number; label: string }) {
   return (
     <div className="learning-path-progress">
-      <div><span>Your progress</span><span>0/{total} completed</span></div>
-      <ProgressBar value={0} total={total} label={label} />
+      <div><span>Your progress</span><span>{value}/{total} completed</span></div>
+      <ProgressBar value={value} total={total} label={label} />
     </div>
   );
 }
 
 export function LearningPathPage() {
+  const progress = useLabProgress();
   const { startChapterTour } = useWalkthrough();
   return (
     <PageContainer className="learning-path-page">
@@ -48,7 +49,7 @@ export function LearningPathPage() {
               </li>
             ))}
           </ul>
-          <LearningPathProgress total={coreChapters.length} label="Core chapters completed" />
+          <LearningPathProgress value={progress.completed} total={progress.total} label="Core chapters completed" />
         </section>
         <section className="learning-path-card" aria-labelledby="challenges-title">
           <Link to="/challenges" className="learning-path-card-header" aria-labelledby="challenges-title">

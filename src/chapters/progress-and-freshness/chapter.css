@@ -255,6 +255,14 @@ html:has(.progress-exercise-page), body:has(.progress-exercise-page) {
 .progress-exercise-layout[data-dock-answers='true'] .progress-answer-select { display: block; }
 .progress-exercise-layout[data-dock-answers='true'] .progress-answer-multiple { display: inline-flex; min-height: 34px; padding: 4px; font-size: 12px; justify-content: space-between; }
 .progress-exercise-layout[data-dock-answers='true'] .progress-number input { width: 100%; min-width: 0; }
+.progress-answer-inline-label { display: none; }
+.progress-exercise-page:has(> .exercise-completion) .progress-exercise-layout[data-dock-answers='true'] .progress-answer-group { display: flex; align-items: center; gap: 4px; }
+.progress-exercise-page:has(> .exercise-completion) .progress-exercise-layout[data-dock-answers='true'] .progress-answer-group legend { display: none; }
+.progress-exercise-page:has(> .exercise-completion) .progress-exercise-layout[data-dock-answers='true'] .progress-answer-inline-label { display: block; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.progress-exercise-page:has(> .exercise-completion) .progress-exercise-layout[data-dock-answers='true'] :is(.progress-answer-select, .progress-answer-multiple, .progress-number) { flex: 1; min-width: 0; }
+.progress-exercise-page:has(> .exercise-completion) .progress-exercise-layout[data-dock-answers='true'] .exercise-answers { padding-block: 0; }
+.progress-exercise-page:has(> .exercise-completion) .progress-exercise-layout[data-dock-answers='true'] :is(.progress-answer-select, .progress-answer-multiple, .progress-number input) { height: 24px; min-height: 24px; padding-block: 2px; margin-top: 0; }
+.progress-exercise-page:has(> .exercise-completion) .progress-exercise-layout[data-dock-answers='true'] .progress-exercise-evidence { padding-block: 0; }
 .progress-exercise-page:has([data-dock-answers='true']) .progress-exercise-playback { pointer-events: none; }
 .progress-exercise-page:has([data-dock-answers='true']) .exercise-question-navigation { pointer-events: auto; }
 .progress-exercise-layout[data-legend-evidence='true'] .progress-exercise-evidence { left: var(--exercise-evidence-left); right: auto; width: var(--exercise-evidence-width); padding: 0; border: 0; background: none; }

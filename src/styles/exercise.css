@@ -43,6 +43,25 @@
 
 .exercise-next-question { font-size: 12px; }
 
+.app-shell-guided-labs .guided-lab-page:has(> .exercise-completion) { position: relative; }
+.guided-lab-page:has(> .exercise-completion) .exercise-question-navigation:empty {
+  display: flex;
+  min-height: 40px;
+  visibility: hidden;
+}
+.exercise-completion {
+  position: absolute;
+  left: 28px;
+  bottom: var(--exercise-navigation-inset);
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+@media (max-width: 639px) { .exercise-completion { left: 16px; } }
+
 .exercise-answers { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 12px; }
 
 @media (min-width: 640px) and (max-width: 1150px) {

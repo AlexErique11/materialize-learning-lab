@@ -49,6 +49,7 @@ export function ProgressExercisePage({ chapter, navigation, exerciseIndex }: { c
         const error = flow.grade?.errors[group.id];
         return <fieldset key={group.id} aria-label={group.label} disabled={flow.accepted} className="progress-answer-group" data-error={Boolean(error)}>
           <legend><span className="progress-answer-label-full"><LessonText content={progressText(group.label)} /></span><span className="progress-answer-label-short">{shortLabel[group.id] ?? group.label}</span></legend>
+          <span className="progress-answer-inline-label" aria-hidden="true">{shortLabel[group.id] ?? group.label}</span>
           {group.kind === 'multiple' && <Button className="progress-answer-multiple" aria-label={`Choose ${group.label}`} aria-haspopup="dialog" onClick={() => setChoiceGroup(group.id)}>{values.length ? `${values.length} selected` : 'Choose'}<ChevronDown size={12} aria-hidden="true" /></Button>}
           {group.kind === 'single' && <select className="progress-answer-select" aria-label={group.label} value={values[0] ?? ''} onChange={event => edit(group.id, event.target.value ? [event.target.value] : [])}>
             <option value="">Choose an answer</option>{group.choices!.map(choice => <option key={choice.id} value={choice.id}>{choice.label}</option>)}

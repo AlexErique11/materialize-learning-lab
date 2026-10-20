@@ -459,6 +459,11 @@
   background: var(--lab-purple);
 }
 
+.chapter-pages a[data-completed='true']:not([aria-current='page']) .chapter-page-dot {
+  border-color: var(--success);
+  background: var(--success);
+}
+
 .app-shell-guided-labs .sidebar-content > nav > .eyebrow {
   margin: 12px 14px 5px;
   font-size: 9px;

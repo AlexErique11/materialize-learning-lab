@@ -10,7 +10,7 @@ and shared CSS, not independently maintained mockup files.
 | --- | --- | --- |
 | `LectureScreen`, `layout="with-tip"` | Chapter 1 lectures 1–2 | Chapter 1 reference frame, metrics, visualization, playback, and bottom tip when it fits. |
 | `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 3 lectures 1–3; Chapter 4 lectures 1–4; Chapter 5 lectures 1–4 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
-| `ExerciseFrame` through `GuidedLabScreen` | Chapter 1–5 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
+| `ExerciseFrame` through `GuidedLabScreen` | Chapter 1–6 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
 
 `src/labs/components/LectureScreen.tsx` accepts `metrics`, `visualization`, and
 `playback` slots plus the common screen props. Chapter 2 supplies them through
@@ -109,6 +109,24 @@ replace the question's description with feedback, without adding a feedback row.
 The filter-choice question conceals the reference predicate until acceptance.
 
 ## Shared component ownership
+
+`src/progress/labProgress.ts` stores completed canonical activity paths in browser
+localStorage, under `materialize-learning-lab-progress-v1`. `useLabProgress`
+subscribes the sidebar and Learning path to the same completed core chapter count,
+including storage changes from other tabs. A chapter counts only after all of its
+authored tutorials and exercises are complete. Both bars use the total number of
+core chapters as their denominator; empty future chapters cannot earn completion,
+and challenges are excluded.
+Finishing a guided run earns tutorial completion; normal playback does not.
+`ExerciseFrame` records completion only when all questions are accepted, including
+Show Answer. Reset, replay, navigation and reload preserve earned completion.
+`useLectureRun` exposes the saved completion state to every lecture template.
+Sidebar activity dots turn green when completed, with purple taking precedence
+on the current page. Exercise completion uses the existing tutorial checkmark
+and success color, anchored to the shared navigation inset at the lower left
+(28px on desktop, 16px on phones) without shifting questions or metrics.
+Completed Chapter 6 activities keep compact docked answers above this footer,
+with short labels beside their controls so the measured diagram stays fixed.
 
 `AreaTransition` owns navigation within Guided Labs and between app areas.
 In-lab Guided labs breadcrumb and sidebar links use `guidedLabsHomePath` from
@@ -312,8 +330,8 @@ review, not an application test run.
   keeps inventory inputs, visualization dimensions and completion styling local.
 - `src/styles/ui.css` owns inert reserved-region dimensions. Missing activity content
   leaves empty space, excluded from focus and accessibility. The learning-path page
-  displays static progress bars, a progress feature row, and challenge status badges
-  as placeholders until completion tracking is implemented.
+  uses saved activity progress for Guided labs. Challenge progress and status
+  badges remain placeholders until challenge completion is implemented.
 
 ## Chapter style and layout
 

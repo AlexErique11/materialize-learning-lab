@@ -170,7 +170,8 @@
   font-size: 13px;
 }
 
-.app-header-reference .docs-link:hover {
+.app-header-reference .docs-link:hover,
+.app-header-reference .brand:is(:hover, :focus-visible) .brand-product {
   color: var(--header-accent);
 }
 

@@ -31,7 +31,7 @@ interface MaintenanceLectureProps<Snapshot extends MaintenanceSnapshot> {
   renderRows: (stage: string, snapshot: Snapshot) => ReactNode;
 }
 export function MaintenanceLecture<Snapshot extends MaintenanceSnapshot>({ chapter, navigation, definition, lessons, stages, reference, title, description, snapshot, renderRows, timeTestId, layout }: MaintenanceLectureProps<Snapshot>) {
-  const { state, dispatch } = useLectureRun(definition);
+  const { state, dispatch, completed } = useLectureRun(definition);
   const { open: helpOpen } = useWalkthrough();
   const [selectedStage, setSelectedStage] = useState<string>(stages[0]!.id);
   const [mobileDiffs, setMobileDiffs] = useState(false);
@@ -70,7 +70,7 @@ export function MaintenanceLecture<Snapshot extends MaintenanceSnapshot>({ chapt
           panelRefs={refs} renderRows={(stage) => renderRows(stage, current)} />}
       playback={
         <div className="relation-playback-controls" aria-label="Change playback">
-          {state.step === lessons.length && <span className="relation-tutorial-complete maintenance-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
+          {completed && <span className="relation-tutorial-complete maintenance-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
           <div>
             {state.selectedTime !== state.applied && <Button disabled={state.guided || state.playing} onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
             <Button disabled={state.guided || state.playing || state.selectedTime === 0} onClick={() => dispatch({ type: 'previous-change' })}><ArrowLeft size={14} aria-hidden="true" />Previous change</Button>

@@ -65,6 +65,7 @@ interface GuidedLabScreenProps {
   children?: ReactNode;
 
   workspace?: ReactNode;
+  completion?: ReactNode;
 
   className?: string;
 
@@ -96,6 +97,7 @@ export function GuidedLabScreen({
   navigation,
   children,
   workspace,
+  completion,
   className = '',
   showTip = true,
   showReference = true,
@@ -252,6 +254,7 @@ export function GuidedLabScreen({
       >
         {workspace}
       </section>
+      {completion}
       {children && <div className="guided-lab-page-navigation">{children}</div>}
       {showTip && (
         <aside

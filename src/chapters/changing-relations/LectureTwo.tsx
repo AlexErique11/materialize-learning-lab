@@ -15,7 +15,7 @@ import { useLectureRun } from './useLectureRun';
 import './lecture-one.css';
 
 export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition; navigation: ReactNode }) {
-  const { state, dispatch } = useLectureRun(lectureTwoRun);
+  const { state, dispatch, completed: tutorialComplete } = useLectureRun(lectureTwoRun);
   const { open: helpOpen } = useWalkthrough();
   useEffect(() => { if (helpOpen) dispatch({ type: 'pause' }); }, [helpOpen, dispatch]);
   const ledgerRef = useRef<HTMLElement>(null);
@@ -23,7 +23,6 @@ export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition
   const metricsRef = useRef<HTMLDivElement>(null);
   const lesson = lectureTwoSteps[Math.min(state.step, lectureTwoSteps.length - 1)]!;
   const relation = relationAt(lectureTwoUpdates, state.selectedTime, lectureTwoInitial);
-  const tutorialComplete = state.step === lectureTwoSteps.length;
   const inspectingHistory = state.selectedTime !== state.applied;
   const beforeChange = Boolean(lesson.before) && !state.revealed;
   const spotlight = beforeChange ? 'ledger' : lesson.spotlight;
