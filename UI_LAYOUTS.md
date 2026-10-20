@@ -29,6 +29,12 @@ Narrow windows select a reference panel while keeping the question visible below
 Chapter 3 owns this viewport fit and route-scoped scroll lock.
 Chapter 3 uses the shared exercise navigation inset: 12px by default, 16px on
 desktop windows at least 741px high, and 24px from 850px.
+All exercise chapters use this October 10 navigation clearance on desktop.
+`src/styles/exercise.css` anchors navigation independently of compact lecture
+padding so a 2px lecture inset cannot pull it against the bottom. Desktop Next
+question buttons are 40px tall, including Chapter 6. Navigation rows still reserve
+their space; the buttons anchor to the page independently so compact content
+cannot push them below the shared baseline.
 
 `src/labs/components/lecture-layout.css` owns lecture frame dimensions and
 responsive tokens. The no-tip template measures the available viewport and content
