@@ -35,6 +35,9 @@
 
 .exercise-question-copy p { margin: 6px 0 0; color: var(--lab-muted); font-size: 12px; line-height: 1.5; }
 
+.exercise-question-copy p.exercise-hint { font-style: italic; }
+.exercise-hint > strong, .exercise-hint .relation-inline { font-style: normal; }
+
 .exercise-question[data-result='correct'] h2 { color: var(--success); }
 
 .exercise-question[data-result='incorrect'] h2 { color: var(--danger); }

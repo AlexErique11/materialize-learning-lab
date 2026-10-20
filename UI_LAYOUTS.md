@@ -135,6 +135,10 @@ and success color, anchored to the shared navigation inset at the lower left
 Completed Chapter 6 activities keep compact docked answers above this footer,
 with short labels beside their controls so the measured diagram stays fixed.
 
+Exercise hints stay in the existing question paragraph: an inline bold `Hint:`
+label precedes italic prose, while SQL, values and colored reference fragments
+remain upright. Font sizes, line heights and spacing stay unchanged.
+
 `AreaTransition` owns navigation within Guided Labs and between app areas.
 In-lab Guided labs breadcrumb and sidebar links use `guidedLabsHomePath` from
 the chapter registry, bypassing the empty `/labs` entry redirect so they use the

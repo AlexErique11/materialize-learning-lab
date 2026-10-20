@@ -65,6 +65,7 @@ export function ExerciseFrame({
 }) {
   const completed = useActivityCompletion('exercises', flow.complete);
   const showNext = flow.accepted && (!flow.complete || Boolean(nextExerciseLabel));
+  const showingHint = flow.hintOpen && !flow.grade;
   const questionContent =
     preserveQuestion && (!flow.grade || flow.accepted)
       ? flow.hintOpen && !flow.grade
@@ -110,7 +111,8 @@ export function ExerciseFrame({
           </span>
         </h2>
 
-        <p>
+        <p className={showingHint ? 'exercise-hint' : undefined}>
+          {showingHint && <><strong>Hint:</strong>{' '}</>}
           <LessonText content={questionContent} />
         </p>
       </div>
