@@ -9,16 +9,29 @@ export function RelationHelp({ label, text }: { label: string; text: string }) {
   const [open, setOpen] = useState(false);
   const openRef = useRef(open);
   openRef.current = open;
+  const pointerOpenRef = useRef(false);
+  const animationRef = useRef<Animation | null>(null);
+  const hiddenTransformRef = useRef('translateY(-3px) scale(0.98)');
   const [position, setPosition] = useState({ left: 0, top: 0 });
 
   useLayoutEffect(() => {
     const tooltip = tooltipRef.current;
     const trigger = triggerRef.current;
     if (!tooltip || !trigger) return;
+    const wasOpen = tooltip.matches(':popover-open');
+    const appearance = wasOpen ? getComputedStyle(tooltip) : null;
+    const previous = appearance && { opacity: appearance.opacity, transform: appearance.transform };
+    animationRef.current?.cancel();
+    animationRef.current = null;
     if (!open) {
-      if (tooltip.matches(':popover-open')) {
-        const animation = animateMotion(tooltip, 'tooltip', [{ opacity: 1 }, { opacity: 0 }], 100);
-        const finish = () => { if (!openRef.current && tooltip.matches(':popover-open')) tooltip.hidePopover(); };
+      if (wasOpen) {
+        const animation = pointerOpenRef.current ? animateMotion(tooltip, 'tooltip', [
+          previous!, { opacity: 0, transform: hiddenTransformRef.current },
+        ], 100) : null;
+        animationRef.current = animation;
+        const finish = () => {
+          if (animationRef.current === animation && !openRef.current && tooltip.matches(':popover-open')) tooltip.hidePopover();
+        };
         if (animation) void animation.finished.then(finish, finish);
         else finish();
       }
@@ -34,14 +47,17 @@ export function RelationHelp({ label, text }: { label: string; text: string }) {
         12,
         Math.min(bounds.left + bounds.width / 2 - width / 2, innerWidth - width - 12)
       );
-      const top =
-        bounds.bottom + height + 8 <= innerHeight - 12
-          ? bounds.bottom + 8
-          : Math.max(12, bounds.top - height - 8);
+      const below = bounds.bottom + height + 8 <= innerHeight - 12;
+      const top = below ? bounds.bottom + 8 : Math.max(12, bounds.top - height - 8);
+      tooltip.style.transformOrigin = `${Math.max(0, Math.min(width, bounds.left + bounds.width / 2 - left))}px ${below ? 'top' : 'bottom'}`;
+      hiddenTransformRef.current = `translateY(${below ? -3 : 3}px) scale(0.98)`;
       setPosition({ left, top });
     };
     measure();
-    animateMotion(tooltip, 'tooltip', [{ opacity: 0 }, { opacity: 1 }], 120);
+    if (pointerOpenRef.current) animationRef.current = animateMotion(tooltip, 'tooltip', [
+      previous ?? { opacity: 0, transform: hiddenTransformRef.current },
+      { opacity: 1, transform: 'translateY(0) scale(1)' },
+    ], 160);
     window.addEventListener('resize', measure);
     window.addEventListener('scroll', measure, true);
     return () => {
@@ -79,10 +95,10 @@ export function RelationHelp({ label, text }: { label: string; text: string }) {
         aria-describedby={open ? id : undefined}
         aria-expanded={open}
         onPointerEnter={(event) => {
-          if (event.pointerType === 'mouse') setOpen(true);
+          if (event.pointerType === 'mouse') { pointerOpenRef.current = true; setOpen(true); }
         }}
         onPointerLeave={() => setOpen(false)}
-        onFocus={() => setOpen(true)}
+        onFocus={() => { pointerOpenRef.current = false; setOpen(true); }}
         onBlur={() => setOpen(false)}
       >
         <HelpCircle size={14} aria-hidden="true" />

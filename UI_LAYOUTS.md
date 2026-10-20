@@ -272,6 +272,9 @@ review, not an application test run.
 
 - `src/components/lesson/lessonTextTypes.ts` owns JSX-independent explanation types.
 - `src/components/lesson/RelationHelp.tsx` owns accessible relation help;
+  pointer tooltips expand subtly from the trigger with the shared motion easing
+  (160ms in, 100ms out), reversing from their current appearance on quick hovers.
+  Keyboard focus and reduced-motion preferences show help immediately.
   `logicalTimestampHelp.ts` contains the cross-chapter timestamp definition.
 - `src/hooks/useExerciseStages.ts` owns exercise-stage state, grading types and integer parsing.
 - `src/styles/lesson.css` owns common lesson typography, metrics, panels, tables and help.

@@ -1,8 +1,8 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 
-async function observeMotion(page: Page) {
-  await page.addInitScript(() => {
+async function observeMotion(page: Page, pauseFirstTooltip = false) {
+  await page.addInitScript((pauseFirstTooltip) => {
     const observations = window as unknown as { motionEvents: string[]; motionSamples: { id: string; target: string; duration: number; frames: Keyframe[] }[] };
     observations.motionEvents = [];
     observations.motionSamples = [];
@@ -11,9 +11,13 @@ async function observeMotion(page: Page) {
       const animation = animate.call(this, frames, options);
       observations.motionEvents.push(animation.id);
       observations.motionSamples.push({ id: animation.id, target: this.tagName, duration: Number(animation.effect!.getTiming().duration), frames: (animation.effect as KeyframeEffect).getKeyframes() });
+      if (pauseFirstTooltip && animation.id === 'ui-motion-tooltip' && observations.motionEvents.filter(id => id === animation.id).length === 1) {
+        animation.pause();
+        animation.currentTime = 60;
+      }
       return animation;
     };
-  });
+  }, pauseFirstTooltip);
 }
 
 async function expectMotion(page: Page, name: string) {
@@ -197,10 +201,43 @@ test('metric help reveals and dismisses from the keyboard without losing its anc
   await help.focus();
   const tooltip = page.getByRole('tooltip').filter({ hasText: 'Incoming messages read' });
   await expect(tooltip).toBeVisible();
-  await expectMotion(page, 'tooltip');
+  expect(await page.evaluate(() => (window as unknown as { motionEvents: string[] }).motionEvents.filter(id => id === 'ui-motion-tooltip'))).toEqual([]);
   await page.keyboard.press('Escape');
   await expect(tooltip).not.toBeVisible();
   await expect(help).toBeFocused();
+});
+
+test('metric help animates from its icon and survives quick hover reversals', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'Hover motion is for mouse pointers; touch uses immediate focus help.');
+  // Hold the first entrance midway so pointer leave exercises an actual reversal.
+  await observeMotion(page, true);
+  await page.goto('/labs/getting-data-in/tutorial/lecture-2');
+  const help = page.getByRole('button', { name: 'About Records read', exact: true });
+  const before = await help.boundingBox();
+  const tooltip = page.getByRole('tooltip').filter({ hasText: 'Incoming messages read' });
+  await help.hover();
+  await expect(tooltip).toBeVisible();
+  await expectMotion(page, 'tooltip');
+  const entry = await page.evaluate(() => (window as unknown as { motionSamples: { id: string; duration: number; frames: Keyframe[] }[] }).motionSamples.find(sample => sample.id === 'ui-motion-tooltip')!);
+  expect(entry.duration).toBe(160);
+  expect(entry.frames[0]!.transform).toContain('scale(0.98)');
+  await page.mouse.move(0, 0);
+  await expect.poll(() => page.evaluate(() => (window as unknown as { motionSamples: { id: string; duration: number }[] }).motionSamples.filter(sample => sample.id === 'ui-motion-tooltip').length)).toBe(2);
+  const exit = await page.evaluate(() => (window as unknown as { motionSamples: { id: string; duration: number; frames: Keyframe[] }[] }).motionSamples.filter(sample => sample.id === 'ui-motion-tooltip').at(-1)!);
+  expect(exit.duration).toBe(100);
+  expect(Number(exit.frames[0]!.opacity)).toBeGreaterThan(0);
+  expect(Number(exit.frames[0]!.opacity)).toBeLessThan(1);
+  await help.hover();
+  await expect.poll(() => tooltip.evaluate(element => element.getAnimations().filter(animation => animation.playState === 'running').length)).toBe(0);
+  await expect(tooltip).toBeVisible();
+  expect(await help.boundingBox()).toEqual(before);
+  await page.screenshot({ path: test.info().outputPath('metric-tooltip.png') });
+  await page.mouse.move(0, 0);
+  await expect(tooltip).not.toBeVisible();
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await help.hover();
+  await expect(tooltip).toBeVisible();
+  expect(await tooltip.evaluate(element => element.getAnimations().length)).toBe(0);
 });
 
 test('reduced motion keeps dialogs, disclosures, values and progress immediate', async ({ page }) => {
