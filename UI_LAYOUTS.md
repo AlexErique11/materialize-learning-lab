@@ -22,10 +22,16 @@ slots when adding a lecture; do not copy its frame into the new page.
 `ExerciseFrame.renderWorkspace` can compose its visualization, question, and
 navigation slots with this same frame. Questions supplied through
 `afterVisualization` follow the graph without changing its measured upper inset.
-Chapter 3 exercises compose the shared graph and question together in a compact
-workspace with a reserved next-button footer. The graph retains the lecture panel
-columns, with less vertical spacing and no lecture-only toolbar reservations.
-Narrow windows select a reference panel while keeping the question visible below.
+Chapter 3 exercises use `ObjectExerciseWorkspace` to measure the actual lecture
+canvas on entry and resize, including sidebar resizing. The temporary hidden,
+inert reference is removed immediately. Exercises share all lecture panel geometry
+and table spacing. The whole exercise diagram is lifted up to 55px from that
+baseline, limited by header clearance; questions have a separate anchor at the
+unshifted lecture canvas bottom plus 5px.
+Compact
+questions use a checkbox selection dialog; the prompt itself stays visible.
+Query observations sit above the diagram. The existing Next question footer stays
+independently anchored to the page. Narrow windows select a reference panel.
 Chapter 3 owns this viewport fit and route-scoped scroll lock.
 Chapter 3 uses the shared exercise navigation inset: 12px by default, 16px on
 desktop windows at least 741px high, and 24px from 850px.
@@ -230,10 +236,11 @@ review, not an application test run.
   use an overview and selected detail panel. Its actions are scenario steps, not
   logical timestamps. The shared lecture and exercise frames still own controls.
   `ObjectQueryControls.tsx` owns the query row and its inert reservation for
-  Lecture 1 and exercises, so its responsive footprint stays consistent. Chapter 3
-  exercises reuse `LectureWorkspace` with the same graph styles and reserved step
-  row. The graph and question are visible together, without a View graph switch.
-  Questions follow the graph and can extend the page below the viewport.
+  Lecture 1, so the lecture diagram footprint stays consistent. Chapter 3
+  exercises measure the real lecture frame through `ObjectExerciseWorkspace`
+  and reuse its graph styles. The diagram is lifted as a single unit while the
+  question uses a separate anchor below the diagram;
+  compact answer selection prevents scrolling or moving the navigation footer.
 
 - `src/components/lesson/lessonTextTypes.ts` owns JSX-independent explanation types.
 - `src/components/lesson/RelationHelp.tsx` owns accessible relation help;
@@ -295,9 +302,9 @@ review, not an application test run.
   preserving familiar page structure. Changes to shared patterns must be applied
   consistently to affected pages; do not redesign a single page without an
   explicit user request or a concrete learning or accessibility need.
-- Lectures and exercises must fit the viewport without page or workspace scrolling,
-  except Chapter 3 exercises where the requested lecture graph position takes
-  priority and questions remain below the visible graph.
+- Lectures and exercises must fit the viewport without page or workspace scrolling.
+  Chapter 3 questions remain below the diagram with fixed question and navigation
+  anchors; the diagram is raised independently without changing its panel spacing.
   Never scale the page or shrink fonts to fit content. Remove redundant information
   or move supporting detail into guided explanations and SQL & Objectives.
 - Keep table and panel dimensions stable as rows change, using empty rows where

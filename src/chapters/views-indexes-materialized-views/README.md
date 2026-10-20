@@ -104,6 +104,17 @@ Browser journeys cover guided predictions, exploration, history, exercise retrie
 reveal/reset/completion, both themes, keyboard access and viewport geometry.
 Exercise workspaces stretch to the available canvas height so answer explanations
 cannot recenter the diagram or move its tables.
-The exercise's upper gap brings tables down toward the lecture position. It uses
-viewport height rather than answer height and contracts on shorter windows to
-leave room for the longest explanation and the fixed navigation footer.
+`ObjectExerciseWorkspace` briefly measures an inert, hidden copy of the real
+lecture frame, then removes it. Canvas and panel positions, dimensions, padding
+and table spacing match the lectures. The complete diagram is raised by up to
+55px, limited by clearance beneath the heading and controls. Questions use a
+separate anchor 5px below the unshifted lecture canvas bottom. The reference is refreshed on
+window or sidebar resize; assessment feedback cannot shift the diagram.
+Questions stay below the canvas, with compact inline headings and a checkbox
+selection dialog when there is insufficient space for the full answer list.
+Each checkpoint reserves the tallest question, hint and grading message before
+choosing its layout. Top-aligned copy and controls therefore remain fixed when
+revealing an answer or displaying feedback.
+Accepted selections can still be reviewed in that dialog. Query observations
+occupy the space above the diagram. The Next question footer retains its existing
+page position, and exercise routes retain their scroll lock.

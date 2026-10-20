@@ -96,7 +96,8 @@
 .object-query-controls label { display: flex; align-items: center; gap: 8px; }
 .object-query-controls select { color: var(--lab-text); background: var(--lab-surface); border: 1px solid var(--lab-border); border-radius: 5px; padding: 6px; }
 .object-query-controls .button { font-size: 12px; min-height: 30px; }
-.object-exercise-page .exercise-question { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 14px; flex-shrink: 0; }
+.object-exercise-page .exercise-question { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 14px; flex-shrink: 0; align-items: start; }
+.object-exercise-page .exercise-question-copy { min-height: var(--object-copy-height, 0px); }
 .object-exercise-page .exercise-answers { display: grid; gap: 8px; }
 .object-answer-choices { border: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; min-width: 0; font-size: 12px; }
 .object-answer-choices legend { padding: 0; margin-bottom: 6px; font-weight: 650; color: var(--lab-muted); }
@@ -109,9 +110,8 @@ html:has(.object-exercise-page), body:has(.object-exercise-page) { height: 100dv
 /* Override shared canvas centering: feedback changes the form's content height. */
 .object-exercise-page .guided-lab-canvas { display: flex; flex: 1; min-height: 0; align-items: stretch; }
 .object-exercise-page form.relation-workspace { display: flex; flex: 1; min-height: 0; }
-/* Keep the lecture-like upper gap independent of the current answer's height.
-   Reserve room for the longest explanation and the navigation before adding it. */
-.object-exercise-workspace { display: flex; flex-direction: column; flex: 1; min-height: 0; gap: 10px; padding-top: clamp(0px, calc(100dvh - 868px), 94px); padding-bottom: calc(40px + var(--exercise-navigation-inset)); }
+/* The diagram is anchored independently from the assessment and navigation. */
+.object-exercise-workspace { position: relative; display: block; flex: 1; min-height: 0; padding: 0; }
 .object-exercise-workspace > .flow-graph { flex-shrink: 0; }
 .object-exercise-page .flow-inspector { display: none; }
 .flow-panel-picker { display: none; }
@@ -218,27 +218,11 @@ html:has(.object-exercise-page), body:has(.object-exercise-page) { height: 100dv
   .object-chapter-page.lecture-layout-page .flow-cluster { top: 65px; }
   .object-chapter-page.lecture-layout-page :is(.flow-transform, .flow-durable) { top: 210px; }
 }
-/* Compact exercises retain the lecture's panel columns and complete table rows. */
+/* Questions adapt to the space below the unchanged lecture diagram. */
 @media (min-width: 1151px) and (max-height: 960px) {
-  .object-exercise-page .flow-panel { padding: 7px; gap: 3px; }
-  .object-exercise-page .flow-card { padding: 5px; }
-  .object-exercise-page .flow-cluster-body { gap: 17px; }
-  .object-exercise-page .flow-compute > svg, .object-exercise-page .flow-location-label, .object-exercise-page .flow-index > span { display: none; }
-  .object-exercise-page .flow-index .data-table thead { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); }
-  .object-exercise-page .flow-durable .flow-object-name { top: 9px; }
-  .object-chapter-page.object-exercise-page .flow-canvas { height: 254px; }
-  .object-exercise-workspace { padding-top: clamp(0px, calc(100dvh - 704px), 184px); }
-  .object-exercise-page .flow-definitions { height: 45px; padding-block: 4px; }
-  .object-chapter-page.object-exercise-page .flow-cluster { top: 48px; height: 124px; }
-  .object-exercise-page .flow-input { top: 48px; min-height: 124px; }
-  .object-exercise-page .flow-input-note, .object-exercise-page .flow-input > .flow-object-name { display: none; }
-  .object-chapter-page.object-exercise-page .flow-transform, .object-chapter-page.object-exercise-page .flow-durable { top: 182px; height: 72px; }
-  .object-exercise-page .object-query-result { padding-block: 6px; }
-  .object-exercise-page .flow-legend { display: none; }
   .object-exercise-page .exercise-question { min-height: 0; padding: 8px 12px; }
 }
 @media (min-width: 640px) and (max-height: 740px) {
-  .object-exercise-workspace { gap: 6px; }
   .object-exercise-page .exercise-question { padding-block: 6px; }
   .object-exercise-page .guided-lab-title { display: contents; }
   .object-exercise-page .guided-lab-title h1 { flex: 1; white-space: nowrap; }
@@ -246,12 +230,8 @@ html:has(.object-exercise-page), body:has(.object-exercise-page) { height: 100dv
   .object-exercise-page .guided-lab-controls { gap: 8px; }
   .app-shell-guided-labs .object-exercise-page .guided-lab-title > p { display: none; }
 }
-@media (min-width: 1151px) and (max-height: 740px) {
-  .object-exercise-workspace { padding-top: clamp(0px, calc(100dvh - 650px), 94px); }
-}
 @media (max-width: 1150px) {
-  .object-exercise-page .flow-overview, .object-exercise-page .flow-legend { display: none; }
-  .object-exercise-workspace { padding-top: clamp(0px, calc(100dvh - 752px), 94px); }
+  .object-exercise-page .flow-overview { display: none; }
   .object-exercise-page .flow-panel-picker { display: flex; align-items: center; gap: 8px; color: var(--lab-muted); font-size: 12px; }
   .flow-panel-picker select { border: 1px solid var(--lab-border); border-radius: 5px; background: var(--lab-surface); color: var(--lab-text); font: inherit; padding: 4px 8px; }
   .object-exercise-page .exercise-question { min-height: 0; padding: 8px 10px; gap: 8px; }
@@ -263,22 +243,34 @@ html:has(.object-exercise-page), body:has(.object-exercise-page) { height: 100dv
   .object-exercise-page .guided-lab-controls { grid-row: 2; row-gap: 4px; }
   .object-exercise-page .guided-lab-canvas { grid-row: 3; }
   .app-shell-guided-labs .object-exercise-page .guided-lab-title > p { display: none; }
-  .object-exercise-page .flow-canvas, .object-exercise-page .flow-panel { height: 124px; padding: 6px; gap: 3px; }
-  .object-exercise-page .flow-input > .flow-object-name, .object-exercise-page .flow-input-note, .object-exercise-page .flow-location-label { display: none; }
-  .object-exercise-page .flow-durable > .flow-object-name { display: none; }
-  .object-exercise-page .flow-durable { --flow-row-height: 20px; }
-  .object-exercise-page .object-query-result { min-height: 0; padding: 4px 6px; font-size: 11px; gap: 4px; }
-  .object-exercise-page .object-query-result > strong { flex-basis: auto; }
-  .object-exercise-page .object-query-result > span:last-of-type { flex: 1; }
   .object-exercise-page .exercise-question { padding: 4px 8px; gap: 4px; }
   .object-exercise-page .exercise-question-copy p { margin-top: 4px; }
   .object-exercise-page .object-answer-choices { gap: 4px 8px; }
   .object-exercise-page .object-answer-choices legend { margin-bottom: 4px; }
-  .object-exercise-workspace { gap: 4px; padding-top: clamp(0px, calc(100dvh - 688px), 156px); }
-}
-@media (max-width: 639px) and (max-height: 700px) {
-  .object-exercise-page .flow-graph { gap: 2px; }
-  .object-exercise-page .flow-canvas, .object-exercise-page .flow-panel { height: 120px; padding-block: 4px; }
-  .object-exercise-page .object-query-result { padding-block: 2px; }
 }
 @media (prefers-reduced-motion: reduce) { .flow-result-row { animation: none; background: color-mix(in srgb, var(--lab-tint) 30%, transparent); } }
+
+/* Position only the diagram and its assessment area; navigation retains its
+   existing page anchor. All panel geometry comes from the lecture rules above. */
+.object-exercise-workspace[data-aligned='false'] { visibility: hidden; }
+.object-exercise-workspace > .flow-graph { position: absolute; top: var(--object-diagram-top); left: 0; right: 0; }
+.object-exercise-workspace .flow-legend { position: absolute; top: var(--object-legend-top, -29px); left: 0; right: 0; }
+.object-exercise-workspace .flow-panel-picker { position: absolute; bottom: calc(100% + 7px); left: 0; }
+.object-exercise-workspace .object-query-result { position: absolute; top: var(--object-query-top); left: 0; right: 0; }
+.object-exercise-workspace > .exercise-question { position: absolute; top: var(--object-question-top); left: 0; right: 0; }
+.object-answer-picker { display: none; width: 100%; min-width: 0; }
+.object-exercise-workspace[data-compact-question='true'] > .exercise-question { grid-template-columns: minmax(0, 1fr) 176px; padding: 2px 4px; gap: 8px; min-height: 0; }
+.object-exercise-workspace[data-compact-question='true'] .exercise-question-copy h2 { float: left; margin: 0 6px 0 0; line-height: 17px; }
+.object-exercise-workspace[data-compact-question='true'] .exercise-question-copy h2 > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.object-exercise-workspace[data-compact-question='true'] .exercise-question-copy h2::after { content: 'Question'; }
+.object-exercise-workspace[data-compact-question='true'] [data-result='correct'] .exercise-question-copy h2::after { content: 'Correct'; }
+.object-exercise-workspace[data-compact-question='true'] [data-result='incorrect'] .exercise-question-copy h2::after { content: 'Recheck'; }
+.object-exercise-workspace[data-compact-question='true'] .exercise-question-copy p { margin: 0; line-height: 17px; }
+.object-exercise-workspace[data-compact-question='true'] .exercise-answers > .object-answer-choices { display: none; }
+.object-exercise-workspace[data-compact-question='true'] .object-answer-picker { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 8px; font-size: 12px; }
+.object-answer-picker .button { min-height: 34px; padding: 4px 6px; justify-content: space-between; font-size: 12px; }
+.object-answer-dialog { grid-template-columns: 1fr; gap: 12px; margin-bottom: 18px; }
+@media (max-width: 639px) {
+  .object-exercise-workspace[data-compact-question='true'] > .exercise-question { grid-template-columns: minmax(0, 1fr) 94px; padding-block: 0; }
+  .object-exercise-workspace[data-compact-question='true'] .object-answer-picker { grid-template-columns: 1fr; gap: 3px; }
+}

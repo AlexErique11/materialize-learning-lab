@@ -62,19 +62,23 @@ test('tables and questions stay visible together without scrolling and match Cha
     await page.setViewportSize({ width: width!, height: height! });
     await page.goto(`${chapterPath}/tutorial/lecture-2`);
     const reference = await graphGeometry();
-    const lectureInputTop = (await page.locator('.flow-input').boundingBox())!.y;
+    const diagramBounds = () => page.locator('.flow-canvas, .flow-panel:visible, .flow-input table').evaluateAll(elements => elements.map(element => {
+      const { x, y, width, height } = element.getBoundingClientRect();
+      return { x, y, width, height };
+    }));
+    const lectureDiagram = await diagramBounds();
     await page.goto('/labs/incremental-maintenance/exercises/exercise-1');
     await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
     const referenceNext = (await page.getByRole('button', { name: 'Next question', exact: true }).boundingBox())!;
     for (const exercise of [1, 2]) {
       await page.goto(`${chapterPath}/exercises/exercise-${exercise}`);
-      if (height! > 880) expect(Math.abs((await page.locator('.flow-input').boundingBox())!.y - lectureInputTop)).toBeLessThanOrEqual(1);
-      if (width === 1536 && height === 714) {
-        expect(await page.locator('.object-exercise-workspace').evaluate(element => parseFloat(getComputedStyle(element).paddingTop))).toBeGreaterThanOrEqual(60);
-      }
+      await expect(page.locator('.object-exercise-workspace')).toHaveAttribute('data-aligned', 'true');
+      const lift = Number(await page.locator('.object-exercise-workspace').getAttribute('data-diagram-lift'));
+      await expect.poll(diagramBounds, 'Panels retain lecture spacing and move upward together').toEqual(lectureDiagram.map(box => ({ ...box, y: box.y - lift })));
       await expect(page.getByRole('button', { name: /^(View tables|Show tables|Question)$/ })).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Run query', exact: true })).toHaveCount(0);
       const fit = async () => {
+        await expect(page.locator('.object-exercise-workspace')).toHaveAttribute('data-fits', 'true');
         await expect(page.locator('.flow-canvas')).toBeVisible();
         await expect(page.locator('.exercise-question')).toBeVisible();
         const graph = (await page.locator('.flow-graph').boundingBox())!;
@@ -273,9 +277,21 @@ test('manual answers, incorrect retries, hints and the final design work', async
       await page.getByRole('button', { name: 'Hint', exact: true }).focus();
       await page.keyboard.press('Enter');
       await expect(page.getByRole('button', { name: 'Hint', exact: true })).toHaveAttribute('aria-expanded', 'true');
-      for (const id of checkpoint.solution) await page.getByRole('checkbox', { name: checkpoint.choices.find(choice => choice.id === id)!.label, exact: true }).check();
+      const picker = page.getByRole('button', { name: 'Select answers', exact: true });
+      const compact = await picker.isVisible();
+      if (compact) await picker.click();
+      const choices = compact ? page.getByRole('dialog', { name: 'Select answers', exact: true }) : page;
+      for (const id of checkpoint.solution) await choices.getByRole('checkbox', { name: checkpoint.choices.find(choice => choice.id === id)!.label, exact: true }).check();
+      if (compact) await choices.getByRole('button', { name: 'Done', exact: true }).click();
       await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
       await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'correct');
+      if (await picker.isVisible()) {
+        await picker.click();
+        const review = page.getByRole('dialog', { name: 'Select answers', exact: true });
+        await expect(review.getByRole('checkbox', { checked: true })).toHaveCount(checkpoint.solution.length);
+        await expect(review.getByRole('checkbox').first()).toBeDisabled();
+        await review.getByRole('button', { name: 'Done', exact: true }).click();
+      }
       if (exerciseIndex === 1) await expect(page.locator('.flow-definitions code')).toHaveText(stage === 0
         ? 'order_base → order_enriched' : 'order_base → order_enriched → revenue_mv');
       if (stage < exercise.checkpoints.length - 1) await page.getByRole('button', { name: 'Next question', exact: true }).click();
@@ -411,6 +427,32 @@ test('all pages preserve shared graph dimensions and readable content in both th
         }
       }
       await page.screenshot({ path: test.info().outputPath(`${size.width}-${theme}-${section}-${number}.png`) });
+    }
+  }
+});
+
+test('question text and answer controls stay anchored through feedback', async ({ page, isMobile }) => {
+  test.setTimeout(90_000);
+  const sizes = isMobile ? [{ width: 390, height: 844 }, { width: 390, height: 664 }, { width: 375, height: 667 }]
+    : [{ width: 1917, height: 893 }, { width: 1440, height: 900 }, { width: 1366, height: 768 }];
+  const positions = () => page.locator('.flow-canvas, .exercise-question, .exercise-question-copy, .exercise-question-copy h2, .exercise-question-copy p, .exercise-answers, .object-exercise-footer').evaluateAll(elements => elements.map(element => {
+    const { x, y } = element.getBoundingClientRect();
+    return { x, y };
+  }));
+  for (const size of sizes) {
+    await page.setViewportSize(size);
+    for (const exercise of [1, 2]) {
+      await page.goto(`${chapterPath}/exercises/exercise-${exercise}`);
+      await expect(page.locator('.object-exercise-workspace')).toHaveAttribute('data-aligned', 'true');
+      for (let question = 0; question < 4; question++) {
+        const before = await positions();
+        for (const action of ['Hint', 'Check Answer', 'Show Answer']) {
+          await page.getByRole('button', { name: action, exact: true }).click();
+          await expect.poll(positions, `${size.width}x${size.height}, exercise ${exercise}, question ${question + 1}: ${action}`).toEqual(before);
+          await expect(page.locator('.object-exercise-workspace')).toHaveAttribute('data-fits', 'true');
+        }
+        if (question < 3) await page.getByRole('button', { name: 'Next question', exact: true }).click();
+      }
     }
   }
 });
