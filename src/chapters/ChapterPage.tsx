@@ -5,7 +5,7 @@ import { ChapterOverviewSection } from '../components/chapter/ChapterOverviewSec
 import { Breadcrumbs } from '../components/layout/Breadcrumbs';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { getChapterSections } from './chapterOutline';
-import type { ChapterDefinition } from './chapterRegistry';
+import { guidedLabsHomePath, type ChapterDefinition } from './chapterRegistry';
 
 export function ChapterPage() {
   const chapter = useOutletContext<ChapterDefinition>();
@@ -15,7 +15,7 @@ export function ChapterPage() {
     <section className="chapter-overview" data-chapter={chapter.slug} aria-label="Chapter overview">
       <Breadcrumbs items={[
         { label: 'Learning path', to: '/' },
-        { label: 'Guided labs', to: '/labs' },
+        { label: 'Guided labs', to: guidedLabsHomePath },
         { label: chapter.shortTitle },
       ]} />
       <header className="chapter-overview-hero">

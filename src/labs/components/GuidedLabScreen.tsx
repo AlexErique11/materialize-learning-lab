@@ -9,7 +9,7 @@ import {
 import { ArrowRight, Lightbulb, Pause, Play } from 'lucide-react';
 import { useLocation } from 'react-router';
 import { materializeDocumentation } from '../../app/resources';
-import { chapterPath, type ChapterDefinition } from '../../chapters/chapterRegistry';
+import { chapterPath, guidedLabsHomePath, type ChapterDefinition } from '../../chapters/chapterRegistry';
 import { SqlObjectivesPanel } from '../../components/lab/SqlObjectivesPanel';
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs';
 import { useWalkthrough } from '../../components/walkthrough/WalkthroughProvider';
@@ -161,7 +161,7 @@ export function GuidedLabScreen({
       <div className="guided-lab-top-row">
         <Breadcrumbs
           items={[
-            { label: 'Guided labs', to: '/labs' },
+            { label: 'Guided labs', to: guidedLabsHomePath },
             {
               label: chapter.shortTitle,
               ...(title !== chapter.shortTitle ? { to: chapterPath(chapter) } : {}),

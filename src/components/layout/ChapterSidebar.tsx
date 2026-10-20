@@ -4,6 +4,7 @@ import { Link, useLocation } from 'react-router';
 import {
   advancedChapters,
   coreChapters,
+  guidedLabsHomePath,
   type ChapterDefinition,
 } from '../../chapters/chapterRegistry';
 import { IconButton } from '../ui/IconButton';
@@ -26,7 +27,7 @@ function SidebarContent({ compact = false }: { compact?: boolean }) {
           <Link to="/" className="sidebar-back">
             <ArrowLeft size={14} aria-hidden="true" /> Learning path
           </Link>
-          <Link to="/labs" className="sidebar-title">
+          <Link to={guidedLabsHomePath} className="sidebar-title">
             Guided labs
           </Link>
           <div className="sidebar-progress">

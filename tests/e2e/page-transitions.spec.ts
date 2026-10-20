@@ -25,6 +25,8 @@ async function selectChapter(page: Page, slug: string) {
   if (await mobile.isVisible() && await mobile.getAttribute('open') === null) await mobile.locator('summary').first().click();
   await page.locator(`#main-content .chapter-link-row a[href="/labs/${slug}"]:visible`).click();
   await expect(page).toHaveURL(`/labs/${slug}`);
+  await expect(page.locator('#main-content .chapter-overview')).toHaveAttribute('data-chapter', slug);
+  if (await mobile.isVisible()) await expect(mobile).not.toHaveAttribute('open');
 }
 
 async function finishPhase(page: Page, phase: 'exit' | 'enter') {
@@ -37,15 +39,57 @@ async function finishPhase(page: Page, phase: 'exit' | 'enter') {
   }, phase);
 }
 
+for (const [source, path] of [
+  ['overview breadcrumb', '/labs/incremental-maintenance'],
+  ['lecture breadcrumb', '/labs/getting-data-in/tutorial/lecture-2'],
+  ['exercise breadcrumb', '/labs/time-in-materialize/exercises/exercise-1'],
+  ['sidebar title', '/labs/progress-and-freshness/tutorial/lecture-1'],
+] as const) {
+  test(`${source} returns to Guided labs with the existing page transition`, async ({ page, isMobile }) => {
+    test.skip(isMobile && source !== 'sidebar title', 'Breadcrumbs are hidden on phones.');
+    await pausePageMotion(page);
+    await page.goto(path);
+    const header = await page.getByRole('banner').boundingBox();
+    if (source === 'sidebar title') {
+      const mobile = page.locator('#main-content .mobile-sidebar');
+      if (await mobile.isVisible()) await mobile.locator('summary').first().click();
+      await page.locator('#main-content .sidebar-title:visible').click();
+    } else {
+      await page.getByRole('navigation', { name: 'Breadcrumb', exact: true })
+        .getByRole('link', { name: 'Guided labs', exact: true }).click();
+    }
+    await expect(page).toHaveURL('/labs/changing-relations');
+    await expect(curtain(page)).toHaveCSS('opacity', '1');
+    await expect(page.locator('#main-content .learning-area-content')).toHaveAttribute('inert', '');
+    await expect(page.locator('.lab-intro-screen')).toHaveCount(0);
+    await finishPhase(page, 'exit');
+    await finishPhase(page, 'enter');
+    await expect(curtain(page)).toHaveCount(0);
+    await expect(page.locator('#main-content .learning-area-content')).not.toHaveAttribute('inert');
+    await expect(page.getByRole('heading', { name: 'Changing Relations', exact: true })).toBeVisible();
+    await expect(page.locator('#main-content')).toBeFocused();
+    expect(await page.getByRole('banner').boundingBox()).toEqual(header);
+    await page.goBack();
+    await expect(page).toHaveURL(path);
+    await finishPhase(page, 'exit');
+    await finishPhase(page, 'enter');
+    await expect(curtain(page)).toHaveCount(0);
+  });
+}
+
 for (const theme of ['light', 'dark']) {
   test(`${theme} chapter changes keep navigation fixed and reveal only settled content`, async ({ page }, testInfo) => {
     await pausePageMotion(page);
     await page.goto('/labs/changing-relations');
     if (theme === 'dark') await page.getByRole('button', { name: 'Switch to dark mode', exact: true }).click();
     const mobile = page.locator('#main-content .mobile-sidebar');
-    if (await mobile.isVisible()) {
+    const mobileNavigation = await mobile.isVisible();
+    if (mobileNavigation) {
       await mobile.locator('summary').first().click();
       await expect(page.locator('#main-content .learning-area-content')).toHaveCSS('transform', 'none');
+      // Clicking a lower menu item can scroll the document before navigation.
+      // Measure the visible source after that scroll, as the snapshot does.
+      await page.locator('#main-content .chapter-link-row a[href="/labs/incremental-maintenance"]:visible').scrollIntoViewIfNeeded();
     }
     const header = await page.getByRole('banner').boundingBox();
     const sidebar = await page.locator('#main-content .chapter-sidebar').boundingBox();
@@ -60,7 +104,7 @@ for (const theme of ['light', 'dark']) {
     await expect(frozen.locator('h1')).toHaveText('Changing Relations');
     expect(await frozen.locator('h1').boundingBox()).toEqual(title);
     expect(await page.getByRole('banner').boundingBox()).toEqual(header);
-    expect(await page.locator('#main-content .chapter-sidebar').boundingBox()).toEqual(sidebar);
+    if (!mobileNavigation) expect(await page.locator('#main-content .chapter-sidebar').boundingBox()).toEqual(sidebar);
     const content = page.locator('#main-content .learning-area-content');
     await expect(content).toHaveAttribute('inert', '');
     await expect(content).toHaveAttribute('aria-busy', 'true');

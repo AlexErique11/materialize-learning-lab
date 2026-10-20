@@ -111,6 +111,9 @@ The filter-choice question conceals the reference predicate until acceptance.
 ## Shared component ownership
 
 `AreaTransition` owns navigation within Guided Labs and between app areas.
+In-lab Guided labs breadcrumb and sidebar links use `guidedLabsHomePath` from
+the chapter registry, bypassing the empty `/labs` entry redirect so they use the
+same transition. The Learning path entry still uses `/labs` for its intro flow.
 Overview, lecture and exercise navigation uses an 80ms fade of the frozen outgoing
 content to the page's own background, then a 140ms reveal of the settled destination.
 The destination's visible images, fonts and diagram layout settle behind the opaque

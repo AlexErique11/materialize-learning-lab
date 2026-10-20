@@ -184,3 +184,6 @@ export function formatChapterNumber(number: number) {
 export function chapterPath(chapter: ChapterDefinition) {
   return `/labs/${chapter.slug}`;
 }
+
+// In-lab links skip the empty /labs entry redirect so page transitions stay intact.
+export const guidedLabsHomePath = chapterPath(coreChapters[0]!);
