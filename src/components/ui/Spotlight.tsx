@@ -3,6 +3,9 @@ import { Lightbulb, X } from 'lucide-react';
 import { Button } from './Button';
 import { useDialogMotion } from '../../motion/useDialogMotion';
 import { animateMotion, reveal } from '../../motion/motion';
+import { useLabShortcuts } from '../../hooks/useLabShortcuts';
+
+const guideShortcuts = { ArrowLeft: '[data-guide-action="back"]', ArrowRight: '[data-guide-action="forward"]' };
 
 interface SpotlightProps {
   open: boolean;
@@ -34,6 +37,7 @@ interface SpotlightGeometry {
 
 export function Spotlight({ open, targetRef, step, total, title, description, phaseLabel, visual, children, focusTargets, focusIndex = 0, onFocusChange, navigation, closeLabel = 'Close guided run', placement = 'auto', onClose }: SpotlightProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  useLabShortcuts(dialogRef, guideShortcuts, open && Boolean(navigation));
   const cardRef = useRef<HTMLDivElement>(null);
   const [geometry, setGeometry] = useState<SpotlightGeometry | null>(null);
   const titleId = useId();
@@ -179,11 +183,11 @@ export function Spotlight({ open, targetRef, step, total, title, description, ph
         <div className="relation-guide-actions">
           <span className="relation-guide-step">{step} of {total}</span>
           {open && (navigation ? <>
-            <Button disabled={navigation.backDisabled && (!sequential || focusIndex === 0)} onClick={() => {
+            <Button data-guide-action="back" aria-keyshortcuts="ArrowLeft" disabled={navigation.backDisabled && (!sequential || focusIndex === 0)} onClick={() => {
               if (sequential && focusIndex > 0) onFocusChange?.(focusIndex - 1);
               else navigation.onBack();
             }}>Back</Button>
-            <Button variant="primary" onClick={() => {
+            <Button data-guide-action="forward" aria-keyshortcuts="ArrowRight" variant="primary" onClick={() => {
               if (sequential && focusIndex < (focusTargets?.length ?? 1) - 1) onFocusChange?.(focusIndex + 1);
               else navigation.onNext();
             }}>{sequential && focusIndex < (focusTargets?.length ?? 1) - 1 ? 'Next' : navigation.nextLabel}</Button>

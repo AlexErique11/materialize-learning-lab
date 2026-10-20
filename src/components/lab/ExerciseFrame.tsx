@@ -126,6 +126,8 @@ export function ExerciseFrame({
       {showNext && (
         <Button
           className="exercise-next-question"
+          data-shortcut="exercise-forward"
+          aria-keyshortcuts="Enter ArrowRight"
           variant="primary"
           onClick={() => {
             setQuestionOpen(true);
@@ -172,10 +174,11 @@ export function ExerciseFrame({
         ),
         actions: (
           <>
-            <Button onClick={onReset}>Reset</Button>
+            <Button data-shortcut="reset" aria-keyshortcuts="R" onClick={onReset}>Reset</Button>
 
             <Button
               data-walkthrough="hint"
+              aria-keyshortcuts="H"
               disabled={flow.accepted}
               aria-expanded={flow.hintOpen}
               aria-controls={`${formId}-question`}
@@ -190,6 +193,7 @@ export function ExerciseFrame({
 
             <Button
               data-walkthrough="answer"
+              aria-keyshortcuts="Control+Enter"
               disabled={flow.accepted}
               onClick={() => {
                 setQuestionOpen(true);
@@ -202,6 +206,7 @@ export function ExerciseFrame({
 
             <Button
               data-walkthrough="check"
+              aria-keyshortcuts="Enter"
               variant="primary"
               type="submit"
               form={formId}

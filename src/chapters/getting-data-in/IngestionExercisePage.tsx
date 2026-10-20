@@ -93,7 +93,7 @@ export function IngestionExercisePage({ chapter, navigation, exerciseIndex }: {
       <div className="chapter-completion-takeaway"><strong>The key idea</strong>
         <p>The producer’s contract determines how records become rows. Correct identity keeps updates from becoming additional products.</p></div>
       {nextChapter && <div className="chapter-completion-next"><div><span className="eyebrow">Up next · Chapter {nextChapter.number}</span><p>{nextChapter.shortTitle}</p></div>
-        <Button variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button></div>}
+        <Button data-dialog-primary aria-keyshortcuts="Enter" variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button></div>}
     </Dialog>
   </div>;
 }

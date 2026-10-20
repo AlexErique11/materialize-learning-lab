@@ -312,7 +312,7 @@ export function MaintenanceExercisePage({
               <span className="eyebrow">Up next · Chapter {nextChapter.number}</span>
               <p>{nextChapter.shortTitle}</p>
             </div>
-            <Button variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>
+            <Button data-dialog-primary aria-keyshortcuts="Enter" variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>
               Go to next chapter
               <ArrowRight size={16} aria-hidden="true" />
             </Button>

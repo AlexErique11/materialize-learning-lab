@@ -169,6 +169,23 @@ mark. The SQL popup has no Tutorial or Exercises links.
 
 ## Guided text and tables
 
+`useLabShortcuts` activates the existing enabled buttons in the active screen.
+Guided-run arrows follow Back/forward, including predictions and same-state
+inspections. Outside a guide, lecture arrows step changes/timestamps/cases and
+Space toggles playback and Enter starts a guided run. R resets a lecture or
+exercise. Exercise Enter checks the answer, including from a single-line answer
+input; once accepted, Enter or Right activates the forward button, including the
+next exercise or chapter completion. Ctrl+Enter reveals the answer, H shows the
+exercise hint, and S toggles SQL & Objectives (Escape also closes it). Native button
+activation, editing, selects, text selection, other modifiers, and IME composition
+retain their behavior. Letter shortcuts do not run while typing in an input.
+Held keys do not repeatedly advance or toggle actions. A modal blocks underlying
+page shortcuts; Escape retains native dialog cancellation and tooltip dismissal.
+The shared screen, guide, and exercise frame own these bindings across chapters.
+Chapter completion marks its next-chapter button with `data-dialog-primary`.
+The shared dialog focuses this action on opening and supports Enter to activate
+it; Escape closes the window and restores focus to the finished exercise.
+
 `Spotlight` owns guide placement, masking, and related-region navigation.
 Lessons name a primary target and optional `related` targets; `useGuidedFocus`
 connects those names to panel refs and the existing responsive panel selector.

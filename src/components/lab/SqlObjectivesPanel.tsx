@@ -18,7 +18,7 @@ export function SqlObjectivesPanel({
   documentationLinks = [],
 }: SqlObjectivesPanelProps) {
   return (
-    <Dialog open={open} onClose={onClose} title="SQL & Objectives" eyebrow="Lab reference">
+    <Dialog open={open} onClose={onClose} title="SQL & Objectives" eyebrow="Lab reference" className="sql-objectives-panel">
       <div className="space-y-7">
         <section>
           <h3 className="reference-title">Learning objective</h3>
