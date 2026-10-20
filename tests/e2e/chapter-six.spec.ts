@@ -65,7 +65,7 @@ for (const [index, lecture] of progressLectures.entries()) {
 for (const [index, exercise] of progressExercises.entries()) {
   test(`Chapter 6 exercise ${index + 1}: all questions, wrong answers, hints, solutions and completion`, async ({ page }) => {
     await page.goto(`${base}/exercises/${exercise.slug}`);
-    await page.getByRole('button', { name: 'View question', exact: true }).click();
+    await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-aligned', 'true');
     for (const [step, question] of exercise.questions.entries()) {
       const workspace = page.getByTestId('progress-workspace');
       const before = await workspace.innerText();
@@ -78,7 +78,13 @@ for (const [index, exercise] of progressExercises.entries()) {
       for (const group of question.groups) {
         const fieldset = page.getByRole('group', { name: group.label, exact: true });
         if (group.kind === 'integer') await fieldset.getByRole('textbox').fill(group.solution[0]!);
-        else for (const answer of group.solution) {
+        else if (group.kind === 'single' && await fieldset.getByRole('combobox').isVisible()) await fieldset.getByRole('combobox').selectOption(group.solution[0]!);
+        else if (group.kind === 'multiple' && await fieldset.getByRole('button', { name: `Choose ${group.label}`, exact: true }).isVisible()) {
+          await fieldset.getByRole('button').click();
+          const dialog = page.getByRole('dialog', { name: group.label, exact: true });
+          for (const answer of group.solution) await dialog.getByRole('checkbox', { name: group.choices!.find(c => c.id === answer)!.label, exact: true }).check();
+          await dialog.getByRole('button', { name: 'Done', exact: true }).click();
+        } else for (const answer of group.solution) {
           const choice = group.choices!.find(c => c.id === answer)!;
           await fieldset.getByRole(group.kind === 'single' ? 'radio' : 'checkbox', { name: choice.label, exact: true }).check();
         }
@@ -127,7 +133,7 @@ test('Chapter 6 controls match reference geometry and all lecture checkpoints fi
   }
 });
 
-test('Chapter 6 lectures keep matching panel bounds', async ({ page, isMobile }) => {
+test('Chapter 6 lectures keep matching positions while three-row boxes are shorter', async ({ page, isMobile }) => {
   test.setTimeout(120_000);
   const differences: unknown[] = [];
   const selectors = ['.relation-metrics', '.progress-stage-row', '.progress-lane-panel', '.progress-axis', '[data-testid="lane-orders"]', '[data-testid="lane-payments"]', '[data-testid="lane-join"]', '.progress-detail', '.progress-caption'];
@@ -143,7 +149,8 @@ test('Chapter 6 lectures keep matching panel bounds', async ({ page, isMobile })
       else for (const selector of selectors) {
         const expected = reference[selector];
         const actual = bounds[selector];
-        if (expected && actual && (Math.abs(expected.y - actual.y) > .5 || Math.abs(expected.height - actual.height) > .5)) differences.push({ viewport, lecture: index + 1, selector, expected, actual });
+        const addedRow = selector === '.progress-lane-panel' && index === 2 ? bounds['[data-testid="lane-orders"]']!.height : 0;
+        if (expected && actual && (Math.abs(expected.y - actual.y) > .5 || Math.abs(expected.height + addedRow - actual.height) > .5)) differences.push({ viewport, lecture: index + 1, selector, expected, actual });
       }
     }
   }
@@ -285,75 +292,107 @@ test('progress boundaries stay aligned during load, catch-up, rewind and reset',
   await checkBoundaries();
 });
 
-test('exercise pages reject wheel and keyboard scrolling without clipping their controls', async ({ page, isMobile }) => {
-  test.setTimeout(120_000);
+test('exercise pages show diagram and question together without wheel or keyboard scrolling', async ({ page, isMobile }) => {
+  test.setTimeout(90_000);
   for (const viewport of isMobile ? [{ width: 360, height: 740 }, { width: 610, height: 668 }] : [{ width: 1280, height: 720 }, { width: 1440, height: 800 }, { width: 1536, height: 864 }, { width: 800, height: 600 }]) {
     await page.setViewportSize(viewport);
-    await page.goto(`${base}/tutorial/lecture-3`);
-    const lectureDiagram = (await page.locator('.progress-lane-panel').boundingBox())!;
     await page.goto(`${base}/exercises/exercise-3`);
-    const exerciseDiagram = (await page.locator('.progress-lane-panel').boundingBox())!;
-    expect(exerciseDiagram.y).toBeCloseTo(lectureDiagram.y, 0);
-    expect(exerciseDiagram.height).toBeCloseTo(lectureDiagram.height, 0);
-    for (const question of [false, true]) {
-      if (question) await page.getByRole('button', { name: 'View question', exact: true }).click();
-      const pageBounds = (await page.locator('.guided-lab-page').boundingBox())!;
-      await page.mouse.move(pageBounds.x + pageBounds.width / 2, Math.min(viewport.height - 50, pageBounds.y + 300));
-      await page.mouse.wheel(0, 900);
-      await page.locator('h1').click();
-      await page.keyboard.press('PageDown');
-      await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
-      expect(await page.evaluate(() => Array.from(document.querySelectorAll('.guided-lab-page, .guided-lab-page *')).some(el => el.scrollTop > 0))).toBe(false);
-      const footer = (await page.locator('.relation-playback-controls').boundingBox())!;
-      expect(footer.y + footer.height).toBeLessThanOrEqual(viewport.height);
-      const content = (await page.locator(question ? '.progress-exercise-question-view' : '[data-testid="progress-workspace"]').boundingBox())!;
-      expect(content.y + content.height).toBeLessThanOrEqual(footer.y);
-    }
+    await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-aligned', 'true');
+    await expect(page.getByRole('button', { name: /^View (question|diagram)$/ })).toHaveCount(0);
+    await expect(page.locator('.exercise-question-copy')).toBeVisible();
+    await expect(page.locator('.exercise-answers')).toBeVisible();
+    await expect(page.locator('.progress-lane-panel')).toBeVisible();
+    await expect(page.locator('.progress-lane:visible')).toHaveCount(4);
+    await page.mouse.move(viewport.width / 2, viewport.height / 2);
+    await page.mouse.wheel(0, 900);
+    await page.locator('h1').click();
+    await page.keyboard.press('PageDown');
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    expect(await page.evaluate(() => Array.from(document.querySelectorAll('.guided-lab-page, .guided-lab-page *')).some(el => el.scrollTop > 0))).toBe(false);
+    const question = (await page.locator('.exercise-answers').boundingBox())!;
+    const footer = (await page.locator('.progress-exercise-playback').boundingBox())!;
+    const docked = await page.locator('.progress-exercise-layout').getAttribute('data-dock-answers') === 'true';
+    expect(question.y + question.height).toBeLessThanOrEqual(footer.y + (docked ? footer.height : 0));
+    expect(footer.y + footer.height).toBeLessThanOrEqual(viewport.height);
     await page.goto(base);
     expect(await page.locator('html').evaluate(el => getComputedStyle(el).overflowY)).not.toBe('clip');
   }
 });
 
-test('Chapter 6 exercise layouts preserve evidence and answers across screen sizes and themes', async ({ page, isMobile }) => {
-  test.setTimeout(120_000);
-  for (const viewport of isMobile ? [{ width: 390, height: 844 }, { width: 610, height: 668 }] : [{ width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1024, height: 768 }]) {
+test('Chapter 6 combined exercise layouts fit every question and feedback without moving lanes', async ({ page, isMobile }) => {
+  test.setTimeout(240_000);
+  const viewports = isMobile ? [{ width: 390, height: 664 }, { width: 390, height: 844 }, { width: 360, height: 740 }, { width: 610, height: 668 }] : [{ width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 800, height: 600 }];
+  for (const viewport of viewports) {
     await page.setViewportSize(viewport);
     for (const [index, exercise] of progressExercises.entries()) {
       await page.goto(`${base}/tutorial/lecture-${index + 1}`);
       const lectureDiagram = (await page.locator('.progress-lane-panel').boundingBox())!;
+      const geometry = async () => page.locator('.progress-lane-panel').evaluate(panel => {
+        const origin = panel.getBoundingClientRect();
+        return Array.from(panel.querySelectorAll('.progress-axis, .progress-lane, .progress-track')).map(element => {
+          const box = element.getBoundingClientRect();
+          return { x: box.x - origin.x, y: box.y - origin.y, width: box.width, height: box.height };
+        });
+      });
+      const lectureGeometry = await geometry();
       await page.goto(`${base}/exercises/${exercise.slug}`);
-      const diagram = (await page.locator('.progress-lane-panel').boundingBox())!;
-      expect(diagram.x).toBeCloseTo(lectureDiagram.x, 0);
-      expect(diagram.y).toBeCloseTo(lectureDiagram.y, 0);
-      expect(diagram.width).toBeCloseTo(lectureDiagram.width, 0);
-      expect(diagram.height).toBeCloseTo(lectureDiagram.height, 0);
-      expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1)).toBe(true);
-      await page.getByRole('button', { name: 'View question', exact: true }).click();
+      await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-aligned', 'true');
       for (let step = 0; step < exercise.questions.length; step++) {
-        await expect(page.locator('.exercise-question')).toBeVisible();
-        for (const accepted of [false, true]) {
-          if (accepted) await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
-          expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-          expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1)).toBe(true);
-          const bottom = (await page.locator('.relation-playback-controls').boundingBox())!;
-          expect(bottom.y + bottom.height).toBeLessThanOrEqual(viewport.height + 1);
-          await page.getByRole('button', { name: 'View diagram', exact: true }).click();
-          await expect(page.getByTestId('progress-workspace')).toBeVisible();
-          expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight + 1)).toBe(true);
+        const diagram = (await page.locator('.progress-lane-panel').boundingBox())!;
+        expect(diagram.x).toBeCloseTo(lectureDiagram.x, 1);
+        expect(diagram.y).toBeCloseTo(lectureDiagram.y, 1);
+        expect(diagram.width).toBeCloseTo(lectureDiagram.width, 1);
+        expect(diagram.height).toBeCloseTo(lectureDiagram.height, 1);
+        expect(await geometry()).toEqual(lectureGeometry);
+        const fit = async () => {
+          await expect(page.locator('.progress-lane-panel')).toBeVisible();
+          await expect(page.locator('.exercise-question-copy')).toBeVisible();
+          await expect(page.locator('.exercise-answers')).toBeVisible();
+          await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-fits', 'true');
           const currentDiagram = (await page.locator('.progress-lane-panel').boundingBox())!;
-          expect(currentDiagram.y).toBeCloseTo(diagram.y, 0);
-          expect(currentDiagram.width).toBeCloseTo(diagram.width, 0);
-          expect(currentDiagram.height).toBeCloseTo(diagram.height, 0);
-          await page.getByRole('button', { name: 'View question', exact: true }).click();
-        }
+          expect(currentDiagram).toEqual(diagram);
+          const footer = (await page.locator('.progress-exercise-playback').boundingBox())!;
+          const docked = await page.locator('.progress-exercise-layout').getAttribute('data-dock-answers') === 'true';
+          const inLegend = await page.locator('.progress-exercise-layout').getAttribute('data-legend-evidence') === 'true';
+          const regions = await Promise.all(['.progress-lane-panel', '.progress-exercise-evidence', '.exercise-question-copy', '.exercise-answers'].map(selector => page.locator(selector).boundingBox()));
+          for (const [i, region] of regions.entries()) {
+            expect(region!.y + region!.height, `${viewport.width}x${viewport.height}: exercise ${index + 1}, question ${step + 1}`).toBeLessThanOrEqual(footer.y + (docked && i === 3 ? footer.height : 0));
+            for (const [offset, other] of regions.slice(i + 1).entries()) {
+              if (inLegend && i === 0 && offset === 0) continue;
+              const overlapX = Math.min(region!.x + region!.width, other!.x + other!.width) - Math.max(region!.x, other!.x);
+              const overlapY = Math.min(region!.y + region!.height, other!.y + other!.height) - Math.max(region!.y, other!.y);
+              expect(overlapX <= 1 || overlapY <= 1, 'Diagram, evidence, prompt and answers must not overlap').toBe(true);
+            }
+          }
+          if (docked) {
+            const button = await page.locator('.progress-exercise-playback').evaluate(footer => footer.querySelector('button')?.getBoundingClientRect().toJSON());
+            if (button) expect(regions[3]!.x + regions[3]!.width).toBeLessThanOrEqual(button.x);
+          }
+          if (inLegend) {
+            const evidence = regions[1]!;
+            const key = (await page.locator('.progress-legend > span').first().boundingBox())!;
+            expect(evidence.x + evidence.width).toBeLessThanOrEqual(key.x);
+          }
+          expect(footer.y + footer.height).toBeLessThanOrEqual(viewport.height);
+          for (const element of await page.locator('.exercise-question-copy, .exercise-answers, .progress-lane-panel, .progress-detail').all()) {
+            expect(await element.evaluate(node => node.scrollWidth <= node.clientWidth + 1 && node.scrollHeight <= node.clientHeight + 1)).toBe(true);
+          }
+          expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth && scrollY === 0)).toBe(true);
+        };
+        await fit();
+        await page.getByRole('button', { name: 'Hint', exact: true }).click();
+        await fit();
+        await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
+        await fit();
+        await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+        await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'correct');
+        await fit();
+        await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'dark'));
+        await fit();
+        await page.evaluate(() => document.documentElement.setAttribute('data-theme', 'light'));
         if (step < exercise.questions.length - 1) await page.getByRole('button', { name: 'Next question', exact: true }).click();
       }
-      await page.screenshot({ path: test.info().outputPath(`exercise-${index + 1}-${viewport.width}.png`) });
-      if (index === 2) {
-        await page.getByRole('button', { name: 'Switch to dark mode', exact: true }).click();
-        await page.screenshot({ path: test.info().outputPath(`exercise-dark-${viewport.width}.png`) });
-        await page.getByRole('button', { name: 'Switch to light mode', exact: true }).click();
-      }
+      await page.screenshot({ path: test.info().outputPath(`combined-exercise-${index + 1}-${viewport.width}.png`) });
     }
   }
 });

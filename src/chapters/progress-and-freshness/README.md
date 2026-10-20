@@ -19,6 +19,8 @@ same diagram rather than a separate dashboard design.
   `Spotlight`, prediction/reveal, playback, and controls-tour pause behavior.
 - `ProgressExercisePage.tsx`: shared `ExerciseFrame`, `useExerciseStages`, native
   answers, hint/show-answer/reset, and completion navigation to Chapter 7.
+- `ProgressExerciseWorkspace.tsx`: exact lecture diagram geometry and
+  bounded placement of the prompt, evidence and answers without scrolling.
 - `resources.ts`: objective, reference SQL, and official documentation links.
 - `lessonText.ts`: chapter vocabulary annotations for the shared `LessonText`
   renderer. Objects and measurements keep the same inline colors in guided
@@ -73,7 +75,7 @@ leave the final row available for Revenue, introduced in Lecture 3. This keeps
 metrics, stage selectors, axes, common lanes and evidence panels aligned across
 lectures. Phone subtitles reserve two lines up to 480px wide. The compact lag
 legend uses one line when space permits, matching the normal caption footprint.
-Exercises use the same four-row diagram capacity.
+Exercises retain every relevant lane with the same dimensions and spacing as lectures.
 
 Object references use purple for Orders, teal for Payments, blue for Paid orders,
 and amber for Revenue, matching their lane labels. Actual frontiers and logical
@@ -110,21 +112,33 @@ do not highlight differences from the previous incident as progress changes.
 Case identity follows the displayed snapshot during guided predictions, rewind,
 reset and autoplay, without moving the shared controls.
 
-Exercises compose `LectureWorkspace` inside `ExerciseFrame`, using its full-width
-diagram, metric cards, and measured footer. View question / View diagram swaps
-two views occupying the same grid cell. Both views retain their footprint so
-switching or editing answers does not move the diagram. Hint, Check Answer and
-Show Answer open the question view; predictions survive switching. The page and
-panels fit without scrolling. Phones omit the duplicated action caption; the
-question describes the proposed action. Short windows expose metrics in the same
-dialog as lectures. Compact stage labels retain full accessible names, and the
-unit is stated once on the shared axis.
+Exercises use `ExerciseFrame` with full-width lanes and permanent prompt/answer
+regions. There is no question/diagram toggle. The workspace briefly measures an
+inert, hidden instance of the matching lecture in the same page container, then
+removes it. This reuses the actual responsive frame rather than estimating its
+diagram offset. The exercise shares the lecture's complete diagram geometry,
+including panel edges, padding, axis, lane heights, tracks and legend.
+On roomy screens the question stays below the diagram. When necessary, the prompt
+uses the upper whitespace and the answers stay below; evidence uses whichever
+region fits. Placement checks all region bounds against the navigation footer.
+Frontier values stay on their lanes; clock, query duration and additional evidence
+share one compact strip below the diagram. The normal exercise navigation inset reserves
+the footer. Reference positions are measured only on entry and window resize, so
+hints, errors and accepted answers cannot recenter the lanes.
+Lectures retain their stage selectors and metric cards. Three-row boxes are one
+row shorter; outside spacing preserves all other positions, including questions.
+Compact exercises use native selects for single answers, checkboxes for multiple
+answers, and one row of numeric fields for timing questions. In the shortest
+windows, answers dock beside the navigation button; multiple-choice selections
+use a checkbox dialog. Short legends retain full accessible field names.
+Evidence may occupy the unused left side of a wide legend row. The axis, markers,
+color vocabulary and Diagram key are shared with lectures. The diagram has no exercise-only spacing overrides.
 
 Exercise routes explicitly clip document scrolling and disable overscroll;
 leaving the exercise removes that rule automatically. Wheel and PageDown checks
 verify actual scroll position, alongside visibility and fitting checks. In short
 tablet windows, the compact header omits duplicate breadcrumbs and subtitle;
-diagram evidence appears with the question so both views fit without clipping
+diagram evidence appears above the question so both fit without clipping
 the answer fields or footer.
 
 Exercise 1 has four questions. Exercise 2 has five continuous predictions; a wrong

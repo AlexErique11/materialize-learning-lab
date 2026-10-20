@@ -188,20 +188,26 @@ review, not an application test run.
   diamonds observed changes, and dotted lines the simulated wall clock. A single
   scale positions every lane. Compact views keep the dependency lanes together;
   stage buttons select the evidence detail. Lectures reuse `LectureScreen`
-  without-tip and its playback baseline. All three lecture diagrams reserve four
-  equal lane rows so introducing Revenue does not shift metrics or panel bounds.
+  without-tip and its playback baseline. Three-row diagrams omit the unused Revenue row inside the box; equivalent
+  outside space keeps the top edge, existing rows and surrounding content fixed.
   Phone subtitles reserve two lines up to 480px; the lag legend shares the normal
   caption footprint. Chapter CSS owns these matching visualization dimensions.
-  Exercises use the same four-row diagram and reuse `ExerciseFrame` actions
-  and questions, with `LectureWorkspace` measuring their bottom navigation.
-  View question / View diagram swaps panels in the same grid cell, retaining
-  their footprint and predictions without page or panel scrolling. The shared
-  exercise frame exposes its question-view state to the workspace slot; other
-  chapters keep their existing initial view. Short windows expose metrics in
-  the same dialog as lectures.
+  Exercises reuse `ExerciseFrame` actions and questions with all relevant lanes
+  permanently visible with the question. `ProgressExerciseWorkspace` measures the
+  actual matching lecture once on entry/resize to share its complete diagram
+  geometry, including panel bounds, axis, padding and lane/track spacing. Its hidden, inert reference is removed immediately after measurement.
+  One compact clock/query/evidence strip replaces large metric cards and repeated
+  details. The prompt may occupy space above the anchored diagram, with answers
+  below, when the full question does not fit beneath it. Bounds checks prevent
+  overlap and scrolling. Hints, errors and accepted answers cannot move the anchor.
+  Navigation uses the shared exercise footer inset. Compact single-answer fields
+  use native selects; multiple-answer fields keep checkboxes. In short windows,
+  answers dock beside navigation and multiple choices use a checkbox dialog.
+  Wide legends can host evidence in their unused left space. Lecture layouts and
+  stage selectors remain unchanged.
   Document scrolling and overscroll are locked only while a Chapter 6 exercise
   is present. Short tablet windows use a compact header and place evidence in
-  the question view to keep all controls accessible within the viewport.
+  the same workspace to keep all controls accessible within the viewport.
   Chapter CSS changes visualization content only; shared controls
   retain their existing ownership and positions.
 
