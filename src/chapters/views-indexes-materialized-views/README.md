@@ -15,9 +15,7 @@ boundary; introductions never create objects or count as scenario changes.
 `ObjectQueryControls` supplies the same responsive query-controls row to lectures
 and exercises. Lecture 1 and both exercises reserve it invisibly and inertly.
 Both exercises reuse `LectureWorkspace` and the lecture graph styles, including
-the reserved scenario-step row and shared responsive subtitle layout. Narrow
-exercise toolbars omit decorative button icons to match the lecture row count.
-Graphs stay visible in the lecture position;
+the reserved scenario-step row. Graphs stay visible in the lecture position;
 questions follow below and the page scrolls when they exceed the viewport.
 
 Guided prose and examples use explicit `LessonTextContent` references. Order IDs
