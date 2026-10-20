@@ -1,6 +1,8 @@
 import { chapterPath, type ChapterDefinition } from './chapterRegistry';
 import { recordLectures } from './getting-data-in/record-scenarios';
 import { ingestionExercises } from './getting-data-in/exercise-scenarios';
+import { temporalLectures } from './time-in-materialize/scenarios';
+import { temporalExercises } from './time-in-materialize/exercise-scenarios';
 
 export type ChapterSectionSlug = 'tutorial' | 'exercises';
 
@@ -118,32 +120,15 @@ const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
     ],
   },
   'time-in-materialize': {
-    tutorial: [
-      {
-        slug: 'order-lifecycles',
-        title: 'Order lifecycles',
-        description: 'Explore how time and updates flow through Materialize with a real-time order example.',
-        durationMinutes: 15,
-      },
-      {
-        slug: 'working-with-logical-time',
-        title: 'Working with logical time',
-        description: 'Learn how to query and reason about logical time in Materialize.',
-        durationMinutes: 20,
-      },
-    ],
-    exercises: [
-      {
-        slug: 'query-order-timelines',
-        title: 'Query order timelines',
-        description: 'Write queries to inspect the timeline of orders and their state changes.',
-      },
-      {
-        slug: 'build-a-real-time-dashboard',
-        title: 'Build a real-time dashboard',
-        description: 'Create a live view that tracks orders and their lifecycle using Materialize.',
-      },
-    ],
+    tutorial: temporalLectures.map((lecture) => ({
+      slug: 'lecture-' + lecture.number,
+      title: 'Lecture ' + lecture.number + ': ' + lecture.title,
+      description: lecture.description,
+    })),
+    exercises: temporalExercises.map((exercise, index) => ({
+      slug: exercise.slug, title: `Exercise ${index + 1}: ${exercise.title}`,
+      description: exercise.description, durationMinutes: exercise.durationMinutes,
+    })),
   },
 };
 
