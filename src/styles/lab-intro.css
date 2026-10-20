@@ -13,7 +13,11 @@
   background: var(--intro-background);
   color: var(--intro-text);
   opacity: 1;
-  transition: opacity 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform: translateX(0);
+  transition-property: transform;
+  animation-name: lab-intro-screen-arrive;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  animation-fill-mode: both;
 }
 
 :root[data-theme='dark'] .lab-intro-screen {
@@ -105,27 +109,18 @@
 }
 
 .lab-intro-screen[data-phase='revealing'] {
-  opacity: 0;
+  transform: translateX(-100%);
   pointer-events: none;
-}
-
-.lab-entry-background[data-lab-entry-phase='reacting'] .learning-area {
-  opacity: 0;
-  transform: translateY(8px);
-}
-
-.lab-entry-background[data-lab-entry-phase='revealing'] .learning-area {
-  animation: lab-entry-reveal 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-@keyframes lab-entry-reveal {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes lab-intro-arrive {
   from { opacity: 0; transform: translateY(8px) scale(0.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes lab-intro-screen-arrive {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes lab-intro-react {
@@ -164,12 +159,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lab-entry-background[data-lab-entry-phase] .learning-area {
-    opacity: 1;
-    transform: none;
-    animation: none;
-  }
-  .lab-intro-screen { transition-duration: 100ms; }
+  .lab-intro-screen { animation: none; transition: none; transform: none; }
   .lab-intro-flask,
   .lab-intro-vessel,
   .lab-intro-liquid,

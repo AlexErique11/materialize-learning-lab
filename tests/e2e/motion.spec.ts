@@ -3,11 +3,14 @@ import { expect, test } from './fixtures';
 
 async function observeMotion(page: Page) {
   await page.addInitScript(() => {
-    (window as unknown as { motionEvents: string[] }).motionEvents = [];
+    const observations = window as unknown as { motionEvents: string[]; motionSamples: { id: string; target: string; duration: number; frames: Keyframe[] }[] };
+    observations.motionEvents = [];
+    observations.motionSamples = [];
     const animate = Element.prototype.animate;
     Element.prototype.animate = function (frames, options) {
       const animation = animate.call(this, frames, options);
-      (window as unknown as { motionEvents: string[] }).motionEvents.push(animation.id);
+      observations.motionEvents.push(animation.id);
+      observations.motionSamples.push({ id: animation.id, target: this.tagName, duration: Number(animation.effect!.getTiming().duration), frames: (animation.effect as KeyframeEffect).getKeyframes() });
       return animation;
     };
   });
@@ -100,7 +103,7 @@ test('sidebar resizing settles at its original layout and supports rapid reversa
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
 
-test('lecture navigation keeps the header and navigation stationary', async ({ page }) => {
+test('lecture navigation transitions the content while keeping the page stationary', async ({ page }) => {
   await observeMotion(page);
   await page.goto('/labs/changing-relations/tutorial/lecture-1');
   const mobile = page.locator('.mobile-sidebar');
@@ -108,21 +111,82 @@ test('lecture navigation keeps the header and navigation stationary', async ({ p
   const header = await page.getByRole('banner').boundingBox();
   await page.locator('.chapter-pages a[href$="/changing-relations/tutorial/lecture-2"]:visible').click();
   await expect(page).toHaveURL('/labs/changing-relations/tutorial/lecture-2');
-  await expectMotion(page, 'route');
+  await expectMotion(page, 'route-enter');
+  await expect(page.locator('#main-content')).not.toHaveAttribute('data-area-transition');
+  const routes = await page.evaluate(() => (window as unknown as { motionSamples: { id: string; target: string; duration: number; frames: Keyframe[] }[] }).motionSamples.filter(sample => sample.id.startsWith('ui-motion-route')));
+  expect(routes.map(route => route.id)).toEqual(['ui-motion-route-exit', 'ui-motion-route-enter']);
+  expect(routes.map(route => route.duration)).toEqual([80, 140]);
+  expect(routes.every(route => route.target === 'DIV' && route.frames.every(frame => !('transform' in frame)))).toBe(true);
   expect(await page.getByRole('banner').boundingBox()).toEqual(header);
+  const indicator = page.locator('.chapter-pages a[aria-current="page"] .chapter-page-dot:visible');
+  // Phone navigation closes after selection; the desktop dot stays visible.
+  if (await indicator.count()) await expect(indicator).toHaveCSS('transition-duration', '0.12s, 0.12s');
 });
 
-test('learning path and challenges share the page slide and retain history', async ({ page }) => {
+test('overview starts use the same content transition across all six chapters', async ({ page }) => {
+  test.setTimeout(60_000);
+  await observeMotion(page);
+  for (const chapter of ['changing-relations', 'incremental-maintenance', 'views-indexes-materialized-views', 'getting-data-in', 'time-in-materialize', 'progress-and-freshness']) {
+    for (const activity of ['tutorial/lecture-1', 'exercises/exercise-1']) {
+      await page.goto(`/labs/${chapter}`);
+      await page.locator(`.chapter-overview-start[href="/labs/${chapter}/${activity}"]`).click();
+      await expect(page).toHaveURL(`/labs/${chapter}/${activity}`);
+      await expectMotion(page, 'route-enter');
+      await expect(page.locator('#main-content')).not.toHaveAttribute('data-area-transition');
+      const targets = await page.evaluate(() => (window as unknown as { motionSamples: { id: string; target: string }[] }).motionSamples.filter(sample => sample.id.startsWith('ui-motion-route')).map(sample => sample.target));
+      expect(targets).toEqual(['DIV', 'DIV']);
+      await expect(page.locator('.learning-area-content')).toHaveCSS('opacity', '1');
+      await expect(page.locator('.learning-area-content')).toHaveCSS('transform', 'none');
+    }
+  }
+});
+
+test('moving to the next exercise uses the same content transition', async ({ page }) => {
+  await observeMotion(page);
+  await page.goto('/labs/progress-and-freshness/exercises/exercise-1');
+  for (let question = 0; question < 4; question++) {
+    await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+    await page.getByRole('button', { name: question === 3 ? 'Exercise 2' : 'Next question', exact: true }).click();
+  }
+  await expect(page).toHaveURL('/labs/progress-and-freshness/exercises/exercise-2');
+  await expectMotion(page, 'route-enter');
+  await expect(page.locator('#main-content')).not.toHaveAttribute('data-area-transition');
+  await expect(page.locator('.guided-lab-title h1')).toHaveText('Exercise 2');
+  await expect(page.locator('.learning-area-content')).toHaveCSS('opacity', '1');
+});
+
+for (const mode of ['keyboard', 'reduced motion']) {
+  test(`${mode} lecture navigation preserves focus and motion preferences`, async ({ page }) => {
+    await observeMotion(page);
+    if (mode === 'reduced motion') await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/labs/changing-relations/tutorial/lecture-1');
+    const mobile = page.locator('.mobile-sidebar');
+    if (await mobile.isVisible()) await mobile.locator('summary').first().click();
+    const link = page.locator('.chapter-pages a[href$="/changing-relations/tutorial/lecture-2"]:visible');
+    if (mode === 'keyboard') {
+      await link.focus();
+      await page.keyboard.press('Enter');
+    } else await link.click();
+    await expect(page).toHaveURL('/labs/changing-relations/tutorial/lecture-2');
+    if (mode === 'keyboard') await expectMotion(page, 'route-enter');
+    else expect(await page.evaluate(() => (window as unknown as { motionEvents: string[] }).motionEvents.filter(id => id.startsWith('ui-motion-route')))).toEqual([]);
+    await expect(page.locator('#main-content')).not.toHaveAttribute('data-area-transition');
+    await expect(page.locator('#main-content')).toBeFocused();
+    await expect(page.locator('.chapter-page-dot').first()).toHaveCSS('transition-duration', '0s');
+  });
+}
+
+test('learning path and challenges share directional slides and retain history', async ({ page }) => {
   await observeMotion(page);
   await page.goto('/');
   const header = await page.getByRole('banner').boundingBox();
   await page.getByRole('main').getByRole('link', { name: 'Challenges', exact: true }).click();
   await expect(page).toHaveURL('/challenges');
-  await expect(page.locator('.lab-return-snapshot')).toHaveCount(0);
+  await expect(page.locator('#main-content')).not.toHaveAttribute('data-area-transition');
   expect(await page.getByRole('banner').boundingBox()).toEqual(header);
   await page.goBack();
   await expect(page).toHaveURL('/');
-  await expect(page.locator('.lab-return-snapshot')).toHaveCount(0);
+  await expect(page.locator('#main-content')).not.toHaveAttribute('data-area-transition');
   await expect(page.getByRole('heading', { name: 'Learning path', exact: true })).toBeVisible();
 });
 
@@ -264,5 +328,77 @@ test('Chapter 3 reduced motion updates graph objects, edges and query answers im
   await expect(page.getByTestId('object-query-result')).toContainText('Compute query');
   expect(await page.evaluate(() => (
     (window as unknown as { motionEvents: string[] }).motionEvents.filter((id) => id.startsWith('ui-motion-'))
+  ))).toEqual([]);
+});
+
+const progressPath = '/labs/progress-and-freshness';
+
+for (const lecture of [1, 2, 3]) {
+  test(`Chapter 6 lecture ${lecture} softens evidence while keeping progress boundaries exact`, async ({ page }) => {
+    await observeMotion(page);
+    await page.goto(`${progressPath}/tutorial/lecture-${lecture}`);
+    const panel = page.locator('.progress-lane-panel');
+    const geometry = () => panel.evaluate(element => {
+      const box = element.getBoundingClientRect();
+      return { x: box.x, y: box.y + scrollY, width: box.width, height: box.height };
+    });
+    const before = await geometry();
+    await page.getByRole('button', { name: lecture === 3 ? 'Next case' : 'Next change', exact: true }).click();
+    await expectMotion(page, 'value');
+    const boundaries = await page.locator('.progress-track').evaluateAll(tracks => tracks.map(track => {
+      const frontier = track.querySelector<HTMLElement>('.progress-frontier')!;
+      const complete = track.querySelector<HTMLElement>('.progress-complete')!;
+      return {
+        aligned: Math.abs(frontier.getBoundingClientRect().x + frontier.getBoundingClientRect().width / 2 - complete.getBoundingClientRect().right) < 1,
+        animated: [...frontier.getAnimations(), ...complete.getAnimations()].some(animation => animation.playState === 'running'),
+      };
+    }));
+    expect(boundaries.every(boundary => boundary.aligned && !boundary.animated)).toBe(true);
+    expect(await geometry()).toEqual(before);
+    const key = page.getByRole('button', { name: 'Explain diagram symbols', exact: true });
+    await key.click();
+    await expectMotion(page, 'dialog-enter');
+    await page.keyboard.press('Escape');
+    await expectMotion(page, 'dialog-exit');
+    await expect(key).toBeFocused();
+  });
+}
+
+test('Chapter 6 split questions animate without moving the aligned diagram or answers', async ({ page, isMobile }) => {
+  await observeMotion(page);
+  if (!isMobile) await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto(`${progressPath}/exercises/exercise-1`);
+  await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-aligned', 'true');
+  const geometry = () => page.locator('.progress-lane-panel').evaluate(element => {
+    const box = element.getBoundingClientRect();
+    return { x: box.x, y: box.y, width: box.width, height: box.height };
+  });
+  const before = await geometry();
+  await page.getByRole('button', { name: 'Hint', exact: true }).click();
+  await expectMotion(page, 'feedback');
+  await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+  await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'correct');
+  await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  await expectMotion(page, 'question');
+  await expect(page.locator('.exercise-question h2')).toContainText('Question 2');
+  expect(await geometry()).toEqual(before);
+  const animations = await page.evaluate(() => (window as unknown as { motionSamples: { id: string; frames: Keyframe[] }[] }).motionSamples.filter(sample => sample.id === 'ui-motion-question').map(sample => sample.frames));
+  expect(animations.length).toBeGreaterThan(0);
+  expect(animations.flat().every(frame => !frame.transform || frame.transform === 'translateY(0px)')).toBe(true);
+});
+
+test('Chapter 6 reduced motion preserves immediate progress, lag and question updates', async ({ page }) => {
+  await observeMotion(page);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(`${progressPath}/tutorial/lecture-3`);
+  await page.getByRole('button', { name: 'Next case', exact: true }).click();
+  await expect(page.getByTestId('progress-case-label')).toContainText('Computation delay');
+  await expect(page.getByTestId('lane-join')).toHaveAttribute('aria-label', /frontier 12;/);
+  await page.goto(`${progressPath}/exercises/exercise-1`);
+  await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+  await page.getByRole('button', { name: 'Next question', exact: true }).click();
+  await expect(page.locator('.exercise-question h2')).toContainText('Question 2');
+  expect(await page.evaluate(() => (
+    (window as unknown as { motionEvents: string[] }).motionEvents.filter(id => id.startsWith('ui-motion-'))
   ))).toEqual([]);
 });

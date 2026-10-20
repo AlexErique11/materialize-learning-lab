@@ -37,6 +37,11 @@ changes, updates, and logical timestamps. **Chapter 2: Incremental Maintenance**
 has four lectures and two exercises about changes through filters, projections,
 joins, and aggregations.
 
-Later chapters and capstone challenges have overview and navigation pages;
+**Chapter 6: Progress and Freshness** has three lectures and three exercises
+covering write frontiers, limiting inputs, and source/computation/serving delay.
+Guided runs introduce each marker before asking for predictions; exercises finish
+with evidence-based dashboard diagnosis.
+
+Other later chapters and capstone challenges have overview and navigation pages;
 their interactive activities are not implemented yet. The full learning plan
 is in [CURRICULUM.md](./CURRICULUM.md).

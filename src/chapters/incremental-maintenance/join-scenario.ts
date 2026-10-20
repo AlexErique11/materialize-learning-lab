@@ -22,7 +22,7 @@ export const joinStages = [
   { id: 'products', title: 'Products', sql: 'INNER JOIN products AS p', description: 'Match products to orders by product_id. A product change can affect several existing orders.' },
   { id: 'result', title: 'Joined result', sql: 'ON o.product_id = p.product_id', description: 'Only matching pairs appear. Keep order_id, product name and amount. Signed diffs maintain the result as either input changes.' },
 ] as const;
-export const joinLessons: readonly { time: number; title: string; stage: JoinStage; explanation: LessonTextContent; before?: LessonTextContent }[] = [
+export const joinLessons: readonly { time: number; title: string; stage: JoinStage; related?: readonly (JoinStage | 'metrics')[]; explanation: LessonTextContent; before?: LessonTextContent }[] = [
   {
     time: 0, title: 'Start with Orders', stage: 'orders',
     explanation: [
@@ -76,7 +76,7 @@ export const joinLessons: readonly { time: number; title: string; stage: JoinSta
     ],
   },
   {
-    time: 1, title: 'No match, no joined row', stage: 'result',
+    time: 1, title: 'No match, no joined row', stage: 'result', related: ['metrics'],
     explanation: [
       'The joined result has no ', { kind: 'row', text: 'order 104', column: 'orderId' },
       ' and no result diff. There is no matching product yet, even though the order is retained in Orders.',

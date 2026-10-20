@@ -1,3 +1,4 @@
+import { advanceGuidedLesson } from './guided-run';
 import type { Page } from '@playwright/test';
 import { expectChapterOneGuideLayout } from './chapter-one-guide';
 import { expect, test } from './fixtures';
@@ -18,7 +19,7 @@ async function finishGuide(page: Page) {
       await guide.getByRole('button', { name: 'Show effect', exact: true }).click();
       await expectChapterOneGuideLayout(page);
     }
-    await guide.getByRole('button', { name: step === guideTitles.length - 1 ? 'Finish tutorial' : 'Next', exact: true }).click();
+    await advanceGuidedLesson(page, step === guideTitles.length - 1);
   }
 }
 
@@ -109,7 +110,7 @@ test('five guided steps explain complete updates and cancellation in the live ta
         await expect(page.locator('.relation-current tbody tr')).toHaveText(['A$102', 'B$181', 'C$252']);
         await page.screenshot({ path: testInfo.outputPath('lecture-two-consolidation-guide.png') });
       }
-      await guide.getByRole('button', { name: step === guideTitles.length - 1 ? 'Finish tutorial' : 'Next', exact: true }).click();
+      await advanceGuidedLesson(page, step === guideTitles.length - 1);
     }
     await expect(page.getByRole('dialog')).not.toBeVisible();
     await expect(page.locator('.relation-tutorial-complete')).toHaveText('Tutorial completed');

@@ -22,6 +22,19 @@ slots when adding a lecture; do not copy its frame into the new page.
 `ExerciseFrame.renderWorkspace` can compose its visualization, question, and
 navigation slots with this same frame. Questions supplied through
 `afterVisualization` follow the graph without changing its measured upper inset.
+Chapter 3 exercises compose the shared graph and question together in a compact
+workspace with a reserved next-button footer. The graph retains the lecture panel
+columns, with less vertical spacing and no lecture-only toolbar reservations.
+Narrow windows select a reference panel while keeping the question visible below.
+Chapter 3 owns this viewport fit and route-scoped scroll lock.
+Chapter 3 uses the shared exercise navigation inset: 12px by default, 16px on
+desktop windows at least 741px high, and 24px from 850px.
+All exercise chapters use this October 10 navigation clearance on desktop.
+`src/styles/exercise.css` anchors navigation independently of compact lecture
+padding so a 2px lecture inset cannot pull it against the bottom. Desktop Next
+question buttons are 40px tall, including Chapter 6. Navigation rows still reserve
+their space; the buttons anchor to the page independently so compact content
+cannot push them below the shared baseline.
 
 `src/labs/components/lecture-layout.css` owns lecture frame dimensions and
 responsive tokens. The no-tip template measures the available viewport and content
@@ -91,21 +104,23 @@ The filter-choice question conceals the reference predicate until acceptance.
 
 ## Shared component ownership
 
-Animation helpers live in `src/motion/`, with shared timing and reduced-motion
-support in `motion.ts`. `ExerciseFrame` keeps question and feedback refs on its
-question slot so custom `renderWorkspace` layouts receive the same animation.
-Button press feedback uses the individual `translate` property, preserving the
-positioning transforms on Chapter 3's compact graph navigation.
-Within-lab navigation keeps the measured content container stationary so its
-animation cannot change the viewport space calculated by `LectureWorkspace`.
-
-Chapter 3's `useFlowGraphMotion.ts` reveals newly created objects and connections
-and transitions the selected compact panel. Query feedback animates for each
-query action. Text tagged `data-motion-value` uses the shared value-update effect.
-Initial graph rendering and connector remeasurement do not replay these effects.
-Data changes are applied immediately; animations do not move panels, delay
-results, or simulate processing time. Removed objects and edges disappear with
-their state rather than persisting as stale copies.
+`AreaTransition` owns navigation within Guided Labs and between app areas.
+Overview, lecture and exercise navigation uses an 80ms fade of the frozen outgoing
+content to the page's own background, then a 140ms reveal of the settled destination.
+The destination's visible images, fonts and diagram layout settle behind the opaque
+surface. Header and sidebar remain visible; live content is never transformed.
+Sidebar indicators keep their color feedback in `src/styles/motion.css`.
+Direct loads and reduced-motion navigation update immediately. Forward area
+navigation slides the outgoing view left. Returning to Learning path slides that
+page in from the left over the stationary outgoing view. Other returns slide
+the outgoing view right. Explicit
+Guided Labs entry eases the loading screen in over the preserved source page for
+220ms, keeps its flask reaction, then slides that screen left.
+Both use the 320ms timing and easing in `src/motion/motion.ts`. The destination
+stays fully opaque and stationary so diagrams retain their measured geometry.
+The header stays fixed. Inert snapshots preserve source backgrounds,
+scroll positions and SVG references inside a clipped viewport. Reduced motion
+skips slides and the reaction delay.
 
 | Surface | Implementation |
 | --- | --- |
@@ -147,6 +162,23 @@ visualization are separate. The app header has no placeholder for the old questi
 mark. The SQL popup has no Tutorial or Exercises links.
 
 ## Guided text and tables
+
+`Spotlight` owns guide placement, masking, and related-region navigation.
+Lessons name a primary target and optional `related` targets; `useGuidedFocus`
+connects those names to panel refs and the existing responsive panel selector.
+Predictions expose only their primary target. After Show effect, up to three
+separate regions are exposed together when the viewport has room for the card
+without covering them. Otherwise Next/Back inspect each region in order before
+advancing the lesson. The inspection buttons also allow direct selection.
+Inspection changes only the target, never the simulation checkpoint or time.
+Back from the first region retains the lesson's existing prediction/rewind
+behavior. Keep related targets in causal order and include changed counts,
+status, or limits when the explanation depends on them. Avoid adding every
+unchanged panel. The mask leaves separate clear openings, keeping unrelated
+content dimmed. Controls tours continue to use their existing single target.
+When a compact frame hides a required summary, inspect that same summary as a
+temporary floating target. The normal frame and its measured metric space stay
+unchanged, and the summary returns to its responsive state when focus moves on.
 
 Chapter 2 uses `LessonTextContent` fragments with an optional `column` key and
 `data-column` styling. Its shared mapping is:
@@ -190,6 +222,40 @@ when changing controls. Documentation-only changes need link and consistency
 review, not an application test run.
 
 ## Additional shared ownership
+
+- Chapter 6's `progress-and-freshness/ProgressLanes.tsx` and `chapter.css` own
+  aligned Orders/Payments/Paid orders lanes and the optional downstream Revenue
+  lane. Solid markers show actual frontiers, dashed markers the input limit,
+  diamonds observed changes, and dotted lines the simulated wall clock. A single
+  scale positions every lane. Compact views keep the dependency lanes together;
+  stage buttons select the evidence detail. Lectures reuse `LectureScreen`
+  without-tip and its playback baseline. Three-row diagrams omit the unused Revenue row inside the box; equivalent
+  outside space keeps the top edge, existing rows and surrounding content fixed.
+  Phone subtitles reserve two lines up to 480px; the lag legend shares the normal
+  caption footprint. Chapter CSS owns these matching visualization dimensions.
+  Exercises reuse `ExerciseFrame` actions and questions with all relevant lanes
+  permanently visible with the question. `ProgressExerciseWorkspace` measures the
+  actual matching lecture once on entry/resize to share its complete diagram
+  geometry, including panel bounds, axis, padding and lane/track spacing. Its hidden, inert reference is removed immediately after measurement.
+  One compact clock/query/evidence strip replaces large metric cards and repeated
+  details. The prompt may occupy space above the anchored diagram, with answers
+  below, when the full question does not fit beneath it. Bounds checks prevent
+  overlap and scrolling. Hints, errors and accepted answers cannot move the anchor.
+  Navigation uses the shared exercise footer inset. Compact single-answer fields
+  use native selects; multiple-answer fields keep checkboxes. In short windows,
+  answers dock beside navigation and multiple choices use a checkbox dialog.
+  Wide legends can host evidence in their unused left space. Lecture layouts and
+  stage selectors remain unchanged.
+  Document scrolling and overscroll are locked only while a Chapter 6 exercise
+  is present. Short tablet windows use a compact header and place evidence in
+  the same workspace to keep all controls accessible within the viewport.
+  Chapter CSS changes visualization content only; shared controls
+  retain their existing ownership and positions.
+
+- `LectureScreen` marks no-tip lectures with `lecture-subtitle-layout`.
+  `lecture-layout.css` owns their tablet subtitle wrapping, extracted from the
+  original Chapter 2 styling so new lectures retain the same title and toolbar
+  positions without importing chapter-specific CSS.
 
 - Chapter 3's `views-indexes-materialized-views/FlowGraph.tsx`,
   `flowGraphModel.ts` and `chapter.css` own its input/compute/index/storage graph,

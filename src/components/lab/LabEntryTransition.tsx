@@ -4,6 +4,7 @@ import { chapterPath, coreChapters } from '../../chapters/chapterRegistry';
 import { useWalkthrough } from '../walkthrough/WalkthroughProvider';
 import { shouldStartChapterTour } from '../walkthrough/walkthroughStorage';
 import { LabIntroScreen } from './LabIntroScreen';
+import { motion } from '../../motion/motion';
 
 type IntroPhase = 'reacting' | 'revealing';
 
@@ -91,7 +92,7 @@ export function LabEntryTransition({ children }: { children: ReactNode }) {
         if (runRef.current !== run) return;
         run.finished = true;
         setPhase(null);
-      }, run.reducedMotion ? 0 : 220);
+      }, run.reducedMotion ? 0 : motion.areaDuration);
     });
   }, [location.key, location.pathname, requested, navigate, startChapterTour]);
 

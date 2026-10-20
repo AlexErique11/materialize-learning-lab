@@ -11,6 +11,30 @@
 .button:active:not(:disabled), .icon-button:active:not(:disabled) { translate: 0 1px; }
 .learning-area[data-motion-sidebar] { overflow-x: clip; }
 
+.area-transition-viewport {
+  position: fixed;
+  inset: var(--header-height) 0 0;
+  z-index: 19;
+  overflow: hidden;
+  pointer-events: none;
+}
+.area-transition-layer.app-shell {
+  position: absolute;
+  inset: 0;
+  display: block;
+  min-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+}
+.area-transition-layer * { animation: none !important; transition: none !important; }
+
+.chapter-page-dot, .chapter-overview-link .chapter-group-dot {
+  transition: background-color var(--motion-quick) ease, border-color var(--motion-quick) ease;
+}
+.learning-area[data-navigation-input='keyboard'] .chapter-page-dot,
+.learning-area[data-navigation-input='keyboard'] .chapter-overview-link .chapter-group-dot { transition: none; }
+
 .chapter-branch-toggle > svg, .chapter-section-chevron,
 .chapter-learn-more > summary > svg, .chapter-overview-section > summary > svg,
 .mobile-sidebar > summary > svg { transition: transform var(--motion-normal) var(--motion-ease); }

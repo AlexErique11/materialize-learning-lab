@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { motion } from '../../motion/motion';
 import '../../styles/lab-intro.css';
 
 export function LabIntroScreen({ phase }: { phase: 'reacting' | 'revealing' }) {
@@ -13,6 +14,10 @@ export function LabIntroScreen({ phase }: { phase: 'reacting' | 'revealing' }) {
   return (
     <div
       className="lab-intro-screen"
+      style={{
+        animationDuration: `${motion.introEnterDuration}ms`,
+        transitionDuration: `${motion.areaDuration}ms`, transitionTimingFunction: motion.areaEase,
+      }}
       data-phase={phase}
       role="status"
       aria-live="polite"

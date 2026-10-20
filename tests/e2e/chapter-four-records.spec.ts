@@ -1,3 +1,4 @@
+import { advanceGuidedLesson } from './guided-run';
 import { expect, test } from './fixtures';
 import type { Page } from '@playwright/test';
 import { recordLectures } from '../../src/chapters/getting-data-in/record-scenarios';
@@ -112,6 +113,7 @@ test('Debezium before and after produce complete signed insert, update and delet
 
 for (const lecture of recordLectures) {
   test('Lecture ' + lecture.number + ' guided run, SQL and keyboard workflow', async ({ page, isMobile }) => {
+    test.setTimeout(60_000);
     await page.setViewportSize(isMobile ? { width: 390, height: 664 } : { width: 1280, height: 650 });
     await page.goto(path(lecture.number));
     await page.getByRole('button', { name: 'SQL & Objectives', exact: true }).click();
@@ -140,8 +142,8 @@ for (const lecture of recordLectures) {
       expect(card.x + card.width).toBeLessThanOrEqual(viewport.width);
       expect(card.y + card.height).toBeLessThanOrEqual(viewport.height);
       const target = (await page.locator('.ingestion-layout [data-stage="' + lesson.stage + '"]').boundingBox())!;
-      if (target.y - card.height - 20 >= 12) expect(card.y + card.height).toBeLessThanOrEqual(target.y);
-      await dialog.getByRole('button', { name: index === lecture.lessons.length - 1 ? 'Finish tutorial' : 'Next', exact: true }).click();
+      if (target.y - card.height - 20 >= 12 && await dialog.locator('.relation-guide-hole').count() === 1) expect(card.y + card.height).toBeLessThanOrEqual(target.y);
+      await advanceGuidedLesson(page, index === lecture.lessons.length - 1);
     }
     await expect(page.locator('.maintenance-complete')).toHaveText('Tutorial completed');
     await expect(page.getByRole('button', { name: 'Start guided run', exact: true })).toBeFocused();

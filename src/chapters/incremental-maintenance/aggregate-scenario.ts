@@ -11,7 +11,7 @@ export const aggregateStages = [
   { id: 'groups', title: 'Group state', sql: 'GROUP BY product_id', description: 'Retained count and sum per key: a logical teaching model, not a physical execution plan.' },
   { id: 'result', title: 'Revenue result', shortTitle: 'Revenue', sql: 'COUNT(*), SUM(amount)', description: 'One full result row per present group. Signed diffs replace changed rows at one logical timestamp.' },
 ] as const;
-export const aggregateLessons: readonly { time: number; title: string; stage: 'orders' | 'groups' | 'result'; explanation: LessonTextContent; before?: LessonTextContent }[] = [
+export const aggregateLessons: readonly { time: number; title: string; stage: 'orders' | 'groups' | 'result'; related?: readonly ('orders' | 'groups' | 'result' | 'metrics')[]; explanation: LessonTextContent; before?: LessonTextContent }[] = [
   {
     time: 0, stage: 'orders', title: 'Start with orders',
     explanation: [
@@ -100,7 +100,7 @@ export const aggregateLessons: readonly { time: number; title: string; stage: 'o
     ],
   },
   {
-    time: 2, stage: 'result', title: 'An empty group disappears',
+    time: 2, stage: 'result', related: ['groups', 'metrics'], title: 'An empty group disappears',
     explanation: [
       'Retract ', '(', { kind: 'row', text: '8', column: 'productId' }, ', ',
       { kind: 'row', text: '1', column: 'count' }, ', ', { kind: 'row', text: '80', column: 'total' }, ')',
@@ -124,7 +124,7 @@ export const aggregateLessons: readonly { time: number; title: string; stage: 'o
     ],
   },
   {
-    time: 3, stage: 'result', title: 'Replace one group, create another',
+    time: 3, stage: 'result', related: ['groups'], title: 'Replace one group, create another',
     explanation: [
       'Replace ', '(', { kind: 'row', text: '7', column: 'productId' }, ', ',
       { kind: 'row', text: '2', column: 'count' }, ', ', { kind: 'row', text: '110', column: 'total' }, ')',
@@ -138,7 +138,7 @@ export const aggregateLessons: readonly { time: number; title: string; stage: 'o
     ],
   },
   {
-    time: 4, stage: 'result', title: 'Zero revenue is still a group',
+    time: 4, stage: 'result', related: ['groups', 'orders'], title: 'Zero revenue is still a group',
     before: [
       'Set ', { kind: 'row', text: 'order 101', column: 'orderId' }, ' to ',
       { kind: 'row', text: '$0', column: 'amount' }, '. It still exists. Does ',
@@ -154,7 +154,7 @@ export const aggregateLessons: readonly { time: number; title: string; stage: 'o
     ],
   },
   {
-    time: 5, stage: 'result', title: 'Predict the final cancellation',
+    time: 5, stage: 'result', related: ['groups', 'metrics'], title: 'Predict the final cancellation',
     before: [
       'Now cancel the zero-valued ', { kind: 'row', text: 'order 101', column: 'orderId' },
       '. Predict the complete result batch. Should ',

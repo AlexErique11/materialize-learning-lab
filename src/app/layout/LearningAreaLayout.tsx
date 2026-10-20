@@ -1,11 +1,9 @@
 import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { Outlet, useLocation, useParams } from 'react-router';
+import { Outlet, useParams } from 'react-router';
 import { findChapter } from '../../chapters/chapterRegistry';
 import { ChapterSidebar } from '../../components/layout/ChapterSidebar';
 import { NotFoundPage } from '../../pages/NotFoundPage';
-import { useWalkthrough } from '../../components/walkthrough/WalkthroughProvider';
-import { useChangeMotion } from '../../motion/useChangeMotion';
 import { animateMotion, reducedMotion } from '../../motion/motion';
 
 export function LearningAreaLayout() {
@@ -13,9 +11,6 @@ export function LearningAreaLayout() {
   const contentRef = useRef<HTMLDivElement>(null);
   const rootRef = useRef<HTMLDivElement>(null);
   const sidebarGeneration = useRef(0);
-  const { pathname } = useLocation();
-  const { open: tourOpen } = useWalkthrough();
-  useChangeMotion(contentRef, pathname, !tourOpen && !document.querySelector('.lab-intro-screen'), 'route', 0);
   const toggleSidebar = () => {
     const content = contentRef.current;
     const left = content?.getBoundingClientRect().left ?? 0;
@@ -43,7 +38,9 @@ export function LearningAreaLayout() {
     );
 
   return (
-    <div ref={rootRef} className="learning-area" data-sidebar-collapsed={sidebarCollapsed}>
+    <div ref={rootRef} className="learning-area" data-sidebar-collapsed={sidebarCollapsed}
+      onKeyDownCapture={event => { event.currentTarget.dataset.navigationInput = 'keyboard'; }}
+      onPointerDownCapture={event => { event.currentTarget.dataset.navigationInput = 'pointer'; }}>
       <ChapterSidebar
         collapsed={sidebarCollapsed}
         onToggle={toggleSidebar}

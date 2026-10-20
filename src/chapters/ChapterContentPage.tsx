@@ -30,6 +30,8 @@ import { temporalExercises } from './time-in-materialize/exercise-scenarios';
 import { TemporalExercisePage } from './time-in-materialize/TemporalExercisePage';
 import { ObjectChapterLecture } from './views-indexes-materialized-views/ChapterLecture';
 import { ObjectChapterExercise } from './views-indexes-materialized-views/ChapterExercise';
+import { ProgressLecture } from './progress-and-freshness/ProgressLecture';
+import { ProgressExercisePage } from './progress-and-freshness/ProgressExercisePage';
 
 export function ChapterContentPage() {
   const chapter = useOutletContext<ChapterDefinition>();
@@ -52,6 +54,13 @@ export function ChapterContentPage() {
   if (!section || (pageSlug !== undefined && !page)) return <NotFoundPage />;
 
   const navigation = getChapterNavigation(chapter, section, page);
+  if (chapter.slug === 'progress-and-freshness' && page) {
+    const index = section.pages.findIndex(item => item.slug === page.slug);
+    const controls = <ChapterPagination {...navigation} showTooltips={false} hideLinks />;
+    return section.slug === 'tutorial'
+      ? <ProgressLecture key={page.slug} chapter={chapter} navigation={controls} lectureIndex={index} />
+      : <ProgressExercisePage key={page.slug} chapter={chapter} navigation={controls} exerciseIndex={index} />;
+  }
   if (chapter.slug === 'time-in-materialize' && section.slug === 'exercises' && page) {
     return <TemporalExercisePage key={page.slug} chapter={chapter}
       exerciseIndex={temporalExercises.findIndex((exercise) => exercise.slug === page.slug)}

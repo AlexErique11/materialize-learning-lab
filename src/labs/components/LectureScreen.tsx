@@ -6,6 +6,6 @@ type LectureScreenProps = Omit<ComponentProps<typeof GuidedLabScreen>, 'workspac
   & Omit<LectureWorkspaceProps, 'afterVisualization'>;
 
 export function LectureScreen({ layout, metrics, visualization, playback, guided, className = '', ...screen }: LectureScreenProps) {
-  return <GuidedLabScreen {...screen} className={`${className} lecture-layout-page`} showTip={layout === 'with-tip' ? 'when-space' : false}
+  return <GuidedLabScreen {...screen} className={`${className} lecture-layout-page${layout === 'without-tip' ? ' lecture-subtitle-layout' : ''}`} showTip={layout === 'with-tip' ? 'when-space' : false}
     workspace={<LectureWorkspace layout={layout} metrics={metrics} visualization={visualization} playback={playback} guided={guided} />} />;
 }

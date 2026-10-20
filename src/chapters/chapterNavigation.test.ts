@@ -45,13 +45,13 @@ describe('chapter page navigation', () => {
   });
 
   it('leaves an empty section with only a link to its chapter overview', () => {
-    const emptyChapter = findChapter('progress-and-freshness');
-    if (!emptyChapter) throw new Error('Chapter 6 must be in the curriculum.');
+    const emptyChapter = findChapter('consistent-reads');
+    if (!emptyChapter) throw new Error('Chapter 7 must be in the curriculum.');
     const section = findChapterSection(emptyChapter, 'tutorial');
     if (!section) throw new Error('Every chapter must have a tutorial section.');
     expect(getChapterNavigation(emptyChapter, section)).toEqual({
       previous: {
-        to: '/labs/progress-and-freshness', title: 'Progress and Freshness', label: 'Chapter overview',
+        to: '/labs/consistent-reads', title: 'Consistent Reads', label: 'Chapter overview',
       },
       next: undefined,
     });

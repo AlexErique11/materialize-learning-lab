@@ -43,6 +43,15 @@
 .lecture-workspace[data-lecture-layout='without-tip'] > .relation-metrics { margin-bottom: var(--lecture-applied-metrics-gap); }
 .lecture-workspace[data-lecture-layout='without-tip'] > .lecture-visualization { flex: 1; }
 .lecture-workspace[data-lecture-layout='without-tip'] > .relation-playback-controls { margin-top: var(--lecture-applied-footer-gap); }
+/* All no-tip lectures share the established Chapter 2 subtitle wrapping. */
+@media (min-width: 640px) and (max-width: 1150px) {
+  .lecture-subtitle-layout .guided-lab-title { display: contents; }
+  .lecture-subtitle-layout .guided-lab-title h1 { flex: 1; min-width: 0; }
+  .app-shell-guided-labs .lecture-subtitle-layout .guided-lab-title > p { order: 1; flex-basis: 100%; margin-top: 0; max-width: none; font-size: 13px; }
+}
+@media (min-width: 1024px) and (max-width: 1150px) {
+  .lecture-subtitle-layout .guided-lab-title h1 { flex-basis: 100%; }
+}
 @media (max-width: 639px) {
   .app-shell-guided-labs .guided-lab-page.lecture-layout-page[data-viewport-fit]:has([data-lecture-layout='without-tip']) { padding-block: 4px 0; gap: 6px; }
   /* Some exercises reuse the lecture heading without a lecture workspace. */

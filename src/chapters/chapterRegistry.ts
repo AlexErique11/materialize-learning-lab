@@ -1,5 +1,6 @@
 import type { DocumentationLink } from '../app/resources';
 import { objectDocumentationLinks } from './views-indexes-materialized-views/resources';
+import { documentationLinks as progressDocumentationLinks } from './progress-and-freshness/resources';
 
 export interface ChapterDefinition {
   readonly number: number;
@@ -114,6 +115,8 @@ export const chapters: readonly ChapterDefinition[] = [
     title: 'Progress and Freshness — Why Is the System Behind?',
     shortTitle: 'Progress and Freshness',
     description: 'Trace progress and distinguish ingestion lag from computation lag.',
+    introduction: 'Read write frontiers, follow two inputs into a maintained join, and distinguish the progress inputs permit from actual completion. Three guided tutorials and three exercises teach quiet-source evidence, limiting dependencies, local and inherited delay, and the difference between stale data and slow queries.',
+    documentationLinks: progressDocumentationLinks,
   },
   {
     number: 7,

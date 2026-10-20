@@ -2,6 +2,11 @@ export const motion = {
   quick: 120,
   normal: 200,
   ease: 'cubic-bezier(0.25, 1, 0.5, 1)',
+  areaDuration: 320,
+  areaEase: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  introEnterDuration: 220,
+  pageExitDuration: 80,
+  pageEnterDuration: 140,
 };
 
 export function reducedMotion() {

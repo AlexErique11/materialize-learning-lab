@@ -6,6 +6,7 @@ import type { ChapterDefinition } from '../chapterRegistry';
 import { BatchWorkbench } from './BatchWorkbench';
 import { GuidedSpotlight } from './GuidedSpotlight';
 import { LessonText } from '../../components/lesson/LessonText';
+import { useGuidedFocus } from '../../components/lesson/useGuidedFocus';
 import { RelationMetrics } from './RelationWorkbench';
 import { lectureTwoBatches, lectureTwoInitial, lectureTwoReference, lectureTwoRun, lectureTwoSteps, lectureTwoUpdates } from './lecture-two-scenario';
 import { relationAt } from './simulation';
@@ -26,7 +27,8 @@ export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition
   const inspectingHistory = state.selectedTime !== state.applied;
   const beforeChange = Boolean(lesson.before) && !state.revealed;
   const spotlight = beforeChange ? 'ledger' : lesson.spotlight;
-  const targetRef = spotlight === 'ledger' ? ledgerRef : relationRef;
+  const focus = useGuidedFocus(`${state.guided}:${state.step}:${state.revealed}`, [spotlight, ...(!beforeChange ? lesson.related ?? [] : [])],
+    { ledger: ledgerRef, relation: relationRef, metrics: metricsRef }, { ledger: 'Change ledger', relation: 'Current relation', metrics: 'Row counts' });
   const phaseLabel = beforeChange ? 'Predict the effect' : 'Explanation';
 
   return <>
@@ -38,7 +40,7 @@ export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition
       guided={state.guided} metrics={
         <RelationMetrics relation={relation} time={state.selectedTime} metricsRef={metricsRef} />
       } visualization={<BatchWorkbench relation={relation} time={state.selectedTime} applied={state.applied} previewTime={state.guided && beforeChange ? lesson.time : null}
-          guidedPanel={state.guided ? (spotlight === 'ledger' ? 'ledger' : 'relation') : undefined}
+          guidedPanel={state.guided ? (focus.id === 'ledger' ? 'ledger' : 'relation') : undefined}
           ledgerRef={ledgerRef} relationRef={relationRef} controlsDisabled={state.playing || state.guided}
           highlightCopies={state.guided && state.revealed && lesson.spotlight === 'relation'} onSelectTime={(time) => dispatch({ type: 'select', time })} />}
       playback={
@@ -51,13 +53,11 @@ export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition
           </div>
         </div>
       } />
-    <GuidedSpotlight open={state.guided} targetRef={targetRef} step={Math.min(state.step + 1, lectureTwoSteps.length)} total={lectureTwoSteps.length}
+    <GuidedSpotlight open={state.guided} {...focus.props} step={Math.min(state.step + 1, lectureTwoSteps.length)} total={lectureTwoSteps.length}
       title={lesson.title} description={<LessonText content={beforeChange ? lesson.before! : lesson.explanation} />} phaseLabel={phaseLabel}
-      onClose={() => dispatch({ type: 'close-guided' })}>
-      <Button disabled={state.step === 0} onClick={() => dispatch({ type: 'back' })}>Back</Button>
-      {beforeChange
-        ? <Button variant="primary" onClick={() => dispatch({ type: 'reveal' })}>Show effect</Button>
-        : <Button variant="primary" onClick={() => dispatch({ type: 'next' })}>{state.step === lectureTwoSteps.length - 1 ? 'Finish tutorial' : 'Next'}</Button>}
-    </GuidedSpotlight>
+      onClose={() => dispatch({ type: 'close-guided' })}
+      navigation={{ backDisabled: state.step === 0, onBack: () => dispatch({ type: 'back' }),
+        onNext: () => dispatch({ type: beforeChange ? 'reveal' : 'next' }),
+        nextLabel: beforeChange ? 'Show effect' : state.step === lectureTwoSteps.length - 1 ? 'Finish tutorial' : 'Next' }} />
   </>;
 }
