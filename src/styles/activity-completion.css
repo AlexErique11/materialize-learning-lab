@@ -1,0 +1,53 @@
+.activity-title-check {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  margin-left: 9px;
+  vertical-align: -1px;
+  color: var(--success);
+}
+
+.activity-completion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--success);
+  font-size: 12px;
+  animation: activity-completion-message 3000ms var(--motion-ease, ease-out) both;
+}
+.activity-completion:not(.exercise-completion) { position: relative; }
+.activity-completion > svg { flex-shrink: 0; }
+.activity-completion > svg path { stroke-dasharray: 24; animation: motion-check 260ms var(--motion-ease, ease-out); }
+.activity-completion-confetti { position: absolute; left: -12px; bottom: -5px; width: 84px; height: 84px; overflow: clip; pointer-events: none; }
+.activity-completion-confetti i {
+  position: absolute;
+  left: 24px;
+  bottom: 20px;
+  width: 4px;
+  height: 7px;
+  border-radius: 1px;
+  background: var(--lab-purple);
+  animation: activity-completion-confetti 700ms cubic-bezier(0.2, 0.7, 0.3, 1) both;
+}
+.activity-completion-confetti i:nth-child(3n + 1) { background: var(--success); }
+.activity-completion-confetti i:nth-child(3n + 2) { background: var(--practice-accent); }
+.activity-completion-confetti i:nth-child(even) { width: 5px; height: 4px; border-radius: 50%; }
+
+@keyframes activity-completion-message {
+  0% { opacity: 0; transform: translateY(3px); }
+  7%, 93% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-2px); }
+}
+@keyframes activity-completion-confetti {
+  0% { opacity: 0; transform: translate(0, 0) rotate(0deg); }
+  12% { opacity: 1; }
+  65% { opacity: 1; transform: translate(var(--confetti-x), var(--confetti-y)) rotate(var(--confetti-rotation)); }
+  100% { opacity: 0; transform: translate(var(--confetti-x), calc(var(--confetti-y) + 18px)) rotate(var(--confetti-rotation)); }
+}
+@media (max-width: 639px) {
+  .activity-title-check { width: 16px; height: 16px; margin-left: 6px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .activity-completion, .activity-completion > svg path { animation: none; }
+  .activity-completion-confetti { display: none; }
+}

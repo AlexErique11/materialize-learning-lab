@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, FileInput, FileText, Table2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Clock3, FileInput, FileText, Table2 } from 'lucide-react';
+import { ActivityCompletion } from '../../components/lab/ActivityCompletion';
 import { WorkspaceMetric } from '../../components/lab/WorkspaceMetric';
 import { LessonText } from '../../components/lesson/LessonText';
 import { RelationHelp } from '../../components/lesson/RelationHelp';
@@ -23,7 +24,7 @@ import './record-lectures.css';
 export function RecordLecture({ chapter, navigation, definition }: {
   chapter: ChapterDefinition; navigation: ReactNode; definition: RecordLectureDefinition;
 }) {
-  const { state, dispatch, completed: complete } = useLectureRun({ totalChanges: definition.actions.length, steps: definition.lessons });
+  const { state, dispatch, completed: complete, finished } = useLectureRun({ totalChanges: definition.actions.length, steps: definition.lessons });
   const { open: helpOpen } = useWalkthrough();
   const [selectedStage, setSelectedStage] = useState('record');
   const recordRef = useRef<HTMLElement>(null);
@@ -43,7 +44,7 @@ export function RecordLecture({ chapter, navigation, definition }: {
   const activeStage = state.guided ? focus.id === 'metrics' ? lesson.stage : focus.id : selectedStage;
 
   return <>
-    <LectureScreen layout="without-tip" chapter={chapter} title={'Lecture ' + definition.number} regionLabel="Lecture content" navigation={navigation}
+    <LectureScreen activityCompleted={complete} layout="without-tip" chapter={chapter} title={'Lecture ' + definition.number} regionLabel="Lecture content" navigation={navigation}
       className="lesson-page changing-relations-page incremental-maintenance-page join-maintenance-page maintenance-lecture-page getting-data-in-page record-lecture-page"
       description={definition.description} reference={definition.reference}
       simulation={{ completed: state.guided ? state.step : state.selectedTime,
@@ -68,7 +69,7 @@ export function RecordLecture({ chapter, navigation, definition }: {
         renderContent={(stage) => <RecordPanelContent stage={stage} state={current} record={record}
           upcoming={upcoming} pending={pending} highlight={state.guided && state.revealed && (activeStage === stage || Boolean(lesson.related?.includes(stage)))} />} />}
       playback={<div className="relation-playback-controls" aria-label="Change playback">
-        {complete && <span className="relation-tutorial-complete maintenance-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
+        <ActivityCompletion complete={finished} kind="tutorial" className="maintenance-complete" />
         <div>
           {state.selectedTime !== state.applied && <Button disabled={state.guided || state.playing}
             onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}

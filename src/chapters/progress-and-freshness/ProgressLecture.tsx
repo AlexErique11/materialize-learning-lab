@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ActivityCompletion } from '../../components/lab/ActivityCompletion';
 import type { ChapterDefinition } from '../chapterRegistry';
 import { LectureScreen } from '../../labs/components/LectureScreen';
 import { useLectureRun } from '../../labs/useLectureRun';
@@ -19,7 +20,7 @@ import './chapter.css';
 export function ProgressLecture({ chapter, navigation, lectureIndex }: { chapter: ChapterDefinition; navigation: ReactNode; lectureIndex: number }) {
   const lecture = progressLectures[lectureIndex]!;
   const definition = { totalChanges: lecture.lessons.length, steps: lecture.lessons.map((lesson, index) => ({ time: index + 1, before: lesson.before })) };
-  const { state, dispatch, completed } = useLectureRun(definition);
+  const { state, dispatch, completed, finished } = useLectureRun(definition);
   const { open: helpOpen } = useWalkthrough();
   const [selected, setSelected] = useState<LaneId>(lectureIndex === 2 ? 'revenue' : 'orders');
   const refs = { axis: useRef<HTMLElement>(null), orders: useRef<HTMLElement>(null), payments: useRef<HTMLElement>(null), join: useRef<HTMLElement>(null), revenue: useRef<HTMLElement>(null), detail: useRef<HTMLElement>(null),
@@ -57,7 +58,7 @@ export function ProgressLecture({ chapter, navigation, lectureIndex }: { chapter
   };
   const reset = () => { dispatch({ type: 'reset' }); setSelected(lectureIndex === 2 ? 'revenue' : 'orders'); };
   return <>
-    <LectureScreen layout="without-tip" chapter={chapter} title={`Lecture ${lectureIndex + 1}`} description={lecture.description} navigation={navigation}
+    <LectureScreen activityCompleted={completed} layout="without-tip" chapter={chapter} title={`Lecture ${lectureIndex + 1}`} description={lecture.description} navigation={navigation}
       regionLabel="Lecture content" className="lesson-page progress-chapter-page" guided={state.guided}
       reference={{ objective: `${lecture.title}. ${objective}`, sql: progressSql, documentationLinks: referenceLinks }}
       simulation={{ completed: state.guided ? state.step : normalStep + (caseStudy ? 1 : 0), total: state.guided ? lecture.lessons.length : frames.length + (caseStudy ? 1 : 0), progressLabel: state.guided ? 'Tutorial' : 'Steps', playing: state.playing,
@@ -70,7 +71,7 @@ export function ProgressLecture({ chapter, navigation, lectureIndex }: { chapter
         activity={!state.guided && frame && actionLane ? { lane: actionLane, text: playbackExplanation(frame.lesson, frame.previous) } : undefined}
         caption={pending ? `Predict · ${lesson.title}` : caseStudy?.transition ?? (frame ? `Step ${normalStep}: ${frame.lesson.title}` : 'Next change / Run: arrivals and progress. Key explains symbols.')} />}
       playback={<div className="relation-playback-controls" aria-label="Scenario playback">
-        {completed && <span className="relation-tutorial-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
+        <ActivityCompletion complete={finished} kind="tutorial" />
         <div>{state.selectedTime !== state.applied && <Button disabled={state.guided || state.playing} onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
           <Button aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || normalStep === 0} onClick={() => move(false)}><ArrowLeft size={14} aria-hidden="true" />{caseStudy ? 'Previous case' : 'Previous change'}</Button>
           <Button data-walkthrough="next-change" aria-keyshortcuts="ArrowRight" disabled={state.guided || state.playing || normalStep === frames.length} onClick={() => move(true)}>{caseStudy ? 'Next case' : 'Next change'}<ArrowRight size={14} aria-hidden="true" /></Button>

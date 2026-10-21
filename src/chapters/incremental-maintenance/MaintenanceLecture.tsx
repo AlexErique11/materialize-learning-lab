@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Database, Table2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Clock3, Database, Table2 } from 'lucide-react';
+import { ActivityCompletion } from '../../components/lab/ActivityCompletion';
 import { MaintenancePanels } from './MaintenancePanels';
 import { Button } from '../../components/ui/Button';
 import { Spotlight } from '../../components/ui/Spotlight';
@@ -31,7 +32,7 @@ interface MaintenanceLectureProps<Snapshot extends MaintenanceSnapshot> {
   renderRows: (stage: string, snapshot: Snapshot) => ReactNode;
 }
 export function MaintenanceLecture<Snapshot extends MaintenanceSnapshot>({ chapter, navigation, definition, lessons, stages, reference, title, description, snapshot, renderRows, timeTestId, layout }: MaintenanceLectureProps<Snapshot>) {
-  const { state, dispatch, completed } = useLectureRun(definition);
+  const { state, dispatch, completed, finished } = useLectureRun(definition);
   const { open: helpOpen } = useWalkthrough();
   const [selectedStage, setSelectedStage] = useState<string>(stages[0]!.id);
   const [mobileDiffs, setMobileDiffs] = useState(false);
@@ -51,7 +52,7 @@ export function MaintenanceLecture<Snapshot extends MaintenanceSnapshot>({ chapt
   const activeStage = state.guided ? focus.id === 'metrics' ? lesson.stage : focus.id : selectedStage;
 
   return <>
-    <LectureScreen layout="without-tip" chapter={chapter} title={title} regionLabel="Lecture content" navigation={navigation}
+    <LectureScreen activityCompleted={completed} layout="without-tip" chapter={chapter} title={title} regionLabel="Lecture content" navigation={navigation}
       className={`lesson-page changing-relations-page incremental-maintenance-page join-maintenance-page maintenance-lecture-page${layout === 'comparison' ? ' maintenance-comparison-lecture' : ''}`} reference={reference}
       description={description}
       simulation={{ completed: state.guided ? state.step : state.selectedTime, total: state.guided ? lessons.length : definition.totalChanges,
@@ -70,7 +71,7 @@ export function MaintenanceLecture<Snapshot extends MaintenanceSnapshot>({ chapt
           panelRefs={refs} renderRows={(stage) => renderRows(stage, current)} />}
       playback={
         <div className="relation-playback-controls" aria-label="Change playback">
-          {completed && <span className="relation-tutorial-complete maintenance-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
+          <ActivityCompletion complete={finished} kind="tutorial" className="maintenance-complete" />
           <div>
             {state.selectedTime !== state.applied && <Button disabled={state.guided || state.playing} onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
             <Button aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || state.selectedTime === 0} onClick={() => dispatch({ type: 'previous-change' })}><ArrowLeft size={14} aria-hidden="true" />Previous change</Button>

@@ -46,8 +46,8 @@
 
 .exercise-next-question { font-size: 12px; }
 
-.app-shell-guided-labs .guided-lab-page:has(> .exercise-completion) { position: relative; }
-.guided-lab-page:has(> .exercise-completion) .exercise-question-navigation:empty {
+.app-shell-guided-labs .guided-lab-page[data-exercise-completed='true'] { position: relative; }
+.guided-lab-page[data-exercise-completed='true'] .exercise-question-navigation:empty {
   display: flex;
   min-height: 40px;
   visibility: hidden;

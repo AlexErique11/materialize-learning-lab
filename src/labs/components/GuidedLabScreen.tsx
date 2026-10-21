@@ -6,7 +6,7 @@ import {
   type ComponentProps,
   type ReactNode,
 } from 'react';
-import { ArrowRight, Lightbulb, Pause, Play } from 'lucide-react';
+import { ArrowRight, CheckCircle2, Lightbulb, Pause, Play } from 'lucide-react';
 import { useLocation } from 'react-router';
 import { materializeDocumentation } from '../../app/resources';
 import { chapterPath, guidedLabsHomePath, type ChapterDefinition } from '../../chapters/chapterRegistry';
@@ -20,6 +20,7 @@ import { useLabShortcuts } from '../../hooks/useLabShortcuts';
 import { useLabHelpAlignment } from '../../hooks/useLabHelpAlignment';
 import { useWorkspaceMotion } from '../../motion/useWorkspaceMotion';
 import { ShortcutHelp } from '../../components/lab/ShortcutHelp';
+import '../../styles/activity-completion.css';
 
 const lectureShortcuts = {
   ArrowRight: '[data-walkthrough="next-change"]',
@@ -68,6 +69,7 @@ interface GuidedLabScreenProps {
 
   workspace?: ReactNode;
   completion?: ReactNode;
+  activityCompleted?: boolean;
 
   className?: string;
 
@@ -100,6 +102,7 @@ export function GuidedLabScreen({
   children,
   workspace,
   completion,
+  activityCompleted = false,
   className = '',
   showTip = true,
   showReference = true,
@@ -163,6 +166,7 @@ export function GuidedLabScreen({
     <section
       ref={pageRef}
       data-viewport-fit={fitViewport || undefined}
+      data-exercise-completed={Boolean(controls && activityCompleted) || undefined}
       className={`guided-lab-page ${className}`}
     >
       <div className="guided-lab-top-row">
@@ -185,7 +189,9 @@ export function GuidedLabScreen({
 
       <div className="guided-lab-heading">
         <div className="guided-lab-title">
-          <h1>{title}</h1>
+          <h1 aria-description={activityCompleted ? `${simulation ? 'Tutorial' : 'Exercise'} completed` : undefined}>
+            {title}{activityCompleted && <CheckCircle2 className="activity-title-check" aria-hidden="true" />}
+          </h1>
 
           <p>{description}</p>
         </div>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Database, ListTodo } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Clock3, Database, ListTodo } from 'lucide-react';
+import { ActivityCompletion } from '../../components/lab/ActivityCompletion';
 import { WorkspaceMetric } from '../../components/lab/WorkspaceMetric';
 import { LessonText } from '../../components/lesson/LessonText';
 import { useGuidedFocus } from '../../components/lesson/useGuidedFocus';
@@ -20,7 +21,7 @@ import '../incremental-maintenance/lecture-two.css';
 import './lecture-one.css';
 
 export function SnapshotLectureOne({ chapter, navigation }: { chapter: ChapterDefinition; navigation: ReactNode }) {
-  const { state, dispatch, completed: tutorialComplete } = useLectureRun(snapshotRunDefinition);
+  const { state, dispatch, completed: tutorialComplete, finished } = useLectureRun(snapshotRunDefinition);
   const { open: helpOpen } = useWalkthrough();
   const [selectedStage, setSelectedStage] = useState('source');
   const sourceRef = useRef<HTMLElement>(null);
@@ -42,7 +43,7 @@ export function SnapshotLectureOne({ chapter, navigation }: { chapter: ChapterDe
   const activeStage = state.guided ? focus.id === 'metrics' || focus.id === 'progress' ? lesson.stage : focus.id : selectedStage;
 
   return <>
-    <LectureScreen layout="without-tip" chapter={chapter} title="Lecture 1" regionLabel="Lecture content" navigation={navigation}
+    <LectureScreen activityCompleted={tutorialComplete} layout="without-tip" chapter={chapter} title="Lecture 1" regionLabel="Lecture content" navigation={navigation}
       className="lesson-page changing-relations-page incremental-maintenance-page join-maintenance-page maintenance-lecture-page getting-data-in-page snapshot-lecture-page"
       description="Follow a snapshot into a live product table." reference={snapshotReference}
       simulation={{ completed: state.guided ? state.step : state.selectedTime,
@@ -72,7 +73,7 @@ export function SnapshotLectureOne({ chapter, navigation }: { chapter: ChapterDe
         renderContent={(stage) => <SnapshotPanelContent stage={stage} state={current}
           highlight={state.guided && state.revealed && (activeStage === stage || Boolean(lesson.related?.includes(stage)))} />} />}
       playback={<div className="relation-playback-controls" aria-label="Change playback">
-        {tutorialComplete && <span className="relation-tutorial-complete maintenance-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
+        <ActivityCompletion complete={finished} kind="tutorial" className="maintenance-complete" />
         <div>
           {state.selectedTime !== state.applied && <Button disabled={state.guided || state.playing}
             onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}

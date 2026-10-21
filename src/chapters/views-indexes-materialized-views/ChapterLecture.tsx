@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ActivityCompletion } from '../../components/lab/ActivityCompletion';
 import type { ChapterDefinition } from '../chapterRegistry';
 import { LectureScreen } from '../../labs/components/LectureScreen';
 import { useLectureRun } from '../../labs/useLectureRun';
@@ -18,7 +19,7 @@ import './chapter.css';
 
 export function ObjectChapterLecture({ chapter, navigation, lectureIndex }: { chapter: ChapterDefinition; navigation: ReactNode; lectureIndex: number }) {
   const lecture = objectLectures[lectureIndex]!;
-  const { state, dispatch, completed } = useLectureRun({ totalChanges: lecture.lessons.length, steps: lecture.lessons.map((lesson, index) => ({ time: index + 1, before: lesson.before })) });
+  const { state, dispatch, completed, finished } = useLectureRun({ totalChanges: lecture.lessons.length, steps: lecture.lessons.map((lesson, index) => ({ time: index + 1, before: lesson.before })) });
   const { open: helpOpen } = useWalkthrough();
   const [introductionIndex, setIntroductionIndex] = useState<number | null>(null);
   const [selectedPanel, setSelectedPanel] = useState<DiagramPanel>('input');
@@ -53,7 +54,7 @@ export function ObjectChapterLecture({ chapter, navigation, lectureIndex }: { ch
     } else setIntroductionIndex(index => (index ?? 0) + 1);
   };
   return <>
-    <LectureScreen layout="without-tip" chapter={chapter} title={lecture.title} description={lecture.description} navigation={navigation}
+    <LectureScreen activityCompleted={completed} layout="without-tip" chapter={chapter} title={lecture.title} description={lecture.description} navigation={navigation}
       className="lesson-page object-chapter-page" regionLabel="Lecture content" guided={guided}
       reference={{ objective: lecture.objective, sql: lecture.sql, documentationLinks }}
       simulation={{ completed: introductionIndex ?? (state.guided ? lecture.introductions.length + state.step : state.selectedTime), total: guided ? lecture.introductions.length + lecture.lessons.length : lecture.lessons.length, progressLabel: guided ? 'Tutorial' : 'Steps', playing: state.playing,
@@ -68,7 +69,7 @@ export function ObjectChapterLecture({ chapter, navigation, lectureIndex }: { ch
         <p className="object-step-explanation" aria-live="polite"><LessonText content={[state.selectedTime === 0 ? 'Start a guided run to learn the objects, then predict their effects.' : `Step ${state.selectedTime}: ${lecture.lessons[state.selectedTime - 1]!.title}`]} /></p>
       </>}
       playback={<div className="relation-playback-controls object-playback" aria-label="Scenario playback">
-        {completed && <span className="relation-tutorial-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
+        <ActivityCompletion complete={finished} kind="tutorial" />
         <div>{state.selectedTime !== state.applied && <Button disabled={guided || state.playing} onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
           <Button aria-keyshortcuts="ArrowLeft" disabled={guided || state.playing || state.selectedTime === 0} onClick={() => { setExploredQuery(null); dispatch({ type: 'previous-change' }); }}><ArrowLeft size={14} aria-hidden="true" />Previous change</Button>
           <Button data-walkthrough="next-change" aria-keyshortcuts="ArrowRight" disabled={guided || state.playing || state.selectedTime === lecture.lessons.length} onClick={() => { setExploredQuery(null); dispatch({ type: 'next-change' }); }}>Next change<ArrowRight size={14} aria-hidden="true" /></Button></div>

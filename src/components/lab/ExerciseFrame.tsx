@@ -8,6 +8,7 @@ import { LessonText, type LessonTextContent } from '../lesson/LessonText';
 import { useChangeMotion } from '../../motion/useChangeMotion';
 import type { useExerciseStages } from '../../hooks/useExerciseStages';
 import { useActivityCompletion } from '../../hooks/useLabProgress';
+import { ActivityCompletion } from './ActivityCompletion';
 import '../../styles/exercise.css';
 export function ExerciseFrame({
   chapter,
@@ -152,6 +153,7 @@ export function ExerciseFrame({
     <GuidedLabScreen
       chapter={chapter}
       title={title}
+      activityCompleted={completed}
       regionLabel="Exercise content"
       navigation={navigation}
       description={description}
@@ -222,7 +224,7 @@ export function ExerciseFrame({
           </>
         ),
       }}
-      completion={completed && <span className="exercise-completion relation-tutorial-complete" role="status"><CheckCircle2 size={14} aria-hidden="true" />Exercise completed</span>}
+      completion={<ActivityCompletion complete={flow.complete} kind="exercise" className="exercise-completion" />}
       workspace={
         <form
           id={formId}

@@ -141,7 +141,16 @@ and challenges are excluded.
 Finishing a guided run earns tutorial completion; normal playback does not.
 `ExerciseFrame` records completion only when all questions are accepted, including
 Show Answer. Reset, replay, navigation and reload preserve earned completion.
-`useLectureRun` exposes the saved completion state to every lecture template.
+`useLectureRun` exposes saved completion separately from finishing the current run.
+`ActivityCompletion` shows the existing footer message for three seconds when a
+run finishes, with a localized 700ms confetti burst. It does not celebrate on
+reload or return visits; completing a replay can celebrate again. Reduced motion
+keeps the timed text but suppresses movement and confetti.
+`GuidedLabScreen.activityCompleted` shows a persistent green check beside the
+activity title, including after reset and reload. Its accessible description
+communicates completion without changing the heading's name.
+Completed exercise layout reservations use `data-exercise-completed`, so removing
+the temporary message cannot move answers or navigation.
 Sidebar activity dots turn green when completed, with purple taking precedence
 on the current page. Completed lecture and exercise labels use the same muted
 green as completed chapter titles; the current page label stays purple.

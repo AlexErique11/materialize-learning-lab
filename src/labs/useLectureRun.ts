@@ -99,5 +99,5 @@ export function useLectureRun(definition: LectureRunDefinition) {
   useEffect(() => {
     if (state.step === definition.steps.length) rememberCompletedWork();
   }, [state.step, definition.steps.length]);
-  return { state, dispatch, completed };
+  return { state, dispatch, completed, finished: state.step === definition.steps.length };
 }

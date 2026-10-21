@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, Database, Table2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Clock3, Database, Table2 } from 'lucide-react';
+import { ActivityCompletion } from '../../components/lab/ActivityCompletion';
 import { WorkspaceMetric } from '../../components/lab/WorkspaceMetric';
 import { RelationHelp } from '../../components/lesson/RelationHelp';
 import { LessonText } from '../../components/lesson/LessonText';
@@ -17,7 +18,7 @@ import '../../styles/lesson.css';
 import './temporal.css';
 
 export function TemporalLecture({ chapter, definition, navigation }: { chapter: ChapterDefinition; definition: TemporalLectureDefinition; navigation: ReactNode }) {
-  const { state, dispatch, completed: complete } = useLectureRun({ totalChanges: definition.actions.length, steps: definition.lessons });
+  const { state, dispatch, completed: complete, finished } = useLectureRun({ totalChanges: definition.actions.length, steps: definition.lessons });
   const { open: helpOpen } = useWalkthrough();
   const [selectedStage, setSelectedStage] = useState<TemporalStage>('timeline');
   const timelineRef = useRef<HTMLElement>(null);
@@ -39,7 +40,7 @@ export function TemporalLecture({ chapter, definition, navigation }: { chapter: 
   const upcoming = pending ? definition.actions[lesson.time - 1] : undefined;
 
   return <>
-    <LectureScreen layout="without-tip" chapter={chapter} title={'Lecture ' + definition.number} description={definition.description}
+    <LectureScreen activityCompleted={complete} layout="without-tip" chapter={chapter} title={'Lecture ' + definition.number} description={definition.description}
       regionLabel="Lecture content" navigation={navigation}
       className="lesson-page changing-relations-page incremental-maintenance-page join-maintenance-page maintenance-lecture-page temporal-lecture-page" reference={definition.reference}
       simulation={{ completed: state.guided ? state.step : state.selectedTime, total: state.guided ? definition.lessons.length : definition.actions.length,
@@ -56,7 +57,7 @@ export function TemporalLecture({ chapter, definition, navigation }: { chapter: 
         refs={refs} clockRef={clockRef} diffRef={diffRef}
         hasClocks={definition.number === 1} upcoming={upcoming} initial={state.selectedTime === 0} />}
       playback={<div className="relation-playback-controls" aria-label="Change playback">
-        {complete && <span className="relation-tutorial-complete maintenance-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
+        <ActivityCompletion complete={finished} kind="tutorial" className="maintenance-complete" />
         <div>{state.selectedTime !== state.applied && <Button disabled={state.guided || state.playing} onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
           <Button aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || state.selectedTime === 0} onClick={() => dispatch({ type: 'previous-change' })}><ArrowLeft size={14} aria-hidden="true" />Previous change</Button>
           <Button data-walkthrough="next-change" aria-keyshortcuts="ArrowRight" disabled={state.guided || state.playing || state.selectedTime === definition.actions.length} onClick={() => dispatch({ type: 'next-change' })}>Next change<ArrowRight size={14} aria-hidden="true" /></Button>

@@ -79,8 +79,8 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
         const origin = root.getBoundingClientRect();
         const footerBox = footer.getBoundingClientRect();
         const next = footer.querySelector('button')?.getBoundingClientRect();
-        const completed = Boolean(root.closest('.progress-exercise-page')!.querySelector('.exercise-completion'));
-        // Completed activities keep the footer label; compact answers use the row above it.
+        const completed = root.closest('.progress-exercise-page')!.getAttribute('data-exercise-completed') === 'true';
+        // Keep compact answers above the completion message, including after it fades.
         root.style.setProperty('--exercise-answer-width', `${completed ? origin.width : origin.width - Math.max(144, next?.width ?? 0) - 8}px`);
         const answerBottom = completed ? footerBox.top - 1 : footerBox.bottom;
         const answerTop = answerBottom - origin.top - answers.getBoundingClientRect().height;

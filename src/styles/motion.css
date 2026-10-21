@@ -43,9 +43,8 @@
 .dialog[data-motion-closing]::backdrop { opacity: 0; transition-duration: 120ms; }
 @starting-style { .dialog[open]::backdrop { opacity: 0; } }
 
-.exercise-next-question, .relation-tutorial-complete { animation: motion-small-reveal 200ms var(--motion-ease); }
-.exercise-question[data-result='correct'] .exercise-question-copy h2 > svg path,
-.relation-tutorial-complete > svg path { stroke-dasharray: 24; animation: motion-check 260ms var(--motion-ease); }
+.exercise-next-question { animation: motion-small-reveal 200ms var(--motion-ease); }
+.exercise-question[data-result='correct'] .exercise-question-copy h2 > svg path { stroke-dasharray: 24; animation: motion-check 260ms var(--motion-ease); }
 .chapter-completion-topics svg { animation: motion-small-reveal 240ms var(--motion-ease); }
 
 .progress-motion { position: relative; }

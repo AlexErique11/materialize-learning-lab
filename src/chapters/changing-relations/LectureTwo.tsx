@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { ArrowLeft, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ActivityCompletion } from '../../components/lab/ActivityCompletion';
 import { Button } from '../../components/ui/Button';
 import { LectureScreen } from '../../labs/components/LectureScreen';
 import type { ChapterDefinition } from '../chapterRegistry';
@@ -15,7 +16,7 @@ import { useLectureRun } from './useLectureRun';
 import './lecture-one.css';
 
 export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition; navigation: ReactNode }) {
-  const { state, dispatch, completed: tutorialComplete } = useLectureRun(lectureTwoRun);
+  const { state, dispatch, completed: tutorialComplete, finished } = useLectureRun(lectureTwoRun);
   const { open: helpOpen } = useWalkthrough();
   useEffect(() => { if (helpOpen) dispatch({ type: 'pause' }); }, [helpOpen, dispatch]);
   const ledgerRef = useRef<HTMLElement>(null);
@@ -31,7 +32,7 @@ export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition
   const phaseLabel = beforeChange ? 'Predict the effect' : 'Explanation';
 
   return <>
-    <LectureScreen layout="with-tip" chapter={chapter} title="Lecture 2" regionLabel="Lecture content" navigation={navigation}
+    <LectureScreen activityCompleted={tutorialComplete} layout="with-tip" chapter={chapter} title="Lecture 2" regionLabel="Lecture content" navigation={navigation}
       className="lesson-page changing-relations-page changing-relations-lecture-page" reference={lectureTwoReference}
       simulation={{ completed: state.selectedTime, total: lectureTwoBatches.length,
         progressLabel: 'Changes', playing: state.playing,
@@ -44,7 +45,7 @@ export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition
           highlightCopies={state.guided && state.revealed && lesson.spotlight === 'relation'} onSelectTime={(time) => dispatch({ type: 'select', time })} />}
       playback={
         <div className="relation-playback-controls" aria-label="Timestamp playback">
-          {tutorialComplete && <span className="relation-tutorial-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
+          <ActivityCompletion complete={finished} kind="tutorial" />
           <div>
             {inspectingHistory && <Button onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
             <Button aria-label="Previous timestamp" aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || state.selectedTime === 0} onClick={() => dispatch({ type: 'previous-change' })}><ArrowLeft size={14} aria-hidden="true" /><span>Previous<span className="relation-playback-kind"> timestamp</span></span></Button>

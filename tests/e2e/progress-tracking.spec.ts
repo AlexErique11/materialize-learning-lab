@@ -8,6 +8,43 @@ const chapters = coreChapters.filter(chapter => getChapterPages(chapter).length 
 const progress = (page: Page) => page.locator('#main-content .sidebar-progress progress').first();
 const tutorialBadge = (page: Page) => page.locator('#main-content .relation-playback-controls .relation-tutorial-complete');
 const exerciseBadge = (page: Page) => page.locator('#main-content > .learning-area .guided-lab-page > .exercise-completion');
+const titleCheck = (page: Page) => page.locator('#main-content .guided-lab-title > h1 .activity-title-check').first();
+
+test('replaying a completed activity celebrates again without removing the saved title check', async ({ page }) => {
+  await page.clock.install();
+  for (const kind of ['tutorial', 'exercise'] as const) {
+    await page.goto(`/labs/changing-relations/${kind === 'tutorial' ? 'tutorial/lecture-1' : 'exercises/exercise-1'}`);
+    const finish = kind === 'tutorial' ? finishTutorial : finishExercise;
+    const badge = kind === 'tutorial' ? tutorialBadge(page) : exerciseBadge(page);
+    await finish(page);
+    await page.clock.fastForward(3200);
+    await expect(badge).toHaveCount(0);
+    await page.getByRole('button', { name: 'Reset', exact: true }).click();
+    await expect(titleCheck(page)).toBeVisible();
+    await expect(badge).toHaveCount(0);
+    await finish(page);
+    await expect(titleCheck(page)).toBeVisible();
+  }
+});
+
+test('completion confetti respects the learner motion preference', async ({ page }, testInfo) => {
+  for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+    await page.emulateMedia({ reducedMotion });
+    await page.goto('/labs/changing-relations/exercises/exercise-1');
+    await finishExercise(page);
+    const confetti = exerciseBadge(page).locator('.activity-completion-confetti');
+    if (reducedMotion === 'reduce') {
+      await expect(confetti).toBeHidden();
+      await expect(exerciseBadge(page)).toHaveCSS('animation-name', 'none');
+    } else {
+      await expect(confetti).toBeVisible();
+      await expect(exerciseBadge(page)).toHaveCSS('opacity', '1');
+      expect(await confetti.locator('i').first().evaluate(el => el.getAnimations().some(animation => animation.playState === 'running'))).toBe(true);
+      await page.screenshot({ path: testInfo.outputPath('completion-confetti.png') });
+    }
+    await expect(titleCheck(page)).toBeVisible();
+  }
+});
 
 async function expectFooterClear(page: Page) {
   const badge = (await exerciseBadge(page).boundingBox())!;
@@ -43,6 +80,7 @@ async function finishExercise(page: Page) {
 for (const chapter of chapters) {
   test(`${chapter.slug}: all tutorials retain completion after reset and reload`, async ({ page }) => {
     test.setTimeout(90_000);
+    await page.clock.install();
     const lectures = getChapterPages(chapter).filter(item => item.sectionSlug === 'tutorial');
     for (const lecture of lectures) {
       const path = chapterContentPath(chapter, lecture);
@@ -52,24 +90,32 @@ for (const chapter of chapters) {
       await page.keyboard.press('ArrowRight');
       await expect(progress(page)).toHaveAttribute('value', '0');
       await finishTutorial(page);
+      await expect(titleCheck(page)).toBeVisible();
+      await page.clock.fastForward(3200);
+      await expect(tutorialBadge(page)).toHaveCount(0);
+      await expect(titleCheck(page)).toBeVisible();
       await expect(progress(page)).toHaveAttribute('value', '0');
       await page.reload();
-      await expect(tutorialBadge(page)).toBeVisible();
+      await expect(tutorialBadge(page)).toHaveCount(0);
+      await expect(titleCheck(page)).toBeVisible();
       await page.getByRole('button', { name: 'Reset', exact: true }).click();
-      await expect(tutorialBadge(page)).toBeVisible();
+      await expect(tutorialBadge(page)).toHaveCount(0);
+      await expect(titleCheck(page)).toBeVisible();
       await expect(progress(page)).toHaveAttribute('value', '0');
       await expect(page.locator(`#main-content .chapter-pages a[href="${path}"]`).first()).toHaveAttribute('data-completed', 'true');
     }
   });
 
-  test(`${chapter.slug}: every exercise has the same persistent completion footer`, async ({ page, isMobile }, testInfo) => {
+  test(`${chapter.slug}: every exercise celebrates in the same footer and retains its title check`, async ({ page, isMobile }, testInfo) => {
     test.setTimeout(90_000);
+    await page.clock.install();
     if (!isMobile) await page.setViewportSize({ width: 1366, height: 768 });
     const exercises = getChapterPages(chapter).filter(item => item.sectionSlug === 'exercises');
     for (const [index, exercise] of exercises.entries()) {
       await page.goto(chapterContentPath(chapter, exercise));
       const heading = await page.locator('.guided-lab-heading').boundingBox();
       await finishExercise(page);
+      await expect(titleCheck(page)).toBeVisible();
       await expect(progress(page)).toHaveAttribute('value', '0');
       const badge = exerciseBadge(page);
       const bounds = (await badge.boundingBox())!;
@@ -81,12 +127,21 @@ for (const chapter of chapters) {
       expect(bounds.x + bounds.width).toBeLessThanOrEqual(next.x);
       await expectFooterClear(page);
       if (index === 0) await page.screenshot({ path: testInfo.outputPath('exercise-completed.png') });
+      const question = await page.locator('.exercise-question').boundingBox();
+      const answers = await page.locator('.exercise-answers').boundingBox();
+      await page.clock.fastForward(3200);
+      await expect(badge).toHaveCount(0);
+      await expect(titleCheck(page)).toBeVisible();
+      expect(await page.locator('.exercise-question').boundingBox()).toEqual(question);
+      expect(await page.locator('.exercise-answers').boundingBox()).toEqual(answers);
+      expect(await page.locator('[data-shortcut="exercise-forward"]').boundingBox()).toEqual(next);
       await page.reload();
-      await expect(badge).toBeVisible();
+      await expect(badge).toHaveCount(0);
+      await expect(titleCheck(page)).toBeVisible();
       await page.getByRole('button', { name: 'Reset', exact: true }).click();
-      await expect(badge).toBeVisible();
+      await expect(badge).toHaveCount(0);
+      await expect(titleCheck(page)).toBeVisible();
       await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'ready');
-      await expectFooterClear(page);
       expect(await page.locator('.guided-lab-heading').boundingBox()).toEqual(heading);
       await expect(progress(page)).toHaveAttribute('value', '0');
     }
@@ -112,7 +167,7 @@ test('both bars count whole chapters while chapter badges, activity dots and oth
   }
   await finishTutorial(page);
   await expect(chapterLink(page)).not.toHaveAttribute('data-completed', 'true');
-  const successColor = await tutorialBadge(page).evaluate(el => getComputedStyle(el).color);
+  const successColor = await titleCheck(page).evaluate(el => getComputedStyle(el).color);
   const activeDot = page.locator(`#main-content .chapter-pages a[href="${lecture}"] .chapter-page-dot`).first();
   expect(await activeDot.evaluate(el => getComputedStyle(el).backgroundColor)).not.toBe(successColor);
   await page.goto('/labs/changing-relations/tutorial/lecture-2');
@@ -127,11 +182,14 @@ test('both bars count whole chapters while chapter badges, activity dots and oth
   await page.reload();
   await expect(pathProgress).toHaveAttribute('value', '0');
   const other = await context.newPage();
-  await other.goto('/labs/changing-relations');
+  await other.goto('/labs/changing-relations/tutorial/lecture-2');
   await expect(progress(other)).toHaveAttribute('value', '0');
   await expect(chapterLink(other)).not.toHaveAttribute('data-completed', 'true');
+  await expect(titleCheck(other)).toHaveCount(0);
   await page.goto('/labs/changing-relations/tutorial/lecture-2');
   await finishTutorial(page);
+  await expect(titleCheck(other)).toBeVisible();
+  await expect(tutorialBadge(other)).toHaveCount(0);
   await expect(progress(other)).toHaveAttribute('value', '1');
   await expect(chapterLink(other)).toHaveAttribute('data-completed', 'true');
   const number = chapterLink(page).locator('.chapter-link-number');
