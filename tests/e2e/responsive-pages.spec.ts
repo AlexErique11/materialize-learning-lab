@@ -191,6 +191,35 @@ test('tablet tables use complete selected panels and lifetime labels remain dist
   }
 });
 
+test('Chapter 5 exercise panels follow the selected tab at narrow widths and restore on desktop', async ({ page }) => {
+  test.setTimeout(60_000);
+  for (const exercise of [1, 2, 3]) {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(`/labs/time-in-materialize/exercises/exercise-${exercise}`);
+    const panels = page.locator('#main-content .temporal-workspace > .temporal-panel');
+    await expect(panels.filter({ visible: true })).toHaveCount(3);
+    for (const width of [640, 768, 1024]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect(page.locator('#main-content .temporal-exercise-page')).toHaveAttribute('data-narrow-panels');
+      for (const stage of ['source', 'timeline', 'result']) {
+        const label = stage[0]!.toUpperCase() + stage.slice(1);
+        await page.locator('.temporal-panel-tabs').getByRole('button', { name: label, exact: true }).click();
+        const selected = page.locator(`#main-content .temporal-workspace > [data-stage="${stage}"]`);
+        await expect(selected).toBeVisible();
+        await expect(panels.filter({ visible: true })).toHaveCount(1);
+        if (stage === 'timeline') {
+          await expect(selected.locator('.temporal-axis')).toBeVisible();
+          if (exercise === 1) await expect(selected.locator('.temporal-clocks')).toBeVisible();
+        } else {
+          await expect(selected.getByRole('table')).toBeVisible();
+        }
+      }
+    }
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await expect(panels.filter({ visible: true })).toHaveCount(3);
+  }
+});
+
 test('guided runs keep their explanations on screen with selected tablet panels', async ({ page }) => {
   await page.setViewportSize({ width: 760, height: 740 });
   for (const chapter of ['incremental-maintenance', 'time-in-materialize']) {

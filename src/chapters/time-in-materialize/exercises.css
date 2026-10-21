@@ -111,6 +111,8 @@
 .app-shell-guided-labs .temporal-exercise-page[data-narrow-panels] .temporal-panel-tabs .button { flex: 1; }
 .app-shell-guided-labs .temporal-exercise-page[data-narrow-panels] .temporal-workspace { display: block; height: auto; }
 .app-shell-guided-labs .temporal-exercise-page[data-narrow-panels] .temporal-workspace > .temporal-panel { height: auto; min-height: 248px; }
-.app-shell-guided-labs .temporal-exercise-page[data-narrow-panels] .temporal-workspace > [data-active='false'] { display: none; }
+.app-shell-guided-labs .temporal-exercise-page[data-narrow-panels] .temporal-workspace[data-selected-stage='source'] > :not([data-stage='source']),
+.app-shell-guided-labs .temporal-exercise-page[data-narrow-panels] .temporal-workspace[data-selected-stage='timeline'] > :not([data-stage='timeline']),
+.app-shell-guided-labs .temporal-exercise-page[data-narrow-panels] .temporal-workspace[data-selected-stage='result'] > :not([data-stage='result']) { display: none; }
 .temporal-exercise-page[data-narrow-panels] .temporal-panel-heading { min-height: 24px; }
 .temporal-exercise-page[data-narrow-panels] .exercise-question { grid-template-columns: 1fr; }
