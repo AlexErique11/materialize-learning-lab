@@ -72,8 +72,8 @@ export function ProgressLecture({ chapter, navigation, lectureIndex }: { chapter
       playback={<div className="relation-playback-controls" aria-label="Scenario playback">
         {completed && <span className="relation-tutorial-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
         <div>{state.selectedTime !== state.applied && <Button disabled={state.guided || state.playing} onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
-          <Button disabled={state.guided || state.playing || normalStep === 0} onClick={() => move(false)}><ArrowLeft size={14} aria-hidden="true" />{caseStudy ? 'Previous case' : 'Previous change'}</Button>
-          <Button data-walkthrough="next-change" disabled={state.guided || state.playing || normalStep === frames.length} onClick={() => move(true)}>{caseStudy ? 'Next case' : 'Next change'}<ArrowRight size={14} aria-hidden="true" /></Button>
+          <Button aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || normalStep === 0} onClick={() => move(false)}><ArrowLeft size={14} aria-hidden="true" />{caseStudy ? 'Previous case' : 'Previous change'}</Button>
+          <Button data-walkthrough="next-change" aria-keyshortcuts="ArrowRight" disabled={state.guided || state.playing || normalStep === frames.length} onClick={() => move(true)}>{caseStudy ? 'Next case' : 'Next change'}<ArrowRight size={14} aria-hidden="true" /></Button>
         </div>
       </div>} />
     <Spotlight open={state.guided} {...focus.props} step={Math.min(state.step + 1, lecture.lessons.length)} total={lecture.lessons.length}

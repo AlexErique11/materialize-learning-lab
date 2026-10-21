@@ -76,9 +76,9 @@ export function SnapshotLectureOne({ chapter, navigation }: { chapter: ChapterDe
         <div>
           {state.selectedTime !== state.applied && <Button disabled={state.guided || state.playing}
             onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
-          <Button disabled={state.guided || state.playing || state.selectedTime === 0}
+          <Button aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || state.selectedTime === 0}
             onClick={() => dispatch({ type: 'previous-change' })}><ArrowLeft size={14} aria-hidden="true" />Previous change</Button>
-          <Button data-walkthrough="next-change" disabled={state.guided || state.playing || state.selectedTime === snapshotRunDefinition.totalChanges}
+          <Button data-walkthrough="next-change" aria-keyshortcuts="ArrowRight" disabled={state.guided || state.playing || state.selectedTime === snapshotRunDefinition.totalChanges}
             onClick={() => dispatch({ type: 'next-change' })}>Next change<ArrowRight size={14} aria-hidden="true" /></Button>
         </div>
       </div>} />

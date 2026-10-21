@@ -146,4 +146,5 @@
   cursor: pointer;
 }
 .chapter-walkthrough-button > svg { flex-shrink: 0; }
-.chapter-walkthrough-button:hover { border-color: var(--lab-purple); }
+.chapter-walkthrough-button:hover,
+.shortcut-help-trigger:hover { border-color: var(--lab-purple); }

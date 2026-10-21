@@ -153,8 +153,10 @@ html:has(.progress-exercise-page), body:has(.progress-exercise-page) {
   .progress-chapter-page:not(.progress-exercise-page) .guided-lab-title > p { min-height: 2lh; }
 }
 @media (min-width: 640px) and (max-width: 1023px) and (max-height: 650px) {
-  .progress-chapter-page { --lecture-title-spacing: 0px; }
-  .progress-chapter-page .guided-lab-top-row { display: none; }
+  .progress-chapter-page { --lecture-title-spacing: 0px; position: relative; }
+  .progress-chapter-page .guided-lab-top-row { position: absolute; display: flex; top: 14px; right: 28px; margin: 0; }
+  .progress-chapter-page .guided-lab-top-row > .breadcrumbs,
+  .progress-chapter-page .guided-lab-help-slot:not(:has(.chapter-walkthrough-button)) { display: none; }
   .progress-chapter-page .guided-lab-heading { display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; }
   .progress-chapter-page .guided-lab-title h1 { grid-row: 1; grid-column: 1; }
   .progress-chapter-page .guided-lab-controls { grid-row: 2; grid-column: 1; justify-content: space-between; }

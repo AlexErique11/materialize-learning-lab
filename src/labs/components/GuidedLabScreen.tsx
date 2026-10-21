@@ -17,7 +17,9 @@ import { Button } from '../../components/ui/Button';
 import { ProgressBar } from '../../components/ui/ProgressBar';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import { useLabShortcuts } from '../../hooks/useLabShortcuts';
+import { useLabHelpAlignment } from '../../hooks/useLabHelpAlignment';
 import { useWorkspaceMotion } from '../../motion/useWorkspaceMotion';
+import { ShortcutHelp } from '../../components/lab/ShortcutHelp';
 
 const lectureShortcuts = {
   ArrowRight: '[data-walkthrough="next-change"]',
@@ -108,17 +110,19 @@ export function GuidedLabScreen({
   reference,
 }: GuidedLabScreenProps) {
   const [referenceOpen, setReferenceOpen] = useState(false);
+  const [shortcutHelpOpen, setShortcutHelpOpen] = useState(false);
   const pageRef = useRef<HTMLElement>(null);
   const tipRef = useRef<HTMLElement>(null);
   const [tipFits, setTipFits] = useState(false);
   const fitViewport = Boolean(simulation || controls);
   const available = Boolean(simulation || controls);
-  useLabShortcuts(pageRef, simulation ? lectureShortcuts : exerciseShortcuts, available);
-  const { open: helpOpen } = useWalkthrough();
+  useLabShortcuts(pageRef, simulation ? lectureShortcuts : exerciseShortcuts, available && !shortcutHelpOpen);
+  const { open: helpOpen, lectureHelpAvailable } = useWalkthrough();
   useEffect(() => {
     if (helpOpen) setReferenceOpen(false);
   }, [helpOpen]);
   const { pathname } = useLocation();
+  useLabHelpAlignment(pageRef, Boolean(simulation), lectureHelpAvailable, pathname);
   useWorkspaceMotion(pageRef, pathname);
   useLayoutEffect(() => {
     if (showTip !== 'when-space') return;
@@ -151,6 +155,7 @@ export function GuidedLabScreen({
   }, [showTip, pathname]);
   useEffect(() => {
     setReferenceOpen(false);
+    setShortcutHelpOpen(false);
   }, [pathname]);
   usePageTitle(title);
 
@@ -171,7 +176,11 @@ export function GuidedLabScreen({
             ...(title !== chapter.shortTitle ? [{ label: title }] : []),
           ]}
         />
-        {navigation}
+        <div className="guided-lab-help">
+          {!simulation && navigation}
+          {available && <ShortcutHelp key={pathname} lecture={Boolean(simulation)} showReference={showReference} onOpenChange={setShortcutHelpOpen} />}
+          {simulation && navigation}
+        </div>
       </div>
 
       <div className="guided-lab-heading">

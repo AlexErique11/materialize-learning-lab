@@ -110,6 +110,27 @@ The filter-choice question conceals the reference predicate until acceptance.
 
 ## Shared component ownership
 
+`GuidedLabScreen` places a keyboard icon + Shortcuts button beside the existing page help/navigation.
+`useLabHelpAlignment` centers Shortcuts over Check Answer in exercises. Lectures
+retain the previous Shortcuts position beside Controls tour, which stays
+centered over Start guided run. Alignment follows toolbar and sidebar resizing
+without moving the header or workspace; narrow screens keep help clear of the title.
+Shortcuts and Controls tour share the same purple border hover and global button transition.
+`ShortcutHelp` opens a nonmodal native popover with the current lecture or exercise
+shortcuts, plus guided-run or chapter-completion controls. Escape, the close button,
+and outside clicks dismiss it. Page shortcuts pause while the reference is open;
+opening or closing it does not move the title, controls, metrics, or questions.
+Shortcut guidance appears only in this reference; action buttons do not show
+shortcut tooltips on hover or focus. Their `aria-keyshortcuts` remain available
+to assistive technology.
+`ShortcutKeys` imports `src/styles/shortcuts.css` directly so the reference
+styles load with its components in both development and production. Motion
+uses the existing tooltip timing and respects reduced motion. Playback buttons
+declare their existing arrow shortcuts; shortcut behavior and answer validation
+remain owned by `useLabShortcuts` and the existing controls.
+Chapter 6's compact tablet header keeps help beside the title without restoring
+the hidden breadcrumb row or moving its workspace.
+
 `src/progress/labProgress.ts` stores completed canonical activity paths in browser
 localStorage, under `materialize-learning-lab-progress-v1`. `useLabProgress`
 subscribes the sidebar and Learning path to the same completed core chapter count,

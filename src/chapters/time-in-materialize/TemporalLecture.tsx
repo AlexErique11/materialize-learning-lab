@@ -58,8 +58,8 @@ export function TemporalLecture({ chapter, definition, navigation }: { chapter: 
       playback={<div className="relation-playback-controls" aria-label="Change playback">
         {complete && <span className="relation-tutorial-complete maintenance-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
         <div>{state.selectedTime !== state.applied && <Button disabled={state.guided || state.playing} onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
-          <Button disabled={state.guided || state.playing || state.selectedTime === 0} onClick={() => dispatch({ type: 'previous-change' })}><ArrowLeft size={14} aria-hidden="true" />Previous change</Button>
-          <Button data-walkthrough="next-change" disabled={state.guided || state.playing || state.selectedTime === definition.actions.length} onClick={() => dispatch({ type: 'next-change' })}>Next change<ArrowRight size={14} aria-hidden="true" /></Button>
+          <Button aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || state.selectedTime === 0} onClick={() => dispatch({ type: 'previous-change' })}><ArrowLeft size={14} aria-hidden="true" />Previous change</Button>
+          <Button data-walkthrough="next-change" aria-keyshortcuts="ArrowRight" disabled={state.guided || state.playing || state.selectedTime === definition.actions.length} onClick={() => dispatch({ type: 'next-change' })}>Next change<ArrowRight size={14} aria-hidden="true" /></Button>
         </div>
       </div>} />
     <Spotlight open={state.guided} {...focus.props} placement="above-first" step={Math.min(state.step + 1, definition.lessons.length)} total={definition.lessons.length}

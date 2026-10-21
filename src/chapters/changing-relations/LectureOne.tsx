@@ -55,10 +55,10 @@ export function LectureOne({ chapter, navigation }: LectureOneProps) {
             {tutorialComplete && <span className="relation-tutorial-complete"><CheckCircle2 size={14} aria-hidden="true" />Tutorial completed</span>}
             <div>
               {inspectingHistory && <Button onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
-              <Button aria-label="Previous change" disabled={state.guided || state.playing || state.selectedTime === 0} onClick={() => dispatch({ type: 'previous-change' })}>
+              <Button aria-label="Previous change" aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || state.selectedTime === 0} onClick={() => dispatch({ type: 'previous-change' })}>
                 <ArrowLeft size={14} aria-hidden="true" /><span>Previous<span className="relation-playback-kind"> change</span></span>
               </Button>
-              <Button aria-label="Next change" data-walkthrough="next-change" disabled={state.guided || state.playing || state.selectedTime === lectureUpdates.length} onClick={() => dispatch({ type: 'next-change' })}>
+              <Button aria-label="Next change" aria-keyshortcuts="ArrowRight" data-walkthrough="next-change" disabled={state.guided || state.playing || state.selectedTime === lectureUpdates.length} onClick={() => dispatch({ type: 'next-change' })}>
                 <span>Next<span className="relation-playback-kind"> change</span></span><ArrowRight size={14} aria-hidden="true" />
               </Button>
             </div>
