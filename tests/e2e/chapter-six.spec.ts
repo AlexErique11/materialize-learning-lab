@@ -98,7 +98,7 @@ for (const [index, exercise] of progressExercises.entries()) {
       await page.getByRole('button', { name: last ? index === 2 ? 'Finish chapter' : `Exercise ${index + 2}` : 'Next question', exact: true }).click();
     }
     if (index === 2) {
-      await expect(page.getByRole('dialog', { name: 'You finished Chapter 6' })).toBeVisible();
+      await expect(page.getByRole('dialog', { name: 'Exercise completed', exact: true })).toBeVisible();
       await page.getByRole('button', { name: 'Go to next chapter', exact: true }).click();
       await expect(page).toHaveURL(/consistent-reads$/);
     } else await expect(page).toHaveURL(`${base}/exercises/exercise-${index + 2}`);

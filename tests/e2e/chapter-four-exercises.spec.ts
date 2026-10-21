@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures';
+import { expect, seedChapterPrerequisites, test } from './fixtures';
 
 const path = (exercise: number) => `/labs/getting-data-in/exercises/exercise-${exercise}`;
 const lengths = [4, 5, 5];
@@ -106,6 +106,7 @@ test('producer choices are not disclosed and wrong input cannot apply the next r
 });
 
 test('a diagnosed error completes Chapter 4 and navigates to Chapter 5', async ({ page }) => {
+  await seedChapterPrerequisites(page, path(3));
   await page.goto(path(3));
   for (let index = 0; index < 5; index++) {
     await page.getByRole('button', { name: 'Show Answer', exact: true }).click();

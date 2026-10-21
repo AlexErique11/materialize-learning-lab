@@ -2,14 +2,14 @@ import { ArrowRight, Diff, Layers, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { chapterPath, chapters, type ChapterDefinition } from '../chapterRegistry';
 import { Button } from '../../components/ui/Button';
-import { Dialog } from '../../components/ui/Dialog';
+import { ChapterCompletionDialog as CompletionDialog } from '../../components/lab/ChapterCompletionDialog';
 
 export function ChapterCompletionDialog({ chapter, open, onClose }: {
   chapter: ChapterDefinition; open: boolean; onClose: () => void;
 }) {
   const navigate = useNavigate();
   const nextChapter = chapters[chapters.findIndex(item => item.slug === chapter.slug) + 1];
-  return <Dialog open={open} onClose={onClose} title={`You finished Chapter ${chapter.number}`} eyebrow="Chapter complete" className="chapter-one-completion-dialog">
+  return <CompletionDialog chapter={chapter} open={open} onClose={onClose} className="chapter-one-completion-dialog">
     <div className="chapter-completion-intro">
       <div className="chapter-completion-copy">
         <h3>How signed changes build a relation</h3>
@@ -24,5 +24,5 @@ export function ChapterCompletionDialog({ chapter, open, onClose }: {
     </div>
     <div className="chapter-completion-takeaway"><strong>The key idea</strong><p>The current relation is the starting state plus the net signed diffs for each full row. Apply complete timestamp batches, and distinguish a change in copies from a change in row values.</p></div>
     {nextChapter && <div className="chapter-completion-next"><div><span className="eyebrow">Up next · Chapter {nextChapter.number}</span><p>{nextChapter.shortTitle}</p></div><Button data-dialog-primary aria-keyshortcuts="Enter" variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button></div>}
-  </Dialog>;
+  </CompletionDialog>;
 }

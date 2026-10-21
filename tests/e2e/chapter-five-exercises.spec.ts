@@ -101,8 +101,8 @@ for (const [exerciseIndex, exercise] of temporalExercises.entries()) {
     }
     if (exerciseIndex === 2) {
       await page.getByRole('button', { name: 'Finish chapter', exact: true }).click();
-      await expect(page.getByRole('dialog', { name: 'You finished Chapter 5' })).toBeVisible();
-      await page.getByRole('button', { name: 'Close You finished Chapter 5', exact: true }).click();
+      await expect(page.getByRole('dialog', { name: 'Exercise completed', exact: true })).toBeVisible();
+      await page.getByRole('button', { name: 'Close Exercise completed', exact: true }).click();
     } else {
       const button = page.getByRole('button', { name: `Exercise ${exerciseIndex + 2}`, exact: true });
       await expect(button).toBeVisible();

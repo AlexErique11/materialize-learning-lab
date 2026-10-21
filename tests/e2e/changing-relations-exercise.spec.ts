@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, test } from './fixtures';
+import { expect, seedChapterPrerequisites, test } from './fixtures';
 
 const exercisePath = '/labs/changing-relations/exercises/exercise-1';
 const check = (page: Page) => page.getByRole('button', { name: 'Check Answer', exact: true });
@@ -83,10 +83,10 @@ test('one inventory exercise reconstructs mixed changes, builds a conditional ba
   await expect(page.locator('.exercise-question')).toContainText('Exercise complete');
   await expect(nextQuestion(page)).toHaveCount(0);
   const finish = page.getByRole('button', { name: 'Finish chapter', exact: true });
-  const completion = page.getByRole('dialog', { name: 'You finished Chapter 1', exact: true });
+  const completion = page.getByRole('dialog', { name: 'Exercise completed', exact: true });
   await finish.click();
   await expect(completion).toBeVisible();
-  await completion.getByRole('button', { name: 'Close You finished Chapter 1', exact: true }).click();
+  await completion.getByRole('button', { name: 'Close Exercise completed', exact: true }).click();
   await expect(completion).not.toBeVisible();
   await expect(finish).toBeFocused();
   await expect(progress(page)).toHaveAttribute('value', '3');
@@ -134,6 +134,7 @@ test('Show Answer accepts and applies each solution like a correct manual answer
 
 test('chapter completion preserves the finished inventory, fits both themes, and opens Chapter 2', async ({ page, isMobile }, testInfo) => {
   test.setTimeout(60_000);
+  await seedChapterPrerequisites(page, exercisePath);
   await page.goto(exercisePath);
   const finish = page.getByRole('button', { name: 'Finish chapter', exact: true });
   const completion = page.getByRole('dialog', { name: 'You finished Chapter 1', exact: true });

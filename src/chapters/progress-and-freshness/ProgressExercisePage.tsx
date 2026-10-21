@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import { ExerciseFrame } from '../../components/lab/ExerciseFrame';
+import { ChapterCompletionDialog } from '../../components/lab/ChapterCompletionDialog';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
 import { useExerciseStages } from '../../hooks/useExerciseStages';
@@ -78,12 +79,12 @@ export function ProgressExercisePage({ chapter, navigation, exerciseIndex }: { c
       </fieldset>)}
       <Button onClick={() => setChoiceGroup(null)}>Done</Button>
     </Dialog>
-    <Dialog open={completionOpen} onClose={() => setCompletionOpen(false)} title="You finished Chapter 6" eyebrow="Chapter complete">
+    <ChapterCompletionDialog chapter={chapter} open={completionOpen} onClose={() => setCompletionOpen(false)}>
       <div className="progress-recap"><p>You distinguished progress guarantees from observations and located the first delayed stage.</p>
         <ul><li>A frontier F completes times strictly below F.</li><li>Inputs permit progress; maintained computation must still catch up.</li><li>Source delay, computation delay, and slow serving need different evidence.</li></ul>
         <p>Next, explore which complete moment a query can read.</p>
         <Button data-dialog-primary aria-keyshortcuts="Enter" variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button>
       </div>
-    </Dialog>
+    </ChapterCompletionDialog>
   </>;
 }

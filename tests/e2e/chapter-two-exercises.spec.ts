@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures';
+import { expect, seedChapterPrerequisites, test } from './fixtures';
 
 test('all Chapter 2 exercises support retries, hints, reveal, advancement and reset', async ({ page, isMobile }) => {
  test.setTimeout(60_000);
@@ -219,11 +219,11 @@ test('Next requires a correct answer or reveal, supports retries and opens the n
   if (following) {
    await page.getByRole('button', { name: `Exercise ${exerciseIndex + 2}`, exact: true }).click();
    await expect(page).toHaveURL(`/labs/incremental-maintenance/exercises/${following.slug}`);
-   await expect(page.locator('.exercise-time')).toContainText('t = 0');
+   await expect(page.locator('#main-content .exercise-time')).toContainText('t = 0');
    await page.goto(`/labs/incremental-maintenance/exercises/${exercise.slug}`);
   } else {
    await page.getByRole('button', { name: 'Finish chapter', exact: true }).click();
-   await page.getByRole('dialog', { name: 'You finished Chapter 2', exact: true }).getByRole('button', { name: 'Go to next chapter', exact: true }).click();
+   await page.getByRole('dialog', { name: 'Exercise completed', exact: true }).getByRole('button', { name: 'Go to next chapter', exact: true }).click();
    await expect(page).toHaveURL('/labs/views-indexes-materialized-views');
    await page.goto(`/labs/incremental-maintenance/exercises/${exercise.slug}`);
   }
@@ -260,6 +260,7 @@ test('Next requires a correct answer or reveal, supports retries and opens the n
 
 for (const action of ['Check Answer', 'Show Answer']) {
  test(`second exercise opens the completion popup after ${action} on the final question`, async ({ page }, testInfo) => {
+  await seedChapterPrerequisites(page, '/labs/incremental-maintenance/exercises/exercise-3');
   await page.goto('/labs/incremental-maintenance/exercises/exercise-3');
   for (let stage = 0; stage < 3; stage++) {
    const next = page.getByRole('button', { name: stage === 2 ? 'Finish chapter' : 'Next question', exact: true });

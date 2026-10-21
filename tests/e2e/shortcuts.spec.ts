@@ -1,4 +1,4 @@
-import { expect, test } from './fixtures';
+import { expect, seedChapterPrerequisites, test } from './fixtures';
 
 test.use({ reducedMotion: 'reduce' });
 
@@ -193,12 +193,12 @@ test('answer inputs keep editing keys and Enter submits one correct prediction',
     await page.locator('#main-content').focus();
     await page.keyboard.press('ArrowRight');
   }
-  await expect(page.getByRole('dialog', { name: 'You finished Chapter 1' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Exercise completed', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('dialog')).toHaveCount(0);
   await page.locator('#main-content').focus();
   await page.keyboard.press('Enter');
-  await expect(page.getByRole('dialog', { name: 'You finished Chapter 1' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Exercise completed', exact: true })).toBeVisible();
   await expect(page).toHaveURL('/labs/changing-relations/exercises/exercise-1');
 });
 
@@ -228,6 +228,7 @@ const chapterCompletions = [
 
 for (const [index, [chapter, exercise, nextChapter]] of chapterCompletions.entries()) {
   test(`${chapter}: chapter completion supports Enter and Escape`, async ({ page }) => {
+    await seedChapterPrerequisites(page, `/labs/${chapter}/exercises/exercise-${exercise}`);
     await page.goto(`/labs/${chapter}/exercises/exercise-${exercise}`);
     await page.locator('#main-content').focus();
     const finish = page.getByRole('button', { name: 'Finish chapter', exact: true });

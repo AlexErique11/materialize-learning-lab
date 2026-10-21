@@ -5,7 +5,7 @@ import type { ChapterDefinition } from '../chapterRegistry';
 import { chapterPath, chapters } from '../chapterRegistry';
 import { ExerciseAnswers } from './ExerciseAnswers';
 import { ExerciseFrame } from '../../components/lab/ExerciseFrame';
-import { Dialog } from '../../components/ui/Dialog';
+import { ChapterCompletionDialog } from '../../components/lab/ChapterCompletionDialog';
 import { Button } from '../../components/ui/Button';
 import { useExerciseStages } from '../../hooks/useExerciseStages';
 import { MaintenancePanels } from './MaintenancePanels';
@@ -247,11 +247,10 @@ export function MaintenanceExercisePage({
         }}
       />
 
-      <Dialog
+      <ChapterCompletionDialog
+        chapter={chapter}
         open={completionOpen}
         onClose={() => setCompletionOpen(false)}
-        title={`You finished Chapter ${chapter.number}`}
-        eyebrow="Chapter complete"
         className="chapter-completion-dialog"
       >
         <div className="chapter-completion-intro">
@@ -318,7 +317,7 @@ export function MaintenanceExercisePage({
             </Button>
           </div>
         )}
-      </Dialog>
+      </ChapterCompletionDialog>
     </>
   );
 }

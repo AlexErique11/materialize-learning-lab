@@ -2,6 +2,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { coreChapters } from '../../src/chapters/chapterRegistry';
 import { chapterContentPath, getChapterPages } from '../../src/chapters/chapterOutline';
+import { LAB_PROGRESS_KEY } from '../../src/progress/labProgress';
 
 test.use({ reducedMotion: 'reduce' });
 const chapters = coreChapters.filter(chapter => getChapterPages(chapter).length > 0);
@@ -78,6 +79,50 @@ async function finishExercise(page: Page) {
 }
 
 for (const chapter of chapters) {
+  for (const prerequisitesComplete of [false, true]) {
+    test(`${chapter.slug}: last exercise recap ${prerequisitesComplete ? 'celebrates a fully completed chapter' : 'keeps unfinished activities outstanding'}`, async ({ page }) => {
+      const activities = getChapterPages(chapter);
+      const lastExercise = activities.filter(activity => activity.sectionSlug === 'exercises').at(-1)!;
+      const path = chapterContentPath(chapter, lastExercise);
+      const remaining = activities.filter(activity => activity !== lastExercise);
+      await page.addInitScript(({ key, completed }) => localStorage.setItem(key, JSON.stringify({ version: 1, completed })), {
+        key: LAB_PROGRESS_KEY,
+        completed: prerequisitesComplete ? remaining.map(activity => chapterContentPath(chapter, activity)) : [],
+      });
+      await page.clock.install();
+      await page.goto(path);
+      await finishExercise(page);
+      const finish = page.getByRole('button', { name: 'Finish chapter', exact: true });
+      await finish.click();
+      const dialog = page.getByRole('dialog', { name: prerequisitesComplete ? `You finished Chapter ${chapter.number}` : 'Exercise completed', exact: true });
+      await expect(dialog).toBeVisible();
+      await expect(progress(page)).toHaveAttribute('value', prerequisitesComplete ? '1' : '0');
+      if (prerequisitesComplete) {
+        await expect(dialog).toContainText('Chapter complete');
+        await expect(dialog.getByRole('button', { name: 'Go to next chapter', exact: true })).toBeFocused();
+      } else {
+        await expect(dialog).toContainText('Chapter in progress');
+        await expect(dialog).toContainText('You have left:');
+        await expect(dialog).not.toContainText(`You finished Chapter ${chapter.number}`);
+        const unfinished = dialog.getByRole('list', { name: 'Remaining chapter activities' });
+        await expect(unfinished.getByRole('link')).toHaveCount(remaining.length);
+        for (const activity of remaining) {
+          await expect(unfinished.getByRole('link', { name: activity.title, exact: true })).toHaveAttribute('href', chapterContentPath(chapter, activity));
+        }
+        await expect(dialog.getByRole('button', { name: 'Chapter overview', exact: true })).toHaveClass(/button-secondary/);
+        const nextChapter = dialog.getByRole('button', { name: 'Go to next chapter', exact: true });
+        await expect(nextChapter).toHaveClass(/button-primary/);
+        await expect(nextChapter).toBeFocused();
+      }
+      await page.keyboard.press('Escape');
+      await expect(dialog).not.toBeVisible();
+      await expect(finish).toBeFocused();
+      await finish.click();
+      await page.keyboard.press('Enter');
+      await expect(page).toHaveURL(`/labs/${coreChapters[chapter.number]!.slug}`);
+    });
+  }
+
   test(`${chapter.slug}: all tutorials retain completion after reset and reload`, async ({ page }) => {
     test.setTimeout(90_000);
     await page.clock.install();
@@ -147,6 +192,30 @@ for (const chapter of chapters) {
     }
   });
 }
+
+test('chapter completion still requires earlier exercises after all tutorials are complete', async ({ page }) => {
+  const chapter = chapters.find(item => item.slug === 'incremental-maintenance')!;
+  const activities = getChapterPages(chapter);
+  const exercises = activities.filter(activity => activity.sectionSlug === 'exercises');
+  const missingPath = chapterContentPath(chapter, exercises[0]!);
+  const lastPath = chapterContentPath(chapter, exercises.at(-1)!);
+  await page.addInitScript(({ key, completed }) => localStorage.setItem(key, JSON.stringify({ version: 1, completed })), {
+    key: LAB_PROGRESS_KEY,
+    completed: activities.map(activity => chapterContentPath(chapter, activity)).filter(path => path !== missingPath && path !== lastPath),
+  });
+  await page.goto(lastPath);
+  await finishExercise(page);
+  await page.getByRole('button', { name: 'Finish chapter', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: 'Exercise completed', exact: true });
+  await expect(dialog).toBeVisible();
+  await expect(progress(page)).toHaveAttribute('value', '0');
+  const remaining = dialog.getByRole('list', { name: 'Remaining chapter activities' }).getByRole('link');
+  await expect(remaining).toHaveCount(1);
+  await expect(remaining).toHaveAttribute('href', missingPath);
+  await dialog.getByRole('button', { name: 'Chapter overview', exact: true }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL('/labs/incremental-maintenance');
+});
 
 test('both bars count whole chapters while chapter badges, activity dots and other tabs stay in sync', async ({ page, context, isMobile }, testInfo) => {
   test.setTimeout(60_000);

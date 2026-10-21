@@ -1,5 +1,15 @@
-import { expect, test as base } from '@playwright/test';
+import { expect, test as base, type Page } from '@playwright/test';
 import { TOUR_SEEN_KEY } from '../../src/components/walkthrough/walkthroughStorage';
+import { findChapter } from '../../src/chapters/chapterRegistry';
+import { chapterContentPath, getChapterPages } from '../../src/chapters/chapterOutline';
+import { LAB_PROGRESS_KEY } from '../../src/progress/labProgress';
+
+export async function seedChapterPrerequisites(page: Page, activityPath: string) {
+  const chapter = findChapter(activityPath.split('/')[2]);
+  if (!chapter) throw new Error(`Unknown chapter for ${activityPath}`);
+  const completed = getChapterPages(chapter).map(activity => chapterContentPath(chapter, activity)).filter(path => path !== activityPath);
+  await page.addInitScript(({ key, completed }) => localStorage.setItem(key, JSON.stringify({ version: 1, completed })), { key: LAB_PROGRESS_KEY, completed });
+}
 
 export const test = base.extend<{ auditBrowser: void; tourSeen: boolean }>({
   tourSeen: [true, { option: true }],

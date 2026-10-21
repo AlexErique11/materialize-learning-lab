@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { ArrowRight, Database, FileInput, KeyRound } from 'lucide-react';
 import { ExerciseFrame } from '../../components/lab/ExerciseFrame';
 import { Button } from '../../components/ui/Button';
-import { Dialog } from '../../components/ui/Dialog';
+import { ChapterCompletionDialog } from '../../components/lab/ChapterCompletionDialog';
 import { useExerciseStages } from '../../hooks/useExerciseStages';
 import { chapterPath, chapters, type ChapterDefinition } from '../chapterRegistry';
 import { ingestionExercises } from './exercise-scenarios';
@@ -78,8 +78,8 @@ export function IngestionExercisePage({ chapter, navigation, exerciseIndex }: {
         setResetVersion((version) => version + 1);
         setActiveStage(exercise.questions[0]!.kind === 'snapshot' ? 'source' : 'record');
       }} />
-    <Dialog open={completionOpen} onClose={() => setCompletionOpen(false)} title="You finished Chapter 4"
-      eyebrow="Chapter complete" className="chapter-completion-dialog ingestion-completion-dialog">
+    <ChapterCompletionDialog chapter={chapter} open={completionOpen} onClose={() => setCompletionOpen(false)}
+      className="chapter-completion-dialog ingestion-completion-dialog">
       <div className="chapter-completion-intro">
         <div className="chapter-completion-copy"><h3>From incoming data to current rows</h3>
           <p>You followed data from an initial snapshot into a maintained table, and chose how incoming records become changes.</p></div>
@@ -94,6 +94,6 @@ export function IngestionExercisePage({ chapter, navigation, exerciseIndex }: {
         <p>The producer’s contract determines how records become rows. Correct identity keeps updates from becoming additional products.</p></div>
       {nextChapter && <div className="chapter-completion-next"><div><span className="eyebrow">Up next · Chapter {nextChapter.number}</span><p>{nextChapter.shortTitle}</p></div>
         <Button data-dialog-primary aria-keyshortcuts="Enter" variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button></div>}
-    </Dialog>
+    </ChapterCompletionDialog>
   </div>;
 }

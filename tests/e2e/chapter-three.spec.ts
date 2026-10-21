@@ -311,7 +311,7 @@ test('manual answers, incorrect retries, hints and the final design work', async
       await expect(page.getByTestId('object-query-result')).toContainText('North $170');
       if (!isMobile) await page.screenshot({ path: test.info().outputPath('combined-exercise-final.png') });
       await page.getByRole('button', { name: 'Finish chapter', exact: true }).click();
-      await expect(page.getByRole('dialog', { name: 'You finished Chapter 3' })).toBeVisible();
+      await expect(page.getByRole('dialog', { name: 'Exercise completed', exact: true })).toBeVisible();
       await page.keyboard.press('Escape');
       await expect(page.getByRole('button', { name: 'Finish chapter', exact: true })).toBeFocused();
     }

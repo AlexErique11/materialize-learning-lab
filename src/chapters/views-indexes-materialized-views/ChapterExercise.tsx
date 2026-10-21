@@ -4,6 +4,7 @@ import { ArrowRight, ChevronDown } from 'lucide-react';
 import type { ChapterDefinition } from '../chapterRegistry';
 import { chapterPath, chapters } from '../chapterRegistry';
 import { ExerciseFrame } from '../../components/lab/ExerciseFrame';
+import { ChapterCompletionDialog } from '../../components/lab/ChapterCompletionDialog';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
 import { useExerciseStages } from '../../hooks/useExerciseStages';
@@ -62,12 +63,12 @@ export function ObjectChapterExercise({ chapter, navigation, exerciseIndex }: { 
       </fieldset>
       <Button onClick={() => setAnswersOpen(false)}>Done</Button>
     </Dialog>
-    <Dialog open={completionOpen} onClose={() => setCompletionOpen(false)} title="You finished Chapter 3" eyebrow="Chapter complete">
+    <ChapterCompletionDialog chapter={chapter} open={completionOpen} onClose={() => setCompletionOpen(false)}>
       <div className="object-recap"><p>You designed one transformation with two serving clusters.</p>
         <ul><li><strong>Regular views</strong> save SQL definitions.</li><li><strong>Indexes</strong> maintain complete results in their own cluster’s memory.</li><li><strong>Materialized views</strong> maintain durable output readable across clusters.</li></ul>
         <p>Removing a serving index leaves the materialized view and its durable result available. Maintaining that output still uses transform memory; creation and restarts require hydration.</p>
         {nextChapter && <Button data-dialog-primary aria-keyshortcuts="Enter" variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button>}
       </div>
-    </Dialog>
+    </ChapterCompletionDialog>
   </>;
 }

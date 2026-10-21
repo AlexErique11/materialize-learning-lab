@@ -139,6 +139,12 @@ including storage changes from other tabs. A chapter counts only after all of it
 authored tutorials and exercises are complete. Both bars use the total number of
 core chapters as their denominator; empty future chapters cannot earn completion,
 and challenges are excluded.
+`components/lab/ChapterCompletionDialog` uses that same saved chapter calculation.
+Finishing the last exercise shows the existing chapter recap only when every
+tutorial and exercise is complete. Otherwise it confirms the exercise, lists
+unfinished activities under "You have left:", and offers a secondary Chapter overview
+button. Go to next chapter is the primary action and the Enter shortcut destination.
+Activity layouts stay unchanged.
 Finishing a guided run earns tutorial completion; normal playback does not.
 `ExerciseFrame` records completion only when all questions are accepted, including
 Show Answer. Reset, replay, navigation and reload preserve earned completion.
