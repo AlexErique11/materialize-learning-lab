@@ -18,11 +18,10 @@ describe('chapter registry', () => {
     for (const chapter of chapters) expect(chapter.slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
   });
 
-  it('keeps twelve core chapters separate from optional advanced chapter thirteen', () => {
-    expect(coreChapters).toHaveLength(12);
+  it('contains seven core chapters and no optional advanced chapters', () => {
+    expect(coreChapters).toHaveLength(7);
     expect(coreChapters.every((chapter) => !chapter.optional)).toBe(true);
-    expect(advancedChapters).toHaveLength(1);
-    expect(advancedChapters[0]).toMatchObject({ number: 13, optional: true });
+    expect(advancedChapters).toHaveLength(0);
   });
 
   it('matches the source-of-truth curriculum titles and order', () => {

@@ -125,49 +125,6 @@ export const chapters: readonly ChapterDefinition[] = [
     shortTitle: 'Consistent Reads',
     description: 'Choose a readable moment and weigh freshness against waiting.',
   },
-  {
-    number: 8,
-    slug: 'maintained-state',
-    title: 'Maintained State — Why Small Results Can Be Expensive',
-    shortTitle: 'Maintained State',
-    description: 'Identify the input and intermediate state behind a small query result.',
-  },
-  {
-    number: 9,
-    slug: 'query-optimization',
-    title: 'Query Optimization — Change the Plan, Preserve the Answer',
-    shortTitle: 'Query Optimization',
-    description: 'Explore query shapes, index choices, and plans while preserving the answer.',
-  },
-  {
-    number: 10,
-    slug: 'clusters-replicas-recovery',
-    title: 'Clusters, Replicas, and Recovery',
-    shortTitle: 'Clusters, Replicas & Recovery',
-    description: 'Place workloads and follow a replica through hydration and catch-up.',
-  },
-  {
-    number: 11,
-    slug: 'live-applications-subscribe',
-    title: 'Building Live Applications with SUBSCRIBE',
-    shortTitle: 'Live Applications with SUBSCRIBE',
-    description: 'Explore snapshots, result changes, and progress in a live application.',
-  },
-  {
-    number: 12,
-    slug: 'sinks-downstream-delivery',
-    title: 'Sinks and Reliable Downstream Delivery',
-    shortTitle: 'Sinks & Downstream Delivery',
-    description: 'Follow changing results downstream and reason about reliable delivery.',
-  },
-  {
-    number: 13,
-    slug: 'recursive-queries',
-    title: 'Recursive Queries and Changing Graphs',
-    shortTitle: 'Recursive Queries',
-    description: 'Explore fixed points and recursive results as graph edges change.',
-    optional: true,
-  },
 ];
 
 export const coreChapters = chapters.filter((chapter) => !chapter.optional);

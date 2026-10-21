@@ -129,7 +129,7 @@ export const objectLectures: readonly ObjectLecture[] = [
   },
   {
     title: 'Lecture 3', description: 'Choose what to maintain for one or several serving clusters.',
-    objective: 'Keep intermediate views as SQL building blocks, then choose local maintenance or shared durable output for the final result. Maintaining a materialized view still needs transform memory; creation and restarts require hydration. Chapter 10 explores recovery.',
+    objective: 'Keep intermediate views as SQL building blocks, then choose local maintenance or shared durable output for the final result. Maintaining a materialized view still needs transform memory; creation and restarts require hydration.',
     sql: stackedSql, initial: makeSnapshot(), showClusterB: true, explore: true,
     introductions: [
       { title: 'Build a query from smaller named queries', target: 'definitions', explanation: ['A view can use another view. Here, ', ref('view', 'order_base'), ' selects the order columns, ', ref('view', 'order_enriched'), ' filters out negative amounts, and ', ref('amount', 'revenue'), ' groups the remaining ', ref('view', 'orders'), ' by ', ref('region', 'region'), '. These intermediate views organize SQL. Saving their definitions does not require keeping a separate result for each one.'], example: [ref('view', 'orders'), ' → ', ref('view', 'order_base'), ' → ', ref('view', 'order_enriched'), ' → ', ref('amount', 'revenue')] },

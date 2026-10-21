@@ -3,7 +3,7 @@ export interface ChallengeDefinition {
   readonly slug: string;
   readonly title: string;
   readonly description: string;
-  readonly afterChapter: number;
+  readonly afterChapter?: number;
 }
 
 // Capstones match CURRICULUM.md and the prototype catalog.
@@ -21,14 +21,12 @@ export const challenges: readonly ChallengeDefinition[] = [
     title: 'The Dashboard Is Fresh but Expensive',
     description:
       'Combine maintained state, freshness, and query plans to rethink a costly dashboard.',
-    afterChapter: 9,
   },
   {
     number: 3,
     slug: 'recover-without-corrupting-delivery',
     title: 'Recover Without Corrupting Delivery',
     description: 'Connect recovery, live-client reconnection, and reliable downstream delivery.',
-    afterChapter: 12,
   },
 ];
 

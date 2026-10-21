@@ -27,7 +27,7 @@ export function ChallengesPage() {
             </p>
             <div className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-4">
               <span className="text-xs text-text-muted">
-                After chapter {String(challenge.afterChapter).padStart(2, '0')}
+                {challenge.afterChapter !== undefined && <>After chapter {String(challenge.afterChapter).padStart(2, '0')}</>}
               </span>
               <ArrowRight size={17} aria-hidden="true" />
             </div>

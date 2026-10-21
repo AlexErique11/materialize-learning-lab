@@ -3,12 +3,14 @@ import { coreChapters } from '../chapters/chapterRegistry';
 import { challenges, challengePath, findChallenge } from './challengeRegistry';
 
 describe('challenge registry', () => {
-  it('has three unique capstones with existing prerequisite chapters', () => {
+  it('has three unique capstones whose chapter prerequisites exist when specified', () => {
     expect(challenges).toHaveLength(3);
     expect(new Set(challenges.map((challenge) => challenge.slug)).size).toBe(3);
     for (const challenge of challenges) {
       expect(challenge.slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
-      expect(coreChapters.some((chapter) => chapter.number === challenge.afterChapter)).toBe(true);
+      if (challenge.afterChapter !== undefined) {
+        expect(coreChapters.some((chapter) => chapter.number === challenge.afterChapter)).toBe(true);
+      }
     }
   });
 

@@ -40,8 +40,10 @@ function SidebarContent({ compact = false }: { compact?: boolean }) {
       )}
       <nav aria-label="Chapters">
         <ChapterLinks items={coreChapters} compact={compact} />
-        {!compact && <p className="eyebrow mb-2 mt-6">Optional · advanced</p>}
-        <ChapterLinks items={advancedChapters} compact={compact} />
+        {advancedChapters.length > 0 && <>
+          {!compact && <p className="eyebrow mb-2 mt-6">Optional · advanced</p>}
+          <ChapterLinks items={advancedChapters} compact={compact} />
+        </>}
       </nav>
     </div>
   );

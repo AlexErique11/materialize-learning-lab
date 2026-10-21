@@ -254,7 +254,7 @@ test('chapter navigation remains accessible when the sidebar is collapsed', asyn
     await navigationToggle.focus();
     await page.keyboard.press('Enter');
   } else {
-    const content = page.locator('.learning-area-content');
+    const content = page.locator('#main-content .learning-area-content');
     const expandedBounds = await content.boundingBox();
     expect(expandedBounds).not.toBeNull();
     const collapse = sidebar.getByRole('button', { name: 'Collapse chapter navigation' });
@@ -298,7 +298,7 @@ test('chapter navigation remains accessible when the sidebar is collapsed', asyn
   await expect(page).toHaveURL(chapterPath(secondChapter));
   await expect(page.getByRole('heading', { name: secondChapter.shortTitle, exact: true })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Page navigation' })).toHaveCount(0);
-  if (isMobile) await expect(page.locator('.mobile-sidebar')).not.toHaveAttribute('open', '');
+  if (isMobile) await expect(sidebar.locator('.mobile-sidebar')).not.toHaveAttribute('open', '');
   else
     await expect(
       sidebar.getByRole('link', { name: `02 ${secondChapter.shortTitle}`, exact: true }),
@@ -479,6 +479,12 @@ test('unknown locations show useful not-found pages', async ({ page }) => {
     ['/missing-page', 'Page not found'],
     ['/labs/not-a-chapter', 'Chapter not found'],
     ['/labs/not-a-chapter/workspace', 'Chapter not found'],
+    ['/labs/maintained-state', 'Chapter not found'],
+    ['/labs/query-optimization', 'Chapter not found'],
+    ['/labs/clusters-replicas-recovery', 'Chapter not found'],
+    ['/labs/live-applications-subscribe', 'Chapter not found'],
+    ['/labs/sinks-downstream-delivery', 'Chapter not found'],
+    ['/labs/recursive-queries', 'Chapter not found'],
     [`${chapterPath(firstChapter)}/workspace`, 'Page not found'],
     [`${chapterPath(firstChapter)}/tutorial/lecture-3`, 'Page not found'],
     [`${chapterPath(firstChapter)}/exercises/lecture-1`, 'Page not found'],

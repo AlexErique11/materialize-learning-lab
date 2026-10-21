@@ -11,7 +11,7 @@ export function FaqPage() {
       <section className="learning-path-faq" aria-label="Frequently asked questions">
         <details>
           <summary>Where should I start?</summary>
-          <p>Start with <Link to="/labs">Guided labs</Link>. The twelve core chapters follow a learning sequence, with an optional advanced chapter after them.</p>
+          <p>Start with <Link to="/labs">Guided labs</Link>. The seven chapters follow a learning sequence.</p>
         </details>
         <details>
           <summary>What is the difference between labs and challenges?</summary>
