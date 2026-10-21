@@ -26,8 +26,8 @@ async function finishGuide(page: Page) {
 test('timestamp playback replaces values as complete batches and revisits the seed and history', async ({ page, isMobile }, testInfo) => {
   await page.goto(lecturePath);
   const progress = page.getByRole('progressbar', { name: 'Changes progress' });
-  const previous = page.getByRole('button', { name: 'Previous timestamp', exact: true });
-  const next = page.getByRole('button', { name: 'Next timestamp', exact: true });
+  const previous = page.getByRole('button', { name: 'Previous change', exact: true });
+  const next = page.getByRole('button', { name: 'Next change', exact: true });
   const relation = page.getByRole('table', { name: 'Current relation', exact: true, includeHidden: true });
   const ledgerRows = page.locator('.relation-ledger tbody tr');
   await expect(progress).toHaveAttribute('max', '3');
@@ -122,7 +122,7 @@ test('Run and Pause operate on three whole timestamps and do not finish the tuto
   await page.goto(lecturePath);
   await page.clock.install();
   await page.getByRole('button', { name: 'Run', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'Previous timestamp', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Previous change', exact: true })).toBeDisabled();
   await page.clock.fastForward(2200);
   await expect(page.locator('.relation-current tbody tr')).toHaveText(['A$101', 'B$181', 'C$202']);
   await page.getByRole('button', { name: 'Pause', exact: true }).click();
@@ -172,7 +172,7 @@ test('all playback and guide states fit desktop screens in light and dark themes
     await page.setViewportSize(viewport);
     await page.goto(lecturePath);
     for (const time of [0, 1, 2, 3]) {
-      if (time > 0) await page.getByRole('button', { name: 'Next timestamp', exact: true }).click();
+      if (time > 0) await page.getByRole('button', { name: 'Next change', exact: true }).click();
       const size = await page.evaluate(() => ({ height: document.documentElement.scrollHeight, width: document.documentElement.scrollWidth, viewportHeight: innerHeight, viewportWidth: innerWidth }));
       expect(size.height).toBeLessThanOrEqual(size.viewportHeight);
       expect(size.width).toBeLessThanOrEqual(size.viewportWidth);

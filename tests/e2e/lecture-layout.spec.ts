@@ -78,7 +78,7 @@ test('Chapter 1 ledgers share Lecture 1 presentation and keep history usable in 
       }
       await expect(ledger.locator('thead .relation-column-label')).toHaveText([/^Signed diff/, /^Row/]);
       for (let time = 0; time <= 3; time++) {
-        if (time > 0) await page.getByRole('button', { name: 'Next timestamp', exact: true }).click();
+        if (time > 0) await page.getByRole('button', { name: 'Next change', exact: true }).click();
         await expect.poll(workspaceLayout).toEqual(chapterOneLayout);
         await expect(ledger.locator('tbody tr')).toHaveCount(4);
         expect(Math.abs((await ledger.boundingBox())!.height - startingHeight)).toBeLessThanOrEqual(1);
@@ -88,7 +88,7 @@ test('Chapter 1 ledgers share Lecture 1 presentation and keep history usable in 
         await expect(ledger.locator('tbody tr[data-mobile-current="true"]')).toHaveCount(time === 0 ? 3 : time === 3 ? 4 : 2);
       }
       await expect(page.getByRole('button', { name: /^Inspect t =/ })).toHaveCount(0);
-      const previous = page.getByRole('button', { name: 'Previous timestamp', exact: true });
+      const previous = page.getByRole('button', { name: 'Previous change', exact: true });
       await previous.focus(); await page.keyboard.press('Enter'); await page.keyboard.press('Enter');
       await expect(page.getByTestId('logical-time').locator('strong')).toHaveText('t = 1');
       await expect(page.getByRole('progressbar', { name: 'Changes progress' })).toHaveAttribute('value', '1');
@@ -142,8 +142,8 @@ test('all lecture trackers follow the displayed change when navigating back', as
     for (const lecture of [1, 2]) {
       await page.goto(`/labs/${chapter}/tutorial/lecture-${lecture}`);
       const timestamp = chapter === 'changing-relations' && lecture === 2;
-      const next = page.getByRole('button', { name: timestamp ? 'Next timestamp' : 'Next change', exact: true });
-      const previous = page.getByRole('button', { name: timestamp ? 'Previous timestamp' : 'Previous change', exact: true });
+      const next = page.getByRole('button', { name: 'Next change', exact: true });
+      const previous = page.getByRole('button', { name: 'Previous change', exact: true });
       const progress = page.getByRole('progressbar', { name: 'Changes progress' });
       await next.click(); await next.click();
       await expect(progress).toHaveAttribute('value', '2');

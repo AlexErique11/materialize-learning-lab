@@ -7,6 +7,12 @@ function ShortcutRow({ label, keys }: { label: string; keys: string }) {
   return <div className="shortcut-row"><dt>{label}</dt><dd><ShortcutKeys shortcuts={keys} /></dd></div>;
 }
 
+function positionPanel(panel: HTMLElement, trigger: HTMLElement) {
+  const bounds = trigger.getBoundingClientRect();
+  panel.style.left = `${Math.max(12, Math.min(bounds.right - panel.offsetWidth, innerWidth - panel.offsetWidth - 12))}px`;
+  panel.style.top = `${Math.max(12, Math.min(bounds.bottom + 8, innerHeight - panel.offsetHeight - 12))}px`;
+}
+
 export function ShortcutHelp({ lecture, showReference, onOpenChange }: {
   lecture: boolean; showReference: boolean; onOpenChange: (open: boolean) => void;
 }) {
@@ -20,16 +26,8 @@ export function ShortcutHelp({ lecture, showReference, onOpenChange }: {
     const panel = panelRef.current;
     const trigger = triggerRef.current;
     if (!panel || !trigger) return;
-    const position = () => {
-      const bounds = trigger.getBoundingClientRect();
-      panel.style.left = `${Math.max(12, Math.min(bounds.right - panel.offsetWidth, innerWidth - panel.offsetWidth - 12))}px`;
-      panel.style.top = `${Math.max(12, Math.min(bounds.bottom + 8, innerHeight - panel.offsetHeight - 12))}px`;
-    };
+    const position = () => positionPanel(panel, trigger);
     position();
-    animateMotion(panel, 'shortcut-help', [
-      { opacity: 0, transform: 'translateY(-3px) scale(0.98)' },
-      { opacity: 1, transform: 'translateY(0) scale(1)' },
-    ], 160);
     window.addEventListener('resize', position);
     window.addEventListener('scroll', position, true);
     return () => {
@@ -40,7 +38,18 @@ export function ShortcutHelp({ lecture, showReference, onOpenChange }: {
 
   return <>
     <button ref={triggerRef} className="shortcut-help-trigger" type="button" popoverTarget={id}
-      aria-label="Keyboard shortcuts" aria-haspopup="dialog" aria-expanded={open} aria-controls={id}>
+      aria-label="Keyboard shortcuts" aria-haspopup="dialog" aria-expanded={open} aria-controls={id}
+      onClick={event => {
+        event.preventDefault();
+        const panel = panelRef.current;
+        if (!panel || !panel.togglePopover()) return;
+        // Native toggle events arrive after a paint; position in the opening action.
+        positionPanel(panel, event.currentTarget);
+        animateMotion(panel, 'shortcut-help', [
+          { opacity: 0, transform: 'translateY(-3px) scale(0.98)' },
+          { opacity: 1, transform: 'translateY(0) scale(1)' },
+        ], 160);
+      }}>
       <Keyboard size={16} aria-hidden="true" />
       <span>Shortcuts</span>
     </button>

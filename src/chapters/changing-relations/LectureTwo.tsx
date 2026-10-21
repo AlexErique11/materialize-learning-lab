@@ -48,8 +48,8 @@ export function LectureTwo({ chapter, navigation }: { chapter: ChapterDefinition
           <ActivityCompletion complete={finished} kind="tutorial" />
           <div>
             {inspectingHistory && <Button onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
-            <Button aria-label="Previous timestamp" aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || state.selectedTime === 0} onClick={() => dispatch({ type: 'previous-change' })}><ArrowLeft size={14} aria-hidden="true" /><span>Previous<span className="relation-playback-kind"> timestamp</span></span></Button>
-            <Button aria-label="Next timestamp" aria-keyshortcuts="ArrowRight" data-walkthrough="next-change" disabled={state.guided || state.playing || state.selectedTime === lectureTwoBatches.length} onClick={() => dispatch({ type: 'next-change' })}><span>Next<span className="relation-playback-kind"> timestamp</span></span><ArrowRight size={14} aria-hidden="true" /></Button>
+            <Button aria-label="Previous change" aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || state.selectedTime === 0} onClick={() => dispatch({ type: 'previous-change' })}><ArrowLeft size={14} aria-hidden="true" /><span>Previous<span className="relation-playback-kind"> change</span></span></Button>
+            <Button aria-label="Next change" aria-keyshortcuts="ArrowRight" data-walkthrough="next-change" disabled={state.guided || state.playing || state.selectedTime === lectureTwoBatches.length} onClick={() => dispatch({ type: 'next-change' })}><span>Next<span className="relation-playback-kind"> change</span></span><ArrowRight size={14} aria-hidden="true" /></Button>
           </div>
         </div>
       } />

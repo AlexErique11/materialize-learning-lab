@@ -5,6 +5,39 @@ test.use({ reducedMotion: 'reduce' });
 const chapters = ['changing-relations', 'incremental-maintenance', 'views-indexes-materialized-views',
   'getting-data-in', 'time-in-materialize', 'progress-and-freshness'];
 
+test('the first shortcut opening is positioned before its first visible frame', async ({ page }) => {
+  for (const section of ['tutorial/lecture-2', 'exercises/exercise-1']) {
+    await page.goto(`/labs/changing-relations/${section}`);
+    await page.evaluate(() => {
+      const frames: { x: number; y: number }[] = [];
+      (window as typeof window & { shortcutOpeningFrames: typeof frames }).shortcutOpeningFrames = frames;
+      document.addEventListener('beforetoggle', event => {
+        const panel = event.target as HTMLElement;
+        if ((event as ToggleEvent).newState !== 'open' || !panel.matches('.shortcut-help-panel')) return;
+        const sample = () => {
+          if (!panel.matches(':popover-open')) return;
+          if (getComputedStyle(panel).visibility !== 'hidden') {
+            const { x, y } = panel.getBoundingClientRect();
+            frames.push({ x, y });
+          }
+          if (frames.length < 3) requestAnimationFrame(sample);
+        };
+        requestAnimationFrame(sample);
+      }, true);
+    });
+    await page.getByRole('button', { name: 'Keyboard shortcuts', exact: true }).click();
+    const panel = page.getByRole('dialog', { name: 'Keyboard shortcuts', exact: true });
+    await expect(panel).toBeVisible();
+    await expect.poll(() => page.evaluate(() => (window as typeof window & { shortcutOpeningFrames: unknown[] }).shortcutOpeningFrames.length)).toBe(3);
+    const finalBounds = (await panel.boundingBox())!;
+    const frames = await page.evaluate(() => (window as typeof window & { shortcutOpeningFrames: { x: number; y: number }[] }).shortcutOpeningFrames);
+    for (const frame of frames) {
+      expect(frame.x).toBe(finalBounds.x);
+      expect(frame.y).toBe(finalBounds.y);
+    }
+  }
+});
+
 for (const chapter of chapters) {
   test(`${chapter}: shortcut reference is contextual and does not move the workspace`, async ({ page, isMobile }) => {
     for (const section of ['tutorial/lecture-1', 'exercises/exercise-1']) {

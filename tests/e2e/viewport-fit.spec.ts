@@ -47,7 +47,7 @@ test('lectures and exercises keep active information and controls on screen', as
           if (phase < 2) await page.getByRole('button', { name: 'Next question', exact: true }).click();
         }
       } else {
-        const next = page.getByRole('button', { name: path.endsWith('lecture-2') ? 'Next timestamp' : 'Next change', exact: true });
+        const next = page.getByRole('button', { name: 'Next change', exact: true });
         while (await next.isEnabled()) { await next.click(); await expectFits(page); }
       }
       if (isMobile && !path.includes('incremental-maintenance')) {

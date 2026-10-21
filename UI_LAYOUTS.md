@@ -117,7 +117,8 @@ centered over Start guided run. Alignment follows toolbar and sidebar resizing
 without moving the header or workspace; narrow screens keep help clear of the title.
 Shortcuts and Controls tour share the same purple border hover and global button transition.
 `ShortcutHelp` opens a nonmodal native popover with the current lecture or exercise
-shortcuts, plus guided-run or chapter-completion controls. Escape, the close button,
+shortcuts, plus guided-run or chapter-completion controls. Its opening action positions
+the panel before the first paint; resize and scroll keep it anchored. Escape, the close button,
 and outside clicks dismiss it. Page shortcuts pause while the reference is open;
 opening or closing it does not move the title, controls, metrics, or questions.
 Shortcut guidance appears only in this reference; action buttons do not show
