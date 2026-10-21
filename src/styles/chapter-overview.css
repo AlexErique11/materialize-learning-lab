@@ -29,6 +29,7 @@
 }
 
 .chapter-overview {
+  container: chapter-overview / inline-size;
   --overview-accent: #5528e9;
   min-height: calc(100dvh - var(--header-height));
   padding: 20px 36px 28px;
@@ -456,6 +457,21 @@
   .chapter-overview {
     padding-inline: 28px;
   }
+}
+
+/* Match the compact overview to its content width, including the sidebar. */
+@container chapter-overview (width < 900px) {
+  .chapter-overview-hero { display: block; min-height: 0; }
+  .chapter-overview-illustration { display: none; }
+  .chapter-learn-more {
+    --learn-more-icon-left: 16px;
+    --learn-more-icon-size: 52px;
+    --learn-more-link-text-left: 86px;
+  }
+  .chapter-learn-more > summary { padding: 14px 16px 14px 86px; gap: 12px; }
+  .chapter-learn-more-icon { z-index: 1; }
+  .chapter-learn-more-art { left: 0; width: 76px; }
+  .chapter-learn-more-art > svg { width: 140px; height: 116px; opacity: .12; }
 }
 
 @media (max-width: 767px) {

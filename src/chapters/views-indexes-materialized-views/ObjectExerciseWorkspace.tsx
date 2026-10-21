@@ -18,8 +18,13 @@ export function ObjectExerciseWorkspace({ chapter, navigation, visualization, qu
     const page = root.closest<HTMLElement>('.object-exercise-page')!;
     let previous = '';
     const measure = () => {
+      if (page.hasAttribute('data-responsive-flow')) {
+        previous = '';
+        setAnchor(0);
+        return;
+      }
       const box = page.getBoundingClientRect();
-      const dimensions = `${box.left},${box.top},${box.width},${box.height}`;
+      const dimensions = `${box.left},${box.top},${box.width},${box.height},${page.querySelector('.guided-lab-heading')!.getBoundingClientRect().height}`;
       if (dimensions === previous) return;
       previous = dimensions;
       setReference({ parent: page.parentElement!, left: box.left, top: box.top, width: box.width, height: box.height });
@@ -27,8 +32,11 @@ export function ObjectExerciseWorkspace({ chapter, navigation, visualization, qu
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(page);
+    observer.observe(page.querySelector('.guided-lab-heading')!);
+    const modeObserver = new MutationObserver(measure);
+    modeObserver.observe(page, { attributes: true, attributeFilter: ['data-responsive-flow'] });
     window.addEventListener('resize', measure);
-    return () => { observer.disconnect(); window.removeEventListener('resize', measure); };
+    return () => { observer.disconnect(); modeObserver.disconnect(); window.removeEventListener('resize', measure); };
   }, []);
 
   useLayoutEffect(() => {
@@ -72,6 +80,11 @@ export function ObjectExerciseWorkspace({ chapter, navigation, visualization, qu
       root.style.setProperty('--object-copy-height', `${height}px`);
     };
     const place = () => {
+      if (root.closest('.guided-lab-page')!.hasAttribute('data-responsive-flow')) {
+        root.dataset.compactQuestion = 'false';
+        root.dataset.fits = 'true';
+        return;
+      }
       const gap = 5;
       root.style.setProperty('--object-diagram-top', `${anchor}px`);
       const questionTop = anchor + canvas.getBoundingClientRect().height + gap;

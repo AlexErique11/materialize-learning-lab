@@ -564,6 +564,8 @@
 
   .mobile-sidebar {
     display: block;
+    position: relative;
+    z-index: 10;
   }
 
   .mobile-sidebar > summary {
@@ -592,6 +594,15 @@
 
   .mobile-sidebar .sidebar-content {
     padding: 1rem 2rem 1.5rem;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    max-height: calc(100dvh - var(--header-height) - var(--chapter-nav-height));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: var(--lab-sidebar, var(--surface));
+    border-bottom: 1px solid var(--lab-border, var(--border));
   }
 }
 

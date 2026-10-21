@@ -1,0 +1,62 @@
+/* These adaptations leave the spacious reference frame unchanged. */
+@media (min-width: 640px) {
+  .app-shell-guided-labs .guided-lab-page[data-compact-header] { position: relative; }
+  .app-shell-guided-labs .guided-lab-page[data-compact-header] .guided-lab-heading {
+    display: flex; flex-direction: column; align-items: stretch; gap: 10px;
+  }
+  .app-shell-guided-labs .guided-lab-page[data-compact-header] .guided-lab-title {
+    display: block; flex: none; width: 100%;
+  }
+  .app-shell-guided-labs .guided-lab-page[data-compact-header] .guided-lab-title h1 {
+    flex: none; width: auto; white-space: normal; padding-right: var(--compact-help-reserve, 280px);
+  }
+  .app-shell-guided-labs .guided-lab-page[data-compact-header] .guided-lab-controls {
+    width: 100%; min-width: 0; max-width: 100%; flex-wrap: wrap; justify-content: flex-start;
+  }
+  .guided-lab-page[data-compact-header] .guided-lab-controls > .button-primary { margin-left: auto; }
+  .app-shell-guided-labs .guided-lab-page[data-compact-header] .guided-lab-title > p {
+    max-width: 75ch; margin-top: 5px;
+  }
+  .guided-lab-page[data-compact-header] .guided-lab-top-row { display: block; }
+  .guided-lab-page[data-compact-header] .guided-lab-help {
+    position: absolute; right: 28px; top: var(--compact-help-top); transform: translateY(-50%);
+  }
+  .guided-lab-page[data-compact-header] .shortcut-help-trigger { left: 0; }
+  .guided-lab-page[data-compact-header] .guided-lab-help-slot { min-width: 0; }
+  .guided-lab-page[data-compact-header] .guided-lab-pagination-size { display: none; }
+  .guided-lab-page[data-compact-header] .guided-lab-help-slot > .chapter-walkthrough-button { position: static; transform: none; }
+  .guided-lab-page[data-compact-header] .lecture-workspace[data-lecture-layout='with-tip'] .lecture-visualization { min-height: 0; }
+
+  /* Give progress its own row before the primary action breaks away. */
+  .app-shell-guided-labs .guided-lab-page[data-wrap-toolbar] .guided-lab-controls { flex-wrap: wrap; gap: 8px; }
+  .guided-lab-page[data-wrap-toolbar] .guided-lab-progress { flex-basis: 100%; width: 100%; margin-right: 0; }
+  .guided-lab-page[data-wrap-toolbar] .guided-lab-progress > * { max-width: var(--toolbar-progress-width); }
+  .app-shell-guided-labs .guided-lab-page[data-wrap-toolbar] .guided-lab-controls .button { padding-inline: 10px; }
+}
+
+@media (max-width: 639px) {
+  .guided-lab-help .guided-lab-help-slot:not(:has(.chapter-walkthrough-button)) { display: none; }
+}
+
+/* On the smallest phones, both help buttons fit directly above the actions. */
+@media (max-width: 379px) {
+  .app-shell-guided-labs .guided-lab-page[data-viewport-fit]:has(.chapter-walkthrough-button) .guided-lab-title,
+  .app-shell-guided-labs .guided-lab-page[data-viewport-fit]:has(.chapter-walkthrough-button) .guided-lab-title h1 { grid-column: 1 / -1; grid-row: 1; }
+  .app-shell-guided-labs .guided-lab-page[data-viewport-fit]:has(.chapter-walkthrough-button) .guided-lab-top-row { grid-column: 1 / -1; grid-row: 2; justify-content: flex-end; margin-bottom: 0; }
+  .app-shell-guided-labs .guided-lab-page[data-viewport-fit]:has(.chapter-walkthrough-button) .guided-lab-controls { grid-row: 3; }
+  .app-shell-guided-labs .guided-lab-page[data-viewport-fit]:has(.chapter-walkthrough-button) .guided-lab-controls > .button-primary { margin-left: auto; }
+  .app-shell-guided-labs .guided-lab-page[data-viewport-fit]:has(.chapter-walkthrough-button) .guided-lab-canvas { grid-row: 4; }
+  .app-shell-guided-labs :is(.lecture-layout-page:has([data-lecture-layout='without-tip']), .maintenance-lecture-page)[data-viewport-fit] .guided-lab-title > p { grid-row: 4; }
+  .app-shell-guided-labs :is(.lecture-layout-page:has([data-lecture-layout='without-tip']), .maintenance-lecture-page)[data-viewport-fit] .guided-lab-canvas { grid-row: 5; }
+}
+
+/* A short window must keep the assessment reachable, even when it needs scrolling. */
+html:has(.guided-lab-page[data-responsive-flow]), body:has(.guided-lab-page[data-responsive-flow]) {
+  height: auto; overflow-x: clip; overflow-y: auto; overscroll-behavior: auto;
+}
+.app-shell-guided-labs .guided-lab-page[data-responsive-flow][data-viewport-fit] {
+  height: auto; min-height: var(--page-available-height); padding-bottom: 12px;
+}
+.guided-lab-page[data-responsive-flow] .guided-lab-canvas { flex: none; }
+.guided-lab-page[data-responsive-flow] .exercise-next-question { position: static; }
+.guided-lab-page[data-responsive-flow] .exercise-completion { position: relative; left: auto; bottom: auto; }

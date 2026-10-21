@@ -310,6 +310,26 @@ review, not an application test run.
 
 ## Additional shared ownership
 
+- `useResponsiveLabLayout` measures each activity's actual content width, title,
+  and controls, including sidebar changes and saved completion checkmarks.
+  `src/styles/responsive-labs.css` reflows the shared heading/help only when the
+  original frame cannot fit. Compact headers place help beside the title, with
+  the full-width description and toolbar below; the shared help-alignment hook
+  reserves their space. Readable desktop frames retain their existing
+  geometry. When the toolbar cannot fit on one row, progress gets its own row
+  while the action buttons stay together. Compact chapter navigation stays below
+  the sticky navbar and above activity content. Chapter-owned styles reuse stage selectors for Chapter 2 and temporal
+  exercise panels when their tables cannot fit side by side. No data rows or
+  instructional content are removed to achieve a fit.
+  Anchored Chapter 3/6 exercises use the same graph, evidence, question, answers,
+  and navigation in normal document flow on narrow tablets or very short windows.
+  Both workspaces remeasure their lecture reference after container/header resize
+  and restore the anchored frame when space returns. Compact chapter navigation
+  uses the existing bounded overlay at all widths below 1024px.
+  The Learning path cards stack below 960px of available content width. Chapter
+  overview illustrations and Learn more use their existing compact treatment
+  below 900px of content width, including when the sidebar consumes space.
+
 - Chapter 6's `progress-and-freshness/ProgressLanes.tsx` and `chapter.css` own
   aligned Orders/Payments/Paid orders lanes and the optional downstream Revenue
   lane. Solid markers show actual frontiers, dashed markers the input limit,
@@ -336,8 +356,9 @@ review, not an application test run.
   answers dock beside navigation and multiple choices use a checkbox dialog.
   Wide legends can host evidence in their unused left space. Lecture layouts and
   stage selectors remain unchanged.
-  Document scrolling and overscroll are locked only while a Chapter 6 exercise
-  is present. Short tablet windows use a compact header and place evidence in
+  Document scrolling and overscroll are locked while a Chapter 6 exercise uses
+  its anchored frame; responsive document flow restores vertical scrolling.
+  Short tablet windows use a compact header and place evidence in
   the same workspace to keep all controls accessible within the viewport.
   Chapter CSS changes visualization content only; shared controls
   retain their existing ownership and positions.
@@ -424,8 +445,11 @@ review, not an application test run.
   preserving familiar page structure. Changes to shared patterns must be applied
   consistently to affected pages; do not redesign a single page without an
   explicit user request or a concrete learning or accessibility need.
-- Lectures and exercises must fit the viewport without page or workspace scrolling.
-  Chapter 3 questions remain below the diagram with fixed question and navigation
+- Lectures and exercises should fit the viewport without page or workspace scrolling
+  when their readable panels and controls fit. Narrow and very short windows may
+  use normal vertical document flow to keep questions, answers, and navigation
+  reachable; never clip essential content to enforce a fixed viewport height.
+  In anchored desktop frames, Chapter 3 questions remain below the diagram with fixed question and navigation
   anchors; the diagram is raised independently without changing its panel spacing.
   Never scale the page or shrink fonts to fit content. Remove redundant information
   or move supporting detail into guided explanations and SQL & Objectives.

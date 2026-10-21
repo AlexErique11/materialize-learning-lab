@@ -14,6 +14,13 @@ export function useLabHelpAlignment(pageRef: RefObject<HTMLElement | null>, lect
     const title = page.querySelector(':scope > .guided-lab-heading h1');
     const help = shortcuts.parentElement;
     const align = () => {
+      if (page.hasAttribute('data-compact-header') && title && help) {
+        const titleBounds = title.getBoundingClientRect();
+        const pageBounds = page.getBoundingClientRect();
+        page.style.setProperty('--compact-help-reserve', `${help.getBoundingClientRect().width + 16}px`);
+        page.style.setProperty('--compact-help-top', `${titleBounds.top + titleBounds.height / 2 - pageBounds.top}px`);
+        return;
+      }
       if (lecture) shortcuts.style.removeProperty('--shortcut-offset');
       const bounds = shortcuts.getBoundingClientRect();
       if (!bounds.width) return;
@@ -47,7 +54,9 @@ export function useLabHelpAlignment(pageRef: RefObject<HTMLElement | null>, lect
     align();
     const observer = new ResizeObserver(align);
     for (const element of [page, shortcuts, help, title, tour, guidedRun, ...targets]) if (element) observer.observe(element);
+    const modeObserver = new MutationObserver(align);
+    modeObserver.observe(page, { attributes: true, attributeFilter: ['data-compact-header'] });
     window.addEventListener('resize', align);
-    return () => { observer.disconnect(); window.removeEventListener('resize', align); };
+    return () => { observer.disconnect(); modeObserver.disconnect(); window.removeEventListener('resize', align); };
   }, [pageRef, lecture, tourAvailable, pageKey]);
 }

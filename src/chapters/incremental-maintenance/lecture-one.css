@@ -10,6 +10,15 @@
 .maintenance-lesson-text .relation-inline[data-column] { color: var(--maintenance-column-color); background: color-mix(in srgb, var(--maintenance-column-color) 12%, var(--lab-surface)); }
 .maintenance-stage-workspace { display: contents; }
 
+/* Reuse the stage buttons as panel selectors once three readable tables cannot fit. */
+.app-shell-guided-labs [data-narrow-panels] .maintenance-stage-workspace:not([data-layout]) .maintenance-stage-heading { display: none; }
+.app-shell-guided-labs [data-narrow-panels] .maintenance-stage-workspace:not([data-layout]) .maintenance-flow > div > .button { display: grid; height: auto; min-height: 48px; }
+.app-shell-guided-labs [data-narrow-panels] .maintenance-stage-workspace:not([data-layout]) .maintenance-flow { gap: 8px; }
+.app-shell-guided-labs [data-narrow-panels] .maintenance-stage-workspace:not([data-layout]) .maintenance-flow-arrow { display: none; }
+.app-shell-guided-labs [data-narrow-panels] .maintenance-stage-workspace:not([data-layout]) .maintenance-panels { grid-template-columns: 1fr; }
+.app-shell-guided-labs [data-narrow-panels] .maintenance-stage-workspace:not([data-layout]) .maintenance-panels > [data-active='false'] { display: none; }
+.app-shell-guided-labs [data-narrow-panels] .maintenance-stage-workspace:not([data-layout]) .maintenance-panels > .relation-panel { height: auto; min-height: 220px; }
+
 @media (min-width: 640px) and (max-width: 1150px) and (min-height: 741px) and (max-height: 820px) {
   .maintenance-lecture-page:not(.maintenance-comparison-lecture) .maintenance-panels > .relation-panel { height: 300px; }
 }

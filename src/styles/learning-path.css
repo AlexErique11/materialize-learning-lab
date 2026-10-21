@@ -7,6 +7,7 @@
   }
 
   .page-container.learning-path-page {
+    container: learning-path / inline-size;
     --text: oklch(16% 0.012 275);
     --text-muted: oklch(55% 0.023 275);
     --border: oklch(92.5% 0.008 275);
@@ -576,6 +577,15 @@
 }
 
 .learning-path-tour-button { margin-top: 20px; }
+
+/* Switch before two cards leave the challenge copy in a narrow strip. */
+@container learning-path (width < 960px) {
+  .learning-path-grid { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .learning-path-card { min-height: 0; }
+  .learning-path-challenges a { grid-template-columns: 32px minmax(0, 1fr) 18px; gap: 8px 16px; }
+  .learning-path-status { grid-column: 2; justify-self: start; }
+  .learning-path-chevron { grid-column: 3; grid-row: 1 / 3; }
+}
 /* Arial's visible text sits slightly above the centered line box. */
 .learning-path-tour-button > span { transform: translateY(1px); }
 @media (max-width: 767px) {

@@ -25,9 +25,16 @@
 .temporal-axis, .temporal-lane { display: grid; grid-template-columns: 40px minmax(0, 1fr) 74px; gap: 12px; align-items: center; }
 .temporal-axis { height: 16px; margin-bottom: 4px; font-size: 11px; color: var(--lab-muted); }
 .temporal-axis > div { position: relative; height: 16px; margin-inline: 3px; }
+.temporal-axis > div { container: temporal-axis-scale / inline-size; }
 .temporal-axis > div > span { position: absolute; transform: translateX(-50%); }
 .temporal-axis > div > span:first-child { transform: none; }
 .temporal-axis > div > span:last-child { transform: translateX(-100%); }
+@container temporal-axis-scale (width < 140px) {
+  .temporal-axis > div > span:nth-child(even) { display: none; }
+}
+@container temporal-axis-scale (width < 75px) {
+  .temporal-axis > div > span:nth-child(3) { display: none; }
+}
 .temporal-lanes { position: relative; }
 .temporal-lane { height: 22px; font-size: 12px; }
 .temporal-lane > strong { font-weight: 600; }

@@ -159,6 +159,10 @@
   text-box: trim-both cap alphabetic;
 }
 
+@media (max-width: 359px) {
+  .app-header-reference .brand-product { display: none; }
+}
+
 .app-header-reference .header-actions {
   gap: 30px;
 }

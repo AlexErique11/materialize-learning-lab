@@ -15,13 +15,27 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
   useLayoutEffect(() => {
     const root = rootRef.current!;
     const page = root.closest<HTMLElement>('.progress-exercise-page')!;
+    let previous = '';
     const measure = () => {
+      if (page.hasAttribute('data-responsive-flow')) {
+        previous = '';
+        setAnchor(0);
+        return;
+      }
       const box = page.getBoundingClientRect();
+      const dimensions = `${box.left},${box.top},${box.width},${box.height},${page.querySelector('.guided-lab-heading')!.getBoundingClientRect().height}`;
+      if (dimensions === previous) return;
+      previous = dimensions;
       setReference({ parent: page.parentElement!, left: box.left, top: box.top, width: box.width, height: box.height });
     };
     measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(page);
+    observer.observe(page.querySelector('.guided-lab-heading')!);
+    const modeObserver = new MutationObserver(measure);
+    modeObserver.observe(page, { attributes: true, attributeFilter: ['data-responsive-flow'] });
     window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    return () => { observer.disconnect(); modeObserver.disconnect(); window.removeEventListener('resize', measure); };
   }, []);
 
   useLayoutEffect(() => {
@@ -41,6 +55,13 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
     const answers = root.querySelector<HTMLElement>('.exercise-answers')!;
     const footer = root.closest('.progress-exercise-page')!.querySelector('.progress-exercise-playback')!;
     const place = () => {
+      if (root.closest('.guided-lab-page')!.hasAttribute('data-responsive-flow')) {
+        root.dataset.splitQuestion = 'false';
+        root.dataset.dockAnswers = 'false';
+        root.dataset.legendEvidence = 'false';
+        root.dataset.fits = 'true';
+        return;
+      }
       root.dataset.dockAnswers = 'false';
       root.dataset.legendEvidence = 'false';
       const gap = innerHeight <= 740 ? 2 : 4;

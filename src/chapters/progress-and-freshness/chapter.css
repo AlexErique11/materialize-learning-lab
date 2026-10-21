@@ -235,6 +235,13 @@ html:has(.progress-exercise-page), body:has(.progress-exercise-page) {
 /* Anchor diagrams to the measured lecture frame. Prompts can occupy its upper
    whitespace while answers stay below the diagram in compact windows. */
 .progress-exercise-layout { position: relative; display: block; padding: 0; }
+
+/* Keep the timeline, evidence and answers in their existing order in compact frames. */
+.app-shell-guided-labs .progress-exercise-page[data-responsive-flow] form.relation-workspace { flex-direction: column; gap: 12px; }
+.progress-exercise-page[data-responsive-flow] .progress-exercise-layout { display: grid; flex: none; gap: 12px; padding: 0; }
+.progress-exercise-page[data-responsive-flow] .progress-exercise-layout > :is(.progress-exercise-visualization, .exercise-question),
+.progress-exercise-page[data-responsive-flow] .progress-exercise-layout :is(.progress-exercise-evidence, .progress-stage-row) { position: static; transform: none; }
+.progress-exercise-page[data-responsive-flow] .progress-exercise-playback { position: static; width: 100%; flex-shrink: 0; }
 .progress-exercise-layout[data-aligned='false'] { visibility: hidden; }
 .progress-exercise-layout > .progress-exercise-visualization { position: absolute; top: var(--exercise-diagram-top); left: 0; right: 0; }
 .progress-exercise-layout .progress-exercise-evidence { position: absolute; top: calc(var(--exercise-evidence-top) - var(--exercise-diagram-top)); left: 0; right: 0; }

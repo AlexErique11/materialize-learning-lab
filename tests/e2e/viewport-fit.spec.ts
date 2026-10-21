@@ -10,12 +10,14 @@ const paths = [
 async function expectFits(page: import('@playwright/test').Page) {
   await expect.poll(() => page.evaluate(() => {
     const viewport = document.documentElement;
-    const page = document.querySelector('[data-viewport-fit]')!.getBoundingClientRect();
-    return viewport.scrollHeight <= innerHeight && viewport.scrollWidth <= innerWidth
-      && page.top >= 0 && page.bottom <= innerHeight
+    const activity = document.querySelector('[data-viewport-fit]')!;
+    const page = activity.getBoundingClientRect();
+    const compact = activity.matches('[data-compact-header], [data-narrow-panels], [data-responsive-flow]');
+    return viewport.scrollWidth <= innerWidth
+      && page.top >= 0 && (compact ? page.bottom <= viewport.scrollHeight + 1 : viewport.scrollHeight <= innerHeight && page.bottom <= innerHeight)
       && Array.from(document.querySelectorAll('.table-scroll')).every((table) =>
         !table.getBoundingClientRect().height || table.scrollWidth <= table.clientWidth);
-  }), { message: 'The entire lecture or exercise must fit without scrolling or clipping' }).toBe(true);
+  }), { message: 'The activity must fit or remain reachable in its responsive document flow, without horizontal clipping' }).toBe(true);
 }
 
 test('lectures and exercises keep active information and controls on screen', async ({ page, isMobile }, testInfo) => {
@@ -32,7 +34,7 @@ test('lectures and exercises keep active information and controls on screen', as
         for (let time = 0; time <= 5; time++) {
           if (time) await page.getByRole('button', { name: 'Next change', exact: true }).click();
           for (const [index, stage] of ['1. Orders', '2. Filter', '3. Projection'].entries()) {
-            if (isMobile) await page.getByRole('navigation', { name: 'Query stages' }).getByRole('button', { name: stage, exact: false }).click();
+            if (isMobile || await page.locator('[data-narrow-panels]').count()) await page.getByRole('navigation', { name: 'Query stages' }).getByRole('button', { name: stage, exact: false }).click();
             await expect(page.locator('.maintenance-panels > section').nth(index)).toBeVisible();
             await expectFits(page);
           }

@@ -18,9 +18,11 @@ import { ProgressBar } from '../../components/ui/ProgressBar';
 import { usePageTitle } from '../../hooks/usePageTitle';
 import { useLabShortcuts } from '../../hooks/useLabShortcuts';
 import { useLabHelpAlignment } from '../../hooks/useLabHelpAlignment';
+import { useResponsiveLabLayout } from '../../hooks/useResponsiveLabLayout';
 import { useWorkspaceMotion } from '../../motion/useWorkspaceMotion';
 import { ShortcutHelp } from '../../components/lab/ShortcutHelp';
 import '../../styles/activity-completion.css';
+import '../../styles/responsive-labs.css';
 
 const lectureShortcuts = {
   ArrowRight: '[data-walkthrough="next-change"]',
@@ -125,6 +127,7 @@ export function GuidedLabScreen({
     if (helpOpen) setReferenceOpen(false);
   }, [helpOpen]);
   const { pathname } = useLocation();
+  useResponsiveLabLayout(pageRef, available, pathname);
   useLabHelpAlignment(pageRef, Boolean(simulation), lectureHelpAvailable, pathname);
   useWorkspaceMotion(pageRef, pathname);
   useLayoutEffect(() => {

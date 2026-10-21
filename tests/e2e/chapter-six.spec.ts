@@ -311,13 +311,19 @@ test('exercise pages show diagram and question together without wheel or keyboar
     await page.mouse.wheel(0, 900);
     await page.locator('h1').click();
     await page.keyboard.press('PageDown');
-    await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
+    const responsiveFlow = await page.locator('.progress-exercise-page').evaluate(el => el.hasAttribute('data-responsive-flow'));
+    if (!responsiveFlow) await expect.poll(() => page.evaluate(() => window.scrollY)).toBe(0);
     expect(await page.evaluate(() => Array.from(document.querySelectorAll('.guided-lab-page, .guided-lab-page *')).some(el => el.scrollTop > 0))).toBe(false);
-    const question = (await page.locator('.exercise-answers').boundingBox())!;
-    const footer = (await page.locator('.progress-exercise-playback').boundingBox())!;
-    const docked = await page.locator('.progress-exercise-layout').getAttribute('data-dock-answers') === 'true';
-    expect(question.y + question.height).toBeLessThanOrEqual(footer.y + (docked ? footer.height : 0));
-    expect(footer.y + footer.height).toBeLessThanOrEqual(viewport.height);
+    // Read both regions in the same frame while native PageDown scrolling settles.
+    const bounds = await page.evaluate(() => {
+      const answers = document.querySelector('.exercise-answers')!.getBoundingClientRect();
+      const footer = document.querySelector('.progress-exercise-playback')!.getBoundingClientRect();
+      const docked = document.querySelector('.progress-exercise-layout')!.getAttribute('data-dock-answers') === 'true';
+      const flow = document.querySelector('.progress-exercise-page')!.hasAttribute('data-responsive-flow');
+      return { answerBottom: answers.bottom, footerTop: footer.top, footerBottom: footer.bottom, footerHeight: docked ? footer.height : 0, boundary: flow ? document.documentElement.scrollHeight - scrollY : innerHeight };
+    });
+    expect(bounds.answerBottom).toBeLessThanOrEqual(bounds.footerTop + bounds.footerHeight);
+    expect(bounds.footerBottom).toBeLessThanOrEqual(bounds.boundary + 1);
     await page.goto(base);
     expect(await page.locator('html').evaluate(el => getComputedStyle(el).overflowY)).not.toBe('clip');
   }
@@ -341,10 +347,12 @@ test('Chapter 6 combined exercise layouts fit every question and feedback withou
       const lectureGeometry = await geometry();
       await page.goto(`${base}/exercises/${exercise.slug}`);
       await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-aligned', 'true');
+      const responsiveFlow = await page.locator('.progress-exercise-page').evaluate(el => el.hasAttribute('data-responsive-flow'));
       for (let step = 0; step < exercise.questions.length; step++) {
         const diagram = (await page.locator('.progress-lane-panel').boundingBox())!;
+        const diagramTop = diagram.y + (responsiveFlow ? await page.evaluate(() => scrollY) : 0);
         expect(diagram.x).toBeCloseTo(lectureDiagram.x, 1);
-        expect(diagram.y).toBeCloseTo(lectureDiagram.y, 1);
+        if (!responsiveFlow) expect(diagram.y).toBeCloseTo(lectureDiagram.y, 1);
         expect(diagram.width).toBeCloseTo(lectureDiagram.width, 1);
         expect(diagram.height).toBeCloseTo(lectureDiagram.height, 1);
         expect(await geometry()).toEqual(lectureGeometry);
@@ -354,7 +362,7 @@ test('Chapter 6 combined exercise layouts fit every question and feedback withou
           await expect(page.locator('.exercise-answers')).toBeVisible();
           await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-fits', 'true');
           const currentDiagram = (await page.locator('.progress-lane-panel').boundingBox())!;
-          expect(currentDiagram).toEqual(diagram);
+          expect({ ...currentDiagram, y: currentDiagram.y + (responsiveFlow ? await page.evaluate(() => scrollY) : 0) }).toEqual({ ...diagram, y: diagramTop });
           const footer = (await page.locator('.progress-exercise-playback').boundingBox())!;
           const docked = await page.locator('.progress-exercise-layout').getAttribute('data-dock-answers') === 'true';
           const inLegend = await page.locator('.progress-exercise-layout').getAttribute('data-legend-evidence') === 'true';
@@ -385,11 +393,11 @@ test('Chapter 6 combined exercise layouts fit every question and feedback withou
             const key = (await page.locator('.progress-legend > span').first().boundingBox())!;
             expect(evidence.x + evidence.width).toBeLessThanOrEqual(key.x);
           }
-          expect(footer.y + footer.height).toBeLessThanOrEqual(viewport.height);
+          expect(footer.y + footer.height).toBeLessThanOrEqual(responsiveFlow ? await page.evaluate(() => document.documentElement.scrollHeight - scrollY) : viewport.height);
           for (const element of await page.locator('.exercise-question-copy, .exercise-answers, .progress-lane-panel, .progress-detail').all()) {
             expect(await element.evaluate(node => node.scrollWidth <= node.clientWidth + 1 && node.scrollHeight <= node.clientHeight + 1)).toBe(true);
           }
-          expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth && scrollY === 0)).toBe(true);
+          expect(await page.evaluate(flow => document.documentElement.scrollWidth <= innerWidth && (flow || scrollY === 0), responsiveFlow)).toBe(true);
         };
         await fit();
         await page.getByRole('button', { name: 'Hint', exact: true }).click();

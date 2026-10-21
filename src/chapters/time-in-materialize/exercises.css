@@ -105,3 +105,12 @@
   .temporal-exercise-page .temporal-panel-tabs { padding-right: 68px; }
 }
 .temporal-answer-tabs .button[aria-pressed='true'] { color: var(--lab-purple); border-color: var(--lab-purple); background: var(--lab-tint); }
+
+/* Use the lecture's existing selectors before table columns become unreadable. */
+.app-shell-guided-labs .temporal-exercise-page[data-narrow-panels] .temporal-panel-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+.app-shell-guided-labs .temporal-exercise-page[data-narrow-panels] .temporal-panel-tabs .button { flex: 1; }
+.app-shell-guided-labs .temporal-exercise-page[data-narrow-panels] .temporal-workspace { display: block; height: auto; }
+.app-shell-guided-labs .temporal-exercise-page[data-narrow-panels] .temporal-workspace > .temporal-panel { height: auto; min-height: 248px; }
+.app-shell-guided-labs .temporal-exercise-page[data-narrow-panels] .temporal-workspace > [data-active='false'] { display: none; }
+.temporal-exercise-page[data-narrow-panels] .temporal-panel-heading { min-height: 24px; }
+.temporal-exercise-page[data-narrow-panels] .exercise-question { grid-template-columns: 1fr; }
