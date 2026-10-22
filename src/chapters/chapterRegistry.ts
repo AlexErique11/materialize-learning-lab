@@ -1,4 +1,5 @@
 import type { DocumentationLink } from '../app/resources';
+import { publicAsset } from '../app/publicAsset';
 import { objectDocumentationLinks } from './views-indexes-materialized-views/resources';
 import { documentationLinks as progressDocumentationLinks } from './progress-and-freshness/resources';
 
@@ -24,7 +25,7 @@ export const chapters: readonly ChapterDefinition[] = [
     shortTitle: 'Changing Relations',
     description: 'Reconstruct a changing relation from additions, retractions, and updates.',
     introduction: 'Learn how signed changes reconstruct a relation over logical time. Follow additions, retractions, and updates in two tutorials, then practice reading and writing diffs in a three-phase inventory exercise.',
-    overviewImage: '/changing-relations-overview.png',
+    overviewImage: publicAsset('changing-relations-overview.png'),
     documentationLinks: [
       { title: 'SUBSCRIBE: logical timestamps and signed diffs', href: 'https://materialize.com/docs/sql/subscribe/#output' },
       { title: 'SUBSCRIBE: snapshots and initial state', href: 'https://materialize.com/docs/sql/subscribe/#snapshot' },
@@ -43,7 +44,7 @@ export const chapters: readonly ChapterDefinition[] = [
     shortTitle: 'Incremental Maintenance',
     description: 'Trace one input change through filters, joins, and aggregates.',
     introduction: 'Explore how input changes travel through SQL filters, joins, and grouped aggregates. Follow inserts, updates, and deletions through four interactive tutorials, compare incremental maintenance with full recomputation, then practice predicting which result rows change in two exercises.',
-    overviewImage: '/incremental-maintenance-overview.png',
+    overviewImage: publicAsset('incremental-maintenance-overview.png'),
     overviewImageFit: 'contain',
     documentationLinks: [
       { title: 'SELECT: projections, WHERE filters, and GROUP BY', href: 'https://materialize.com/docs/sql/select/' },
@@ -75,7 +76,7 @@ export const chapters: readonly ChapterDefinition[] = [
     shortTitle: 'Getting Data In',
     description: 'Follow initial snapshots and incoming changes into a source relation.',
     introduction: 'Follow data from an upstream system into Materialize. Explore initial snapshots and change data capture, then see how records become table changes with NONE, UPSERT, and DEBEZIUM envelopes. Work through four interactive tutorials and three exercises covering keys, updates, tombstones, and input errors.',
-    overviewImage: '/getting-data-in-overview.png',
+    overviewImage: publicAsset('getting-data-in-overview.png'),
     overviewImageFit: 'contain',
     documentationLinks: [
       { title: 'Snapshotting: atomic initial loads and waiting queries', href: 'https://materialize.com/docs/fundamentals/concepts/snapshotting/' },
