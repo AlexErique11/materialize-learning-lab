@@ -24,12 +24,12 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
+      - id: pages
+        uses: actions/configure-pages@v5
       - run: npm run build
         env:
           GITHUB_PAGES: 'true'
-      # Pages has no SPA fallback; serve the app shell for deep links.
-      - run: cp dist/index.html dist/404.html
-      - uses: actions/configure-pages@v5
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
