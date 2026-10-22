@@ -134,6 +134,10 @@ export function ChapterCompletionPanel({ chapter, open, onClose }: {
         {nextChapter && <Button data-dialog-primary aria-keyshortcuts="Enter" variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button>}
       </div>
     </ChapterCompletionDialog>;
+    case 'consistent-reads':
+      return <ChapterCompletionDialog chapter={chapter} open={open} onClose={onClose}>
+        <div className="read-recap"><p>You chose coherent snapshots, explained transaction ordering, and predicted bounded reads during an ingestion stall.</p><ul><li>Read within every input's retained, complete window.</li><li>Separate transaction order from external ingestion.</li><li>A freshness bound can require an error instead of waiting.</li></ul><Button data-dialog-primary variant="primary" onClick={() => navigate('/')}>Return to learning path<ArrowRight size={16} aria-hidden="true" /></Button></div>
+      </ChapterCompletionDialog>;
     default:
       return null;
   }

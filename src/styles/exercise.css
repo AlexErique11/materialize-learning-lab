@@ -10,9 +10,10 @@
 @media (min-width: 640px) {
   .app-shell-guided-labs .staged-exercise-page .exercise-question-navigation > .exercise-next-question { height: 40px; min-height: 40px; }
   /* Keep each navigation row as a placeholder, but anchor its button to the
-     page. Compact content cannot push the button below the shared baseline. */
+     page. Composed lecture workspaces own their measured playback slot instead.
+     Compact content cannot push the button below the shared baseline. */
   .app-shell-guided-labs .guided-lab-page:is(.staged-exercise-page, .maintenance-exercise-page)[data-viewport-fit]:not(.object-exercise-page):not(.progress-exercise-page) { position: relative; }
-  .app-shell-guided-labs .guided-lab-page:is(.staged-exercise-page, .maintenance-exercise-page)[data-viewport-fit]:not(.object-exercise-page):not(.progress-exercise-page):not([data-responsive-flow]) .exercise-next-question { position: absolute; right: 28px; bottom: var(--exercise-navigation-inset); }
+  .app-shell-guided-labs .guided-lab-page:is(.staged-exercise-page, .maintenance-exercise-page)[data-viewport-fit]:not(.object-exercise-page):not(.progress-exercise-page):not([data-responsive-flow]):not(:has(.lecture-workspace)) .exercise-next-question { position: absolute; right: 28px; bottom: var(--exercise-navigation-inset); }
 }
 
 .staged-exercise-page .relation-workspace { gap: 8px; }

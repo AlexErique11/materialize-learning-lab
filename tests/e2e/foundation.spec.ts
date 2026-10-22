@@ -474,18 +474,15 @@ test('challenges have real overview and detail URLs', async ({ page }) => {
   await expect(page.getByText('Not started', { exact: true })).toHaveCount(0);
 });
 
-test('planned chapter and challenge destinations explain their availability', async ({ page }) => {
-  for (const section of ['', '/tutorial', '/exercises']) {
-    await page.goto(`/labs/consistent-reads${section}`);
-    const notice = page.getByRole('region', { name: 'Coming soon', exact: true });
-    await expect(notice).toBeVisible();
-    await expect(notice.getByRole('link')).toBeVisible();
-    await expect(page.locator('.chapter-overview-section, .chapter-learn-more')).toHaveCount(0);
+test('Chapter 7 is available while planned challenges explain their availability', async ({ page }) => {
+  await page.goto('/labs/consistent-reads');
+  await expect(page.getByRole('heading', { name: 'Consistent Reads', exact: true })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Coming soon', exact: true })).toHaveCount(0);
+  for (const section of ['tutorial', 'exercises']) {
+    await page.goto(`/labs/consistent-reads/${section}`);
+    await expect(page.locator('.chapter-content-list a')).toHaveCount(3);
+    await expect(page.getByRole('region', { name: 'Coming soon', exact: true })).toHaveCount(0);
   }
-  await page.getByRole('region', { name: 'Coming soon', exact: true }).getByRole('link', { name: 'Chapter overview', exact: true }).click();
-  await expect(page).toHaveURL('/labs/consistent-reads');
-  await page.getByRole('link', { name: 'Explore guided labs', exact: true }).click();
-  await expect(page).toHaveURL(chapterPath(firstChapter));
   await page.goto('/challenges');
   await expect(page.getByText('Coming soon', { exact: true })).toHaveCount(challenges.length);
   for (const challenge of challenges) {

@@ -15,6 +15,7 @@ export interface LectureWorkspaceProps {
 
 export function LectureWorkspace({ layout, metrics, visualization, playback, guided, afterVisualization }: LectureWorkspaceProps) {
   const workspaceRef = useRef<HTMLDivElement>(null);
+  const afterRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     if (layout !== 'without-tip') return;
     const workspace = workspaceRef.current!;
@@ -30,7 +31,10 @@ export function LectureWorkspace({ layout, metrics, visualization, playback, gui
       // Scrolling to exercise answers must not change the graph's upper inset.
       const available = innerHeight - (workspace.getBoundingClientRect().top + window.scrollY) - pagePadding;
       const metricGap = metricsHeight ? number('--lecture-metrics-gap') : 0;
-      const naturalHeight = content.getBoundingClientRect().height + metricsHeight + playbackHeight;
+      // Keep the diagram's own measurement separate, but budget for any question
+      // below it before allocating optional whitespace above the visualization.
+      const afterHeight = afterRef.current?.getBoundingClientRect().height ?? 0;
+      const naturalHeight = content.getBoundingClientRect().height + afterHeight + metricsHeight + playbackHeight;
       // A visualization without metric cards still shares the same playback baseline.
       const preferredHeight = number('--lecture-panel-height') + referenceMetricsHeight + number('--lecture-playback-height')
         + number('--lecture-title-spacing') + number('--lecture-metrics-gap') + 14 + number('--lecture-tip-space')
@@ -49,6 +53,7 @@ export function LectureWorkspace({ layout, metrics, visualization, playback, gui
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(content);
+    if (afterRef.current) observer.observe(afterRef.current);
     const metricsElement = workspace.querySelector('.relation-metrics');
     if (metricsElement) observer.observe(metricsElement);
     const metricMeasure = workspace.querySelector('.lecture-metric-measure');
@@ -65,7 +70,7 @@ export function LectureWorkspace({ layout, metrics, visualization, playback, gui
     </div>}
     <div className="lecture-visualization">
       <div className="lecture-visualization-content">{visualization}</div>
-      {afterVisualization}
+      {afterVisualization && <div ref={afterRef} className="lecture-after-visualization">{afterVisualization}</div>}
     </div>
     {playback}
   </div>;

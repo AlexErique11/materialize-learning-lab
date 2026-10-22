@@ -85,6 +85,7 @@ for (const chapter of chapters) {
       const lastExercise = activities.filter(activity => activity.sectionSlug === 'exercises').at(-1)!;
       const path = chapterContentPath(chapter, lastExercise);
       const remaining = activities.filter(activity => activity !== lastExercise);
+      const nextChapter = coreChapters[chapter.number];
       await page.addInitScript(({ key, completed }) => localStorage.setItem(key, JSON.stringify({ version: 1, completed })), {
         key: LAB_PROGRESS_KEY,
         completed: prerequisitesComplete ? remaining.map(activity => chapterContentPath(chapter, activity)) : [],
@@ -99,7 +100,7 @@ for (const chapter of chapters) {
       await expect(progress(page)).toHaveAttribute('value', prerequisitesComplete ? '1' : '0');
       if (prerequisitesComplete) {
         await expect(dialog).toContainText('Chapter complete');
-        await expect(dialog.getByRole('button', { name: 'Go to next chapter', exact: true })).toBeFocused();
+        await expect(dialog.getByRole('button', { name: nextChapter ? 'Go to next chapter' : 'Return to learning path', exact: true })).toBeFocused();
       } else {
         await expect(dialog).toContainText('Chapter in progress');
         await expect(dialog).toContainText('You have left:');
@@ -109,17 +110,17 @@ for (const chapter of chapters) {
         for (const activity of remaining) {
           await expect(unfinished.getByRole('link', { name: activity.title, exact: true })).toHaveAttribute('href', chapterContentPath(chapter, activity));
         }
-        await expect(dialog.getByRole('button', { name: 'Chapter overview', exact: true })).toHaveClass(/button-secondary/);
-        const nextChapter = dialog.getByRole('button', { name: 'Go to next chapter', exact: true });
-        await expect(nextChapter).toHaveClass(/button-primary/);
-        await expect(nextChapter).toBeFocused();
+        await expect(dialog.getByRole('button', { name: 'Chapter overview', exact: true })).toHaveClass(nextChapter ? /button-secondary/ : /button-primary/);
+        const primary = dialog.getByRole('button', { name: nextChapter ? 'Go to next chapter' : 'Chapter overview', exact: true });
+        await expect(primary).toHaveClass(/button-primary/);
+        await expect(primary).toBeFocused();
       }
       await page.keyboard.press('Escape');
       await expect(dialog).not.toBeVisible();
       await expect(finish).toBeFocused();
       await finish.click();
       await page.keyboard.press('Enter');
-      await expect(page).toHaveURL(`/labs/${coreChapters[chapter.number]!.slug}`);
+      await expect(page).toHaveURL(nextChapter ? `/labs/${nextChapter.slug}` : prerequisitesComplete ? '/' : `/labs/${chapter.slug}`);
     });
   }
 
@@ -213,7 +214,7 @@ for (const chapter of chapters) {
       await finish(page);
       await expect(dialog).toBeVisible();
       await expect(progress(page)).toHaveAttribute('value', '1');
-      await expect(dialog.getByRole('button', { name: 'Go to next chapter', exact: true })).toBeFocused();
+      await expect(dialog.getByRole('button', { name: coreChapters[chapter.number] ? 'Go to next chapter' : 'Return to learning path', exact: true })).toBeFocused();
       await page.keyboard.press('Escape');
       await expect(dialog).not.toBeVisible();
       await page.reload();

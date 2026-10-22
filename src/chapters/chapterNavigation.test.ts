@@ -45,13 +45,12 @@ describe('chapter page navigation', () => {
   });
 
   it('leaves an empty section with only a link to its chapter overview', () => {
-    const emptyChapter = findChapter('consistent-reads');
-    if (!emptyChapter) throw new Error('Chapter 7 must be in the curriculum.');
+    const emptyChapter = { number: 99, slug: 'empty-test-chapter', title: 'Empty chapter', shortTitle: 'Empty chapter', description: 'Test fixture' };
     const section = findChapterSection(emptyChapter, 'tutorial');
     if (!section) throw new Error('Every chapter must have a tutorial section.');
     expect(getChapterNavigation(emptyChapter, section)).toEqual({
       previous: {
-        to: '/labs/consistent-reads', title: 'Consistent Reads', label: 'Chapter overview',
+        to: '/labs/empty-test-chapter', title: 'Empty chapter', label: 'Chapter overview',
       },
       next: undefined,
     });

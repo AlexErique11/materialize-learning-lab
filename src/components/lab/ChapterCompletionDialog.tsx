@@ -29,7 +29,8 @@ export function ChapterCompletionDialog({ chapter, children, ...props }: Omit<Co
         </ul>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button onClick={() => navigate(chapterPath(chapter))}>
+        <Button data-dialog-primary={!nextChapter || undefined} aria-keyshortcuts={!nextChapter ? 'Enter' : undefined}
+          variant={!nextChapter ? 'primary' : undefined} onClick={() => navigate(chapterPath(chapter))}>
           Chapter overview<ArrowRight size={16} aria-hidden="true" />
         </Button>
         {nextChapter && <Button data-dialog-primary aria-keyshortcuts="Enter" variant="primary"
