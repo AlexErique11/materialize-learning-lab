@@ -19,8 +19,10 @@ export function useResponsiveLabLayout(pageRef: RefObject<HTMLElement | null>, e
       const titleStyle = getComputedStyle(title);
       context.font = titleStyle.font;
       const text = title.textContent ?? '';
+      const titleIcon = title.querySelector('svg');
+      const inlineIcon = titleIcon && getComputedStyle(titleIcon).position !== 'absolute';
       const titleWidth = context.measureText(text).width + (parseFloat(titleStyle.letterSpacing) || 0) * text.length
-        + (title.querySelector('svg') ? 32 : 0);
+        + (inlineIcon ? 32 : 0);
       const subtitle = heading.querySelector('p');
       const titleBox = title.getBoundingClientRect();
       const toolbar = controls.getBoundingClientRect();

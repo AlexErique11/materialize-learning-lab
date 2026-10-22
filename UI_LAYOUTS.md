@@ -9,8 +9,8 @@ and shared CSS, not independently maintained mockup files.
 | Template | Current users | Behavior |
 | --- | --- | --- |
 | `LectureScreen`, `layout="with-tip"` | Chapter 1 lectures 1–2 | Chapter 1 reference frame, metrics, visualization, playback, and bottom tip when it fits. |
-| `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 3 lectures 1–3; Chapter 4 lectures 1–4; Chapter 5 lectures 1–4 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
-| `ExerciseFrame` through `GuidedLabScreen` | Chapter 1–6 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
+| `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 3 lectures 1–3; Chapter 4 lectures 1–4; Chapter 5 lectures 1–4; Chapters 6–7 lectures 1–3 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
+| `ExerciseFrame` through `GuidedLabScreen` | Chapter 1–7 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
 
 `src/labs/components/LectureScreen.tsx` accepts `metrics`, `visualization`, and
 `playback` slots plus the common screen props. Chapter 2 supplies them through
@@ -21,7 +21,10 @@ slots when adding a lecture; do not copy its frame into the new page.
 `LectureWorkspace` owns that frame independently of the page controls.
 `ExerciseFrame.renderWorkspace` can compose its visualization, question, and
 navigation slots with this same frame. Questions supplied through
-`afterVisualization` follow the graph without changing its measured upper inset.
+`afterVisualization` follow the graph. The workspace measures their height separately
+and budgets for them before assigning optional whitespace above the graph.
+When an exercise composes this workspace, its navigation stays in the workspace's
+playback slot rather than using the separate page-anchored exercise button.
 Chapter 3 exercises use `ObjectExerciseWorkspace` to measure the actual lecture
 canvas on entry and resize, including sidebar resizing. The temporary hidden,
 inert reference is removed immediately. Exercises share all lecture panel geometry
@@ -309,6 +312,27 @@ when changing controls. Documentation-only changes need link and consistency
 review, not an application test run.
 
 ## Additional shared ownership
+
+- Chapter 7's `consistent-reads/ReadableWindow.tsx` and `chapter.css` own the
+  shared query strip, two input windows, vertical overlap, cursor, key, and
+  reserved result slot. Lectures use `LectureScreen` without-tip; exercises use
+  `ExerciseFrame.renderWorkspace` to compose the same `LectureWorkspace`.
+  Questions occupy `afterVisualization`, outside the measured diagram footprint.
+  No copied frame or exercise-only lane geometry is used. Query, key, result,
+  and question slots reserve their footprint at each responsive size so longer
+  labels and feedback do not recenter the diagram. Repeated markers and labels
+  share one renderer. Write-frontier identity and object colors follow Chapter 6;
+  retained caps and the query cursor distinguish snapshot selection. Both inputs
+  stay together on narrow screens. At laptop viewports at least 1280px wide and
+  640px high with the standard sidebar, diagram, question, answers, and navigation fit together without page
+  or workspace scrolling and without a diagram/question toggle. Short laptop
+  frames use common compact lane spacing and omit repeated exercise captions.
+  Questions use normal vertical flow in narrower or shorter viewports; shared headers, typography, and navigation
+  styles remain unchanged. The final completion dialog returns to the learning
+  path because the current curriculum ends at Chapter 7.
+  Outside guidance, Chapter 7's Previous/Next controls, autoplay, and step counter
+  visit only checkpoints with visible state changes; explanation-only checkpoints
+  stay in guided runs and consume no autoplay interval.
 
 - `useResponsiveLabLayout` measures each activity's actual content width, title,
   and controls, including sidebar changes and saved completion checkmarks.

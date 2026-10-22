@@ -24,18 +24,21 @@ describe('chapter navigation outline', () => {
   });
 
   it('leaves chapters without defined content empty', () => {
-    for (const other of chapters.filter((item) => ![chapter.slug, 'incremental-maintenance', 'views-indexes-materialized-views', 'getting-data-in', 'time-in-materialize', 'progress-and-freshness'].includes(item.slug))) {
-      expect(getChapterSections(other).map((section) => section.slug)).toEqual([
-        'tutorial',
-        'exercises',
-      ]);
-      expect(getChapterPages(other)).toEqual([]);
-    }
+    const empty = { number: 99, slug: 'empty-test-chapter', title: 'Empty chapter', shortTitle: 'Empty chapter', description: 'Test fixture' };
+    expect(getChapterSections(empty).map(section => section.slug)).toEqual(['tutorial', 'exercises']);
+    expect(getChapterPages(empty)).toEqual([]);
   });
 
   it('registers all Chapter 6 lectures and exercises in teaching order', () => {
     const progress = findChapter('progress-and-freshness')!;
     expect(getChapterPages(progress).map(page => `${page.sectionSlug}/${page.slug}`)).toEqual([
+      'tutorial/lecture-1', 'tutorial/lecture-2', 'tutorial/lecture-3',
+      'exercises/exercise-1', 'exercises/exercise-2', 'exercises/exercise-3',
+    ]);
+  });
+
+  it('registers Chapter 7 as three lectures followed by three exercises', () => {
+    expect(getChapterPages(findChapter('consistent-reads')!).map(page => `${page.sectionSlug}/${page.slug}`)).toEqual([
       'tutorial/lecture-1', 'tutorial/lecture-2', 'tutorial/lecture-3',
       'exercises/exercise-1', 'exercises/exercise-2', 'exercises/exercise-3',
     ]);

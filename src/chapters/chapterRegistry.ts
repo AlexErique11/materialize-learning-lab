@@ -1,6 +1,7 @@
 import type { DocumentationLink } from '../app/resources';
 import { objectDocumentationLinks } from './views-indexes-materialized-views/resources';
 import { documentationLinks as progressDocumentationLinks } from './progress-and-freshness/resources';
+import { documentationLinks as readDocumentationLinks } from './consistent-reads/resources';
 
 export interface ChapterDefinition {
   readonly number: number;
@@ -124,6 +125,8 @@ export const chapters: readonly ChapterDefinition[] = [
     title: 'Consistent Reads — Which Moment Does a Query See?',
     shortTitle: 'Consistent Reads',
     description: 'Choose a readable moment and weigh freshness against waiting.',
+    introduction: 'Choose one retained, complete snapshot across every queried input. Three guided tutorials and three exercises explain readable windows, successive transaction observations, freshness policies, and the separate ingestion of external writes.',
+    documentationLinks: readDocumentationLinks,
   },
 ];
 
