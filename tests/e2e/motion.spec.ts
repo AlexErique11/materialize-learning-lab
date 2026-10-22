@@ -225,6 +225,31 @@ test('metric help reveals and dismisses from the keyboard without losing its anc
   await expect(help).toBeFocused();
 });
 
+test('metric help remains readable across its pointer gap and dismisses from the tooltip', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'Touch behavior is covered by the metric help tap checks.');
+  await page.goto('/labs/getting-data-in/tutorial/lecture-2');
+  const help = page.getByRole('button', { name: 'About Records read', exact: true });
+  const tooltip = page.getByRole('tooltip').filter({ hasText: 'Incoming messages read' });
+  const anchor = await help.boundingBox();
+  await help.hover();
+  await expect(tooltip).toBeVisible();
+  const tip = (await tooltip.boundingBox())!;
+  await page.mouse.move(anchor!.x + anchor!.width / 2, tip.y - 4);
+  await page.waitForTimeout(200);
+  await expect(tooltip).toBeVisible();
+  await tooltip.hover();
+  await tooltip.click();
+  await expect(tooltip).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(tooltip).not.toBeVisible();
+  await help.hover();
+  await expect(tooltip).toBeVisible();
+  await tooltip.hover();
+  await page.mouse.move(0, 0);
+  await expect(tooltip).not.toBeVisible();
+  expect(await help.boundingBox()).toEqual(anchor);
+});
+
 test('metric help animates from its icon and survives quick hover reversals', async ({ page, isMobile }) => {
   test.skip(isMobile, 'Hover motion is for mouse pointers; touch uses immediate focus help.');
   // Hold the first entrance midway so pointer leave exercises an actual reversal.

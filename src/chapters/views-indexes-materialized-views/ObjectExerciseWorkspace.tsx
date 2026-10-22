@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { ChapterDefinition } from '../chapterRegistry';
 import { ObjectChapterLecture } from './ChapterLecture';
@@ -44,13 +44,6 @@ export function ObjectExerciseWorkspace({ chapter, navigation, visualization, qu
     const canvas = referenceRef.current?.querySelector('.flow-canvas');
     if (canvas) setAnchor(canvas.getBoundingClientRect().top - rootRef.current!.getBoundingClientRect().top);
     setReference(null);
-  }, [reference]);
-
-  useEffect(() => {
-    if (reference) return;
-    // The temporary lecture also mounts the shared page-title effect.
-    const title = rootRef.current!.closest('.object-exercise-page')!.querySelector('h1')!.textContent;
-    document.title = `${title} | Materialize Learning Lab`;
   }, [reference]);
 
   useLayoutEffect(() => {
@@ -127,7 +120,7 @@ export function ObjectExerciseWorkspace({ chapter, navigation, visualization, qu
   return <><div ref={rootRef} className="object-exercise-workspace" data-aligned={anchor !== null}>
     {visualization}{question}
     {reference && createPortal(<div ref={referenceRef} aria-hidden="true" inert style={{ position: 'fixed', left: reference.left, top: reference.top, width: reference.width, height: reference.height, visibility: 'hidden', pointerEvents: 'none' }}>
-      <ObjectChapterLecture chapter={chapter} navigation={navigation} lectureIndex={1} />
+      <ObjectChapterLecture chapter={chapter} navigation={navigation} lectureIndex={1} manageDocumentTitle={false} />
     </div>, reference.parent)}
   </div><div className="object-exercise-footer">{footer}</div></>;
 }

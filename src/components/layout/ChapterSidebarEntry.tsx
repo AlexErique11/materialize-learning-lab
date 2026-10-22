@@ -22,6 +22,8 @@ export function ChapterSidebarEntry({ chapter, compact }: ChapterSidebarEntryPro
   const [openSections, setOpenSections] = useState<string[]>(selected && sectionSlug ? [sectionSlug] : []);
   const branchId = useId();
   const number = formatChapterNumber(chapter.number);
+  const sections = getChapterSections(chapter);
+  const available = sections.some(section => section.pages.length > 0);
 
   useEffect(() => {
     if (selected) setExpanded(true);
@@ -48,7 +50,7 @@ export function ChapterSidebarEntry({ chapter, compact }: ChapterSidebarEntryPro
           end
           className={selected ? 'chapter-selected' : undefined}
           data-completed={completed || undefined}
-          aria-description={completed ? 'Completed' : undefined}
+          aria-description={completed ? 'Completed' : !available ? 'Coming soon' : undefined}
           aria-label={`${number} ${chapter.shortTitle}`}
           aria-current={compact ? undefined : false}
           aria-expanded={!compact ? expanded : undefined}
@@ -64,7 +66,7 @@ export function ChapterSidebarEntry({ chapter, compact }: ChapterSidebarEntryPro
           }}
         >
           <span className="chapter-link-number">{number}</span>
-          {!compact && <span className="chapter-link-label">{chapter.shortTitle}</span>}
+          {!compact && <span className="chapter-link-label">{chapter.shortTitle}{!available && ' (coming soon)'}</span>}
         </NavLink>
         {!compact && (
           <button
@@ -84,7 +86,7 @@ export function ChapterSidebarEntry({ chapter, compact }: ChapterSidebarEntryPro
           <NavLink to={chapterPath(chapter)} end className="chapter-overview-link" aria-label={`${chapter.shortTitle} overview`}>
             <span className="chapter-group-dot" aria-hidden="true" />Overview
           </NavLink>
-          {getChapterSections(chapter).map((section) => (
+          {sections.filter(section => section.pages.length > 0).map((section) => (
             <ChapterSidebarSection
               key={section.slug}
               chapter={chapter}

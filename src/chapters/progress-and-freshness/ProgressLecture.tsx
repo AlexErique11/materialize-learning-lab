@@ -17,7 +17,7 @@ import type { LaneId } from './simulation';
 import '../../styles/lesson.css';
 import './chapter.css';
 
-export function ProgressLecture({ chapter, navigation, lectureIndex }: { chapter: ChapterDefinition; navigation: ReactNode; lectureIndex: number }) {
+export function ProgressLecture({ chapter, navigation, lectureIndex, manageDocumentTitle = true }: { chapter: ChapterDefinition; navigation: ReactNode; lectureIndex: number; manageDocumentTitle?: boolean }) {
   const lecture = progressLectures[lectureIndex]!;
   const definition = { totalChanges: lecture.lessons.length, steps: lecture.lessons.map((lesson, index) => ({ time: index + 1, before: lesson.before })) };
   const { state, dispatch, completed, finished } = useLectureRun(definition);
@@ -58,7 +58,7 @@ export function ProgressLecture({ chapter, navigation, lectureIndex }: { chapter
   };
   const reset = () => { dispatch({ type: 'reset' }); setSelected(lectureIndex === 2 ? 'revenue' : 'orders'); };
   return <>
-    <LectureScreen activityCompleted={completed} layout="without-tip" chapter={chapter} title={`Lecture ${lectureIndex + 1}`} description={lecture.description} navigation={navigation}
+    <LectureScreen manageDocumentTitle={manageDocumentTitle} activityCompleted={completed} layout="without-tip" chapter={chapter} title={`Lecture ${lectureIndex + 1}`} description={lecture.description} navigation={navigation}
       regionLabel="Lecture content" className="lesson-page progress-chapter-page" guided={state.guided}
       reference={{ objective: `${lecture.title}. ${objective}`, sql: progressSql, documentationLinks: referenceLinks }}
       simulation={{ completed: state.guided ? state.step : normalStep + (caseStudy ? 1 : 0), total: state.guided ? lecture.lessons.length : frames.length + (caseStudy ? 1 : 0), progressLabel: state.guided ? 'Tutorial' : 'Steps', playing: state.playing,

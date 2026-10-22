@@ -65,14 +65,13 @@ export function LearningPathPage() {
                   <Link to={challengePath(challenge)}>
                     <CircleArrowRight className="learning-path-marker" size={26} strokeWidth={2.5} aria-hidden="true" />
                     <div><h3>{challenge.title}</h3><p>Challenge content coming soon.</p></div>
-                    <span className="learning-path-status">Not started</span>
+                    <span className="learning-path-status">Coming soon</span>
                     <ChevronRight className="learning-path-chevron" size={22} aria-hidden="true" />
                   </Link>
                 </li>
               );
             })}
           </ul>
-          <LearningPathProgress total={featuredChallenges.length} label="Featured challenges completed" />
         </section>
       </div>
       <section className="learning-path-resources" aria-labelledby="documentation-title">

@@ -1,9 +1,11 @@
-import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Link, useParams } from 'react-router';
 import { chapters, chapterPath, formatChapterNumber } from '../chapters/chapterRegistry';
 import { Breadcrumbs } from '../components/layout/Breadcrumbs';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
+import { Badge } from '../components/ui/Badge';
+import { ComingSoon } from '../components/ui/ComingSoon';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { findChallenge } from './challengeRegistry';
 
@@ -34,7 +36,7 @@ export function ChallengePage() {
         eyebrow={
           <>
             <span className="eyebrow">Capstone {String(challenge.number).padStart(2, '0')}</span>
-            <span className="reserved-badge" aria-hidden="true" />
+            <Badge>Coming soon</Badge>
           </>
         }
       />
@@ -52,11 +54,7 @@ export function ChallengePage() {
           </Link>
         </div>
       )}
-      <div className="content-placeholder reserved-content" aria-hidden="true" />
-      <Link to="/challenges" className="button button-ghost mt-6">
-        <ArrowLeft size={15} aria-hidden="true" />
-        All challenges
-      </Link>
+      <ComingSoon description="This challenge is being prepared. Its tasks and answer checks will appear here when it is ready." to="/challenges" action="All challenges" />
     </PageContainer>
   );
 }

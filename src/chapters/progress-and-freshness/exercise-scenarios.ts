@@ -79,9 +79,17 @@ export function gradePrediction(question: ProgressQuestion, prediction: Predicti
       : new Set(supplied).size === supplied.length && supplied.length === group.solution.length && supplied.every(id => group.solution.includes(id));
     if (!valid) {
       const misconception = group.choices?.find(choice => supplied.includes(choice.id) && !group.solution.includes(choice.id))?.feedback;
-      errors[group.id] = misconception || (group.kind === 'integer' ? `Enter a whole number for ${group.label}. ${question.hint}` : 'Choose the complete supported answer set; include every required statement and exclude unsupported claims.');
+      errors[group.id] = misconception || (group.kind === 'integer'
+        ? parseExerciseInteger(supplied[0] ?? '') === null
+          ? `Enter a whole number for ${group.label}. ${question.hint}`
+          : `${group.label} is not ${supplied[0]}. ${question.hint}`
+        : 'Choose the complete supported answer set; include every required statement and exclude unsupported claims.');
     }
   }
   const correct = Object.keys(errors).length === 0;
-  return { correct, errors, title: [correct ? 'Prediction accepted' : 'Check the evidence again'], explanation: progressText(correct ? question.explanation : Object.values(errors)[0]!) };
+  const incorrectGroups = question.groups.filter(group => errors[group.id]);
+  const feedback = incorrectGroups.length > 1
+    ? `Review ${incorrectGroups.map(group => group.label).join(', ')}. ${question.hint}`
+    : Object.values(errors)[0]!;
+  return { correct, errors, title: [correct ? 'Prediction accepted' : 'Check the evidence again'], explanation: progressText(correct ? question.explanation : feedback) };
 }

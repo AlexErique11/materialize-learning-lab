@@ -112,6 +112,8 @@ test('a diagnosed error completes Chapter 4 and navigates to Chapter 5', async (
     await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
     if (index < 4) await page.getByRole('button', { name: 'Next question', exact: true }).click();
   }
+  await expect(page.getByRole('dialog', { name: 'You finished Chapter 4', exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
   await expect(page.getByTestId('exercise-row-copies')).toHaveText('—');
   if (await page.getByRole('button', { name: '3. Table', exact: true }).isVisible()) await page.getByRole('button', { name: '3. Table', exact: true }).click();
   await expect(page.getByText('Relation unavailable', { exact: true })).toBeVisible();

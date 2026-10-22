@@ -62,6 +62,7 @@ interface GuidedLabScreenProps {
   chapter: ChapterDefinition;
 
   title?: string;
+  manageDocumentTitle?: boolean;
 
   regionLabel?: string;
 
@@ -99,6 +100,7 @@ interface GuidedLabScreenProps {
 export function GuidedLabScreen({
   chapter,
   title = chapter.shortTitle,
+  manageDocumentTitle = true,
   regionLabel = 'Lab workspace',
   navigation,
   children,
@@ -163,7 +165,7 @@ export function GuidedLabScreen({
     setReferenceOpen(false);
     setShortcutHelpOpen(false);
   }, [pathname]);
-  usePageTitle(title);
+  usePageTitle(title, manageDocumentTitle);
 
   return (
     <section

@@ -17,7 +17,7 @@ import { querySnapshot, type DiagramPanel, type QueryObservation, type RevenueOb
 import '../../styles/lesson.css';
 import './chapter.css';
 
-export function ObjectChapterLecture({ chapter, navigation, lectureIndex }: { chapter: ChapterDefinition; navigation: ReactNode; lectureIndex: number }) {
+export function ObjectChapterLecture({ chapter, navigation, lectureIndex, manageDocumentTitle = true }: { chapter: ChapterDefinition; navigation: ReactNode; lectureIndex: number; manageDocumentTitle?: boolean }) {
   const lecture = objectLectures[lectureIndex]!;
   const { state, dispatch, completed, finished } = useLectureRun({ totalChanges: lecture.lessons.length, steps: lecture.lessons.map((lesson, index) => ({ time: index + 1, before: lesson.before })) });
   const { open: helpOpen } = useWalkthrough();
@@ -54,7 +54,7 @@ export function ObjectChapterLecture({ chapter, navigation, lectureIndex }: { ch
     } else setIntroductionIndex(index => (index ?? 0) + 1);
   };
   return <>
-    <LectureScreen activityCompleted={completed} layout="without-tip" chapter={chapter} title={lecture.title} description={lecture.description} navigation={navigation}
+    <LectureScreen manageDocumentTitle={manageDocumentTitle} activityCompleted={completed} layout="without-tip" chapter={chapter} title={lecture.title} description={lecture.description} navigation={navigation}
       className="lesson-page object-chapter-page" regionLabel="Lecture content" guided={guided}
       reference={{ objective: lecture.objective, sql: lecture.sql, documentationLinks }}
       simulation={{ completed: introductionIndex ?? (state.guided ? lecture.introductions.length + state.step : state.selectedTime), total: guided ? lecture.introductions.length + lecture.lessons.length : lecture.lessons.length, progressLabel: guided ? 'Tutorial' : 'Steps', playing: state.playing,

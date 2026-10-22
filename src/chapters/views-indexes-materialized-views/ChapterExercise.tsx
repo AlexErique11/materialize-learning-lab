@@ -1,10 +1,9 @@
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowRight, ChevronDown } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import type { ChapterDefinition } from '../chapterRegistry';
-import { chapterPath, chapters } from '../chapterRegistry';
 import { ExerciseFrame } from '../../components/lab/ExerciseFrame';
-import { ChapterCompletionDialog } from '../../components/lab/ChapterCompletionDialog';
+import { useChapterCompletion } from '../../components/lab/chapterCompletionContext';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
 import { useExerciseStages } from '../../hooks/useExerciseStages';
@@ -27,10 +26,9 @@ export function ObjectChapterExercise({ chapter, navigation, exerciseIndex }: { 
   const [answers, setAnswers] = useState<Record<number, readonly string[]>>({});
   const selected = answers[flow.stage] ?? [];
   const [panel, setPanel] = useState<DiagramPanel>('input');
-  const [completionOpen, setCompletionOpen] = useState(false);
+  const { open: openChapterCompletion, close: closeChapterCompletion } = useChapterCompletion();
   const [answersOpen, setAnswersOpen] = useState(false);
   const lastExercise = exerciseIndex === objectExercises.length - 1;
-  const nextChapter = chapters[chapters.findIndex(item => item.slug === chapter.slug) + 1];
   const questionTitle = `Question ${flow.stage + 1} of ${flow.total}: ${checkpoint.title}`;
   const copyVariants = [
     { title: questionTitle, text: checkpoint.question, result: 'ready' },
@@ -53,8 +51,8 @@ export function ObjectChapterExercise({ chapter, navigation, exerciseIndex }: { 
       </fieldset></>}
       onCheck={() => flow.dispatch({ type: 'check', grade: gradeObjectPrediction(checkpoint, selected) })}
       onShowAnswer={() => { setAnswers(previous => ({ ...previous, [flow.stage]: checkpoint.solution })); flow.dispatch({ type: 'check', grade: gradeObjectPrediction(checkpoint, checkpoint.solution) }); }}
-      onNext={() => { if (!flow.accepted) return; if (flow.complete) { if (lastExercise) setCompletionOpen(true); else navigate(`/labs/${chapter.slug}/exercises/exercise-2`); } else { flow.dispatch({ type: 'next' }); setPanel('input'); } }}
-      onReset={() => { flow.dispatch({ type: 'reset' }); setAnswers({}); setPanel('input'); setCompletionOpen(false); }} />
+      onNext={() => { if (!flow.accepted) return; if (flow.complete) { if (lastExercise) openChapterCompletion(); else navigate(`/labs/${chapter.slug}/exercises/exercise-2`); } else { flow.dispatch({ type: 'next' }); setPanel('input'); } }}
+      onReset={() => { flow.dispatch({ type: 'reset' }); setAnswers({}); setPanel('input'); closeChapterCompletion(); }} />
     <Dialog open={answersOpen} onClose={() => setAnswersOpen(false)} title="Select answers">
       <fieldset className="object-answer-choices object-answer-dialog" disabled={flow.accepted}><legend>Select {checkpoint.solution.length === 1 ? 'one answer' : 'every correct statement'}</legend>
         {checkpoint.choices.map(item => <label key={item.id}><input type="checkbox" checked={selected.includes(item.id)} onChange={event => {
@@ -63,12 +61,5 @@ export function ObjectChapterExercise({ chapter, navigation, exerciseIndex }: { 
       </fieldset>
       <Button onClick={() => setAnswersOpen(false)}>Done</Button>
     </Dialog>
-    <ChapterCompletionDialog chapter={chapter} open={completionOpen} onClose={() => setCompletionOpen(false)}>
-      <div className="object-recap"><p>You designed one transformation with two serving clusters.</p>
-        <ul><li><strong>Regular views</strong> save SQL definitions.</li><li><strong>Indexes</strong> maintain complete results in their own cluster’s memory.</li><li><strong>Materialized views</strong> maintain durable output readable across clusters.</li></ul>
-        <p>Removing a serving index leaves the materialized view and its durable result available. Maintaining that output still uses transform memory; creation and restarts require hydration.</p>
-        {nextChapter && <Button data-dialog-primary aria-keyshortcuts="Enter" variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button>}
-      </div>
-    </ChapterCompletionDialog>
   </>;
 }

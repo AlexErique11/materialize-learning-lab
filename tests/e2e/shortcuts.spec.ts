@@ -236,9 +236,8 @@ for (const [index, [chapter, exercise, nextChapter]] of chapterCompletions.entri
       await page.keyboard.press('Control+Enter');
       await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'correct');
       const lastQuestion = await finish.count() > 0;
-      if (lastQuestion) await finish.focus();
-      await page.keyboard.press('Enter');
       if (lastQuestion) break;
+      await page.keyboard.press('Enter');
       await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'ready');
     }
     const completion = page.getByRole('dialog', { name: `You finished Chapter ${index + 1}`, exact: true });

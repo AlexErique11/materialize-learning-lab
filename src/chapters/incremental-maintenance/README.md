@@ -136,9 +136,11 @@ shared-orders selector so it remains visible when mobile users select either
 method. Shared orders are centered above recomputation on the left and maintenance
 on the right. Method titles are integrated into their panels; work counters sit
 above each query result, without duplicate group-summary cards.
-Purple branching arrows connect the shared input to both methods. Arrows light
-only when the displayed batch changes the destination result tables, and remain
-dim during guided predictions. An unused-note edit leaves both arrows dim.
+Purple branching arrows connect the shared input to both methods. The left arrow
+lights when recomputation runs after an applied batch; the right arrow lights when
+incremental maintenance changes the result. Both remain dim during guided
+predictions. An unused-note edit lights only the left arrow: recomputation still
+processes the input, while the maintained result does not change.
 The comparison omits the bottom tip and uses Chapter 1's panel-heading styling.
 
 comparison-simulation.ts reuses contributeToGroup from aggregate-simulation.ts

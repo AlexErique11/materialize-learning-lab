@@ -1,8 +1,9 @@
 import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
-import { Outlet, useParams } from 'react-router';
+import { Outlet, useLocation, useParams } from 'react-router';
 import { findChapter } from '../../chapters/chapterRegistry';
 import { ChapterSidebar } from '../../components/layout/ChapterSidebar';
+import { ChapterCompletionProvider } from '../../components/lab/ChapterCompletionProvider';
 import { NotFoundPage } from '../../pages/NotFoundPage';
 import { animateMotion, reducedMotion } from '../../motion/motion';
 
@@ -28,6 +29,7 @@ export function LearningAreaLayout() {
     animateMotion(rootRef.current?.querySelector('.sidebar-content') ?? null, 'sidebar-labels', [{ opacity: 0.25 }, { opacity: 1 }]);
   };
   const { chapterSlug } = useParams();
+  const { pathname } = useLocation();
   const chapter = findChapter(chapterSlug);
   if (!chapter)
     return (
@@ -46,7 +48,9 @@ export function LearningAreaLayout() {
         onToggle={toggleSidebar}
       />
       <div ref={contentRef} className="learning-area-content">
-        <Outlet context={chapter} />
+        <ChapterCompletionProvider key={pathname} chapter={chapter}>
+          <Outlet context={chapter} />
+        </ChapterCompletionProvider>
       </div>
     </div>
   );

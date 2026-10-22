@@ -94,6 +94,8 @@ html:has(.progress-exercise-page), body:has(.progress-exercise-page) {
 .progress-answer-group label { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; line-height: 1.4; cursor: pointer; }
 .progress-answer-group input { accent-color: var(--lab-purple); flex-shrink: 0; margin-top: 2px; }
 .progress-answer-group label[data-accepted='true'] { color: var(--success); }
+.progress-answer-group[data-error='true'] :is(legend, .progress-answer-inline-label) { color: var(--danger); }
+.progress-answer-group [aria-invalid='true']:is(select, button) { border-color: var(--danger); }
 .progress-number input { width: 80px; min-height: 34px; border: 1px solid var(--border-strong); background: var(--lab-surface); color: var(--lab-text); border-radius: 4px; padding: 5px 8px; font: inherit; }
 .progress-number input[aria-invalid='true'] { border-color: var(--danger); }
 .progress-recap p, .progress-recap li { line-height: 1.6; }

@@ -1,11 +1,9 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowRight, Clock3, CalendarClock, Table2 } from 'lucide-react';
 import { ExerciseFrame } from '../../components/lab/ExerciseFrame';
-import { Button } from '../../components/ui/Button';
-import { ChapterCompletionDialog } from '../../components/lab/ChapterCompletionDialog';
+import { useChapterCompletion } from '../../components/lab/chapterCompletionContext';
 import { useExerciseStages } from '../../hooks/useExerciseStages';
-import { chapterPath, chapters, type ChapterDefinition } from '../chapterRegistry';
+import type { ChapterDefinition } from '../chapterRegistry';
 import { temporalExercises } from './exercise-scenarios';
 import { gradeTemporalPrediction, temporalSolution, type TemporalPrediction } from './exercise-grading';
 import { TemporalExerciseWorkspace } from './TemporalExerciseWorkspace';
@@ -21,13 +19,12 @@ export function TemporalExercisePage({ chapter, navigation, exerciseIndex }: {
 }) {
   const exercise = temporalExercises[exerciseIndex]!;
   const nextExercise = temporalExercises[exerciseIndex + 1];
-  const nextChapter = chapters[chapters.findIndex((item) => item.slug === chapter.slug) + 1];
   const navigate = useNavigate();
   const flow = useExerciseStages(exercise.questions.length);
   const question = exercise.questions[flow.stage]!;
   const [answers, setAnswers] = useState<Record<number, TemporalPrediction>>({});
   const [activeStage, setActiveStage] = useState<TemporalStage>('timeline');
-  const [completionOpen, setCompletionOpen] = useState(false);
+  const { open: openChapterCompletion, close: closeChapterCompletion } = useChapterCompletion();
   const [resetVersion, setResetVersion] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
   const prediction = answers[flow.stage] ?? {};
@@ -62,7 +59,7 @@ export function TemporalExercisePage({ chapter, navigation, exerciseIndex }: {
         if (!flow.accepted) return;
         if (flow.complete) {
           if (nextExercise) navigate(`/labs/${chapter.slug}/exercises/${nextExercise.slug}`);
-          else setCompletionOpen(true);
+          else openChapterCompletion();
         } else {
           flow.dispatch({ type: 'next' });
           setActiveStage('timeline');
@@ -71,21 +68,7 @@ export function TemporalExercisePage({ chapter, navigation, exerciseIndex }: {
       }}
       onReset={() => {
         flow.dispatch({ type: 'reset' });
-        setAnswers({}); setActiveStage('timeline'); setCompletionOpen(false); setResetVersion((version) => version + 1);
+        setAnswers({}); setActiveStage('timeline'); closeChapterCompletion(); setResetVersion((version) => version + 1);
       }} />
-    <ChapterCompletionDialog chapter={chapter} open={completionOpen} onClose={() => setCompletionOpen(false)}
-      className="chapter-completion-dialog temporal-completion-dialog">
-      <div className="chapter-completion-intro"><div className="chapter-completion-copy">
-        <h3>Time is an input to maintained results</h3><p>You predicted how query time, event timestamps, and source changes affect a temporal result.</p>
-      </div></div>
-      <div className="chapter-completion-topics">
-        <section><Clock3 aria-hidden="true" /><h3>Clocks and boundaries</h3><p>Use logical time and distinguish inclusive from exclusive limits.</p></section>
-        <section><CalendarClock aria-hidden="true" /><h3>Changing lifetimes</h3><p>Replace deadlines and ignore obsolete future effects.</p></section>
-        <section><Table2 aria-hidden="true" /><h3>Recent events</h3><p>Handle late and future events without restarting their event-time windows.</p></section>
-      </div>
-      <div className="chapter-completion-takeaway"><strong>The key idea</strong><p>A result can change as logical time advances, even when the source receives no new rows. Expiration changes membership, not the source table.</p></div>
-      {nextChapter && <div className="chapter-completion-next"><div><span className="eyebrow">Up next · Chapter {nextChapter.number}</span><p>{nextChapter.shortTitle}</p></div>
-        <Button data-dialog-primary aria-keyshortcuts="Enter" variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button></div>}
-    </ChapterCompletionDialog>
   </div>;
 }

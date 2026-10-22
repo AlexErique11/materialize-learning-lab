@@ -156,7 +156,7 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
   return <div ref={rootRef} className="progress-exercise-layout" data-aligned={anchor !== null}>
     {visualization}{question}
     {reference && createPortal(<div ref={referenceRef} className="progress-exercise-reference" aria-hidden="true" inert style={{ position: 'fixed', left: reference.left, top: reference.top, width: reference.width, height: reference.height, visibility: 'hidden', pointerEvents: 'none' }}>
-      <ProgressLecture chapter={chapter} navigation={navigation} lectureIndex={lectureIndex} />
+      <ProgressLecture chapter={chapter} navigation={navigation} lectureIndex={lectureIndex} manageDocumentTitle={false} />
     </div>, reference.parent)}
   </div>;
 }

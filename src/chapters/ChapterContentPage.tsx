@@ -3,12 +3,13 @@ import { Link, Navigate, useOutletContext, useParams } from 'react-router';
 import { ChapterPagination } from '../components/chapter/ChapterPagination';
 import { GuidedLabScreen } from '../labs/components/GuidedLabScreen';
 import { NotFoundPage } from '../pages/NotFoundPage';
+import { ComingSoon } from '../components/ui/ComingSoon';
 import {
   chapterContentPath,
   findChapterContent,
   findChapterSection,
 } from './chapterOutline';
-import type { ChapterDefinition } from './chapterRegistry';
+import { chapterPath, type ChapterDefinition } from './chapterRegistry';
 import { getChapterNavigation } from './chapterNavigation';
 import { LectureOne } from './changing-relations/LectureOne';
 import { LectureTwo } from './changing-relations/LectureTwo';
@@ -129,6 +130,7 @@ export function ChapterContentPage() {
       regionLabel={placeholderTitle}
       navigation={<ChapterPagination {...navigation} hideLinks={section.slug === 'exercises'} />}
     >
+      {section.pages.length === 0 && <ComingSoon description={`This chapter's ${section.slug === 'tutorial' ? 'tutorials' : 'exercises'} are being prepared.`} to={chapterPath(chapter)} action="Chapter overview" />}
       {!page && section.pages.length > 0 && (
         <ol className="chapter-content-list" aria-label={`${section.title} pages`}>
           {section.pages.map((item) => (

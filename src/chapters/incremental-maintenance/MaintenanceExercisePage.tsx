@@ -1,12 +1,10 @@
 import { useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowRight, Filter, GitMerge, Sigma } from 'lucide-react';
 import type { ChapterDefinition } from '../chapterRegistry';
 import { chapterPath, chapters } from '../chapterRegistry';
 import { ExerciseAnswers } from './ExerciseAnswers';
 import { ExerciseFrame } from '../../components/lab/ExerciseFrame';
-import { ChapterCompletionDialog } from '../../components/lab/ChapterCompletionDialog';
-import { Button } from '../../components/ui/Button';
+import { useChapterCompletion } from '../../components/lab/chapterCompletionContext';
 import { useExerciseStages } from '../../hooks/useExerciseStages';
 import { MaintenancePanels } from './MaintenancePanels';
 import { JoinTable, ComparisonPanel } from './MaintenanceTables';
@@ -75,7 +73,7 @@ export function MaintenanceExercisePage({
     : nextChapter
       ? { label: 'Finish chapter', to: chapterPath(nextChapter) }
       : undefined;
-  const [completionOpen, setCompletionOpen] = useState(false);
+  const { open: openChapterCompletion } = useChapterCompletion();
   const flow = useExerciseStages(exercise.checkpoints.length);
   const [answers, setAnswers] = useState<Record<number, Prediction>>({});
   const answer = answers[flow.stage] ?? emptyAnswer();
@@ -233,7 +231,7 @@ export function MaintenanceExercisePage({
           if (!flow.accepted) return;
           if (flow.stage === flow.total - 1 && nextDestination) {
             if (nextExercise) navigate(nextDestination.to);
-            else setCompletionOpen(true);
+            else openChapterCompletion();
             return;
           }
           flow.dispatch({ type: 'next' });
@@ -247,77 +245,6 @@ export function MaintenanceExercisePage({
         }}
       />
 
-      <ChapterCompletionDialog
-        chapter={chapter}
-        open={completionOpen}
-        onClose={() => setCompletionOpen(false)}
-        className="chapter-completion-dialog"
-      >
-        <div className="chapter-completion-intro">
-          <div className="chapter-completion-copy">
-            <h3>How one change travels through SQL</h3>
-
-            <p>
-              You explored incremental maintenance: how input changes travel through filters, joins,
-              and grouped aggregates.
-            </p>
-          </div>
-
-          <img
-            src={chapter.overviewImage}
-            alt=""
-            aria-hidden="true"
-            className="chapter-completion-art"
-          />
-        </div>
-
-        <div className="chapter-completion-topics">
-          <section>
-            <Filter aria-hidden="true" />
-            <h3>Filters & projections</h3>
-            <p>
-              Predict when rows enter or leave a result, and when an unused-column edit leaves it
-              unchanged.
-            </p>
-          </section>
-
-          <section>
-            <GitMerge aria-hidden="true" />
-            <h3>Joins & retained matches</h3>
-            <p>Follow late matches and see how one product edit can change several joined rows.</p>
-          </section>
-
-          <section>
-            <Sigma aria-hidden="true" />
-            <h3>Grouped counts & revenue</h3>
-            <p>
-              Track COUNT and SUM as values change, rows move between groups, or the last row
-              disappears.
-            </p>
-          </section>
-        </div>
-
-        <div className="chapter-completion-takeaway">
-          <strong>The key idea</strong>
-          <p>
-            Incremental maintenance reuses retained state to apply changes. You compared this with
-            rebuilding the full result, and predicted the complete rows inserted or retracted at
-            each timestamp.
-          </p>
-        </div>
-        {nextChapter && (
-          <div className="chapter-completion-next">
-            <div>
-              <span className="eyebrow">Up next · Chapter {nextChapter.number}</span>
-              <p>{nextChapter.shortTitle}</p>
-            </div>
-            <Button data-dialog-primary aria-keyshortcuts="Enter" variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>
-              Go to next chapter
-              <ArrowRight size={16} aria-hidden="true" />
-            </Button>
-          </div>
-        )}
-      </ChapterCompletionDialog>
     </>
   );
 }

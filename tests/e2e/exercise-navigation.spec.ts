@@ -6,6 +6,28 @@ const activities = [
   ['time-in-materialize', 3], ['progress-and-freshness', 3],
 ] as const;
 
+test('measurement lectures cannot replace exercise document titles on entry or resize', async ({ page, isMobile }) => {
+  test.setTimeout(60_000);
+  for (const [chapter, count] of [['views-indexes-materialized-views', 2], ['progress-and-freshness', 3]] as const) {
+    for (let exercise = 1; exercise <= count; exercise++) {
+      await page.goto(`/labs/${chapter}/exercises/exercise-${exercise}`);
+      const title = `Exercise ${exercise} | Materialize Learning Lab`;
+      await expect(page).toHaveTitle(title);
+      for (const viewport of [{ width: 1366, height: 768 }, { width: 768, height: 900 }, { width: 390, height: 844 }]) {
+        await page.setViewportSize(viewport);
+        await expect(page.locator(chapter === 'progress-and-freshness' ? '.progress-exercise-layout' : '.object-exercise-workspace')).toHaveAttribute('data-aligned', 'true');
+        await expect(page).toHaveTitle(title);
+      }
+      if (!isMobile) {
+        await page.setViewportSize({ width: 1440, height: 900 });
+        await page.getByRole('button', { name: 'Collapse chapter navigation', exact: true }).click();
+        await expect(page).toHaveTitle(title);
+        await page.getByRole('button', { name: 'Expand chapter navigation', exact: true }).click();
+      }
+    }
+  }
+});
+
 for (const viewport of [{ width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1536, height: 714 }]) {
   test(`Exercise navigation restores October 10 clearance at ${viewport.width}x${viewport.height}`, async ({ page, isMobile }) => {
     test.skip(isMobile, 'Desktop spacing; phones retain their existing question flow.');

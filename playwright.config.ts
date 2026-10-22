@@ -17,6 +17,8 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 1000 } },
     },
     { name: 'mobile', use: { ...devices['iPhone 13'], defaultBrowserType: 'chromium' } },
+    { name: 'firefox-smoke', testMatch: '**/browser-smoke.spec.ts', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit-smoke', testMatch: '**/browser-smoke.spec.ts', use: { ...devices['iPhone 13'], defaultBrowserType: 'webkit' } },
   ],
   webServer: {
     command: 'npm run build && npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',

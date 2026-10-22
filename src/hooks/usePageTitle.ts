@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 
-export function usePageTitle(title: string) {
+export function usePageTitle(title: string, enabled = true) {
   useEffect(() => {
-    document.title = `${title} | Materialize Learning Lab`;
-  }, [title]);
+    if (enabled) document.title = `${title} | Materialize Learning Lab`;
+  }, [title, enabled]);
 }

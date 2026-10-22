@@ -168,8 +168,13 @@ export function AreaTransition() {
       content.setAttribute('aria-busy', 'true');
       clipToContent(run.viewport, content);
       const images = Array.from(content.querySelectorAll('img')).filter(image => image.getBoundingClientRect().top < innerHeight);
-      // Images, fonts and the graph's layout effects settle behind an opaque surface.
-      void Promise.all([run.animations[0]!.finished, document.fonts.ready, ...images.map(image => image.decode().catch(() => {}))]).then(() => {
+      // Decorative assets may stall; reveal the reserved layout after a bounded wait.
+      const assetsReady = Promise.race([
+        Promise.all([document.fonts.ready, ...images.map(image => image.decode().catch(() => {}))]),
+        new Promise<void>(resolve => { run.timer = window.setTimeout(resolve, 1500); }),
+      ]);
+      void Promise.all([run.animations[0]!.finished, assetsReady]).then(() => {
+        window.clearTimeout(run.timer);
         if (runRef.current !== run) return;
         run.frame = requestAnimationFrame(() => {
           run.frame = requestAnimationFrame(() => {

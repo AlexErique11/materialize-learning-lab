@@ -157,6 +157,37 @@ for (const reduceDuringLoad of [false, true]) {
   });
 }
 
+for (const asset of ['image', 'font'] as const) {
+  test(`a permanently pending ${asset} cannot trap a chapter transition`, async ({ page }) => {
+    await pausePageMotion(page);
+    await page.addInitScript(asset => {
+      let release!: () => void;
+      const pending = new Promise<void>(resolve => { release = resolve; });
+      (window as unknown as { releaseAsset: () => void }).releaseAsset = release;
+      if (asset === 'font') Object.defineProperty(document.fonts, 'ready', { get: () => pending });
+      else {
+        const decode = HTMLImageElement.prototype.decode;
+        HTMLImageElement.prototype.decode = function () {
+          return this.src.includes('incremental-maintenance-overview') ? pending : decode.call(this);
+        };
+      }
+    }, asset);
+    await page.goto('/labs/changing-relations');
+    await selectChapter(page, 'incremental-maintenance');
+    await finishPhase(page, 'exit');
+    await finishPhase(page, 'enter');
+    await expect(curtain(page)).toHaveCount(0);
+    await expect(page.locator('#main-content .learning-area-content')).not.toHaveAttribute('inert');
+    await expect(page.locator('#main-content .learning-area-content')).not.toHaveAttribute('aria-busy');
+    await page.evaluate(() => (window as unknown as { releaseAsset: () => void }).releaseAsset());
+    await expect(curtain(page)).toHaveCount(0);
+    await page.getByRole('link', { name: 'Start tutorial: Lecture 1: Filters and projections', exact: true }).click();
+    await finishPhase(page, 'exit');
+    await finishPhase(page, 'enter');
+    await expect(page.getByRole('heading', { name: 'Lecture 1', exact: true })).toBeVisible();
+  });
+}
+
 test('rapid chapter selections and Back discard stale transitions and restore interaction', async ({ page }) => {
   await pausePageMotion(page);
   await page.goto('/labs/changing-relations');

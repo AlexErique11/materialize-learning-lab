@@ -1,11 +1,9 @@
 import { useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-import { ArrowRight, Database, FileInput, KeyRound } from 'lucide-react';
 import { ExerciseFrame } from '../../components/lab/ExerciseFrame';
-import { Button } from '../../components/ui/Button';
-import { ChapterCompletionDialog } from '../../components/lab/ChapterCompletionDialog';
+import { useChapterCompletion } from '../../components/lab/chapterCompletionContext';
 import { useExerciseStages } from '../../hooks/useExerciseStages';
-import { chapterPath, chapters, type ChapterDefinition } from '../chapterRegistry';
+import type { ChapterDefinition } from '../chapterRegistry';
 import { ingestionExercises } from './exercise-scenarios';
 import { gradeIngestionPrediction, solutionForQuestion, type ExercisePrediction } from './exercise-grading';
 import { ExerciseAnswers } from './ExerciseAnswers';
@@ -21,13 +19,12 @@ export function IngestionExercisePage({ chapter, navigation, exerciseIndex }: {
 }) {
   const exercise = ingestionExercises[exerciseIndex]!;
   const nextExercise = ingestionExercises[exerciseIndex + 1];
-  const nextChapter = chapters[chapters.findIndex((item) => item.slug === chapter.slug) + 1];
   const navigate = useNavigate();
   const flow = useExerciseStages(exercise.questions.length);
   const question = exercise.questions[flow.stage]!;
   const [answers, setAnswers] = useState<Record<number, ExercisePrediction>>({});
   const [activeStage, setActiveStage] = useState(question.kind === 'snapshot' ? 'source' : 'record');
-  const [completionOpen, setCompletionOpen] = useState(false);
+  const { open: openChapterCompletion, close: closeChapterCompletion } = useChapterCompletion();
   const [resetVersion, setResetVersion] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
   const prediction = answers[flow.stage] ?? {};
@@ -64,7 +61,7 @@ export function IngestionExercisePage({ chapter, navigation, exerciseIndex }: {
         if (!flow.accepted) return;
         if (flow.complete) {
           if (nextExercise) navigate(`/labs/${chapter.slug}/exercises/${nextExercise.slug}`);
-          else setCompletionOpen(true);
+          else openChapterCompletion();
         } else {
           flow.dispatch({ type: 'next' });
           setActiveStage(exercise.questions[flow.stage + 1]!.kind === 'snapshot' ? 'source' : 'record');
@@ -74,26 +71,9 @@ export function IngestionExercisePage({ chapter, navigation, exerciseIndex }: {
       onReset={() => {
         flow.dispatch({ type: 'reset' });
         setAnswers({});
-        setCompletionOpen(false);
+        closeChapterCompletion();
         setResetVersion((version) => version + 1);
         setActiveStage(exercise.questions[0]!.kind === 'snapshot' ? 'source' : 'record');
       }} />
-    <ChapterCompletionDialog chapter={chapter} open={completionOpen} onClose={() => setCompletionOpen(false)}
-      className="chapter-completion-dialog ingestion-completion-dialog">
-      <div className="chapter-completion-intro">
-        <div className="chapter-completion-copy"><h3>From incoming data to current rows</h3>
-          <p>You followed data from an initial snapshot into a maintained table, and chose how incoming records become changes.</p></div>
-        <img src={chapter.overviewImage} alt="" aria-hidden="true" className="chapter-completion-art" />
-      </div>
-      <div className="chapter-completion-topics">
-        <section><Database aria-hidden="true" /><h3>Snapshot and live CDC</h3><p>Commit the starting rows together, catch up, then maintain the live table.</p></section>
-        <section><FileInput aria-hidden="true" /><h3>Producer contracts</h3><p>Interpret events, current keyed values, and explicit before/after changes.</p></section>
-        <section><KeyRound aria-hidden="true" /><h3>Stable keys and deletions</h3><p>Preserve identity through updates and distinguish nullable fields, tombstones, and errors.</p></section>
-      </div>
-      <div className="chapter-completion-takeaway"><strong>The key idea</strong>
-        <p>The producer’s contract determines how records become rows. Correct identity keeps updates from becoming additional products.</p></div>
-      {nextChapter && <div className="chapter-completion-next"><div><span className="eyebrow">Up next · Chapter {nextChapter.number}</span><p>{nextChapter.shortTitle}</p></div>
-        <Button data-dialog-primary aria-keyshortcuts="Enter" variant="primary" onClick={() => navigate(chapterPath(nextChapter))}>Go to next chapter<ArrowRight size={16} aria-hidden="true" /></Button></div>}
-    </ChapterCompletionDialog>
   </div>;
 }

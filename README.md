@@ -32,16 +32,28 @@ and documentation links. Lectures also have a **Controls tour**. Light and dark
 themes are available, and smaller screens use panel selectors to switch between
 tables and questions.
 
-**Chapter 1: Changing Relations** has two lectures and one exercise about row
-changes, updates, and logical timestamps. **Chapter 2: Incremental Maintenance**
-has four lectures and two exercises about changes through filters, projections,
-joins, and aggregations.
+The authored chapters include 20 lectures and 14 exercises:
 
-**Chapter 6: Progress and Freshness** has three lectures and three exercises
-covering write frontiers, limiting inputs, and source/computation/serving delay.
-Guided runs introduce each marker before asking for predictions; exercises finish
-with evidence-based dashboard diagnosis.
+| Chapter | Lectures | Exercises | Topics |
+| --- | --- | --- | --- |
+| 1: Changing Relations | 2 | 1 | Signed changes, updates, and logical timestamps |
+| 2: Incremental Maintenance | 4 | 2 | Filters, projections, joins, aggregations, and maintenance work |
+| 3: Views, Indexes & Materialized Views | 3 | 2 | Saved SQL, cluster-local indexes, and durable shared results |
+| 4: Getting Data In | 4 | 3 | Snapshots, CDC, record envelopes, keys, and input errors |
+| 5: Time in Materialize | 4 | 3 | Logical time, temporal filters, expiration, and late arrivals |
+| 6: Progress and Freshness | 3 | 3 | Frontiers, limiting inputs, and source/computation/serving delay |
 
-Other later chapters and capstone challenges have overview and navigation pages;
-their interactive activities are not implemented yet. The full learning plan
-is in [CURRICULUM.md](./CURRICULUM.md).
+Chapter 7 and the three capstone challenges are planned and labeled Coming soon.
+Chapter progress counts all seven core chapters; challenges do not yet track
+completion. The full learning plan is in [CURRICULUM.md](./CURRICULUM.md).
+
+## Verification
+
+Run `npm test` for the unit checks and `npm run build` for type checking and the
+production build. Browser tests use the production preview on port 4173.
+
+Install test browsers with `npx playwright install chromium firefox webkit`, then
+run `npx playwright test tests/e2e/browser-smoke.spec.ts --workers=2` for the
+representative Chromium desktop/phone, Firefox desktop, and WebKit phone checks.
+Linux hosts can use `--with-deps` when installing browsers; CI does this automatically.
+The larger layout suite retains its existing Chromium desktop/phone projects.

@@ -5,6 +5,35 @@ import { progressExercises } from '../../src/chapters/progress-and-freshness/exe
 import { getLectureWalkthrough } from '../../src/components/walkthrough/walkthroughContent';
 
 const base = '/labs/progress-and-freshness';
+
+test('Chapter 6 associates every incorrect answer with its explanation without moving the diagram', async ({ page }) => {
+  await page.goto(`${base}/exercises/exercise-2`);
+  await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-aligned', 'true');
+  const diagram = await page.locator('.progress-lane-panel').boundingBox();
+  for (const label of ['Input limit', 'Actual join frontier']) await page.getByRole('textbox', { name: label, exact: true }).fill('0');
+  const select = page.getByRole('combobox', { name: 'Limiting input', exact: true });
+  if (await select.isVisible()) await select.selectOption('orders');
+  else await page.getByRole('radio', { name: 'Orders', exact: true }).check();
+  await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
+  const feedback = page.locator('.exercise-question-copy');
+  for (const label of ['Input limit', 'Actual join frontier', 'Limiting input']) {
+    const group = page.getByRole('group', { name: label, exact: true });
+    await expect(group).toHaveAttribute('aria-invalid', 'true');
+    await expect(group).toHaveAccessibleDescription(/\S+/);
+    await expect(feedback).toContainText(label);
+  }
+  await expect(page.getByRole('textbox', { name: 'Input limit', exact: true })).toHaveAccessibleDescription(/Input limit is not 0/);
+  const choice = await select.isVisible() ? select : page.getByRole('radio', { name: 'Orders', exact: true });
+  await expect(choice).toHaveAttribute('aria-invalid', 'true');
+  await expect(choice).toHaveAccessibleDescription(/Payments is the smaller input/);
+  expect(await page.locator('.progress-lane-panel').boundingBox()).toEqual(diagram);
+  await page.getByRole('textbox', { name: 'Input limit', exact: true }).fill('abc');
+  await expect(choice).toHaveAttribute('aria-invalid', 'false');
+  await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
+  await expect(page.getByRole('textbox', { name: 'Input limit', exact: true })).toHaveAccessibleDescription(/Enter a whole number/);
+  await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+  await expect(page.locator('.progress-answer-group[aria-invalid="true"]')).toHaveCount(0);
+});
 test('Chapter 6 overview exposes every activity and the controls tour pauses playback', async ({ page }) => {
   await page.clock.install();
   await page.goto(base);

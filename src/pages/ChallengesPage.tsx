@@ -4,6 +4,7 @@ import { challenges, challengePath } from '../challenges/challengeRegistry';
 import { Breadcrumbs } from '../components/layout/Breadcrumbs';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
+import { Badge } from '../components/ui/Badge';
 
 export function ChallengesPage() {
   return (
@@ -18,7 +19,7 @@ export function ChallengesPage() {
               <span className="pathway-icon" aria-hidden="true">
                 <Layers3 size={21} />
               </span>
-              <span className="reserved-badge" aria-hidden="true" />
+              <Badge>Coming soon</Badge>
             </div>
             <p className="eyebrow mb-3">Capstone {String(challenge.number).padStart(2, '0')}</p>
             <h2 className="text-xl font-semibold leading-snug tracking-tight">{challenge.title}</h2>

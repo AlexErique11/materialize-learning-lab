@@ -271,7 +271,7 @@ for (const action of ['Check Answer', 'Show Answer']) {
    await page.getByRole('button', { name: action, exact: true }).click();
    await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'correct');
    await expect(page.locator('.guided-lab-progress strong')).toHaveText(`${stage + 1} / 3`);
-   await next.click();
+   if (stage < 2) await next.click();
   }
   await expect(page).toHaveURL('/labs/incremental-maintenance/exercises/exercise-3');
   const dialog = page.getByRole('dialog', { name: 'You finished Chapter 2', exact: true });

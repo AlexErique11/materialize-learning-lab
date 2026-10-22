@@ -53,6 +53,15 @@ describe('progress semantics', () => {
 });
 
 describe('curriculum fixtures and assessments', () => {
+  it('identifies every wrong group and distinguishes incorrect integers from invalid input', () => {
+    const question = progressExercises[1]!.questions[0]!;
+    const wrong = gradePrediction(question, { limit: ['0'], actual: ['0'], limiter: ['orders'] });
+    expect(Object.keys(wrong.errors)).toEqual(['limit', 'actual', 'limiter']);
+    expect(wrong.errors.limit).toContain('Input limit is not 0');
+    expect(wrong.errors.actual).not.toContain('Enter a whole number');
+    expect(wrong.errors.limiter).toContain('Payments is the smaller input');
+    expect(gradePrediction(question, { ...solutionFor(question), limit: ['abc'] }).errors.limit).toContain('Enter a whole number');
+  });
   it.each(progressLectures.map((lecture, i) => [i + 1, lecture] as const))('lecture %i replays deterministically with valid boundaries', (_, lecture) => {
     let current = lecture.initial;
     for (const lesson of lecture.lessons) {

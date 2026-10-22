@@ -118,8 +118,19 @@
   line-height: 1.5;
   text-align: left;
   white-space: normal;
-  pointer-events: none;
+  pointer-events: auto;
+  overflow: visible;
 }
+
+.relation-help-tooltip::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 10px;
+}
+.relation-help-tooltip[data-placement='below']::before { bottom: 100%; }
+.relation-help-tooltip[data-placement='above']::before { top: 100%; }
 
 .relation-help-tooltip > b {
   display: block;

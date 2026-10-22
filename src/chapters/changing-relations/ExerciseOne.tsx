@@ -16,7 +16,7 @@ import {
 } from './inventory-exercise';
 import { relationAt } from './simulation';
 import { useExerciseStages } from '../../hooks/useExerciseStages';
-import { ChapterCompletionDialog } from './ChapterCompletionDialog';
+import { useChapterCompletion } from '../../components/lab/chapterCompletionContext';
 
 export function ExerciseOne({
   chapter,
@@ -27,7 +27,7 @@ export function ExerciseOne({
 }) {
   const flow = useExerciseStages(inventoryCheckpoints.length);
   const [answer, setAnswer] = useState<InventoryPrediction>({});
-  const [completionOpen, setCompletionOpen] = useState(false);
+  const { open: openChapterCompletion, close: closeChapterCompletion } = useChapterCompletion();
   const checkpoint = inventoryCheckpoints[flow.stage]!;
   const batch = inventoryBatches[flow.stage]!;
   const time = flow.accepted ? batch.time : batch.time - 1;
@@ -112,7 +112,7 @@ export function ExerciseOne({
         onNext={() => {
           if (!flow.accepted) return;
           if (flow.complete) {
-            setCompletionOpen(true);
+            openChapterCompletion();
             return;
           }
           flow.dispatch({ type: 'next' });
@@ -121,15 +121,10 @@ export function ExerciseOne({
         onReset={() => {
           flow.dispatch({ type: 'reset' });
           setAnswer({});
-          setCompletionOpen(false);
+          closeChapterCompletion();
         }}
       />
 
-      <ChapterCompletionDialog
-        chapter={chapter}
-        open={completionOpen}
-        onClose={() => setCompletionOpen(false)}
-      />
     </>
   );
 }

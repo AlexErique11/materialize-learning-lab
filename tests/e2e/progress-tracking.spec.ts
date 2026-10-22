@@ -93,7 +93,7 @@ for (const chapter of chapters) {
       await page.goto(path);
       await finishExercise(page);
       const finish = page.getByRole('button', { name: 'Finish chapter', exact: true });
-      await finish.click();
+      if (!prerequisitesComplete) await finish.click();
       const dialog = page.getByRole('dialog', { name: prerequisitesComplete ? `You finished Chapter ${chapter.number}` : 'Exercise completed', exact: true });
       await expect(dialog).toBeVisible();
       await expect(progress(page)).toHaveAttribute('value', prerequisitesComplete ? '1' : '0');
@@ -193,6 +193,40 @@ for (const chapter of chapters) {
   });
 }
 
+for (const chapter of chapters) {
+  for (const kind of ['tutorial', 'exercises'] as const) {
+    test(`${chapter.slug}: the final remaining ${kind === 'tutorial' ? 'tutorial' : 'exercise'} opens the chapter panel automatically`, async ({ page }) => {
+      test.setTimeout(60_000);
+      const activities = getChapterPages(chapter);
+      const lastRemaining = activities.find(activity => activity.sectionSlug === kind)!;
+      const path = chapterContentPath(chapter, lastRemaining);
+      await page.addInitScript(({ key, completed }) => {
+        if (localStorage.getItem(key) === null) localStorage.setItem(key, JSON.stringify({ version: 1, completed }));
+      }, {
+        key: LAB_PROGRESS_KEY,
+        completed: activities.filter(activity => activity !== lastRemaining).map(activity => chapterContentPath(chapter, activity)),
+      });
+      await page.goto(path);
+      const dialog = page.getByRole('dialog', { name: `You finished Chapter ${chapter.number}`, exact: true });
+      await expect(dialog).not.toBeVisible();
+      const finish = kind === 'tutorial' ? finishTutorial : finishExercise;
+      await finish(page);
+      await expect(dialog).toBeVisible();
+      await expect(progress(page)).toHaveAttribute('value', '1');
+      await expect(dialog.getByRole('button', { name: 'Go to next chapter', exact: true })).toBeFocused();
+      await page.keyboard.press('Escape');
+      await expect(dialog).not.toBeVisible();
+      await page.reload();
+      await expect(dialog).not.toBeVisible();
+      await expect(titleCheck(page)).toBeVisible();
+      await finish(page);
+      await expect(dialog).not.toBeVisible();
+      await page.reload();
+      await expect(dialog).not.toBeVisible();
+    });
+  }
+}
+
 test('chapter completion still requires earlier exercises after all tutorials are complete', async ({ page }) => {
   const chapter = chapters.find(item => item.slug === 'incremental-maintenance')!;
   const activities = getChapterPages(chapter);
@@ -247,7 +281,7 @@ test('both bars count whole chapters while chapter badges, activity dots and oth
   const pathProgress = page.getByRole('progressbar', { name: 'Core chapters completed', exact: true });
   await expect(pathProgress).toHaveAttribute('value', '0');
   await expect(pathProgress).toHaveAttribute('max', String(coreChapters.length));
-  await expect(page.getByRole('progressbar', { name: 'Featured challenges completed' })).toHaveAttribute('value', '0');
+  await expect(page.getByRole('progressbar', { name: 'Featured challenges completed' })).toHaveCount(0);
   await page.reload();
   await expect(pathProgress).toHaveAttribute('value', '0');
   const other = await context.newPage();
@@ -257,6 +291,9 @@ test('both bars count whole chapters while chapter badges, activity dots and oth
   await expect(titleCheck(other)).toHaveCount(0);
   await page.goto('/labs/changing-relations/tutorial/lecture-2');
   await finishTutorial(page);
+  await expect(page.getByRole('dialog', { name: 'You finished Chapter 1', exact: true })).toBeVisible();
+  await expect(other.getByRole('dialog', { name: 'You finished Chapter 1', exact: true })).not.toBeVisible();
+  await page.keyboard.press('Escape');
   await expect(titleCheck(other)).toBeVisible();
   await expect(tutorialBadge(other)).toHaveCount(0);
   await expect(progress(other)).toHaveAttribute('value', '1');

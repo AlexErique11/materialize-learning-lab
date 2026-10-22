@@ -140,6 +140,11 @@ authored tutorials and exercises are complete. Both bars use the total number of
 core chapters as their denominator; empty future chapters cannot earn completion,
 and challenges are excluded.
 `components/lab/ChapterCompletionDialog` uses that same saved chapter calculation.
+`ChapterCompletionProvider` owns the existing chapter panels at the shared activity
+layout. Earning the final missing activity opens that chapter's panel immediately,
+whether the activity is a tutorial or any exercise. Saved completion on entry,
+replays and completion updates from other tabs do not reopen it. Manual Finish
+chapter behavior and incomplete-chapter summaries remain available.
 Finishing the last exercise shows the existing chapter recap only when every
 tutorial and exercise is complete. Otherwise it confirms the exercise, lists
 unfinished activities under "You have left:", and offers a secondary Chapter overview
@@ -306,6 +311,9 @@ chapter's tables and panels.
   snapshot and record layouts, guided predictions, and stable viewport fit through
   every checkpoint on desktop, tablet, and phone screens.
 - `tests/e2e/walkthrough.spec.ts`: lecture help, paused playback, and focus handling.
+- `tests/e2e/browser-smoke.spec.ts`: navigation, native dialogs/popovers, compact
+  reference panels, and saved completion in Chromium, Firefox, and WebKit. The
+  additional engines run only this representative suite, including in CI.
 - `tests/e2e/incremental-maintenance.spec.ts`, `chapter-two-exercises.spec.ts`, and
   `changing-relations-exercise.spec.ts`: chapter-specific learner journeys.
 
@@ -315,6 +323,14 @@ when changing controls. Documentation-only changes need link and consistency
 review, not an application test run.
 
 ## Additional shared ownership
+
+Page transitions wait up to 1.5 seconds for decorative images and fonts before
+revealing the reserved destination layout. Normal motion, reduced-motion
+cancellation, and navigation cleanup keep their existing behavior; a stalled
+asset cannot leave page content inert indefinitely.
+
+Hidden lecture instances used for exercise measurements opt out of document-title
+management. Only the visible activity owns the browser title, including on resize.
 
 - `useResponsiveLabLayout` measures each activity's actual content width, title,
   and controls, including sidebar changes and saved completion checkmarks.
@@ -358,8 +374,13 @@ review, not an application test run.
   below, when the full question does not fit beneath it. Bounds checks prevent
   overlap and scrolling. Hints, errors and accepted answers cannot move the anchor.
   Navigation uses the shared exercise footer inset. Compact single-answer fields
-  use native selects; multiple-answer fields keep checkboxes. In short windows,
-  answers dock beside navigation and multiple choices use a checkbox dialog.
+  use native selects; multiple-answer fields keep checkboxes. Incorrect answer
+  groups and their controls identify their associated error descriptions.
+  The existing question copy names all incorrect groups; feedback
+  distinguishes malformed numbers from incorrect whole-number values without
+  adding another row.
+  In short windows, answers dock beside navigation and multiple choices use a
+  checkbox dialog.
   Wide legends can host evidence in their unused left space. Lecture layouts and
   stage selectors remain unchanged.
   Document scrolling and overscroll are locked while a Chapter 6 exercise uses
@@ -393,15 +414,20 @@ review, not an application test run.
   pointer tooltips expand subtly from the trigger with the shared motion easing
   (160ms in, 100ms out), reversing from their current appearance on quick hovers.
   Keyboard focus and reduced-motion preferences show help immediately.
+  Help stays open across the trigger, gap, and tooltip. Leaving both closes it
+  after a short pointer grace period; focus, Escape, and outside clicks retain
+  their existing behavior.
   `logicalTimestampHelp.ts` contains the cross-chapter timestamp definition.
 - `src/hooks/useExerciseStages.ts` owns exercise-stage state, grading types and integer parsing.
 - `src/styles/lesson.css` owns common lesson typography, metrics, panels, tables and help.
 - `src/styles/exercise.css` owns the shared question frame and controls. Chapter 1
   keeps inventory inputs, visualization dimensions and completion styling local.
-- `src/styles/ui.css` owns inert reserved-region dimensions. Missing activity content
-  leaves empty space, excluded from focus and accessibility. The learning-path page
-  uses saved activity progress for Guided labs. Challenge progress and status
-  badges remain placeholders until challenge completion is implemented.
+- `src/styles/ui.css` owns inert reserved-region dimensions for unavailable
+  controls, excluded from focus and accessibility. The learning-path page
+  uses saved activity progress for Guided labs. Planned chapters and challenges
+  display Coming soon and a useful return link, including direct section URLs.
+  Challenge achievement indicators stay absent until completion is implemented.
+  Chapter 7 remains in the seven-chapter progress denominator.
 
 ## Chapter style and layout
 

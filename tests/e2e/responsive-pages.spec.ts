@@ -173,8 +173,22 @@ test('tablet tables use complete selected panels and lifetime labels remain dist
   for (const chapter of ['incremental-maintenance', 'time-in-materialize']) {
     await page.goto(`/labs/${chapter}/exercises/exercise-${chapter === 'time-in-materialize' ? 2 : 1}`);
     const tabs = page.locator(chapter === 'time-in-materialize' ? '.temporal-panel-tabs' : '.maintenance-flow');
-    for (const button of await tabs.getByRole('button').all()) {
+    const panels = page.locator(chapter === 'time-in-materialize' ? '.temporal-workspace > .temporal-panel' : '.maintenance-panels > .relation-panel');
+    const buttons = await tabs.locator('button[aria-pressed]').all();
+    expect(buttons).toHaveLength(3);
+    for (const [index, button] of buttons.entries()) {
       await button.click();
+      await expect(button).toHaveAttribute('aria-pressed', 'true');
+      const selected = panels.nth(index);
+      await expect(selected).toBeVisible();
+      await expect(panels.filter({ visible: true })).toHaveCount(1);
+      if (chapter === 'time-in-materialize' && index === 1) {
+        await expect(selected.locator('.temporal-axis')).toBeVisible();
+        expect(await selected.locator('.temporal-axis > div > span:visible').count()).toBeGreaterThan(1);
+      } else {
+        await expect(selected.getByRole('table').first()).toBeVisible();
+        expect(await selected.locator('th:visible').count()).toBeGreaterThan(0);
+      }
       const clipped = await page.locator('#main-content table :is(th, td)').evaluateAll(cells => cells.filter(cell => {
         const box = cell.getBoundingClientRect();
         return box.width && box.height && cell.scrollWidth > cell.clientWidth + 2;
@@ -186,6 +200,7 @@ test('tablet tables use complete selected panels and lifetime labels remain dist
       const labels = await page.locator('.temporal-axis > div > span').evaluateAll(elements => elements
         .filter(el => el.getBoundingClientRect().width > 0)
         .map(el => { const box = el.getBoundingClientRect(); return { left: box.left, right: box.right }; }));
+      expect(labels.length).toBeGreaterThan(1);
       for (let index = 1; index < labels.length; index++) expect(labels[index]!.left).toBeGreaterThanOrEqual(labels[index - 1]!.right);
     }
   }

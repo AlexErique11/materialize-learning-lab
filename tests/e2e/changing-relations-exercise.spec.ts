@@ -146,6 +146,8 @@ test('chapter completion preserves the finished inventory, fits both themes, and
     }
   };
   await completeExercise();
+  await expect(completion).toBeVisible();
+  await page.keyboard.press('Escape');
   const viewports = isMobile
     ? [{ width: 390, height: 664 }, { width: 390, height: 560 }]
     : [{ width: 1440, height: 1000 }, { width: 1366, height: 768 }, { width: 1280, height: 650 }, { width: 1024, height: 768 }];
