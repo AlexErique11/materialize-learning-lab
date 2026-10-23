@@ -113,6 +113,13 @@ The filter-choice question conceals the reference predicate until acceptance.
 
 ## Shared component ownership
 
+`ChapterSidebarEntry` toggles chapter branches when their rows are activated in
+the full sidebar or mobile chapter menu. Opening another chapter keeps the current
+page and its selected styling; Overview and activity links navigate explicitly.
+In the collapsed, number-only sidebar, a chapter click expands the sidebar and
+that chapter's branch without navigating. Modified link clicks retain their
+normal browser behavior.
+
 `GuidedLabScreen` places a keyboard icon + Shortcuts button beside the existing page help/navigation.
 `useLabHelpAlignment` centers Shortcuts over Check Answer in exercises. Lectures
 retain the previous Shortcuts position beside Controls tour, which stays

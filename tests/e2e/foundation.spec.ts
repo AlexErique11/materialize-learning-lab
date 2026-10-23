@@ -270,11 +270,18 @@ test('chapter navigation remains accessible when the sidebar is collapsed', asyn
     const compactSecondChapter = coreChapters[1];
     if (!compactSecondChapter) throw new Error('The curriculum must contain a second chapter.');
     await sidebar.getByRole('link', { name: `02 ${compactSecondChapter.shortTitle}`, exact: true }).click();
+    await expect(page).toHaveURL(chapterPath(firstChapter));
+    await expect(collapse).toHaveAttribute('aria-expanded', 'true');
+    await sidebar.getByRole('link', { name: `${compactSecondChapter.shortTitle} overview`, exact: true }).click();
     await expect(page).toHaveURL(chapterPath(compactSecondChapter));
+    await collapse.click();
     await expect(expand).toHaveAttribute('aria-expanded', 'false');
     await expect(sidebar.getByRole('link', { name: `02 ${compactSecondChapter.shortTitle}`, exact: true })).toHaveAttribute('aria-current', 'page');
     await compactFirstChapter.click();
+    await expect(page).toHaveURL(chapterPath(compactSecondChapter));
+    await sidebar.getByRole('link', { name: `${firstChapter.shortTitle} overview`, exact: true }).click();
     await expect(page).toHaveURL(chapterPath(firstChapter));
+    await collapse.click();
     const collapsedBounds = await content.boundingBox();
     expect(collapsedBounds).not.toBeNull();
     if (expandedBounds && collapsedBounds)
@@ -294,7 +301,9 @@ test('chapter navigation remains accessible when the sidebar is collapsed', asyn
   }
   const secondChapter = coreChapters[1];
   if (!secondChapter) throw new Error('The learning sequence must have a second chapter.');
-  await sidebar.getByRole('link', { name: `02 ${secondChapter.shortTitle}`, exact: true }).click();
+  const secondChapterRow = sidebar.getByRole('link', { name: `02 ${secondChapter.shortTitle}`, exact: true });
+  if (await secondChapterRow.getAttribute('aria-expanded') !== 'true') await secondChapterRow.click();
+  await sidebar.getByRole('link', { name: `${secondChapter.shortTitle} overview`, exact: true }).click();
   await expect(page).toHaveURL(chapterPath(secondChapter));
   await expect(page.getByRole('heading', { name: secondChapter.shortTitle, exact: true })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'Page navigation' })).toHaveCount(0);
@@ -308,9 +317,11 @@ test('chapter navigation remains accessible when the sidebar is collapsed', asyn
 test('chapter sidebar preserves open groups and toggles from the chapter body', async ({ page, isMobile }) => {
   await page.goto(chapterPath(firstChapter));
   const sidebar = page.getByRole('complementary', { name: 'Guided labs navigation' });
-  const revealSidebar = async () => {
-    if (isMobile && !await page.locator('.mobile-sidebar').evaluate((el) => el.hasAttribute('open')))
-      await page.locator('.mobile-sidebar > summary').click();
+  const revealSidebar = async (destination?: string) => {
+    if (destination) await expect(page).toHaveURL(destination);
+    await expect(page.locator('body > .area-transition-viewport')).toHaveCount(0);
+    if (isMobile && !await sidebar.locator('.mobile-sidebar').evaluate((el) => el.hasAttribute('open')))
+      await sidebar.locator('.mobile-sidebar > summary').click();
   };
   await revealSidebar();
   const overview = sidebar.getByRole('link', { name: `${firstChapter.shortTitle} overview`, exact: true });
@@ -326,7 +337,7 @@ test('chapter sidebar preserves open groups and toggles from the chapter body', 
   await expect(sidebar.getByRole('link', { name: 'Lecture 1: Signed changes', exact: true })).toBeVisible();
   await expect(exercises).not.toHaveAttribute('open', '');
   await sidebar.getByRole('link', { name: 'Lecture 2: Updates and batches', exact: true }).click();
-  await revealSidebar();
+  await revealSidebar('/labs/changing-relations/tutorial/lecture-2');
   await expect(tutorials).toHaveAttribute('open', '');
   await expect(exercises).not.toHaveAttribute('open', '');
   await expect(sidebar.getByRole('link', { name: 'Lecture 2: Updates and batches', exact: true })).toHaveAttribute('aria-current', 'page');
@@ -348,38 +359,85 @@ test('chapter sidebar preserves open groups and toggles from the chapter body', 
   await sidebar.getByRole('button', { name: `Expand ${firstChapter.shortTitle} chapter` }).click();
   await expect(overview).toBeVisible();
   await page.getByRole('link', { name: 'Start exercise: Exercise 1: Inventory changes', exact: true }).click();
-  await revealSidebar();
+  await revealSidebar('/labs/changing-relations/exercises/exercise-1');
   await expect(tutorials).toHaveAttribute('open', '');
   await expect(exercises).toHaveAttribute('open', '');
   await expect(sidebar.getByRole('link', { name: 'Exercise 1: Inventory changes', exact: true })).toHaveAttribute('aria-current', 'page');
   await sidebar.getByRole('link', { name: 'Lecture 1: Signed changes', exact: true }).click();
-  await revealSidebar();
+  await revealSidebar('/labs/changing-relations/tutorial/lecture-1');
   await expect(tutorials).toHaveAttribute('open', '');
   await expect(exercises).toHaveAttribute('open', '');
   await overview.click();
-  await revealSidebar();
+  await revealSidebar(chapterPath(firstChapter));
   await expect(tutorials).toHaveAttribute('open', '');
   await expect(exercises).toHaveAttribute('open', '');
   const other = coreChapters[1];
   if (!other) throw new Error('Chapter 2 must be in the curriculum.');
   await sidebar.getByRole('link', { name: `02 ${other.shortTitle}`, exact: true }).click();
-  await revealSidebar();
+  await expect(page).toHaveURL(chapterPath(firstChapter));
+  await sidebar.getByRole('link', { name: `${other.shortTitle} overview`, exact: true }).click();
+  await revealSidebar(chapterPath(other));
   await expect(overview).toBeVisible();
   await expect(tutorials).toHaveAttribute('open', '');
   await expect(exercises).toHaveAttribute('open', '');
-  await sidebar.getByRole('link', { name: `01 ${firstChapter.shortTitle}`, exact: true }).click();
-  await revealSidebar();
+  await overview.click();
+  await revealSidebar(chapterPath(firstChapter));
   await expect(tutorials).toHaveAttribute('open', '');
   await expect(exercises).toHaveAttribute('open', '');
   await page.getByRole('link', { name: 'Start tutorial: Lecture 1: Signed changes', exact: true }).click();
-  await revealSidebar();
+  await revealSidebar('/labs/changing-relations/tutorial/lecture-1');
   await expect(tutorials).toHaveAttribute('open', '');
   await expect(exercises).toHaveAttribute('open', '');
   await sidebar.getByRole('link', { name: 'Exercise 1: Inventory changes', exact: true }).click();
+  await expect(page).toHaveURL('/labs/changing-relations/exercises/exercise-1');
   await page.reload();
   await revealSidebar();
   await expect(tutorials).not.toHaveAttribute('open', '');
   await expect(exercises).toHaveAttribute('open', '');
+});
+
+test('browsing another chapter preserves lecture progress and unfinished exercise answers', async ({ page, isMobile }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const other = coreChapters[1]!;
+  for (const theme of ['light', 'dark']) for (const activity of ['tutorial/lecture-1', 'exercises/exercise-1']) {
+    const path = `/labs/changing-relations/${activity}`;
+    await page.goto(path);
+    await page.getByRole('button', { name: `Switch to ${theme} mode`, exact: true }).click();
+    const lecture = activity.startsWith('tutorial');
+    if (lecture) await page.getByRole('button', { name: 'Next change', exact: true }).click();
+    else await page.getByRole('textbox', { name: 'Copies of (Kettle, $25) after t = 1', exact: true }).fill('3');
+    const progress = await page.locator('.guided-lab-progress strong').textContent();
+    const sidebar = page.locator(isMobile ? '#main-content .mobile-sidebar' : '#main-content .desktop-sidebar');
+    if (isMobile) await sidebar.locator(':scope > summary').click();
+    const chapter = sidebar.getByRole('link', { name: `02 ${other.shortTitle}`, exact: true });
+    await chapter.click();
+    await expect(chapter).toHaveAttribute('aria-expanded', 'true');
+    await expect(page).toHaveURL(path);
+    await expect(chapter).not.toHaveClass(/chapter-selected/);
+    await expect(sidebar.getByRole('link', { name: '01 Changing Relations', exact: true })).toHaveClass(/chapter-selected/);
+    const overview = sidebar.getByRole('link', { name: `${other.shortTitle} overview`, exact: true });
+    await expect(overview).toBeVisible();
+    await chapter.focus();
+    await page.keyboard.press('Enter');
+    await expect(chapter).toHaveAttribute('aria-expanded', 'false');
+    await expect(overview).not.toBeVisible();
+    await page.keyboard.press('Enter');
+    await expect(chapter).toHaveAttribute('aria-expanded', 'true');
+    await expect(page).toHaveURL(path);
+    await expect(page.locator('.guided-lab-progress strong')).toHaveText(progress!);
+    if (!lecture) await expect(page.getByRole('textbox', { name: 'Copies of (Kettle, $25) after t = 1', exact: true })).toHaveValue('3');
+    if (lecture) {
+      const branch = sidebar.locator('.chapter-links > li').filter({ has: page.getByRole('link', { name: `02 ${other.shortTitle}`, exact: true }) });
+      await branch.locator('.chapter-section > summary').filter({ hasText: 'Tutorials' }).click();
+      const firstLecture = getChapterPages(other).find(item => item.sectionSlug === 'tutorial')!;
+      await branch.getByRole('link', { name: firstLecture.title, exact: true }).click();
+      await expect(page).toHaveURL(chapterContentPath(other, firstLecture));
+    } else {
+      await overview.click();
+      await expect(page).toHaveURL(chapterPath(other));
+    }
+    if (isMobile) await expect(sidebar).not.toHaveAttribute('open');
+  }
 });
 
 test('chapter row and badge sizes stay consistent after selection', async ({ page, isMobile }) => {
@@ -398,6 +456,9 @@ test('chapter row and badge sizes stay consistent after selection', async ({ pag
   });
   const before = await measure();
   await chapterLink.click();
+  await expect(page).toHaveURL(chapterPath(firstChapter));
+  expect(await measure()).toEqual(before);
+  await main.getByRole('link', { name: `${chapter.shortTitle} overview`, exact: true }).click();
   await expect(page).toHaveURL(chapterPath(chapter));
   if (isMobile) await main.locator('.mobile-sidebar > summary').click();
   expect(await measure()).toEqual(before);

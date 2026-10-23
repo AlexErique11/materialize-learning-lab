@@ -10,9 +10,10 @@ import { useLabProgress } from '../../hooks/useLabProgress';
 interface ChapterSidebarEntryProps {
   chapter: ChapterDefinition;
   compact: boolean;
+  onExpand?: () => void;
 }
 
-export function ChapterSidebarEntry({ chapter, compact }: ChapterSidebarEntryProps) {
+export function ChapterSidebarEntry({ chapter, compact, onExpand }: ChapterSidebarEntryProps) {
   const { completedChapterSlugs } = useLabProgress();
   const completed = completedChapterSlugs.includes(chapter.slug);
   const { chapterSlug, sectionSlug } = useParams();
@@ -57,9 +58,10 @@ export function ChapterSidebarEntry({ chapter, compact }: ChapterSidebarEntryPro
           aria-controls={!compact ? branchId : undefined}
           title={compact ? chapter.shortTitle : undefined}
           onClick={(event) => {
-            if (selected && !compact && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+            if (!event.ctrlKey && !event.metaKey && !event.shiftKey) {
               event.preventDefault();
-              setExpanded((value) => !value);
+              setExpanded((value) => compact || !value);
+              if (compact) onExpand?.();
             } else {
               setExpanded(true);
             }

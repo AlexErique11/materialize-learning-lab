@@ -12,15 +12,15 @@ import { ProgressBar } from '../ui/ProgressBar';
 import { ChapterSidebarEntry } from './ChapterSidebarEntry';
 import { useLabProgress } from '../../hooks/useLabProgress';
 
-function ChapterLinks({ items, compact = false }: { items: readonly ChapterDefinition[]; compact?: boolean }) {
+function ChapterLinks({ items, compact = false, onExpand }: { items: readonly ChapterDefinition[]; compact?: boolean; onExpand?: () => void }) {
   return (
     <ol className="chapter-links">
-      {items.map((chapter) => <ChapterSidebarEntry key={chapter.slug} chapter={chapter} compact={compact} />)}
+      {items.map((chapter) => <ChapterSidebarEntry key={chapter.slug} chapter={chapter} compact={compact} onExpand={onExpand} />)}
     </ol>
   );
 }
 
-function SidebarContent({ compact = false }: { compact?: boolean }) {
+function SidebarContent({ compact = false, onExpand }: { compact?: boolean; onExpand?: () => void }) {
   const progress = useLabProgress();
   return (
     <div className={`sidebar-content${compact ? ' sidebar-content-compact' : ''}`}>
@@ -39,10 +39,10 @@ function SidebarContent({ compact = false }: { compact?: boolean }) {
         </>
       )}
       <nav aria-label="Chapters">
-        <ChapterLinks items={coreChapters} compact={compact} />
+        <ChapterLinks items={coreChapters} compact={compact} onExpand={onExpand} />
         {advancedChapters.length > 0 && <>
           {!compact && <p className="eyebrow mb-2 mt-6">Optional · advanced</p>}
-          <ChapterLinks items={advancedChapters} compact={compact} />
+          <ChapterLinks items={advancedChapters} compact={compact} onExpand={onExpand} />
         </>}
       </nav>
     </div>
@@ -78,7 +78,7 @@ export function ChapterSidebar({ collapsed, onToggle }: ChapterSidebarProps) {
           </IconButton>
         </div>
         <div id="desktop-chapter-navigation">
-          <SidebarContent compact={collapsed} />
+          <SidebarContent compact={collapsed} onExpand={onToggle} />
         </div>
       </div>
       <details ref={mobileSidebar} className="mobile-sidebar">

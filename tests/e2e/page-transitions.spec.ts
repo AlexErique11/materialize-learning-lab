@@ -23,7 +23,9 @@ async function pausePageMotion(page: Page) {
 async function selectChapter(page: Page, slug: string) {
   const mobile = page.locator('#main-content .mobile-sidebar');
   if (await mobile.isVisible() && await mobile.getAttribute('open') === null) await mobile.locator('summary').first().click();
-  await page.locator(`#main-content .chapter-link-row a[href="/labs/${slug}"]:visible`).click();
+  const chapter = page.locator(`#main-content .chapter-link-row a[href="/labs/${slug}"]:visible`);
+  if (await chapter.getAttribute('aria-expanded') !== 'true') await chapter.click();
+  await page.locator(`#main-content .chapter-overview-link[href="/labs/${slug}"]:visible`).click();
   await expect(page).toHaveURL(`/labs/${slug}`);
   await expect(page.locator('#main-content .chapter-overview')).toHaveAttribute('data-chapter', slug);
   if (await mobile.isVisible()) await expect(mobile).not.toHaveAttribute('open');
@@ -89,7 +91,8 @@ for (const theme of ['light', 'dark']) {
       await expect(page.locator('#main-content .learning-area-content')).toHaveCSS('transform', 'none');
       // Clicking a lower menu item can scroll the document before navigation.
       // Measure the visible source after that scroll, as the snapshot does.
-      await page.locator('#main-content .chapter-link-row a[href="/labs/incremental-maintenance"]:visible').scrollIntoViewIfNeeded();
+      await page.getByRole('button', { name: 'Expand Incremental Maintenance chapter', exact: true }).click();
+      await page.locator('#main-content .chapter-overview-link[href="/labs/incremental-maintenance"]:visible').scrollIntoViewIfNeeded();
     }
     const header = await page.getByRole('banner').boundingBox();
     const sidebar = await page.locator('#main-content .chapter-sidebar').boundingBox();
