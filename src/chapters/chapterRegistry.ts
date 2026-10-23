@@ -68,6 +68,8 @@ export const chapters: readonly ChapterDefinition[] = [
     shortTitle: 'Views, Indexes & Materialized Views',
     description: 'Choose where to save SQL, maintain results in memory, or persist them.',
     introduction: 'Build a mental model of saved SQL, cluster-local indexes and durable materialized output. Follow one evolving diagram through three tutorials, predict object and query behavior in two exercises, then design one transformation for two independently scaled serving clusters.',
+    overviewImage: publicAsset('views-indexes-materialized-views-overview.png'),
+    overviewImageFit: 'contain',
     documentationLinks: objectDocumentationLinks,
   },
   {
@@ -118,6 +120,8 @@ export const chapters: readonly ChapterDefinition[] = [
     shortTitle: 'Progress and Freshness',
     description: 'Trace progress and distinguish ingestion lag from computation lag.',
     introduction: 'Read write frontiers, follow two inputs into a maintained join, and distinguish the progress inputs permit from actual completion. Three guided tutorials and three exercises teach quiet-source evidence, limiting dependencies, local and inherited delay, and the difference between stale data and slow queries.',
+    overviewImage: publicAsset('progress-and-freshness-overview.png'),
+    overviewImageFit: 'contain',
     documentationLinks: progressDocumentationLinks,
   },
   {
@@ -127,6 +131,8 @@ export const chapters: readonly ChapterDefinition[] = [
     shortTitle: 'Consistent Reads',
     description: 'Choose a readable moment and weigh freshness against waiting.',
     introduction: 'Choose one retained, complete snapshot across every queried input. Three guided tutorials and three exercises explain readable windows, successive transaction observations, freshness policies, and the separate ingestion of external writes.',
+    overviewImage: publicAsset('consistent-reads-overview.png'),
+    overviewImageFit: 'contain',
     documentationLinks: readDocumentationLinks,
   },
 ];
