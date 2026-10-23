@@ -223,6 +223,30 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 1366, height: 768
   });
 }
 
+test('Chapter 7 timeline marks match Chapter 6 in both themes and screen sizes', async ({ page }) => {
+  const styles = async (selectors: readonly string[]) => Promise.all(selectors.map(selector => page.locator(selector).first().evaluate(element => {
+    const css = getComputedStyle(element);
+    const properties = ['height', 'background-color', 'border-top-color', 'border-top-width', 'border-radius', 'font-size', 'font-weight', 'color'];
+    if (element.classList.contains('timeline-frontier') || element.classList.contains('timeline-gridline')) properties.push('width');
+    return Object.fromEntries(properties.map(property => [property, css.getPropertyValue(property)]));
+  })));
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
+    await page.setViewportSize(viewport);
+    for (const theme of ['light', 'dark']) {
+      await page.goto('/labs/progress-and-freshness/tutorial/lecture-1');
+      await page.evaluate(theme => document.documentElement.setAttribute('data-theme', theme), theme);
+      const reference = await styles(['.progress-track', '.progress-complete', '.progress-frontier', '.progress-gridline', '.progress-frontier .timeline-value']);
+      for (const activity of ['tutorial/lecture-1', 'exercises/exercise-1']) {
+        await page.goto(`${base}/${activity}`);
+        await page.evaluate(theme => document.documentElement.setAttribute('data-theme', theme), theme);
+        expect(await styles(['.read-track', '.read-complete', '.read-write-marker', '.read-track .timeline-gridline', '.read-write-marker .timeline-value'])).toEqual(reference);
+        await expect(page.locator('.read-write-marker .timeline-value')).toHaveText(activity.startsWith('tutorial') ? ['10', '8'] : ['13', '11']);
+        await expect(page.locator('.read-track').first().locator('.timeline-gridline')).toHaveCount(6);
+      }
+    }
+  }
+});
+
 test('Chapter 7 reuses diagram geometry across all six activities and feedback states', async ({ page }) => {
   test.setTimeout(120000);
   for (const viewport of [{ width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1280, height: 650 }, { width: 1024, height: 768 }, { width: 768, height: 900 }, { width: 390, height: 844 }, { width: 390, height: 664 }]) {

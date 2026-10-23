@@ -6,10 +6,147 @@ import { getLectureWalkthrough } from '../../src/components/walkthrough/walkthro
 
 const base = '/labs/progress-and-freshness';
 
+test('Chapter 6 lecture headers expose relation-specific evidence without changing the scenario', async ({ page }) => {
+  for (let index = 1; index <= 3; index++) {
+    await page.goto(`${base}/tutorial/lecture-${index}`);
+    const headers = page.getByRole('navigation', { name: 'Progress details' });
+    const detail = page.getByTestId('progress-detail');
+    const snapshot = () => page.locator('.progress-lane').evaluateAll(lanes => lanes.map(lane => lane.getAttribute('aria-label')));
+    const initial = await snapshot();
+    const counter = await page.getByRole('progressbar', { name: 'Changes progress', exact: true }).getAttribute('value');
+    const texts: string[] = [];
+    for (const [laneIndex, lane] of (index === 3 ? ['orders', 'payments', 'join', 'revenue'] : ['orders', 'payments', 'join']).entries()) {
+      await headers.getByRole('button').nth(laneIndex).click();
+      await expect(detail).toHaveAttribute('data-relation', lane);
+      await expect(detail.locator('dt')).toHaveCount(3);
+      texts.push(await detail.innerText());
+      expect(await snapshot()).toEqual(initial);
+      await expect(page.getByRole('progressbar', { name: 'Changes progress', exact: true })).toHaveAttribute('value', counter!);
+    }
+    expect(new Set(texts).size).toBe(texts.length);
+    if (index === 2) {
+      await expect(detail).toContainText('Processing gap');
+      await expect(detail).toContainText('Paid orders is at 6, while its inputs permit 8');
+    }
+  }
+});
+
+test('Chapter 6 diagnostic selections distinguish source, local, inherited and retrieval delay', async ({ page }) => {
+  await page.goto(`${base}/tutorial/lecture-3`);
+  const headers = page.getByRole('navigation', { name: 'Progress details' });
+  const detail = page.getByTestId('progress-detail');
+  const select = async (name: string) => headers.getByRole('button', { name: new RegExp(`\\. ${name}$`) }).click();
+  const fact = (label: string) => detail.locator('.progress-inspector-facts > div').filter({ has: page.getByText(label, { exact: true }) }).locator('dd');
+  await select('Orders');
+  await expect(fact('Wall-clock lag')).toHaveText('2 s');
+  await expect(detail).not.toContainText('status: stalled');
+  await select('Payments');
+  await expect(fact('Wall-clock lag')).toHaveText('12 s');
+  await expect(detail).toContainText('Payments status: stalled');
+  await select('Paid orders');
+  await expect(fact('Processing gap')).toHaveText('0 s');
+  await expect(detail).toContainText('caught up to its inputs');
+  await page.getByRole('button', { name: 'Next change', exact: true }).click();
+  await select('Paid orders');
+  await expect(fact('Processing gap')).toHaveText('6 s');
+  await expect(detail).toContainText('40 → 90 changes');
+  await select('Revenue');
+  await expect(fact('Local lag')).toHaveText('0 s');
+  await expect(fact('Inherited computation lag')).toHaveText('6 s');
+  await expect(detail).toContainText('wall-clock lag: 8 s');
+  await page.getByRole('button', { name: 'Next change', exact: true }).click();
+  await select('Revenue');
+  await expect(detail).toContainText('3 s response measures retrieval time');
+  await page.getByRole('button', { name: 'Next change', exact: true }).click();
+  await select('Orders');
+  await expect(detail).toContainText('source-only ingestion duration is not sampled');
+  await select('Revenue');
+  await expect(detail).toContainText('freshness delay 4 s + query latency 3 s = reaction time 7 s');
+  await detail.evaluate(element => { element.scrollTop = element.scrollHeight; });
+  await select('Payments');
+  expect(await detail.evaluate(element => element.scrollTop)).toBe(0);
+});
+
+test('Chapter 6 exercise 3 keeps questions and feedback below the visualization', async ({ page, isMobile }) => {
+  test.setTimeout(60_000);
+  for (const viewport of isMobile ? [{ width: 390, height: 844 }, { width: 390, height: 664 }] : [{ width: 1440, height: 900 }, { width: 1366, height: 768 }]) {
+    await page.setViewportSize(viewport);
+    await page.goto(`${base}/exercises/exercise-3`);
+    await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-aligned', 'true');
+    const assertQuestionBelow = async () => {
+      await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-split-question', 'false');
+      const position = await page.locator('.progress-exercise-layout').evaluate(root => {
+        const diagram = root.querySelector('.progress-lane-panel')!.getBoundingClientRect();
+        const evidence = root.querySelector('.progress-exercise-evidence')!.getBoundingClientRect();
+        const question = root.querySelector('.exercise-question')!.getBoundingClientRect();
+        return { diagramBottom: diagram.bottom, evidenceTop: evidence.top, evidenceBottom: evidence.bottom, questionTop: question.top };
+      });
+      expect(position.evidenceTop).toBeGreaterThanOrEqual(position.diagramBottom);
+      expect(position.questionTop).toBeGreaterThanOrEqual(position.evidenceBottom);
+    };
+    for (let step = 0; step < progressExercises[2]!.questions.length; step++) {
+      await assertQuestionBelow();
+      await page.getByRole('button', { name: 'Hint', exact: true }).click();
+      await assertQuestionBelow();
+      await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
+      await assertQuestionBelow();
+      const lastAnswer = page.locator('.exercise-answers :is(input, select, button):visible').last();
+      await lastAnswer.scrollIntoViewIfNeeded();
+      await expect(lastAnswer).toBeInViewport();
+      await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+      await assertQuestionBelow();
+      if (step < progressExercises[2]!.questions.length - 1) await page.getByRole('button', { name: 'Next question', exact: true }).click();
+    }
+  }
+});
+
+test('Chapter 6 exercise headers are static and follow each question while lecture headers remain interactive', async ({ page }) => {
+  test.setTimeout(60_000);
+  for (const [index, exercise] of progressExercises.entries()) {
+    await page.goto(`${base}/tutorial/lecture-${index + 1}`);
+    const lectureHeaders = (await page.locator('.progress-stage-row').boundingBox())!;
+    await page.goto(`${base}/exercises/${exercise.slug}`);
+    await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-aligned', 'true');
+    const responsiveFlow = await page.locator('.progress-exercise-page').evaluate(element => element.hasAttribute('data-responsive-flow'));
+    await expect.poll(() => page.locator('.progress-stage-row').boundingBox()).toEqual(
+      responsiveFlow ? { ...lectureHeaders, y: expect.any(Number) } : lectureHeaders,
+    );
+    const headers = page.getByRole('group', { name: 'Question relations', exact: true });
+    const highlighted = () => headers.locator('[data-highlighted="true"]').evaluateAll(elements => elements.map(element => element.getAttribute('data-lane')));
+    for (const [step, question] of exercise.questions.entries()) {
+      await expect(headers.locator('button, a, input, select, textarea, [tabindex]')).toHaveCount(0);
+      expect(await highlighted()).toEqual(question.focusLanes);
+      for (const lane of ['orders', 'payments', 'join', 'revenue'] as const) {
+        if (lane === 'revenue' && index !== 2) continue;
+        await expect(page.getByTestId(`lane-${lane}`)).toHaveAttribute('data-selected', String(question.focusLanes.includes(lane)));
+      }
+      const otherHeader = headers.locator('[data-highlighted="false"]').first();
+      if (await otherHeader.count()) {
+        await otherHeader.click();
+        expect(await highlighted()).toEqual(question.focusLanes);
+      }
+      await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+      expect(await highlighted()).toEqual(question.focusLanes);
+      if (step < exercise.questions.length - 1) await page.getByRole('button', { name: 'Next question', exact: true }).click();
+    }
+    await page.getByRole('button', { name: 'Reset', exact: true }).click();
+    expect(await highlighted()).toEqual(exercise.questions[0]!.focusLanes);
+  }
+  await page.goto(`${base}/tutorial/lecture-1`);
+  const lectureHeaders = page.getByRole('navigation', { name: 'Progress details' });
+  await lectureHeaders.getByRole('button', { name: '2. Payments', exact: true }).click();
+  await expect(lectureHeaders.getByRole('button', { name: '2. Payments', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('progress-detail')).toContainText('Payments');
+});
+
 test('Chapter 6 associates every incorrect answer with its explanation without moving the diagram', async ({ page }) => {
   await page.goto(`${base}/exercises/exercise-2`);
   await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-aligned', 'true');
-  const diagram = await page.locator('.progress-lane-panel').boundingBox();
+  const diagramGeometry = () => page.locator('.progress-lane-panel').evaluate(panel => {
+    const { x, y, width, height } = panel.getBoundingClientRect();
+    return { x, y: y + scrollY, width, height };
+  });
+  const diagram = await diagramGeometry();
   for (const label of ['Input limit', 'Actual join frontier']) await page.getByRole('textbox', { name: label, exact: true }).fill('0');
   const select = page.getByRole('combobox', { name: 'Limiting input', exact: true });
   if (await select.isVisible()) await select.selectOption('orders');
@@ -26,7 +163,7 @@ test('Chapter 6 associates every incorrect answer with its explanation without m
   const choice = await select.isVisible() ? select : page.getByRole('radio', { name: 'Orders', exact: true });
   await expect(choice).toHaveAttribute('aria-invalid', 'true');
   await expect(choice).toHaveAccessibleDescription(/Payments is the smaller input/);
-  expect(await page.locator('.progress-lane-panel').boundingBox()).toEqual(diagram);
+  expect(await diagramGeometry()).toEqual(diagram);
   await page.getByRole('textbox', { name: 'Input limit', exact: true }).fill('abc');
   await expect(choice).toHaveAttribute('aria-invalid', 'false');
   await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
@@ -142,24 +279,54 @@ for (const [index, exercise] of progressExercises.entries()) {
 
 test('Chapter 6 controls match reference geometry and all lecture checkpoints fit', async ({ page, isMobile }) => {
   test.setTimeout(120_000);
-  for (const viewport of isMobile ? [{ width: 390, height: 844 }, { width: 610, height: 668 }] : [{ width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1024, height: 768 }]) {
+  for (const viewport of isMobile ? [{ width: 390, height: 844 }, { width: 390, height: 664 }, { width: 610, height: 668 }] : [{ width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1024, height: 768 }, { width: 870, height: 668 }]) {
     await page.setViewportSize(viewport);
     await page.goto('/labs/incremental-maintenance/tutorial/lecture-1');
     const title = (await page.locator('h1').boundingBox())!;
     const controls = (await page.locator('.guided-lab-controls').boundingBox())!;
     const baseline = (await page.locator('.relation-playback-controls').boundingBox())!;
+    // The reference chapter's tour can expand an emulated phone viewport.
+    // Compare its footer against the physical screen, without copying that overflow.
+    const viewportCorrection = Math.max(0, await page.evaluate(() => innerHeight) - viewport.height);
+    const buttonGeometry = () => page.locator('.relation-playback-controls .button[aria-keyshortcuts]').evaluateAll(buttons => buttons.map(button => {
+      const box = button.getBoundingClientRect();
+      return [box.x, box.y, box.width, box.height];
+    }));
+    const referenceButtons = (await buttonGeometry()).map(([x, y, width, height]) => [x, y! - viewportCorrection, width, height]);
     for (let index = 0; index < progressLectures.length; index++) {
       await page.goto(`${base}/tutorial/lecture-${index + 1}`);
-      expect((await page.locator('h1').boundingBox())!.y).toBeCloseTo(title.y, 0);
-      expect((await page.locator('.guided-lab-controls').boundingBox())!.y).toBeCloseTo(controls.y, 0);
+      if (viewport.width >= 1024 || isMobile) {
+        expect((await page.locator('h1').boundingBox())!.y).toBeCloseTo(title.y, 0);
+        expect((await page.locator('.guided-lab-controls').boundingBox())!.y).toBeCloseTo(controls.y, 0);
+      }
       const frames = playbackFrames(progressLectures[index]!);
       for (let step = 0; step <= frames.length; step++) {
         await expect.poll(async () => { const footer = (await page.locator('.relation-playback-controls').boundingBox())!; return footer.y + footer.height; }).toBeLessThanOrEqual(viewport.height + 1);
-        await expect.poll(async () => { const footer = (await page.locator('.relation-playback-controls').boundingBox())!; return footer.y + footer.height; }).toBeCloseTo(baseline.y + baseline.height, 0);
+        await expect.poll(async () => { const footer = (await page.locator('.relation-playback-controls').boundingBox())!; return footer.y + footer.height; }).toBeCloseTo(baseline.y + baseline.height - viewportCorrection, 0);
+        await expect.poll(buttonGeometry).toEqual(referenceButtons);
+        expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-        if (step < frames.length) await page.getByRole('button', { name: index === 2 ? 'Next case' : 'Next change', exact: true }).click();
+        if (step < frames.length) await page.getByRole('button', { name: 'Next change', exact: true }).click();
       }
       await page.screenshot({ path: test.info().outputPath(`chapter-six-${index + 1}-${viewport.width}.png`) });
+    }
+  }
+});
+
+test('Chapter 6 small phones keep aligned diagrams and every change on screen', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 568 });
+  let reference: unknown;
+  for (let index = 0; index < progressLectures.length; index++) {
+    await page.goto(`${base}/tutorial/lecture-${index + 1}`);
+    const next = page.locator('.relation-playback-controls [data-walkthrough="next-change"]');
+    await expect(next).toBeVisible();
+    const diagram = await page.locator('.progress-stage-row, .progress-axis, [data-testid="lane-orders"], [data-testid="lane-payments"], [data-testid="lane-join"]').evaluateAll(elements => elements.map(element => element.getBoundingClientRect().toJSON()));
+    reference ??= diagram;
+    expect(diagram).toEqual(reference);
+    for (let step = 0; step <= playbackFrames(progressLectures[index]!).length; step++) {
+      await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight)).toBeLessThanOrEqual(568);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
+      if (!await next.isDisabled()) await next.click();
     }
   }
 });
@@ -243,7 +410,7 @@ test('Lecture 3 starts at step 1 and shows all Revenue lags inline', async ({ pa
   await page.clock.install();
   await page.goto(`${base}/tutorial/lecture-3`);
   const label = page.getByTestId('progress-case-label');
-  const progress = page.getByRole('progressbar', { name: 'Steps progress' });
+  const progress = page.getByRole('progressbar', { name: 'Changes progress' });
   const legend = page.getByRole('region', { name: 'Revenue lag breakdown' });
   const expectLags = async (values: number[]) => {
     await expect(legend).toBeVisible();
@@ -253,7 +420,7 @@ test('Lecture 3 starts at step 1 and shows all Revenue lags inline', async ({ pa
   await expect(label).toHaveText('Step 1 · Stalled source');
   await expect(progress).toHaveAttribute('value', '1');
   await expect(progress).toHaveAttribute('max', '4');
-  await expect(page.getByRole('button', { name: 'Previous case', exact: true })).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Previous change', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Lag guide', exact: true })).toHaveCount(0);
   await expectLags([12, 0, 0, 0, 12]);
   const cases = [
@@ -262,13 +429,13 @@ test('Lecture 3 starts at step 1 and shows all Revenue lags inline', async ({ pa
     { name: 'Reaction time', lags: [0, 0, 0, 0, 0] },
   ];
   for (const [index, entry] of cases.entries()) {
-    await page.getByRole('button', { name: 'Next case', exact: true }).click();
+    await page.getByRole('button', { name: 'Next change', exact: true }).click();
     await expect(label).toHaveText(`Step ${index + 2} · ${entry.name}`);
     await expect(progress).toHaveAttribute('value', `${index + 2}`);
     await expectLags(entry.lags);
     await expect(page.locator('.progress-lane[data-changed="true"]')).toHaveCount(0);
   }
-  await page.getByRole('button', { name: 'Previous case', exact: true }).click();
+  await page.getByRole('button', { name: 'Previous change', exact: true }).click();
   await expect(label).toHaveText('Step 3 · Slow query');
   await page.getByRole('button', { name: 'Reset', exact: true }).click();
   await expect(label).toHaveText('Step 1 · Stalled source');
@@ -366,6 +533,7 @@ test('Chapter 6 combined exercise layouts fit every question and feedback withou
     for (const [index, exercise] of progressExercises.entries()) {
       await page.goto(`${base}/tutorial/lecture-${index + 1}`);
       const lectureDiagram = (await page.locator('.progress-lane-panel').boundingBox())!;
+      const lectureHeaders = (await page.locator('.progress-stage-row').boundingBox())!;
       const geometry = async () => page.locator('.progress-lane-panel').evaluate(panel => {
         const origin = panel.getBoundingClientRect();
         return Array.from(panel.querySelectorAll('.progress-axis, .progress-lane, .progress-track')).map(element => {
@@ -377,9 +545,13 @@ test('Chapter 6 combined exercise layouts fit every question and feedback withou
       await page.goto(`${base}/exercises/${exercise.slug}`);
       await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-aligned', 'true');
       const responsiveFlow = await page.locator('.progress-exercise-page').evaluate(el => el.hasAttribute('data-responsive-flow'));
+      // Read the box and scroll offset in one frame while focus can scroll the page.
+      const diagramPosition = () => page.locator('.progress-lane-panel').evaluate((panel, flow) => {
+        const { x, y, width, height } = panel.getBoundingClientRect();
+        return { viewport: { x, y, width, height }, documentTop: y + (flow ? scrollY : 0) };
+      }, responsiveFlow);
       for (let step = 0; step < exercise.questions.length; step++) {
-        const diagram = (await page.locator('.progress-lane-panel').boundingBox())!;
-        const diagramTop = diagram.y + (responsiveFlow ? await page.evaluate(() => scrollY) : 0);
+        const { viewport: diagram, documentTop: diagramTop } = await diagramPosition();
         expect(diagram.x).toBeCloseTo(lectureDiagram.x, 1);
         if (!responsiveFlow) expect(diagram.y).toBeCloseTo(lectureDiagram.y, 1);
         expect(diagram.width).toBeCloseTo(lectureDiagram.width, 1);
@@ -390,22 +562,32 @@ test('Chapter 6 combined exercise layouts fit every question and feedback withou
           await expect(page.locator('.exercise-question-copy')).toBeVisible();
           await expect(page.locator('.exercise-answers')).toBeVisible();
           await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-fits', 'true');
-          const currentDiagram = (await page.locator('.progress-lane-panel').boundingBox())!;
-          expect({ ...currentDiagram, y: currentDiagram.y + (responsiveFlow ? await page.evaluate(() => scrollY) : 0) }).toEqual({ ...diagram, y: diagramTop });
+          const { viewport: currentDiagram, documentTop: currentDiagramTop } = await diagramPosition();
+          expect({ ...currentDiagram, y: currentDiagramTop }).toEqual({ ...diagram, y: diagramTop });
           const footer = (await page.locator('.progress-exercise-playback').boundingBox())!;
           const docked = await page.locator('.progress-exercise-layout').getAttribute('data-dock-answers') === 'true';
           const inLegend = await page.locator('.progress-exercise-layout').getAttribute('data-legend-evidence') === 'true';
           const regions = await Promise.all(['.progress-lane-panel', '.progress-exercise-evidence', '.exercise-question-copy', '.exercise-answers'].map(selector => page.locator(selector).boundingBox()));
-          const headers = page.getByRole('navigation', { name: 'Progress details' });
-          await expect(headers.getByRole('button')).toHaveCount(index === 2 ? 4 : 3);
+          const questionBox = (await page.locator('.exercise-question').boundingBox())!;
+          if (index === 2) {
+            expect(questionBox.y).toBeGreaterThanOrEqual(regions[1]!.y + regions[1]!.height);
+            expect(questionBox.y + questionBox.height).toBeLessThanOrEqual(footer.y);
+          }
+          const headers = page.getByRole('group', { name: 'Question relations', exact: true });
+          await expect(headers.locator('.progress-stage-static')).toHaveCount(index === 2 ? 4 : 3);
           const headerBox = (await headers.boundingBox())!;
+          expect(headerBox.x).toBeCloseTo(lectureHeaders.x, 1);
+          expect(headerBox.width).toBeCloseTo(lectureHeaders.width, 1);
+          expect(headerBox.height).toBeCloseTo(lectureHeaders.height, 1);
+          if (!responsiveFlow) expect(headerBox.y).toBeCloseTo(lectureHeaders.y, 1);
           expect(headerBox.y + headerBox.height).toBeLessThanOrEqual(currentDiagram.y);
           for (const region of regions) {
             const overlap = Math.min(headerBox.y + headerBox.height, region!.y + region!.height) - Math.max(headerBox.y, region!.y);
             expect(overlap).toBeLessThanOrEqual(1);
           }
           for (const [i, region] of regions.entries()) {
-            expect(region!.y + region!.height, `${viewport.width}x${viewport.height}: exercise ${index + 1}, question ${step + 1}`).toBeLessThanOrEqual(footer.y + (docked && i === 3 ? footer.height : 0));
+            const visibleBottom = index === 2 && !responsiveFlow && i >= 2 ? Math.min(region!.y + region!.height, questionBox.y + questionBox.height) : region!.y + region!.height;
+            expect(visibleBottom, `${viewport.width}x${viewport.height}: exercise ${index + 1}, question ${step + 1}`).toBeLessThanOrEqual(footer.y + (docked && i === 3 ? footer.height : 0));
             for (const [offset, other] of regions.slice(i + 1).entries()) {
               if (inLegend && i === 0 && offset === 0) continue;
               const overlapX = Math.min(region!.x + region!.width, other!.x + other!.width) - Math.max(region!.x, other!.x);

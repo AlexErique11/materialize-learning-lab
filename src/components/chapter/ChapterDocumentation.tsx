@@ -1,12 +1,9 @@
 import { ChevronDown, ExternalLink, FileText } from 'lucide-react';
 import { publicAsset } from '../../app/publicAsset';
-import { materializeDocumentation } from '../../app/resources';
 import { formatChapterNumber, type ChapterDefinition } from '../../chapters/chapterRegistry';
 
 export function ChapterDocumentation({ chapter }: { chapter: ChapterDefinition }) {
-  const resources = chapter.number === 1 || chapter.number === 2 || chapter.number === 4 || chapter.number === 5
-    ? chapter.documentationLinks ?? []
-    : [...(chapter.documentationLinks ?? []), materializeDocumentation];
+  const resources = chapter.documentationLinks ?? [];
 
   return (
     <details className="chapter-learn-more">

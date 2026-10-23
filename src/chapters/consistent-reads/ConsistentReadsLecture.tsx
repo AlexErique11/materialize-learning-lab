@@ -53,7 +53,7 @@ export function ConsistentReadsLecture({ chapter, lectureIndex, navigation }: { 
     <LectureScreen activityCompleted={completed} layout="without-tip" chapter={chapter} title={`Lecture ${lectureIndex + 1}`} description={lecture.description} navigation={navigation}
       className="lesson-page read-chapter-page" regionLabel="Lecture content" guided={state.guided}
       reference={{ objective: `${lecture.title}. ${objective}`, sql: readSql, documentationLinks: referenceLinks }}
-      simulation={{ completed: state.guided ? state.step : normalStep, total: state.guided ? lecture.lessons.length : frames.length, progressLabel: state.guided ? 'Tutorial' : 'Steps', playing: state.playing,
+      simulation={{ completed: state.guided ? state.step : normalStep, total: state.guided ? lecture.lessons.length : frames.length, progressLabel: state.guided ? 'Tutorial' : 'Changes', playing: state.playing,
         onReset: reset, onRun: () => { setExploration(null); if (!state.playing && normalStep === frames.length) dispatch({ type: 'reset' }); dispatch({ type: 'play' }); }, onStartGuidedRun: () => { setExploration(null); dispatch({ type: 'start-guided' }); } }}
       visualization={<ReadableWindow snapshot={current} refs={refs} caption={pending ? `Predict · ${lesson.title}` : (state.guided ? applied : frame?.lesson)?.title ?? 'Select a time or step through the scenario.'} disabled={state.guided || state.playing}
         onSelectTime={timestamp => { dispatch({ type: 'pause' }); setExploration(applyRead(current, { type: 'request', request: { policy: 'timestamp', timestamp } })); }} />}

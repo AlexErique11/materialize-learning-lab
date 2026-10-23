@@ -6,6 +6,7 @@ import { LessonText } from '../../components/lesson/LessonText';
 import { classifyTimestamp, formatReadTime, policyNames, sharedWindow, statusNames, type ReadSnapshot, type ReadStatus } from './simulation';
 import type { ReadTarget } from './lecture-scenarios';
 import { readText } from './lessonText';
+import '../../styles/timeline.css';
 
 const statusIcons = { available: CheckCircle2, waiting: Clock3, 'too-old': History, stale: XCircle };
 const percent = (value: number, snapshot: ReadSnapshot) => `${Math.max(0, Math.min(100, (value - snapshot.axis[0]) / (snapshot.axis[1] - snapshot.axis[0]) * 100))}%`;
@@ -45,12 +46,16 @@ export function ReadableWindow({ snapshot: s, refs, caption, revealOutcome = tru
         </div>
         {s.inputs.map(input => <section key={input.id} className="read-lane" data-testid={`read-input-${input.id}`} aria-label={`${input.name}: retained from ${formatReadTime(s, input.retained)}; complete before ${formatReadTime(s, input.write)}`}>
           <div className="read-input-label"><strong data-column={input.id}>{input.name}</strong><span>Retained ≥ {formatReadTime(s, input.retained)}</span><span>Complete &lt; {formatReadTime(s, input.write)}</span></div>
-          <div className="read-track" aria-hidden="true"><div className="read-compacted" style={{ width: percent(input.retained, s) }} /><div className="read-complete" style={{ left: percent(input.retained, s), width: `${(input.write - input.retained) / (s.axis[1] - s.axis[0]) * 100}%` }} />
-            <span className="read-retained-marker" style={position(input.retained, s)} /><span className="read-write-marker" style={position(input.write, s)} />
+          <div className="read-track timeline-track" aria-hidden="true">
+            {ticks.map(tick => <i key={tick} className="timeline-gridline" style={position(tick, s)} />)}
+            <div className="read-compacted" style={{ width: percent(input.retained, s) }} /><div className="read-complete timeline-complete" style={{ left: percent(input.retained, s), width: `${(input.write - input.retained) / (s.axis[1] - s.axis[0]) * 100}%` }} />
+            <span className="read-retained-marker" style={position(input.retained, s)}>{input.retained !== input.write && <span className="timeline-value">{formatReadTime(s, input.retained)}</span>}</span>
+            <span className="read-write-marker timeline-frontier" style={position(input.write, s)}><span className="timeline-value">{formatReadTime(s, input.write)}</span></span>
           </div>
         </section>)}
       </section>
       <div className="read-diagram-bottom"><span className="read-interval" aria-label="Shared complete interval">{revealOutcome ? window.retained < window.write ? `Shared: [${formatReadTime(s, window.retained)}, ${formatReadTime(s, window.write)})` : 'Shared window is empty' : 'Compare the retained and complete boundaries'}</span>
+        <div className="read-legend" aria-hidden="true"><span><i className="read-key-frontier" />Frontier</span><span><i className="read-key-complete" />Complete</span><span><i className="read-key-retained" />Retained</span></div>
         <Button variant="ghost" className="read-key" aria-haspopup="dialog" onClick={() => setKeyOpen(true)}><CircleHelp size={13} aria-hidden="true" />Diagram key</Button>
       </div>
     </section>
@@ -62,7 +67,7 @@ export function ReadableWindow({ snapshot: s, refs, caption, revealOutcome = tru
     {onSelectTime && <div className="read-exploration"><label>Explore a requested time<input aria-label="Requested logical timestamp" type="range" min={s.axis[0]} max={s.axis[1]} step={s.clock === undefined ? 1 : 1000} value={time ?? window.retained} disabled={disabled} onChange={event => onSelectTime(Number(event.target.value))} /></label></div>}
     <Dialog open={keyOpen} onClose={() => setKeyOpen(false)} title="Readable-window diagram key">
       <dl className="read-key-definitions"><div><dt>Retained boundary · square cap</dt><dd>The earliest retained snapshot, inclusive. Earlier history is compacted; this does not delete current business rows.</dd></div><div><dt>Write frontier · solid purple dot</dt><dd>Times strictly below this boundary are complete. The frontier time itself remains open.</dd></div><div><dt>Shared window · vertical shading</dt><dd>The overlap every queried input retains and completes. Its left boundary is included; its right boundary is excluded.</dd></div><div><dt>Query cursor · vertical line</dt><dd>One selected timestamp across all inputs. A waiting cursor is not a returned result. On clock-aligned examples, the dotted line is current logical time.</dd></div></dl>
-      <p className="read-key-note">Compacted history is muted; retained and complete bands use teal. Shapes and text carry meaning in both themes. The simulation does not execute SQL.</p>
+      <p className="read-key-note">Purple dots mark write frontiers and green bands show retained, complete time. Gray square caps mark retained boundaries; the blue cursor selects one query timestamp. Shapes and text carry meaning in both themes. The simulation does not execute SQL.</p>
     </Dialog>
   </div>;
 }

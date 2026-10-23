@@ -1,7 +1,7 @@
 import { lagFor, type ProgressSnapshot } from './simulation';
 import type { RefObject } from 'react';
 
-export function LagLegend({ snapshot, sectionRef }: { snapshot: ProgressSnapshot; sectionRef?: RefObject<HTMLElement | null> }) {
+export function LagLegend({ snapshot, sectionRef, caseLabel }: { snapshot: ProgressSnapshot; sectionRef?: RefObject<HTMLElement | null>; caseLabel?: string }) {
   const lag = lagFor(snapshot, 'revenue');
   const entries = [
     { label: 'Source', value: lag.source, column: 'lag', meaning: 'Clock minus the slower source frontier: delay before maintained computation.' },
@@ -11,7 +11,7 @@ export function LagLegend({ snapshot, sectionRef }: { snapshot: ProgressSnapshot
     { label: 'Wall-clock', value: lag.wallclock, column: 'lag', meaning: 'Source + global: clock minus Revenue frontier. Query duration is separate.' },
   ];
   return <section ref={sectionRef} className="progress-caption progress-lag-legend" aria-label="Revenue lag breakdown" aria-live="polite">
-    <div className="progress-lag-heading"><strong>Revenue lag (s)</strong><span>Independent case</span></div>
+    <div className="progress-lag-heading"><strong>Revenue lag (s)</strong><span data-testid={caseLabel ? 'progress-case-label' : undefined}>{caseLabel ?? 'Independent case'}</span></div>
     <dl>{entries.map(entry => <div key={entry.label} title={entry.meaning}>
       <dt><abbr title={entry.meaning}>{entry.label}</abbr></dt>
       <dd data-motion-value className="progress-data-value" data-column={entry.column}>{entry.value}</dd>

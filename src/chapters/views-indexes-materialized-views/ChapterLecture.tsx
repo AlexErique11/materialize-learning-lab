@@ -57,7 +57,7 @@ export function ObjectChapterLecture({ chapter, navigation, lectureIndex, manage
     <LectureScreen manageDocumentTitle={manageDocumentTitle} activityCompleted={completed} layout="without-tip" chapter={chapter} title={lecture.title} description={lecture.description} navigation={navigation}
       className="lesson-page object-chapter-page" regionLabel="Lecture content" guided={guided}
       reference={{ objective: lecture.objective, sql: lecture.sql, documentationLinks }}
-      simulation={{ completed: introductionIndex ?? (state.guided ? lecture.introductions.length + state.step : state.selectedTime), total: guided ? lecture.introductions.length + lecture.lessons.length : lecture.lessons.length, progressLabel: guided ? 'Tutorial' : 'Steps', playing: state.playing,
+      simulation={{ completed: introductionIndex ?? (state.guided ? lecture.introductions.length + state.step : state.selectedTime), total: guided ? lecture.introductions.length + lecture.lessons.length : lecture.lessons.length, progressLabel: guided ? 'Tutorial' : 'Changes', playing: state.playing,
         onReset: reset, onRun: () => { setExploredQuery(null); dispatch({ type: 'play' }); }, onStartGuidedRun: () => { reset(); setIntroductionIndex(0); } }}
       visualization={<>
         <nav className="object-step-sequence" aria-label="Scenario steps">{lecture.lessons.map((step, index) => <Button key={step.shortTitle} aria-current={state.selectedTime === index + 1 ? 'step' : undefined}

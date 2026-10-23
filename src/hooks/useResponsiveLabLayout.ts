@@ -39,7 +39,8 @@ export function useResponsiveLabLayout(pageRef: RefObject<HTMLElement | null>, e
       page.toggleAttribute('data-narrow-panels', tablet && width < 900);
       // Absolute exercise anchors cannot safely preserve a desktop frame here.
       const anchoredExercise = page.matches('.object-exercise-page, .progress-exercise-page');
-      page.toggleAttribute('data-responsive-flow', innerHeight < 600 || (anchoredExercise && tablet && width < 900));
+      const compactAnchoredExercise = anchoredExercise && !tablet && innerHeight <= 740;
+      page.toggleAttribute('data-responsive-flow', innerHeight < 600 || compactAnchoredExercise || (anchoredExercise && tablet && width < 900));
       const progress = controls.querySelector<HTMLElement>('.guided-lab-progress');
       if (progress) {
         const actions = Array.from(controls.querySelectorAll<HTMLElement>(':scope > button'));

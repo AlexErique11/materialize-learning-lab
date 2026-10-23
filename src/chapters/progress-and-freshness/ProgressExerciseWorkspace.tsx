@@ -41,7 +41,12 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
   useLayoutEffect(() => {
     if (!reference) return;
     const panel = referenceRef.current?.querySelector('.progress-lane-panel');
-    if (panel) setAnchor(panel.getBoundingClientRect().top - rootRef.current!.getBoundingClientRect().top);
+    const headers = referenceRef.current?.querySelector('.progress-stage-row');
+    if (panel && headers) {
+      const root = rootRef.current!;
+      root.style.setProperty('--exercise-header-gap', `${panel.getBoundingClientRect().top - headers.getBoundingClientRect().bottom}px`);
+      setAnchor(panel.getBoundingClientRect().top - root.getBoundingClientRect().top);
+    }
     setReference(null);
   }, [reference]);
 
@@ -71,8 +76,20 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
       const outsideSpace = parseFloat(getComputedStyle(panel).marginBottom) || 0;
       const panelHeight = panel.getBoundingClientRect().height + outsideSpace;
       const evidenceHeight = evidence.getBoundingClientRect().height;
-      const headerTop = anchor - root.querySelector<HTMLElement>('.progress-stage-row')!.getBoundingClientRect().height - (innerHeight <= 740 ? 4 : 8);
+      const headerGap = parseFloat(getComputedStyle(root).getPropertyValue('--exercise-header-gap'));
+      const headerTop = anchor - root.querySelector<HTMLElement>('.progress-stage-row')!.getBoundingClientRect().height - headerGap;
       root.style.setProperty('--exercise-diagram-top', `${anchor}px`);
+      if (lectureIndex === 2) {
+        // Keep the diagnosis and its answers together below the four-lane diagram.
+        root.dataset.splitQuestion = 'false';
+        const evidenceTop = anchor + panelHeight + gap;
+        const questionTop = evidenceTop + evidenceHeight + gap;
+        root.style.setProperty('--exercise-evidence-top', `${evidenceTop}px`);
+        root.style.setProperty('--exercise-question-top', `${questionTop}px`);
+        root.style.setProperty('--exercise-question-space', `${Math.max(0, limit - questionTop)}px`);
+        root.dataset.fits = String(questionTop < limit);
+        return;
+      }
       let placed = false;
       for (const split of [false, true]) {
         root.dataset.splitQuestion = String(split);
@@ -151,9 +168,9 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
     observer.observe(answers);
     observer.observe(panel);
     return () => observer.disconnect();
-  }, [anchor, question]);
+  }, [anchor, question, lectureIndex]);
 
-  return <div ref={rootRef} className="progress-exercise-layout" data-aligned={anchor !== null}>
+  return <div ref={rootRef} className="progress-exercise-layout" data-aligned={anchor !== null} data-question-below={lectureIndex === 2 || undefined}>
     {visualization}{question}
     {reference && createPortal(<div ref={referenceRef} className="progress-exercise-reference" aria-hidden="true" inert style={{ position: 'fixed', left: reference.left, top: reference.top, width: reference.width, height: reference.height, visibility: 'hidden', pointerEvents: 'none' }}>
       <ProgressLecture chapter={chapter} navigation={navigation} lectureIndex={lectureIndex} manageDocumentTitle={false} />

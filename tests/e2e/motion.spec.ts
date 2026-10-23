@@ -423,7 +423,7 @@ for (const lecture of [1, 2, 3]) {
       return { x: box.x, y: box.y + scrollY, width: box.width, height: box.height };
     });
     const before = await geometry();
-    await page.getByRole('button', { name: lecture === 3 ? 'Next case' : 'Next change', exact: true }).click();
+    await page.getByRole('button', { name: 'Next change', exact: true }).click();
     await expectMotion(page, 'value');
     const boundaries = await page.locator('.progress-track').evaluateAll(tracks => tracks.map(track => {
       const frontier = track.querySelector<HTMLElement>('.progress-frontier')!;
@@ -471,7 +471,7 @@ test('Chapter 6 reduced motion preserves immediate progress, lag and question up
   await observeMotion(page);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(`${progressPath}/tutorial/lecture-3`);
-  await page.getByRole('button', { name: 'Next case', exact: true }).click();
+  await page.getByRole('button', { name: 'Next change', exact: true }).click();
   await expect(page.getByTestId('progress-case-label')).toContainText('Computation delay');
   await expect(page.getByTestId('lane-join')).toHaveAttribute('aria-label', /frontier 12;/);
   await page.goto(`${progressPath}/exercises/exercise-1`);

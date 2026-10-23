@@ -119,7 +119,6 @@ html:has(.object-exercise-page), body:has(.object-exercise-page) { height: 100dv
 .object-exercise-page .exercise-question-navigation { display: flex; align-items: center; height: 40px; min-height: 40px; }
 .object-exercise-page .exercise-question-navigation:empty { display: flex; visibility: hidden; }
 @media (max-width: 639px) {
-  .object-exercise-page .guided-lab-controls .button > svg { display: none; }
   .object-exercise-footer { left: 16px; right: 16px; }
   .object-exercise-footer .button { min-height: 36px; padding-inline: 8px; font-size: 12px; }
 }

@@ -14,6 +14,7 @@ import { ProgressLanes } from './ProgressLanes';
 import { playbackExplanation, playbackFrames, progressLectures } from './lecture-scenarios';
 import { referenceLinks, objective, progressSql } from './resources';
 import type { LaneId } from './simulation';
+import { useProgressLectureLayout } from './useProgressLectureLayout';
 import '../../styles/lesson.css';
 import './chapter.css';
 
@@ -25,6 +26,7 @@ export function ProgressLecture({ chapter, navigation, lectureIndex, manageDocum
   const [selected, setSelected] = useState<LaneId>(lectureIndex === 2 ? 'revenue' : 'orders');
   const refs = { axis: useRef<HTMLElement>(null), orders: useRef<HTMLElement>(null), payments: useRef<HTMLElement>(null), join: useRef<HTMLElement>(null), revenue: useRef<HTMLElement>(null), detail: useRef<HTMLElement>(null),
     metrics: useRef<HTMLDivElement>(null), lag: useRef<HTMLElement>(null), lanes: useRef<HTMLElement>(null) };
+  useProgressLectureLayout(refs.detail);
   const lesson = lecture.lessons[Math.min(state.step, lecture.lessons.length - 1)]!;
   const currentLesson = state.selectedTime > 0 ? lecture.lessons[state.selectedTime - 1]! : undefined;
   const frames = playbackFrames(lecture);
@@ -61,7 +63,7 @@ export function ProgressLecture({ chapter, navigation, lectureIndex, manageDocum
     <LectureScreen manageDocumentTitle={manageDocumentTitle} activityCompleted={completed} layout="without-tip" chapter={chapter} title={`Lecture ${lectureIndex + 1}`} description={lecture.description} navigation={navigation}
       regionLabel="Lecture content" className="lesson-page progress-chapter-page" guided={state.guided}
       reference={{ objective: `${lecture.title}. ${objective}`, sql: progressSql, documentationLinks: referenceLinks }}
-      simulation={{ completed: state.guided ? state.step : normalStep + (caseStudy ? 1 : 0), total: state.guided ? lecture.lessons.length : frames.length + (caseStudy ? 1 : 0), progressLabel: state.guided ? 'Tutorial' : 'Steps', playing: state.playing,
+      simulation={{ completed: state.guided ? state.step : normalStep + (caseStudy ? 1 : 0), total: state.guided ? lecture.lessons.length : frames.length + (caseStudy ? 1 : 0), progressLabel: state.guided ? 'Tutorial' : 'Changes', playing: state.playing,
         onReset: reset, onRun: () => { if (!state.playing && normalStep === frames.length) dispatch({ type: 'reset' }); dispatch({ type: 'play' }); }, onStartGuidedRun: () => { reset(); dispatch({ type: 'start-guided' }); } }}
       visualization={<ProgressLanes snapshot={current} selected={active} onSelect={setSelected} refs={refs}
         onInspect={() => dispatch({ type: 'pause' })}
@@ -73,8 +75,8 @@ export function ProgressLecture({ chapter, navigation, lectureIndex, manageDocum
       playback={<div className="relation-playback-controls" aria-label="Scenario playback">
         <ActivityCompletion complete={finished} kind="tutorial" />
         <div>{state.selectedTime !== state.applied && <Button disabled={state.guided || state.playing} onClick={() => dispatch({ type: 'select', time: state.applied })}>Return to latest</Button>}
-          <Button aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || normalStep === 0} onClick={() => move(false)}><ArrowLeft size={14} aria-hidden="true" />{caseStudy ? 'Previous case' : 'Previous change'}</Button>
-          <Button data-walkthrough="next-change" aria-keyshortcuts="ArrowRight" disabled={state.guided || state.playing || normalStep === frames.length} onClick={() => move(true)}>{caseStudy ? 'Next case' : 'Next change'}<ArrowRight size={14} aria-hidden="true" /></Button>
+          <Button aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || normalStep === 0} onClick={() => move(false)}><ArrowLeft size={14} aria-hidden="true" />Previous change</Button>
+          <Button data-walkthrough="next-change" aria-keyshortcuts="ArrowRight" disabled={state.guided || state.playing || normalStep === frames.length} onClick={() => move(true)}>Next change<ArrowRight size={14} aria-hidden="true" /></Button>
         </div>
       </div>} />
     <Spotlight open={state.guided} {...focus.props} step={Math.min(state.step + 1, lecture.lessons.length)} total={lecture.lessons.length}

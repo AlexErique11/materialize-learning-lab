@@ -1,0 +1,6 @@
+/* Shared timeline marks for progress and consistent-read diagrams. */
+.timeline-track { position: relative; align-self: center; height: 2px; margin-inline: 7px; background: var(--border-strong); }
+.timeline-gridline { position: absolute; top: -17px; left: var(--position); height: 36px; width: 1px; background: var(--lab-border); }
+.timeline-complete { position: absolute; height: 12px; top: -5px; background: color-mix(in srgb, var(--practice-accent) 17%, var(--lab-surface)); border-block: 1px solid color-mix(in srgb, var(--practice-accent) 30%, transparent); }
+.timeline-frontier { position: absolute; left: var(--position); transform: translateX(-50%); width: 12px; height: 12px; top: -5px; border-radius: 50%; background: var(--lab-purple); z-index: 2; }
+.timeline-value { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 12px; font-weight: 700; color: var(--lab-purple); background: var(--lab-surface); padding-inline: 2px; font-variant-numeric: tabular-nums; white-space: nowrap; }

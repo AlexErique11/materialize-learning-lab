@@ -11,7 +11,6 @@ import { ProgressLanes } from './ProgressLanes';
 import { ProgressExerciseWorkspace } from './ProgressExerciseWorkspace';
 import { gradePrediction, progressExercises, solutionFor, type Prediction } from './exercise-scenarios';
 import { referenceLinks, objective, progressSql } from './resources';
-import type { LaneId } from './simulation';
 import { LessonText } from '../../components/lesson/LessonText';
 import { progressText } from './lessonText';
 import '../../styles/lesson.css';
@@ -24,7 +23,6 @@ export function ProgressExercisePage({ chapter, navigation, exerciseIndex }: { c
   const flow = useExerciseStages(exercise.questions.length);
   const question = exercise.questions[flow.stage]!;
   const [answers, setAnswers] = useState<Record<number, Prediction>>({});
-  const [selected, setSelected] = useState<LaneId>(exerciseIndex === 0 ? 'orders' : 'join');
   const { open: openChapterCompletion, close: closeChapterCompletion } = useChapterCompletion();
   const [choiceGroup, setChoiceGroup] = useState<string | null>(null);
   const [resetVersion, setResetVersion] = useState(0);
@@ -39,7 +37,7 @@ export function ProgressExercisePage({ chapter, navigation, exerciseIndex }: { c
       pageClass="lesson-page staged-exercise-page lecture-layout-page lecture-subtitle-layout progress-chapter-page progress-exercise-page" flow={flow} progressLabel="Questions"
       reference={{ objective, sql: progressSql, documentationLinks: referenceLinks }} checkpointTitle={question.title} question={progressText(question.prompt)} hint={progressText(question.hint)}
       nextExerciseLabel={nextExercise ? `Exercise ${exerciseIndex + 2}` : 'Finish chapter'}
-      visualization={<div className="progress-exercise-visualization"><ProgressLanes snapshot={current} selected={selected} onSelect={setSelected}
+      visualization={<div className="progress-exercise-visualization"><ProgressLanes snapshot={current} highlightedLanes={question.focusLanes}
         compact showLimit={question.showLimit} revealTiming={flow.accepted} caption={question.actionLabel} upcoming={!flow.accepted} /></div>}
       renderWorkspace={({ visualization, question: questionContent, navigation: questionNavigation }) => <>
         <ProgressExerciseWorkspace chapter={chapter} lectureIndex={exerciseIndex} navigation={navigation} visualization={visualization} question={questionContent} />
@@ -68,9 +66,9 @@ export function ProgressExercisePage({ chapter, navigation, exerciseIndex }: { c
       onNext={() => {
         if (!flow.accepted) return;
         if (flow.complete) { if (nextExercise) navigate(`/labs/${chapter.slug}/exercises/${nextExercise.slug}`); else openChapterCompletion(); }
-        else { flow.dispatch({ type: 'next' }); setSelected(exerciseIndex === 0 ? 'orders' : exerciseIndex === 2 && flow.stage >= 1 ? 'revenue' : 'join'); }
+        else flow.dispatch({ type: 'next' });
       }}
-      onReset={() => { flow.dispatch({ type: 'reset' }); setAnswers({}); setSelected(exerciseIndex === 0 ? 'orders' : 'join'); closeChapterCompletion(); setResetVersion(v => v + 1); }} />
+      onReset={() => { flow.dispatch({ type: 'reset' }); setAnswers({}); closeChapterCompletion(); setResetVersion(v => v + 1); }} />
     <Dialog open={choiceGroup !== null} onClose={() => setChoiceGroup(null)} title={question.groups.find(group => group.id === choiceGroup)?.label ?? 'Choose answers'}>
       {question.groups.filter(group => group.id === choiceGroup).map(group => <fieldset key={group.id} className="progress-answer-group progress-lesson-text" aria-label={group.label} aria-invalid={Boolean(flow.grade?.errors[group.id])} aria-describedby={flow.grade?.errors[group.id] ? `${answerId}-dialog-error` : undefined}>
         <legend className="sr-only">{group.label}</legend>

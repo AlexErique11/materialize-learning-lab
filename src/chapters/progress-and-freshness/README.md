@@ -100,15 +100,25 @@ Normal playback visits state-changing actions only (six in Lecture 1), with an
 action explanation in the selected lane's detail panel and emphasis on affected
 lanes. Guided runs cover 27 teaching checkpoints. Both modes use the existing
 playback controls; Lectures 1–2 count actions, not logical timestamps.
+Lecture headers also select a relation inspector backed by `relation-details.ts`.
+Sources show actual report history, observed changes and clock lag when available;
+Paid orders shows the input limit, limiting sources, processing gap and sampled
+backlog; Revenue separates local, inherited, source and total delay. Interpretations
+use the displayed snapshot, including each independent diagnosis, and never apply
+an action. The source-status sample belongs to Payments. End-to-end journey
+durations are not presented as measured per-source or per-operator durations.
+The inspector reserves the same space across selections, supports keyboard
+scrolling for longer explanations, and resets its scroll position when selection
+or the scenario changes. Exercises retain their compact evidence strip.
 Bands and boundaries update together without position transitions so loading,
 rewind and catch-up never show mismatched progress. The observation arrival
 effect respects reduced-motion preferences and never fades away history.
 
 Lecture 3 starts with the stalled-source incident at Step 1 of 4, followed by
-computation delay, slow queries, and reaction time. Next case / Previous case
-controls stay in the existing playback positions. The evidence heading carries
-the step identity. The existing caption space holds a two-line lag legend with
-all five values and an Independent case label. Hover descriptions and the
+computation delay, slow queries, and reaction time. Next change / Previous change
+controls stay in the existing playback positions. The evidence heading identifies
+the selected relation. The existing caption space holds a two-line Revenue lag
+legend with all five values and the independent case's step identity. Hover descriptions and the
 existing Diagram key explain each lag and its formula. There is no separate lag
 popup or extra panel shifting the layout. Fixture replacements
 do not highlight differences from the previous incident as progress changes.

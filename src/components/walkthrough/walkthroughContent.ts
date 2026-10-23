@@ -28,10 +28,10 @@ export function getLectureWalkthrough(path: string): WalkthroughStep[] | null {
   if (parts.length !== 4 || parts[0] !== 'labs' || parts[2] !== 'tutorial'
     || !currentChapter || !findChapterContent(currentChapter, parts[2], parts[3])) return null;
   const independentCases = currentChapter.slug === 'progress-and-freshness' && parts[3] === 'lecture-3';
-  const nextLabel = independentCases ? 'Next case' : path === chapterTourPaths.lectureTwo ? 'Next timestamp' : 'Next change';
+  const nextLabel = path === chapterTourPaths.lectureTwo ? 'Next timestamp' : 'Next change';
   const scenarioSteps = ['views-indexes-materialized-views', 'progress-and-freshness', 'consistent-reads'].includes(currentChapter.slug);
   const stepDescription = independentCases
-    ? 'Open the next independent case with fresh starting values. These examples are separate incidents, so a lower frontier does not mean progress moved backward. Previous case revisits the prior example.'
+    ? 'Open the next independent case with fresh starting values. These examples are separate incidents, so a lower frontier does not mean progress moved backward. Previous change revisits the prior example.'
     : currentChapter.slug === 'consistent-reads'
     ? 'Advance one scenario checkpoint: select a query snapshot, advance a frontier, or replay a named independent fixture. Steps are not logical timestamps. Previous change restores the earlier state; the time slider explores a separate selected request.'
     : currentChapter.slug === 'progress-and-freshness'
