@@ -87,7 +87,7 @@ test('five guided steps explain complete updates and cancellation in the live ta
       await expect(guide.locator('.relation-diagram')).toHaveCount(0);
       const progress = page.getByRole('progressbar', { name: 'Changes progress' });
       await expect(progress).toHaveAttribute('max', '3');
-      await expect(progress).toHaveAttribute('value', String(step >= 1 && step <= 3 ? times[step]! - 1 : times[step]));
+      await expect(progress).toHaveAttribute('value', '0');
       await expectChapterOneGuideLayout(page);
       if (step >= 1 && step <= 3) {
         await expect(page.locator('.relation-ledger .relation-panel-time')).toHaveText('Upcoming · t = ' + times[step]);
@@ -100,7 +100,7 @@ test('five guided steps explain complete updates and cancellation in the live ta
       }
       await expect(page.getByTestId('logical-time').locator('strong')).toHaveText('t = ' + times[step]);
       await expect(page.locator('.relation-ledger .relation-panel-time')).toHaveText('Applied · t = ' + times[step]);
-      await expect(progress).toHaveAttribute('value', String(times[step]));
+      await expect(progress).toHaveAttribute('value', '0');
       if (step === 1) {
         await expect(guide.locator('p')).toContainText('Adding only the new row would leave the old row present too.');
         await expect(page.locator('.relation-current tbody tr')).toHaveText(['A$101', 'B$181', 'C$202']);

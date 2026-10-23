@@ -302,7 +302,8 @@
   background: transparent;
 }
 
-.app-shell-guided-labs .chapter-link-row > a[data-completed='true']:not(.chapter-selected) .chapter-link-number {
+.app-shell-guided-labs .chapter-link-row > a[data-completed='true']:not(.chapter-selected) .chapter-link-number,
+.app-shell-guided-labs .chapter-overview-row[data-completed='true'] .chapter-overview-number {
   color: var(--success);
   border-color: color-mix(in oklch, var(--success) 35%, var(--lab-border));
   background: color-mix(in oklch, var(--success) 8%, var(--lab-surface));

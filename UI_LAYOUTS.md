@@ -157,6 +157,9 @@ Finishing a guided run earns tutorial completion; normal playback does not.
 `ExerciseFrame` records completion only when all questions are accepted, including
 Show Answer. Reset, replay, navigation and reload preserve earned completion.
 `useLectureRun` exposes saved completion separately from finishing the current run.
+`LectureScreen` holds the toolbar progress label, count, maximum and fill at their
+pre-run values while a guided run is open. The guide's own step counter continues;
+closing or finishing the guide restores the current playback progress display.
 `ActivityCompletion` shows the existing footer message for three seconds when a
 run finishes, with a localized 700ms confetti burst. It does not celebrate on
 reload or return visits; completing a replay can celebrate again. Reduced motion
@@ -174,6 +177,9 @@ their number boxes gain a very light green fill, light green border and green
 number when unselected. The selected chapter keeps the normal purple styling,
 including in compact navigation. Completed, unselected chapter titles use a
 muted green, while selected titles keep their normal purple navigation color.
+Completed lecture/exercise number boxes in chapter overviews use the same green
+text, border and light fill as unselected completed sidebar chapters. Their shared
+color rule lives in `chapter-sidebar.css`; overview spacing and labels stay unchanged.
 Exercise completion uses the existing tutorial checkmark
 and success color, anchored to the shared navigation inset at the lower left
 (28px on desktop, 16px on phones) without shifting questions or metrics.

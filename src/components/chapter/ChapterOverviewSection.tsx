@@ -5,6 +5,7 @@ import {
   type ChapterSectionDefinition,
 } from '../../chapters/chapterOutline';
 import { formatChapterNumber, type ChapterDefinition } from '../../chapters/chapterRegistry';
+import { useLabProgress } from '../../hooks/useLabProgress';
 
 interface ChapterOverviewSectionProps {
   chapter: ChapterDefinition;
@@ -12,6 +13,7 @@ interface ChapterOverviewSectionProps {
 }
 
 export function ChapterOverviewSection({ chapter, section }: ChapterOverviewSectionProps) {
+  const { completedPaths } = useLabProgress();
   const isTutorial = section.slug === 'tutorial';
   const SectionIcon = isTutorial ? BookOpen : Code;
 
@@ -26,8 +28,11 @@ export function ChapterOverviewSection({ chapter, section }: ChapterOverviewSect
         <ChevronDown size={20} aria-hidden="true" />
       </summary>
       <ol className="chapter-overview-list" aria-label={`${section.listTitle} list`}>
-        {section.pages.length > 0 ? section.pages.map((page, index) => (
-          <li key={page.slug} className="chapter-overview-row">
+        {section.pages.length > 0 ? section.pages.map((page, index) => {
+          const path = chapterContentPath(chapter, { ...page, sectionSlug: section.slug });
+          const completed = completedPaths.includes(path);
+          return <li key={page.slug} className="chapter-overview-row" data-completed={completed || undefined}
+            aria-description={completed ? 'Completed' : undefined}>
             <span className="chapter-overview-number">{formatChapterNumber(index + 1)}</span>
             <div className="chapter-overview-row-copy">
               <h3>{page.title}</h3>
@@ -41,13 +46,13 @@ export function ChapterOverviewSection({ chapter, section }: ChapterOverviewSect
             <Link
               data-walkthrough={isTutorial && page.slug === 'lecture-1' ? 'start-lecture-1' : undefined}
               className="chapter-overview-start chapter-overview-start-lesson"
-              to={chapterContentPath(chapter, { ...page, sectionSlug: section.slug })}
+              to={path}
               aria-label={`Start ${section.itemLabel}: ${page.title}`}
             >
               Start {section.itemLabel}<ArrowRight size={18} aria-hidden="true" />
             </Link>
-          </li>
-        )) : (
+          </li>;
+        }) : (
           <li className="chapter-overview-row chapter-overview-empty reserved-overview-row" aria-hidden="true" />
         )}
       </ol>

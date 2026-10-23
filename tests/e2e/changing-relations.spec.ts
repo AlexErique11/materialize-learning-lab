@@ -121,8 +121,7 @@ test('six guided steps explain the live tables and predict each effect', async (
       await expect(page.locator('.guided-lab-progress > div > span')).toHaveText('Changes');
       const progress = page.getByRole('progressbar', { name: 'Changes progress' });
       await expect(progress).toHaveAttribute('max', '4');
-      const beforeTime = index >= 1 && index <= 4 ? index - 1 : index === 5 ? 4 : 0;
-      await expect(progress).toHaveAttribute('value', String(beforeTime));
+      await expect(progress).toHaveAttribute('value', '0');
       await expectChapterOneGuideLayout(page);
       if (index >= 1 && index <= 4) {
         await expect(guide.locator('.relation-guide-phase')).toHaveText('Predict the effect');
@@ -132,7 +131,7 @@ test('six guided steps explain the live tables and predict each effect', async (
         await expect(guide.locator('.relation-guide-phase')).toHaveText('Explanation');
         await expect(page.locator('.relation-causal-arrow')).toHaveCount(0);
         await expect(page.getByTestId('logical-time').locator('strong')).toHaveText('t = ' + index);
-        await expect(progress).toHaveAttribute('value', String(index));
+        await expect(progress).toHaveAttribute('value', '0');
         await expectChapterOneGuideLayout(page);
         if (index === 3) {
           await expect(guide.locator('p')).toContainText('4 → 6');
