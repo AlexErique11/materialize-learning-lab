@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { publicAsset } from '../../app/publicAsset';
 import { motion } from '../../motion/motion';
 import '../../styles/lab-intro.css';
 
@@ -68,7 +69,7 @@ export function LabIntroScreen({ phase }: { phase: 'reacting' | 'revealing' }) {
                 <g className="lab-intro-bubble lab-intro-bubble-three">
                   <circle cx="178" cy="222" r="6" fill={`url(#${bubbleId})`} />
                 </g>
-                <image href="/materialize-logo-transparent.png" x="83" y="184" width="194" height="194" />
+                <image href={publicAsset('materialize-logo-transparent.png')} x="83" y="184" width="194" height="194" />
               </g>
               <path d="M145 81V141C145 156 141 168 134 180L52 314C40 335 51 349 75 349H285C309 349 320 335 308 314L226 180C219 168 215 156 215 141V81" fill="none" stroke="oklch(99% 0.006 300)" strokeWidth="3" strokeLinecap="round" opacity="0.92" />
               <path d="M124 48H236C245 48 251 54 251 62C251 70 245 76 236 76H124C115 76 109 70 109 62C109 54 115 48 124 48Z" fill={`url(#${edgeId})`} />

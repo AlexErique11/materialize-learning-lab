@@ -1,6 +1,7 @@
 import { ArrowUpRight, Moon, Sun } from 'lucide-react';
 import { Link } from 'react-router';
 import { DOCUMENTATION_URL } from '../../app/resources';
+import { publicAsset } from '../../app/publicAsset';
 import { useTheme } from '../../hooks/useTheme';
 
 export function AppHeader() {
@@ -11,7 +12,7 @@ export function AppHeader() {
       <div className="app-header-inner">
         <Link to="/" className="brand" aria-label="Materialize Learning Lab home">
           <svg viewBox="27 39 146 122" className="brand-mark" aria-hidden="true">
-            <image href="/materialize-logo-transparent.png" width="200" height="200" />
+            <image href={publicAsset('materialize-logo-transparent.png')} width="200" height="200" />
           </svg>
           <span>
             <strong>Materialize</strong>

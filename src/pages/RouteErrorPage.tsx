@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import { AppHeader } from '../components/layout/AppHeader';
 import { PageContainer } from '../components/layout/PageContainer';
 import { PageHeader } from '../components/layout/PageHeader';
@@ -12,9 +13,9 @@ export function RouteErrorPage() {
             title="Something went wrong"
             description="The page couldn’t be loaded. Reload the learning path to try again."
           />
-          <a href="/" className="button button-primary">
+          <Link to="/" reloadDocument className="button button-primary">
             Reload learning path
-          </a>
+          </Link>
         </PageContainer>
       </main>
     </>
