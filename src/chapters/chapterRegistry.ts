@@ -27,6 +27,7 @@ export const chapters: readonly ChapterDefinition[] = [
     description: 'Reconstruct a changing relation from additions, retractions, and updates.',
     introduction: 'Learn how signed changes reconstruct a relation over logical time. Follow additions, retractions, and updates in two tutorials, then practice reading and writing diffs in a three-phase inventory exercise.',
     overviewImage: publicAsset('changing-relations-overview.png'),
+    overviewImageFit: 'cover',
     documentationLinks: [
       { title: 'SUBSCRIBE: logical timestamps and signed diffs', href: 'https://materialize.com/docs/sql/subscribe/#output' },
       { title: 'SUBSCRIBE: snapshots and initial state', href: 'https://materialize.com/docs/sql/subscribe/#snapshot' },
@@ -46,7 +47,7 @@ export const chapters: readonly ChapterDefinition[] = [
     description: 'Trace one input change through filters, joins, and aggregates.',
     introduction: 'Explore how input changes travel through SQL filters, joins, and grouped aggregates. Follow inserts, updates, and deletions through four interactive tutorials, compare incremental maintenance with full recomputation, then practice predicting which result rows change in two exercises.',
     overviewImage: publicAsset('incremental-maintenance-overview.png'),
-    overviewImageFit: 'contain',
+    overviewImageFit: 'cover',
     documentationLinks: [
       { title: 'SELECT: projections, WHERE filters, and GROUP BY', href: 'https://materialize.com/docs/sql/select/' },
       { title: 'JOIN: inner joins, matching keys, and multiple matches', href: 'https://materialize.com/docs/sql/select/join/#inner-join' },
@@ -80,7 +81,7 @@ export const chapters: readonly ChapterDefinition[] = [
     description: 'Follow initial snapshots and incoming changes into a source relation.',
     introduction: 'Follow data from an upstream system into Materialize. Explore initial snapshots and change data capture, then see how records become table changes with NONE, UPSERT, and DEBEZIUM envelopes. Work through four interactive tutorials and three exercises covering keys, updates, tombstones, and input errors.',
     overviewImage: publicAsset('getting-data-in-overview.png'),
-    overviewImageFit: 'contain',
+    overviewImageFit: 'cover',
     documentationLinks: [
       { title: 'Snapshotting: atomic initial loads and waiting queries', href: 'https://materialize.com/docs/fundamentals/concepts/snapshotting/' },
       { title: 'CREATE CONNECTION: reusable access to upstream systems', href: 'https://materialize.com/docs/sql/create-connection/' },
@@ -99,6 +100,8 @@ export const chapters: readonly ChapterDefinition[] = [
     shortTitle: 'Time in Materialize',
     description: 'Explore logical time and how maintained results change without new input.',
     introduction: 'Explore how logical time changes maintained results, even without new input. Follow expiration boundaries, future events, late arrivals, and changing deadlines through four interactive tutorials and three prediction exercises.',
+    overviewImage: publicAsset('time-in-materialize-overview.png'),
+    overviewImageFit: 'cover',
     documentationLinks: [
       { title: 'now() and mz_now(): system time and query logical time', href: 'https://materialize.com/docs/sql/functions/now_and_mz_now/' },
       { title: 'Temporal filters: valid comparisons and materialization restrictions', href: 'https://materialize.com/docs/transform-data/patterns/temporal-filters/#mz_now-requirements-and-restrictions' },

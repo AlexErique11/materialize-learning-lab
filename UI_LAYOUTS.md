@@ -113,6 +113,19 @@ The filter-choice question conceals the reference predicate until acceptance.
 
 ## Shared component ownership
 
+Chapter overview illustrations are chapter metadata in `chapterRegistry.ts`, backed
+by seven transparent `public/*-overview.png` assets. The hero retains the reference
+text-column widths and spacing above Learn more. Desktop image frames are 160px
+high, with 180px for the denser Chapter 3 diagram and the wider Chapters 2 and 4
+compositions, and 172px for the Chapter 6 and 7 timelines. The Chapter 2 and 4
+images cap at 420px within their existing 444px columns.
+Chapter 1 uses a slightly larger 400px image column (260px below 1350px) to balance
+its more open composition, while keeping the same frame height and section gaps.
+Chapter-owned fitting trims only empty canvas from wide scenes and contains the
+taller diagrams. `chapter-overview.css` preserves the compact-screen hiding rules
+and smaller frames below 1350px. PNG alpha blends naturally into both themes;
+overview and reused completion artwork need no color filters or blend modes.
+
 `ChapterSidebarEntry` toggles chapter branches when their rows are activated in
 the full sidebar or mobile chapter menu. Opening another chapter keeps the current
 page and its selected styling; Overview and activity links navigate explicitly.

@@ -11,7 +11,7 @@ export function ChapterOverviewIllustration({ imageSrc, imageFit = 'cover' }: Ch
         src={imageSrc}
         style={{ objectFit: imageFit }}
         width={400}
-        height={160}
+        height={200}
         alt=""
         aria-hidden="true"
       />

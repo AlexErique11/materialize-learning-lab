@@ -55,6 +55,7 @@ test('chapter overview lists collapse independently and start their content', as
   await page.getByRole('link', { name: `Start tutorial: ${tutorials[0]!.title}`, exact: true }).click();
   await expect(page).toHaveURL(chapterContentPath(chapter, tutorials[0]!));
   await expect(page.locator('.guided-lab-title h1')).toBeVisible();
+  await expect(page.locator('body > .area-transition-viewport')).toHaveCount(0);
   if (isMobile) await page.locator('.mobile-sidebar > summary').click();
   await page.getByRole('navigation', { name: 'Chapters' }).getByRole('link', { name: 'Time in Materialize overview', exact: true }).click();
   await expect(page).toHaveURL(chapterPath(chapter));
@@ -74,12 +75,8 @@ test('overview illustrations keep a consistent frame when sections collapse near
   for (const slug of ['changing-relations', 'time-in-materialize']) {
     await page.goto(`/labs/${slug}`);
     const illustration = page.locator('.chapter-overview-illustration');
-    if (slug === 'changing-relations') {
-      await expect(illustration).toHaveAttribute('src', '/changing-relations-overview.png');
-      await expect.poll(() => illustration.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
-    } else {
-      await expect(page.locator('svg.chapter-overview-illustration')).toHaveCount(1);
-    }
+    await expect(illustration).toHaveAttribute('src', `/${slug}-overview.png`);
+    await expect.poll(() => illustration.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
     for (const width of [1350, 1351, 1366, 1440]) {
       await page.setViewportSize({ width, height: 900 });
       for (const expanded of [true, false]) {
@@ -98,8 +95,8 @@ test('overview illustrations keep a consistent frame when sections collapse near
         });
         expect(geometry.illustrationLeft, `Text separation in ${slug} at ${width}px, expanded=${expanded}`).toBeGreaterThanOrEqual(geometry.textRight + 16);
         expect(geometry.illustrationRight).toBeLessThanOrEqual(geometry.heroRight);
-        const frameKey = `${width}/${expanded}`;
-        if (slug === 'changing-relations') {
+        const frameKey = `${slug}/${width}`;
+        if (expanded) {
           imageFrames.set(frameKey, geometry);
         } else {
           const imageFrame = imageFrames.get(frameKey)!;
