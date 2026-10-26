@@ -18,8 +18,11 @@ describe('staticRoutes', () => {
     for (const route of staticRoutes) expect(route.description).not.toBe('');
   });
 
-  it('points every preview image at a file in public/', () => {
-    for (const route of staticRoutes) expect(existsSync(`public${route.image}`)).toBe(true);
+  it('points every preview image at a raster file in public/', () => {
+    for (const route of staticRoutes) {
+      expect(existsSync(`public${route.image}`)).toBe(true);
+      expect(route.image).toMatch(/\.(png|jpe?g|webp)$/);
+    }
   });
 
   it('formats titles like usePageTitle', () => {

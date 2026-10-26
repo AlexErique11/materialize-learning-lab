@@ -122,9 +122,6 @@ html:has(.object-exercise-page), body:has(.object-exercise-page) { height: 100dv
   .object-exercise-footer { left: 16px; right: 16px; }
   .object-exercise-footer .button { min-height: 36px; padding-inline: 8px; font-size: 12px; }
 }
-.object-recap { display: grid; gap: 16px; line-height: 1.6; font-size: 14px; }
-.object-recap ul { list-style: disc; padding-left: 20px; }
-.object-recap .button { justify-self: end; }
 @media (min-width: 640px) and (max-height: 880px) {
   .flow-canvas { height: 304px; }
   .flow-cluster { top: 73px; height: 135px; }

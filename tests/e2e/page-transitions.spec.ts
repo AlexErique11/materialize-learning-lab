@@ -134,7 +134,7 @@ for (const reduceDuringLoad of [false, true]) {
     let releaseImage!: () => void;
     const imageReady = new Promise<void>(resolve => { releaseImage = resolve; });
     let imageRequested = false;
-    await page.route('**/incremental-maintenance-overview.png', async route => {
+    await page.route('**/incremental-maintenance-overview.svg', async route => {
       imageRequested = true;
       await imageReady;
       await route.continue();

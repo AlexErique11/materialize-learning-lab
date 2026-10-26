@@ -80,7 +80,7 @@ async function finishExercise(page: Page) {
 
 for (const chapter of chapters) {
   for (const prerequisitesComplete of [false, true]) {
-    test(`${chapter.slug}: last exercise recap ${prerequisitesComplete ? 'celebrates a fully completed chapter' : 'keeps unfinished activities outstanding'}`, async ({ page }) => {
+    test(`${chapter.slug}: last exercise recap ${prerequisitesComplete ? 'celebrates a fully completed chapter' : 'keeps unfinished activities outstanding'}`, async ({ page, isMobile }) => {
       const activities = getChapterPages(chapter);
       const lastExercise = activities.filter(activity => activity.sectionSlug === 'exercises').at(-1)!;
       const path = chapterContentPath(chapter, lastExercise);
@@ -100,6 +100,24 @@ for (const chapter of chapters) {
       await expect(progress(page)).toHaveAttribute('value', prerequisitesComplete ? '1' : '0');
       if (prerequisitesComplete) {
         await expect(dialog).toContainText('Chapter complete');
+        await expect(dialog.locator('.chapter-completion-intro')).toHaveCSS('display', 'grid');
+        await expect(dialog.locator('.chapter-completion-topics')).toHaveCSS('display', 'grid');
+        await expect(dialog.locator('.chapter-completion-topics section')).toHaveCount(3);
+        await expect(dialog.locator('.chapter-completion-topics section > svg')).toHaveCount(3);
+        const artwork = dialog.locator('.chapter-completion-art');
+        await expect(artwork).toBeVisible();
+        await expect(artwork).toHaveAttribute('src', chapter.overviewImage!);
+        await expect.poll(() => artwork.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
+        if (!isMobile) await expect(dialog.locator('.chapter-completion-takeaway')).toContainText('The key idea');
+        expect(await dialog.evaluate(element => element.scrollHeight <= element.clientHeight + 1), 'The completed chapter recap fits without clipping').toBe(true);
+        if (isMobile) {
+          const viewport = page.viewportSize()!;
+          for (const height of [664, 560]) {
+            await page.setViewportSize({ width: viewport.width, height });
+            expect(await dialog.evaluate(element => element.scrollHeight <= element.clientHeight + 1), `The recap fits a ${height}px-tall phone`).toBe(true);
+          }
+          await page.setViewportSize(viewport);
+        }
         await expect(dialog.getByRole('button', { name: nextChapter ? 'Go to next chapter' : 'Return to learning path', exact: true })).toBeFocused();
       } else {
         await expect(dialog).toContainText('Chapter in progress');

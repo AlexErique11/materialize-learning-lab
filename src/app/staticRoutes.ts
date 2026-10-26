@@ -26,7 +26,8 @@ export const staticRoutes: readonly StaticRoute[] = [
   { path: '/challenges', title: 'Challenges', description: 'Capstone projects.', image: SITE_IMAGE },
   ...chapters.flatMap((chapter) => {
     // Outside Vite, publicAsset() resolves against '/', so this is a path from the site root.
-    const image = chapter.overviewImage ?? SITE_IMAGE;
+    // Keep raster previews for link-sharing clients that do not accept SVG images.
+    const image = chapter.overviewImage?.replace(/\.svg$/, '.png') ?? SITE_IMAGE;
     return [
       { path: chapterPath(chapter), title: chapter.shortTitle, description: chapter.description, image },
       ...getChapterPages(chapter).map((page) => ({

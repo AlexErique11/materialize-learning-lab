@@ -75,7 +75,7 @@ test('overview illustrations keep a consistent frame when sections collapse near
   for (const slug of ['changing-relations', 'time-in-materialize']) {
     await page.goto(`/labs/${slug}`);
     const illustration = page.locator('.chapter-overview-illustration');
-    await expect(illustration).toHaveAttribute('src', `/${slug}-overview.png`);
+    await expect(illustration).toHaveAttribute('src', `/${slug}-overview.svg`);
     await expect.poll(() => illustration.evaluate((el) => (el as HTMLImageElement).naturalWidth)).toBeGreaterThan(0);
     for (const width of [1350, 1351, 1366, 1440]) {
       await page.setViewportSize({ width, height: 900 });

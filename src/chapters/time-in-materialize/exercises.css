@@ -38,7 +38,6 @@
 .temporal-exercise-metrics-button { display: none; }
 .temporal-exercise-metrics-detail { display: grid; grid-template-columns: 1fr auto; gap: 16px; }
 .temporal-exercise-metrics-detail dd { font-weight: 650; }
-.temporal-completion-dialog .chapter-completion-intro { grid-template-columns: 1fr; }
 @media (min-width: 640px) and (min-height: 850px) {
   .app-shell-guided-labs .guided-lab-page.temporal-exercise-page[data-viewport-fit] { padding-bottom: 24px; }
 }

@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1774" height="887" viewBox="0 0 1774 887" fill="none" stroke-linecap="round" stroke-linejoin="round" shape-rendering="geometricPrecision">
+  <title>Getting data in</title>
+  <defs>
+    <linearGradient id="backing" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#faf9ff"/><stop offset=".5" stop-color="#e6dfff"/><stop offset="1" stop-color="#f3efff"/></linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fefeff"/><stop offset=".55" stop-color="#f8f6ff"/><stop offset="1" stop-color="#fbfaff"/></linearGradient>
+    <linearGradient id="row" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f1edfc"/><stop offset="1" stop-color="#eeebfa"/></linearGradient>
+    <linearGradient id="selectedLabel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#c2a5fc"/><stop offset="1" stop-color="#b9a2f8"/></linearGradient>
+    <linearGradient id="label" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#d8cff5"/><stop offset="1" stop-color="#dfd7f8"/></linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8151ff"/><stop offset="1" stop-color="#5323ff"/></linearGradient>
+    <linearGradient id="cone" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#faf8ff"/><stop offset=".48" stop-color="#e2d7ff"/><stop offset="1" stop-color="#bca5fb"/></linearGradient>
+  </defs>
+  <path d="M80 267Q80 255 92 251.28L455 138.72Q467 135 467 147V513Q467 525 455 528.72L92 641.28Q80 645 80 633Z" fill="url(#backing)" stroke="#c5b4fa" stroke-width="2.5" opacity="1"/>
+  <path d="M154 279Q154 267 166 263.81L545 163.19Q557 160 557 172V518Q557 530 545 533.19L166 633.81Q154 637 154 625Z" fill="url(#backing)" stroke="#c5b4fa" stroke-width="2.5" opacity="1"/>
+  <path d="M1149 243Q1149 231 1161 229.41L1604 170.59Q1616 169 1616 181V592Q1616 604 1604 605.59L1161 664.41Q1149 666 1149 654Z" fill="url(#backing)" stroke="#c5b4fa" stroke-width="2.5" opacity="1"/>
+  <path d="M1212 286Q1212 274 1224 272.48L1682 214.52Q1694 213 1694 225V634Q1694 646 1682 647.52L1224 705.48Q1212 707 1212 695Z" fill="url(#backing)" stroke="#c5b4fa" stroke-width="2.5" opacity="1"/>
+  <rect x="282" y="234" width="378" height="230" rx="16" fill="url(#panel)" stroke="#a586ff" stroke-width="2.6"/>
+  <path d="M128 335C128 314.84 240 314.84 240 335V437C240 463.8128 128 463.8128 128 437Z" fill="url(#backing)" stroke="#9c7afa" stroke-width="3"/>
+  <ellipse cx="184" cy="335" rx="56" ry="20.16" fill="url(#panel)" stroke="#9c7afa" stroke-width="3"/>
+  <path d="M128 378.86C128 405.67 240 405.67 240 378.86" fill="none" stroke="#a68bf4" stroke-width="3"/>
+  <path d="M128 413.54C128 440.35 240 440.35 240 413.54" fill="none" stroke="#a68bf4" stroke-width="3"/>
+  <path d="M240 385H282" fill="none" stroke="#a383f5" stroke-width="3"/>
+  <circle cx="262" cy="385" r="6" fill="#9a79f2"/>
+  <rect x="300" y="246" width="337" height="46" rx="12" fill="url(#row)"/>
+  <rect x="316" y="259" width="155" height="21" rx="10.5" fill="url(#selectedLabel)"/>
+  <rect x="497" y="259" width="122" height="21" rx="10.5" fill="url(#label)"/>
+  <rect x="300" y="303" width="337" height="45" rx="12" fill="url(#row)"/>
+  <circle cx="330" cy="326" r="14" fill="#bda4f8"/>
+  <rect x="366" y="315" width="132" height="23" rx="11.5" fill="url(#label)"/>
+  <rect x="523" y="315" width="96" height="23" rx="11.5" fill="url(#label)"/>
+  <rect x="300" y="354" width="337" height="45" rx="12" fill="url(#row)"/>
+  <circle cx="330" cy="377" r="14" fill="url(#accent)"/>
+  <rect x="366" y="366" width="132" height="23" rx="11.5" fill="url(#selectedLabel)"/>
+  <rect x="523" y="366" width="96" height="23" rx="11.5" fill="url(#label)"/>
+  <rect x="300" y="405" width="337" height="45" rx="12" fill="url(#row)"/>
+  <circle cx="330" cy="428" r="14" fill="#bda4f8"/>
+  <rect x="366" y="417" width="132" height="23" rx="11.5" fill="url(#label)"/>
+  <rect x="523" y="417" width="96" height="23" rx="11.5" fill="url(#label)"/>
+  <rect x="286" y="500" width="374" height="69" rx="15" fill="url(#panel)" stroke="#a586ff" stroke-width="2.6"/>
+  <rect x="302" y="511" width="335" height="46" rx="13" fill="url(#row)"/>
+  <circle cx="331" cy="534" r="22" fill="url(#accent)"/>
+  <rect x="376" y="518" width="125" height="28" rx="14" fill="url(#selectedLabel)"/>
+  <rect x="523" y="518" width="91" height="28" rx="14" fill="url(#label)"/>
+  <path d="M321 534H341M331 524V544" fill="none" stroke="#fdfbff" stroke-width="3.6"/>
+  <rect x="286" y="578" width="374" height="69" rx="15" fill="url(#panel)" stroke="#a586ff" stroke-width="2.6"/>
+  <rect x="302" y="589" width="335" height="46" rx="13" fill="url(#row)"/>
+  <circle cx="331" cy="612" r="22" fill="url(#accent)"/>
+  <rect x="376" y="596" width="125" height="28" rx="14" fill="url(#selectedLabel)"/>
+  <rect x="523" y="596" width="91" height="28" rx="14" fill="url(#label)"/>
+  <path d="M339.3 608.5A10 10 0 0 0 321.6 613M322.7 615.5A10 10 0 0 0 340.4 611" fill="none" stroke="#fdfbff" stroke-width="3.6"/>
+  <path d="M341 604.3V611.5H334M321 619.7V612.5H328" fill="none" stroke="#fdfbff" stroke-width="3.6"/>
+  <rect x="286" y="659" width="374" height="69" rx="15" fill="url(#panel)" stroke="#a586ff" stroke-width="2.6"/>
+  <rect x="302" y="670" width="335" height="46" rx="13" fill="url(#row)"/>
+  <circle cx="331" cy="693" r="22" fill="url(#accent)"/>
+  <rect x="376" y="677" width="125" height="28" rx="14" fill="url(#selectedLabel)"/>
+  <rect x="523" y="677" width="91" height="28" rx="14" fill="url(#label)"/>
+  <path d="M321 693H341" fill="none" stroke="#fdfbff" stroke-width="3.6"/>
+  <path d="M660 333C746 333 758 411 833 411" fill="none" stroke="#9978f2" stroke-width="4"/>
+  <path d="M660 614C737 611 748 486 833 486" fill="none" stroke="#9978f2" stroke-width="4"/>
+  <circle cx="660" cy="333" r="10" fill="url(#panel)" stroke="#9470fa" stroke-width="3"/>
+  <circle cx="660" cy="614" r="10" fill="url(#panel)" stroke="#9470fa" stroke-width="3"/>
+  <circle cx="752" cy="372" r="8" fill="#b79af4"/>
+  <circle cx="740" cy="563" r="8" fill="#b79af4"/>
+  <path d="M854 333C909 357 1022 407 1046 440Q1059 452 1046 464C1001 495 915 536 857 565Z" fill="url(#cone)" stroke="#a586fa" stroke-width="3"/>
+  <ellipse cx="854" cy="449" rx="29" ry="115" fill="url(#panel)" stroke="#9b77f1" stroke-width="3"/>
+  <path d="M858 376C920 418 981 450 1048 450M858 522C930 479 985 450 1048 450M835 449H1048" fill="none" stroke="#b59af6" stroke-width="2.5"/>
+  <path d="M1058 450H1146" fill="none" stroke="#9569fb" stroke-width="4"/>
+  <path d="M1129 433L1146 450L1129 467" fill="none" stroke="#9569fb" stroke-width="4"/>
+  <circle cx="1092" cy="450" r="8" fill="#b69af6"/>
+  <rect x="1173" y="296" width="486" height="329" rx="18" fill="url(#panel)" stroke="#a586ff" stroke-width="2.6"/>
+  <rect x="1195" y="315" width="441" height="49" rx="12" fill="url(#row)"/>
+  <rect x="1212" y="330" width="145" height="21" rx="10.5" fill="url(#selectedLabel)"/>
+  <rect x="1383" y="330" width="80" height="21" rx="10.5" fill="url(#label)"/>
+  <rect x="1489" y="330" width="129" height="21" rx="10.5" fill="url(#label)"/>
+  <rect x="1195" y="375" width="441" height="49" rx="13" fill="url(#row)"/>
+  <circle cx="1226" cy="399" r="14" fill="#c3aaf9"/>
+  <rect x="1263" y="388" width="127" height="23" rx="11.5" fill="url(#label)"/>
+  <rect x="1415" y="388" width="64" height="23" rx="11.5" fill="url(#label)"/>
+  <rect x="1501" y="388" width="117" height="23" rx="11.5" fill="url(#label)"/>
+  <rect x="1195" y="434" width="441" height="49" rx="13" fill="url(#row)"/>
+  <circle cx="1226" cy="458" r="14" fill="url(#accent)"/>
+  <rect x="1263" y="447" width="127" height="23" rx="11.5" fill="url(#selectedLabel)"/>
+  <rect x="1415" y="447" width="64" height="23" rx="11.5" fill="url(#label)"/>
+  <rect x="1501" y="447" width="117" height="23" rx="11.5" fill="url(#selectedLabel)"/>
+  <rect x="1195" y="493" width="441" height="49" rx="13" fill="url(#row)"/>
+  <circle cx="1226" cy="517" r="14" fill="#c3aaf9"/>
+  <rect x="1263" y="506" width="127" height="23" rx="11.5" fill="url(#label)"/>
+  <rect x="1415" y="506" width="64" height="23" rx="11.5" fill="url(#label)"/>
+  <rect x="1501" y="506" width="117" height="23" rx="11.5" fill="url(#label)"/>
+  <rect x="1195" y="552" width="441" height="49" rx="13" fill="url(#row)"/>
+  <circle cx="1226" cy="576" r="14" fill="url(#accent)"/>
+  <rect x="1263" y="565" width="127" height="23" rx="11.5" fill="url(#selectedLabel)"/>
+  <rect x="1415" y="565" width="64" height="23" rx="11.5" fill="url(#label)"/>
+  <rect x="1501" y="565" width="117" height="23" rx="11.5" fill="url(#selectedLabel)"/>
+</svg>

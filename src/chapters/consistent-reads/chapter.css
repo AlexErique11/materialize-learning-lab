@@ -60,7 +60,7 @@
 .read-multiple-choices label { display: flex; align-items: flex-start; gap: 8px; line-height: 1.5; }
 .read-key-definitions { display: grid; gap: 18px; }
 .read-key-definitions dt { font-weight: 650; }
-.read-key-definitions dd, .read-key-note, .read-recap { margin: 5px 0 0; color: var(--lab-muted); line-height: 1.6; }
+.read-key-definitions dd, .read-key-note { margin: 5px 0 0; color: var(--lab-muted); line-height: 1.6; }
 .read-chapter-page, .read-lesson-text { --read-blue: #285da8; }
 [data-theme='dark'] :is(.read-chapter-page,.read-lesson-text) { --read-blue: #91bdf9; }
 :is(.read-chapter-page,.read-lesson-text) .relation-inline[data-column='orders'], :is(.read-chapter-page,.read-lesson-text) .relation-inline[data-column='frontier'] { color: var(--lab-purple); }

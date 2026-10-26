@@ -114,7 +114,10 @@ The filter-choice question conceals the reference predicate until acceptance.
 ## Shared component ownership
 
 Chapter overview illustrations are chapter metadata in `chapterRegistry.ts`, backed
-by seven transparent `public/*-overview.png` assets. The hero retains the reference
+by seven transparent vector `public/*-overview.svg` assets. Each keeps the original
+1774:887 canvas and composition; paths and gradients contain no embedded bitmaps.
+The PNG counterparts remain only as raster images for link-preview metadata.
+The hero retains the reference
 text-column widths and spacing above Learn more. Desktop image frames are 160px
 high, with 180px for the denser Chapter 3 diagram and the wider Chapters 2 and 4
 compositions, and 172px for the Chapter 6 and 7 timelines. The Chapter 2 and 4
@@ -123,8 +126,17 @@ Chapter 1 uses a slightly larger 400px image column (260px below 1350px) to bala
 its more open composition, while keeping the same frame height and section gaps.
 Chapter-owned fitting trims only empty canvas from wide scenes and contains the
 taller diagrams. `chapter-overview.css` preserves the compact-screen hiding rules
-and smaller frames below 1350px. PNG alpha blends naturally into both themes;
+and smaller frames below 1350px. SVG transparency blends naturally into both themes;
 overview and reused completion artwork need no color filters or blend modes.
+
+All seven chapter recaps use `ChapterCompletionPanel`, with chapter-owned copy
+and three icon topics in `chapterCompletionContent.ts`. The shared
+`chapter-completion.css` preserves Chapter 1's header, illustration, topic cards,
+key-idea callout, footer and compact-screen treatment. Each recap uses its own
+overview SVG. The panel imports this stylesheet directly so its rules load with
+the component during live reload. Chapters 1–6 lead to the next chapter; Chapter 7 returns to the
+learning path. `ChapterCompletionDialog` still owns completion eligibility and
+the remaining-activities panel, including its existing exercise-only styling.
 
 `ChapterSidebarEntry` toggles chapter branches when their rows are activated in
 the full sidebar or mobile chapter menu. Opening another chapter keeps the current

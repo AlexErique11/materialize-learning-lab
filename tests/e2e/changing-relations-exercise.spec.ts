@@ -161,7 +161,7 @@ test('chapter completion preserves the finished inventory, fits both themes, and
       await expect(completion.getByRole('button', { name: 'Go to next chapter', exact: true })).toBeFocused();
       await expect(completion).toContainText('complete logical timestamps');
       await expect(completion).toContainText('Up next · Chapter 2');
-      await expect(completion.locator('img')).toHaveAttribute('src', '/changing-relations-overview.png');
+      await expect(completion.locator('img')).toHaveAttribute('src', '/changing-relations-overview.svg');
       const box = (await completion.boundingBox())!;
       expect(box.x).toBeGreaterThanOrEqual(0);
       expect(box.y).toBeGreaterThanOrEqual(0);

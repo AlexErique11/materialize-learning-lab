@@ -7,8 +7,9 @@ import { useLabProgress } from '../../hooks/useLabProgress';
 import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
 
-export function ChapterCompletionDialog({ chapter, children, ...props }: Omit<ComponentProps<typeof Dialog>, 'title' | 'eyebrow'> & {
+export function ChapterCompletionDialog({ chapter, children, className, completedClassName, ...props }: Omit<ComponentProps<typeof Dialog>, 'title' | 'eyebrow'> & {
   chapter: ChapterDefinition;
+  completedClassName?: string;
 }) {
   const navigate = useNavigate();
   const { completedPaths, completedChapterSlugs } = useLabProgress();
@@ -16,7 +17,8 @@ export function ChapterCompletionDialog({ chapter, children, ...props }: Omit<Co
   const remaining = getChapterPages(chapter).filter(activity => !completedPaths.includes(chapterContentPath(chapter, activity)));
   const nextChapter = chapters[chapters.findIndex(item => item.slug === chapter.slug) + 1];
 
-  return <Dialog {...props} title={complete ? `You finished Chapter ${chapter.number}` : 'Exercise completed'}
+  return <Dialog {...props} className={complete ? completedClassName ?? className : className}
+    title={complete ? `You finished Chapter ${chapter.number}` : 'Exercise completed'}
     eyebrow={complete ? 'Chapter complete' : 'Chapter in progress'}>
     {complete ? children : <div className="space-y-5">
       <p>This exercise is complete. Finish the remaining activities to complete Chapter {chapter.number}.</p>

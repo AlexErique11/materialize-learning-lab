@@ -228,7 +228,8 @@ SELECT's duplicate-row and grouping behavior, aggregate functions including COUN
 and INSERT, UPDATE, and DELETE. These official references were checked on
 2026-10-04 and supplement the general Materialize documentation link.
 
-The supplied transparent diagram is stored unchanged at
-`public/changing-relations-overview.png`. Only Chapter 1 selects this image.
-It uses the same 400:160 illustration frame and responsive sizing as the default
-SVG; fitting it crops outer transparent padding without stretching the artwork.
+The transparent diagram is recreated as vector paths and gradients in
+`public/changing-relations-overview.svg`, preserving the original 1774:887 canvas.
+Only Chapter 1 selects this image. Its existing illustration frame and responsive
+sizing crop outer transparent padding without stretching the artwork. The PNG
+counterpart remains available for link-preview metadata.

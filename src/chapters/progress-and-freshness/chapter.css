@@ -101,7 +101,6 @@ html:has(.progress-exercise-page), body:has(.progress-exercise-page) {
 .progress-answer-group [aria-invalid='true']:is(select, button) { border-color: var(--danger); }
 .progress-number input { width: 80px; min-height: 34px; border: 1px solid var(--border-strong); background: var(--lab-surface); color: var(--lab-text); border-radius: 4px; padding: 5px 8px; font: inherit; }
 .progress-number input[aria-invalid='true'] { border-color: var(--danger); }
-.progress-recap p, .progress-recap li { line-height: 1.6; }
 @media (min-width: 1024px) and (max-width: 1150px) {
   .guided-lab-page.progress-exercise-page { gap: 10px; }
 }

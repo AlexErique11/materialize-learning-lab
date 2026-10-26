@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1774" height="887" viewBox="0 0 1774 887" fill="none" stroke-linecap="round" stroke-linejoin="round" shape-rendering="geometricPrecision">
+  <title>Progress and freshness</title>
+  <defs>
+    <linearGradient id="mutedPanel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#faf9ff"/><stop offset="1" stop-color="#f1f0fa"/></linearGradient>
+    <linearGradient id="mutedTrack" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#dddaf6"/><stop offset="1" stop-color="#e7e6f2"/></linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fefeff"/><stop offset=".55" stop-color="#f8f6ff"/><stop offset="1" stop-color="#fbfaff"/></linearGradient>
+  </defs>
+  <path d="M512 259C512 286 660 283 660 324M991 348V374" fill="none" stroke="#aaa0df" stroke-width="3"/>
+  <g transform="matrix(1 .142 0 1 297 312)">
+  <rect x="0" y="0" width="1383" height="97" rx="29" fill="#dedcf2" stroke="#b6a9ea" stroke-width="2"/>
+  </g>
+  <g transform="matrix(1 .142 0 1 247 269)">
+  <rect x="0" y="0" width="1383" height="97" rx="29" fill="url(#mutedPanel)" stroke="#aaa0e6" stroke-width="2.5"/>
+  <rect x="72" y="32" width="1238" height="43" rx="21" fill="url(#mutedTrack)"/>
+  </g>
+  <g transform="matrix(1 .142 0 1 204 418)">
+  <rect x="0" y="0" width="1466" height="97" rx="29" fill="#dedcf2" stroke="#b6a9ea" stroke-width="2"/>
+  </g>
+  <g transform="matrix(1 .142 0 1 154 375)">
+  <rect x="0" y="0" width="1466" height="97" rx="29" fill="url(#mutedPanel)" stroke="#aaa0e6" stroke-width="2.5"/>
+  <rect x="72" y="32" width="1321" height="43" rx="21" fill="url(#mutedTrack)"/>
+  </g>
+  <g transform="matrix(1 .142 0 1 115 495)">
+  <rect x="0" y="0" width="1495" height="97" rx="29" fill="url(#mutedPanel)" stroke="#aaa0e6" stroke-width="2.5"/>
+  <rect x="72" y="32" width="1350" height="43" rx="21" fill="url(#mutedTrack)"/>
+  </g>
+  <g transform="matrix(1 .148 0 1 412 98)">
+  <rect x="0" y="0" width="273" height="110" rx="17" fill="#e9e6f8" stroke="#b6ade8" stroke-width="2"/>
+  </g>
+  <g transform="matrix(1 .148 0 1 375 130)">
+  <rect x="0" y="0" width="270" height="110" rx="17" fill="url(#mutedPanel)" stroke="#aaa0e6" stroke-width="2.5"/>
+  <circle cx="51" cy="53" r="21" fill="#c0bce8"/>
+  <rect x="92" y="31" width="144" height="19" rx="9.5" fill="#dad7ef"/>
+  <rect x="92" y="62" width="70" height="18" rx="9" fill="#dad7ef"/>
+  </g>
+  <g transform="matrix(1 .148 0 1 893 170)">
+  <rect x="0" y="0" width="273" height="110" rx="17" fill="#e9e6f8" stroke="#b6ade8" stroke-width="2"/>
+  </g>
+  <g transform="matrix(1 .148 0 1 856 202)">
+  <rect x="0" y="0" width="270" height="110" rx="17" fill="url(#mutedPanel)" stroke="#aaa0e6" stroke-width="2.5"/>
+  <circle cx="51" cy="53" r="21" fill="#c0bce8"/>
+  <rect x="92" y="31" width="144" height="19" rx="9.5" fill="#dad7ef"/>
+  <rect x="92" y="62" width="70" height="18" rx="9" fill="#dad7ef"/>
+  </g>
+  <circle cx="660" cy="324" r="8" fill="#9187dc"/>
+  <circle cx="991" cy="374" r="8" fill="#9187dc"/>
+  <circle cx="851" cy="405" r="19" fill="#9185de" stroke="#b1a5ed" stroke-width="4"/>
+  <circle cx="1102" cy="565" r="19" fill="#9185de" stroke="#b1a5ed" stroke-width="4"/>
+  <circle cx="906" cy="657" r="19" fill="#9185de" stroke="#b1a5ed" stroke-width="4"/>
+  <circle cx="1374" cy="201" r="44" fill="url(#panel)" stroke="#aaa0e5" stroke-width="4"/>
+  <path d="M1374 178.12V201H1395.12" fill="none" stroke="#8c80d9" stroke-width="6"/>
+  <circle cx="1374" cy="254" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="278.4" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="302.8" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="327.2" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="351.6" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="376" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="400.4" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="424.8" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="449.2" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="473.6" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="498" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="522.4" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="546.8" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="571.2" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="595.6" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="620" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="644.4" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="668.8" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="693.2" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="717.6" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="742" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="766.4" r="5.4" fill="#9b92e2"/>
+  <circle cx="1374" cy="790.8" r="5.4" fill="#9b92e2"/>
+</svg>
