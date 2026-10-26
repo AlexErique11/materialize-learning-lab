@@ -10,6 +10,12 @@ template. Current implementation details live in the chapter READMEs and
 presentation and layout requirements and [MAINTAINABILITY.md](./MAINTAINABILITY.md)
 for the development workflow.
 
+The learning path comprises seven foundation chapters followed by an application
+chapter on `SUBSCRIBE`. All eight chapters are registered in the app.
+The Chapter 8 activity, simulation, and visualization specification is in
+[CHAPTER_8_PLAN.md](./CHAPTER_8_PLAN.md). Timestamp trays is the selected
+visualization.
+
 The curriculum is grounded in the current
 [Materialize documentation](https://materialize.com/docs/). Materialize changes
 over time, so each chapter must be checked against current official documentation
@@ -445,6 +451,96 @@ behavior during an ingestion stall.
 
 ---
 
+## Chapter 8: SUBSCRIBE — From Maintained Results to Live Applications
+
+### Learning goal
+
+Keep an application's local result correct as Materialize streams a starting
+snapshot and subsequent result changes. Decide when the received changes provide
+enough evidence to publish a complete timestamp to the application's display.
+
+This chapter applies the signed diffs from Chapters 1–2, maintained objects from
+Chapter 3, temporal changes from Chapter 5, and progress and timestamp reasoning
+from Chapters 6–7. Its new skill is consuming a result stream outside Materialize.
+
+### Core topics
+
+- one `SELECT` result versus an ongoing `SUBSCRIBE`;
+- default initial snapshot and subsequent changes; when `SNAPSHOT false` leaves
+  an empty client without a starting baseline;
+- `mz_timestamp`, `mz_diff`, and, with `PROGRESS`, `mz_progressed`;
+- applying signed multiplicities by full result row, including aggregate
+  replacement and a group disappearing;
+- received changes, pending changes, and the published client result;
+- progress at T establishing completeness strictly before T, including progress
+  with no business-row changes;
+- nondecreasing output timestamps and the completeness evidence from receiving
+  a later timestamp;
+- why a fetch batch, row count, or pause is not a timestamp boundary; and
+- a connected subscription versus a demonstrably advancing result, and showing
+  the last known result as stale after a disconnect.
+
+### Visualizations
+
+Use **Timestamp trays** across all three lectures and three exercises, following
+[CHAPTER_8_PLAN.md](./CHAPTER_8_PLAN.md). The chosen composition groups signed
+records by timestamp, separates published and pending groups with a strict
+completeness boundary, and shows the application's published result below.
+The original design comparisons were:
+
+1. **Stream workbench** — trace a maintained result through received records and
+   a timestamp buffer into the application's published table.
+2. **Timestamp trays** — collect diffs into open timestamp groups and move only
+   completed groups across a progress boundary into the published result.
+3. **Delivery timeline** — align result changes, client receipt, and publication
+   to expose partial delivery and the evidence that permits publication.
+4. **Client debugger** — inspect an incoming record and compare a faulty
+   publish-on-every-row client with a consumer that publishes completed times.
+
+### Lectures
+
+1. **Start with a snapshot** — contrast a one-time query with a continuing
+   subscription, initialize an empty client, and predict what disabling the
+   snapshot omits.
+2. **Turn changes into client state** — apply additions and retractions to full
+   result rows, replace an aggregate, remove a vanished group, and distinguish
+   an incomplete delivery from a completed result.
+3. **Publish complete results** — read progress evidence, handle quiet intervals,
+   and keep incomplete timestamps out of the published display.
+
+### Exercises
+
+1. **Bootstrap the live table** — reconstruct a starting result from snapshot
+   records and choose a valid initialization strategy. Explain why a client
+   starting empty cannot reconstruct unchanged rows with `SNAPSHOT false`.
+2. **Repair the consumer** — fix an append-only or key-overwrite interpretation
+   of signed result diffs. Predict an aggregate replacement, a group deletion,
+   and the final multiplicities of a small duplicate-row fixture.
+3. **Keep the dashboard correct** — follow split delivery at one timestamp,
+   choose which changes can be published at progress boundaries, interpret
+   advancing progress with no changed rows, and mark a disconnected display
+   stale. This exercise is the chapter's final challenge.
+
+### Final challenge
+
+Maintain a live open-order summary through initial load, an amount correction,
+quiet progress, cancellation of the last order in a region, and a disconnect.
+Select the correct visible rows and publication boundary at each checkpoint,
+then explain why the client can be connected while its latest received timestamp
+is still incomplete. Assess both the result and the evidence for publishing it.
+
+### Scope boundary
+
+Required work is a deterministic client simulation using the default diff output,
+not a connector setup or application framework tutorial. Put executable cursor /
+`FETCH` examples in SQL & Objectives. Keep output envelopes, durable resume,
+retention configuration, and atomic checkpoint/effect handling in supporting or
+advanced material; the final challenge does not depend on them. A new connection
+alone is not a durable recovery strategy. Durable subscription history retention
+is currently private preview; recheck availability before any extension ships.
+
+---
+
 ## Capstones
 
 Capstones are separate from chapters and combine several established mental
@@ -463,9 +559,11 @@ budget.
 
 ### Capstone 3: Recover Without Corrupting Delivery
 
-Handle a cluster restart, hydration and catch-up, a live-client
-reconnection, and a downstream consumer crash without silently losing or
-duplicating business effects.
+After Chapter 8 and additional recovery instruction, handle a cluster restart,
+hydration and catch-up, a live-client reconnection, and a downstream consumer
+crash without silently losing or duplicating business effects. Durable replay
+and atomic checkpoint/effect handling belong to that additional instruction;
+Chapter 8 establishes live consumption and disconnect awareness only.
 
 ## Shared scenario strategy
 
@@ -498,6 +596,8 @@ Use the current official documentation during implementation. Starting points:
 - [Arrangements](https://materialize.com/docs/fundamentals/concepts/arrangements/)
 - [Temporal filters](https://materialize.com/docs/transform-data/patterns/temporal-filters/)
 - [`SUBSCRIBE`](https://materialize.com/docs/sql/subscribe/)
+- [`SELECT` and `SUBSCRIBE`: serving results](https://materialize.com/docs/serve-results/query-results/)
+- [Durable subscriptions: advanced extension and availability](https://materialize.com/docs/serve-results/durable-subscriptions/)
 - [Durable subscriptions](https://materialize.com/docs/serve-results/durable-subscriptions/)
 - [Freshness troubleshooting](https://materialize.com/docs/transform-data/freshness-troubleshooting/)
 - [Freshness and query latency](https://materialize.com/docs/fundamentals/concepts/reaction-time/)

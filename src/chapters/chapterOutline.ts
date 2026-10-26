@@ -7,6 +7,8 @@ import { progressLectures } from './progress-and-freshness/lecture-scenarios';
 import { progressExercises } from './progress-and-freshness/exercise-scenarios';
 import { readLectures } from './consistent-reads/lecture-scenarios';
 import { readExercises } from './consistent-reads/exercise-scenarios';
+import { subscriptionLectures } from './live-applications-subscribe/lecture-scenarios';
+import { subscriptionExercises } from './live-applications-subscribe/exercise-scenarios';
 
 export type ChapterSectionSlug = 'tutorial' | 'exercises';
 
@@ -51,6 +53,10 @@ const sectionDefinitions: readonly Omit<ChapterSectionDefinition, 'pages'>[] = [
 
 // Navigation and overview summaries. Actual chapter content lives beside its chapter.
 const chapterOutlines: Readonly<Partial<Record<string, ChapterOutline>>> = {
+  'live-applications-subscribe': {
+    tutorial: subscriptionLectures.map((lecture, index) => ({ slug: `lecture-${index + 1}`, title: `Lecture ${index + 1}: ${lecture.title}`, description: lecture.description })),
+    exercises: subscriptionExercises.map((exercise, index) => ({ slug: exercise.slug, title: `Exercise ${index + 1}: ${exercise.title}`, description: exercise.description, durationMinutes: [6, 7, 10][index] })),
+  },
   'consistent-reads': {
     tutorial: readLectures.map((lecture, index) => ({ slug: `lecture-${index + 1}`, title: `Lecture ${index + 1}: ${lecture.title}`, description: lecture.description })),
     exercises: readExercises.map((exercise, index) => ({ slug: exercise.slug, title: `Exercise ${index + 1}: ${exercise.title}`, description: exercise.description, durationMinutes: [7, 8, 10][index] })),

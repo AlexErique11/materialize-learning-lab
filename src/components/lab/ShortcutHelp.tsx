@@ -41,6 +41,7 @@ export function ShortcutHelp({ lecture, showReference, completionLabel, onOpenCh
       aria-label="Keyboard shortcuts" aria-haspopup="dialog" aria-expanded={open} aria-controls={id}
       onClick={event => {
         event.preventDefault();
+        event.currentTarget.focus();
         const panel = panelRef.current;
         if (!panel || !panel.togglePopover()) return;
         // Native toggle events arrive after a paint; position in the opening action.

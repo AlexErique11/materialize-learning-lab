@@ -32,7 +32,7 @@ and documentation links. Lectures also have a **Controls tour**. Light and dark
 themes are available, and smaller screens use panel selectors to switch between
 tables and questions.
 
-The authored chapters include 23 lectures and 17 exercises:
+The authored chapters include 26 lectures and 20 exercises:
 
 | Chapter | Lectures | Exercises | Topics |
 | --- | --- | --- | --- |
@@ -43,9 +43,10 @@ The authored chapters include 23 lectures and 17 exercises:
 | 5: Time in Materialize | 4 | 3 | Logical time, temporal filters, expiration, and late arrivals |
 | 6: Progress and Freshness | 3 | 3 | Frontiers, limiting inputs, and source/computation/serving delay |
 | 7: Consistent Reads | 3 | 3 | Readable windows, transaction ordering, freshness policies, and external ingestion |
+| 8: SUBSCRIBE | 3 | 3 | Client baselines, signed result changes, timestamp trays, and complete publication |
 
 The three capstone challenges are planned and labeled Coming soon.
-Chapter progress counts all seven core chapters; challenges do not yet track
+Chapter progress counts all eight core chapters; challenges do not yet track
 completion. The full learning plan is in [CURRICULUM.md](./CURRICULUM.md).
 
 ## Verification

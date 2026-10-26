@@ -558,7 +558,7 @@ test('unknown locations show useful not-found pages', async ({ page }) => {
     ['/labs/maintained-state', 'Chapter not found'],
     ['/labs/query-optimization', 'Chapter not found'],
     ['/labs/clusters-replicas-recovery', 'Chapter not found'],
-    ['/labs/live-applications-subscribe', 'Chapter not found'],
+    ['/labs/nonexistent-chapter', 'Chapter not found'],
     ['/labs/sinks-downstream-delivery', 'Chapter not found'],
     ['/labs/recursive-queries', 'Chapter not found'],
     [`${chapterPath(firstChapter)}/workspace`, 'Page not found'],

@@ -96,6 +96,10 @@ test('help describes the actual navigation actions', async ({ page }) => {
   await page.goto('/labs/consistent-reads/exercises/exercise-1');
   await page.getByRole('button', { name: 'Keyboard shortcuts', exact: true }).click();
   const shortcuts = page.getByRole('dialog', { name: 'Keyboard shortcuts', exact: true });
+  await expect(shortcuts).toContainText('Go to the next chapter');
+  await page.keyboard.press('Escape');
+  await page.goto('/labs/live-applications-subscribe/exercises/exercise-1');
+  await page.getByRole('button', { name: 'Keyboard shortcuts', exact: true }).click();
   await expect(shortcuts).toContainText('Return to learning path');
   await expect(shortcuts).not.toContainText('Go to the next chapter');
 });

@@ -1,5 +1,22 @@
 import { expect, test } from './fixtures';
 
+test('SUBSCRIBE holds partial changes and publishes complete timestamp groups', async ({ page }) => {
+  await page.goto('/labs/live-applications-subscribe/tutorial/lecture-3');
+  const next = page.getByRole('button', { name: 'Next change', exact: true });
+  const result = page.getByTestId('subscribe-application');
+  const row = result.getByRole('row').filter({ hasText: 'EU' });
+  for (let change = 0; change < 3; change++) await next.click();
+  await expect(row).toContainText('100');
+  await expect(page.getByRole('region', { name: 'Pending timestamp tray', exact: true })).toContainText('Open · pending');
+  await next.click();
+  await expect(row).toContainText('130');
+  await expect(result).toContainText('Showing times < 13');
+  await page.getByRole('button', { name: 'Diagram key', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Timestamp-tray diagram key', exact: true })).toContainText('mz_progressed = true');
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('button', { name: 'Diagram key', exact: true })).toBeFocused();
+});
+
 test('navigation, native help and SQL dialogs stay interactive', async ({ page, isMobile }) => {
   test.setTimeout(60_000);
   await page.goto('/labs/changing-relations');

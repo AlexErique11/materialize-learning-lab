@@ -14,8 +14,8 @@ describe('saved lab progress', () => {
 
   it('counts existing activities, excluding empty chapters and duplicate legacy routes', async () => {
     const { labActivityPaths } = await import('./labProgress');
-    expect(labActivityPaths).toHaveLength(40);
-    expect(new Set(labActivityPaths).size).toBe(40);
+    expect(labActivityPaths).toHaveLength(46);
+    expect(new Set(labActivityPaths).size).toBe(46);
     expect(labActivityPaths).toContain('/labs/incremental-maintenance/exercises/exercise-3');
     expect(labActivityPaths).not.toContain('/labs/incremental-maintenance/exercises/exercise-2');
     expect(labActivityPaths.filter(path => path.includes('/consistent-reads/'))).toHaveLength(6);
@@ -26,12 +26,14 @@ describe('saved lab progress', () => {
     const chapter = labActivityPaths.filter(path => path.startsWith('/labs/changing-relations/'));
     const tutorials = chapter.filter(path => path.includes('/tutorial/'));
     const exercises = chapter.filter(path => path.includes('/exercises/'));
-    expect(getLabChapterProgress([])).toEqual({ completedChapterSlugs: [], completed: 0, total: 7 });
+    expect(getLabChapterProgress([])).toEqual({ completedChapterSlugs: [], completed: 0, total: 8 });
     expect(getLabChapterProgress(tutorials).completed).toBe(0);
     expect(getLabChapterProgress(exercises).completed).toBe(0);
     expect(getLabChapterProgress([...chapter, ...chapter, '/labs/unknown/tutorial/lecture-1']))
-      .toEqual({ completedChapterSlugs: ['changing-relations'], completed: 1, total: 7 });
-    expect(getLabChapterProgress(labActivityPaths)).toMatchObject({ completed: 7, total: 7 });
+      .toEqual({ completedChapterSlugs: ['changing-relations'], completed: 1, total: 8 });
+    expect(getLabChapterProgress(labActivityPaths)).toMatchObject({ completed: 8, total: 8 });
+    const previousCourse = labActivityPaths.filter(path => !path.includes('/live-applications-subscribe/'));
+    expect(getLabChapterProgress(previousCourse)).toMatchObject({ completed: 7, total: 8 });
     expect(getLabChapterProgress(tutorials).completedChapterSlugs).toEqual([]);
     expect(getLabChapterProgress(exercises).completedChapterSlugs).toEqual([]);
   });

@@ -163,8 +163,8 @@ for (const [index, exercise] of readExercises.entries()) {
     if (index < 2) await expect(page).toHaveURL(`${base}/exercises/exercise-${index + 2}`);
     else {
       await expect(page.getByRole('dialog', { name: 'You finished Chapter 7' })).toBeVisible();
-      await page.getByRole('button', { name: 'Return to learning path' }).click();
-      await expect(page).toHaveURL('/');
+      await page.getByRole('button', { name: 'Go to next chapter' }).click();
+      await expect(page).toHaveURL('/labs/live-applications-subscribe');
     }
   });
 }
