@@ -155,7 +155,7 @@
 }
 @media (min-width: 1280px) and (min-height: 640px) {
   .subscribe-exercise-page .guided-lab-title h1 { position: relative; }
-  .subscribe-exercise-page .activity-title-check { position: absolute; }
+  .subscribe-exercise-page .activity-title-check { position: absolute; top: calc(50% + .05em); transform: translateY(-50%); }
 }
 @media (max-width: 767px) {
   .subscribe-workspace { --subscribe-mobile-gutter: 16px; }
@@ -182,8 +182,7 @@
   .subscribe-question-slot { min-height: 0; }
   .subscribe-answer-group :is(select,input) { font-size: 16px; }
   .subscribe-caption { min-height: 70px; }
-  /* Exercises keep the evidence visible beside itself rather than stacking
-     three large cards or putting the diagram behind a toggle. */
+  /* Exercises keep all evidence above the question without a diagram toggle. */
   .subscribe-exercise-layout { grid-template-columns: minmax(0,1fr); gap: 10px; }
   .subscribe-exercise-layout .exercise-question { grid-template-columns: minmax(0,1fr); height: auto; min-height: 0; gap: 14px; }
   .subscribe-exercise-layout .subscribe-answer-groups { max-width: none; }
@@ -196,9 +195,6 @@
   .subscribe-workspace[data-assessment] .subscribe-diagram { padding: 8px; }
   .subscribe-workspace[data-assessment] .subscribe-boundary-label { height: 64px; padding: 0 0 8px; align-items: center; gap: 2px; text-align: center; }
   .subscribe-workspace[data-assessment] .subscribe-assessment-source { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; font-weight: 600; }
-  .subscribe-workspace[data-assessment] .subscribe-trays { grid-template-columns: minmax(0,1fr) var(--subscribe-tray-gap) minmax(0,1fr); padding-left: 0; gap: 0; }
-  .subscribe-workspace[data-assessment] .subscribe-trays::after { display: none; }
-  .subscribe-workspace[data-assessment] .subscribe-divider { width: auto; border-top: 0; border-left: 2px dotted color-mix(in srgb, var(--lab-purple) 65%, var(--lab-border)); }
   .subscribe-workspace[data-assessment] .subscribe-tray { padding: 6px; }
   .subscribe-workspace[data-assessment] .subscribe-tray-heading { grid-template-rows: 28px 28px; margin-bottom: 4px; gap: 0 4px; }
   .subscribe-workspace[data-assessment] .subscribe-tray-heading strong { font-size: 12px; line-height: 14px; }
@@ -208,10 +204,25 @@
   .subscribe-workspace[data-assessment] .subscribe-table :is(th,td) { height: 22px; padding: 2px; }
   .subscribe-workspace[data-assessment] .subscribe-table th { font-size: 11px; }
   .subscribe-workspace[data-assessment] .subscribe-publication-arrow { height: 20px; }
-  .subscribe-workspace[data-assessment] .subscribe-publication-arrow::before { left: calc((100% - var(--subscribe-tray-gap)) / 4 - 1px); }
   .subscribe-workspace[data-assessment] .subscribe-application { padding: 6px; gap: 6px; }
   .subscribe-workspace[data-assessment] .subscribe-application-heading { min-height: 18px; }
   .subscribe-workspace[data-assessment] .subscribe-application-heading > div { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; }
   .subscribe-exercise-page .exercise-question { padding: 10px; gap: 10px; }
   .subscribe-exercise-page .subscribe-answer-groups { gap: 8px; }
+}
+/* Keep full column labels readable on small phones. Wider phones can place the
+   trays side by side; smaller ones reuse the lecture's stacked flow and gutter. */
+@media (min-width: 480px) and (max-width: 767px) {
+  .subscribe-workspace[data-assessment] .subscribe-trays { grid-template-columns: minmax(0,1fr) var(--subscribe-tray-gap) minmax(0,1fr); padding-left: 0; gap: 0; }
+  .subscribe-workspace[data-assessment] .subscribe-trays::after { display: none; }
+  .subscribe-workspace[data-assessment] .subscribe-divider { width: auto; border-top: 0; border-left: 2px dotted color-mix(in srgb, var(--lab-purple) 65%, var(--lab-border)); }
+  .subscribe-workspace[data-assessment] .subscribe-publication-arrow::before { left: calc((100% - var(--subscribe-tray-gap)) / 4 - 1px); }
+}
+/* Landscape phones need the same compact guide copy as portrait phones. */
+@media (min-width: 640px) and (max-height: 600px) {
+  .subscribe-chapter-page ~ .relation-guide .relation-guide-card { padding: 13px; }
+  .subscribe-chapter-page ~ .relation-guide .relation-guide-card-heading h2 { font-size: 14px; }
+  .subscribe-chapter-page ~ .relation-guide .relation-guide-card > p { font-size: 12px; line-height: 1.45; }
+  .subscribe-chapter-page ~ .relation-guide .relation-guide-phase { margin-top: 6px; }
+  .subscribe-chapter-page ~ .relation-guide .relation-guide-actions { margin-top: 9px; }
 }

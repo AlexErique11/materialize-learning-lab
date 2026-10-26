@@ -116,13 +116,13 @@ The filter-choice question conceals the reference predicate until acceptance.
 ## Shared component ownership
 
 Chapter overview illustrations are chapter metadata in `chapterRegistry.ts`, backed
-by seven transparent vector `public/*-overview.svg` assets. Each keeps the original
-1774:887 canvas and composition; paths and gradients contain no embedded bitmaps.
+by eight transparent vector `public/*-overview.svg` assets. Each uses the same
+1774:887 drawing canvas; paths and gradients contain no embedded bitmaps.
 The PNG counterparts remain only as raster images for link-preview metadata.
 The hero retains the reference
 text-column widths and spacing above Learn more. Desktop image frames are 160px
 high, with 180px for the denser Chapter 3 diagram and the wider Chapters 2 and 4
-compositions, and 172px for the Chapter 6 and 7 timelines. The Chapter 2 and 4
+compositions, and 172px for the Chapter 6–8 illustrations. The Chapter 2 and 4
 images cap at 420px within their existing 444px columns.
 Chapter 1 uses a slightly larger 400px image column (260px below 1350px) to balance
 its more open composition, while keeping the same frame height and section gaps.
@@ -131,14 +131,14 @@ taller diagrams. `chapter-overview.css` preserves the compact-screen hiding rule
 and smaller frames below 1350px. SVG transparency blends naturally into both themes;
 overview and reused completion artwork need no color filters or blend modes.
 
-All seven chapter recaps use `ChapterCompletionPanel`, with chapter-owned copy
+All eight chapter recaps use `ChapterCompletionPanel`, with chapter-owned copy
 and three numbered topics in `chapterCompletionContent.ts`. Topic headings place
 01–03 boxes beside their titles, using the sidebar number box dimensions and
 rounded shape, with descriptions underneath. The shared
 `chapter-completion.css` preserves Chapter 1's header, illustration, topic cards,
 key-idea callout, footer and compact-screen treatment. Each recap uses its own
 overview SVG. The panel imports this stylesheet directly so its rules load with
-the component during live reload. Chapters 1–6 lead to the next chapter; Chapter 7 returns to the
+the component during live reload. Chapters 1–7 lead to the next chapter; Chapter 8 returns to the
 learning path. `ChapterCompletionDialog` still owns completion eligibility and
 the remaining-activities panel, including its existing exercise-only styling.
 
@@ -423,7 +423,12 @@ management. Only the visible activity owns the browser title, including on resiz
   row and a shorter connector, preserving the shared playback baseline. Lecture
   evidence sits directly below the tables and above playback at every width.
   Single-option history pickers are omitted, keeping tray heading and
-  row dimensions fixed.
+  row dimensions fixed. Exercise trays reuse the stacked lecture flow below
+  480px to keep table column labels on one line; wider phone exercises retain
+  side-by-side trays. Completion checks match the shared exercise text alignment
+  without widening the title or wrapping its toolbar. In short landscape windows,
+  Chapter 8 guide cards reuse the phone text and spacing so long explanations
+  remain clear of the highlighted metrics.
 
 - `useResponsiveLabLayout` measures each activity's actual content width, title,
   and controls, including sidebar changes and saved completion checkmarks.

@@ -74,9 +74,12 @@ The same order is used on phones.
 On desktop viewports the application label sits beside its
 table; short screens omit redundant footer copy to preserve question and navigation
 space. On phones lecture trays stack and the divider becomes horizontal;
-exercise trays stay side by side in a compact diagram above the question, with
-a source label replacing the summary strip. Very narrow or short
+exercise trays stay side by side from 480px, and use the same stacked flow below
+480px so column labels remain readable. The diagram stays above the question,
+with a source label replacing the summary strip. Very narrow or short
 windows retain normal document flow so essential content is never clipped.
+Short landscape windows reuse compact phone guide typography and spacing so
+long explanations stay separate from their highlighted evidence.
 
 `simulation.test.ts` checks boundary equality, full-row replacement in either
 arrival order, copy counts, quiet progress, later-data evidence, missing baselines,

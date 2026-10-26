@@ -2,8 +2,79 @@ import { expect, seedChapterPrerequisites, test } from './fixtures';
 import { advanceGuidedLesson, expectGuideClearOfTargets } from './guided-run';
 import { subscriptionFrames, subscriptionLectures } from '../../src/chapters/live-applications-subscribe/lecture-scenarios';
 import { solutionFor, subscriptionExercises } from '../../src/chapters/live-applications-subscribe/exercise-scenarios';
+import { LAB_PROGRESS_KEY } from '../../src/progress/labProgress';
 
 const base = '/labs/live-applications-subscribe';
+
+for (const width of [320, 390, 480]) {
+  test(`Chapter 8 phone exercises keep complete table labels and reachable answers at ${width}px`, async ({ page }) => {
+    test.setTimeout(90000);
+    await page.setViewportSize({ width, height: 740 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    for (const exercise of subscriptionExercises) {
+      await page.goto(`${base}/exercises/${exercise.slug}`);
+      for (let question = 0; question < exercise.questions.length; question++) {
+        for (const accepted of [false, true]) {
+          if (accepted) await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+          const headers = await page.locator('.subscribe-table th').evaluateAll(cells => cells.map(cell => {
+            const range = document.createRange();
+            range.selectNodeContents(cell);
+            return { label: cell.textContent, textHeight: range.getBoundingClientRect().height, lineHeight: parseFloat(getComputedStyle(cell).lineHeight) };
+          }));
+          for (const header of headers) expect(header.textHeight, `${header.label} stays readable on one line`).toBeLessThanOrEqual(header.lineHeight + 1);
+          expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
+          const questionBox = (await page.locator('.exercise-question').boundingBox())!;
+          const evidence = (await page.getByTestId('subscribe-diagram').boundingBox())!;
+          expect(questionBox.y).toBeGreaterThanOrEqual(evidence.y + evidence.height);
+        }
+        const next = page.locator('[data-shortcut="exercise-forward"]');
+        await next.scrollIntoViewIfNeeded();
+        await expect(next).toBeInViewport();
+        if (question < exercise.questions.length - 1) await next.click();
+      }
+    }
+  });
+}
+
+test('Chapter 8 completed exercise checks match Chapter 7 without wrapping the header', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'The chapter-specific absolute badge placement applies to desktop frames.');
+  await page.addInitScript(({ key, completed }) => localStorage.setItem(key, JSON.stringify({ version: 1, completed })), {
+    key: LAB_PROGRESS_KEY,
+    completed: ['/labs/consistent-reads/exercises/exercise-1', `${base}/exercises/exercise-1`],
+  });
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1280, height: 640 }]) {
+    await page.setViewportSize(viewport);
+    let reference: number[] | undefined;
+    for (const chapter of ['consistent-reads', 'live-applications-subscribe']) {
+      await page.goto(`/labs/${chapter}/exercises/exercise-1`);
+      const alignment = await page.locator('h1').evaluate(heading => {
+        const range = document.createRange();
+        range.selectNodeContents(heading.firstChild!);
+        const text = range.getBoundingClientRect();
+        const badge = heading.querySelector('.activity-title-check')!.getBoundingClientRect();
+        return [badge.y - text.y, badge.x - text.right, badge.width, badge.height];
+      });
+      if (reference) alignment.forEach((value, index) => expect(value).toBeCloseTo(reference![index]!, 1));
+      reference = alignment;
+      expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
+    }
+  }
+});
+
+test('Chapter 8 landscape guidance keeps long explanations clear of the metrics', async ({ page }) => {
+  await page.setViewportSize({ width: 844, height: 390 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(`${base}/tutorial/lecture-1`);
+  await page.getByRole('button', { name: 'Start guided run', exact: true }).click();
+  const lessons = subscriptionLectures[0]!.lessons;
+  for (const [index, lesson] of lessons.entries()) {
+    const guide = page.locator('.relation-guide[open]');
+    if (lesson.before) await guide.getByRole('button', { name: 'Show effect', exact: true }).click();
+    await expectGuideClearOfTargets(page);
+    await advanceGuidedLesson(page, index === lessons.length - 1);
+  }
+  await expect(page.locator('h1')).toHaveAttribute('aria-description', 'Tutorial completed');
+});
 test('Chapter 8 guided references have distinct variable colors in both themes', async ({ page }) => {
   for (const theme of ['light', 'dark']) {
     await page.goto(`${base}/tutorial/lecture-2`);
