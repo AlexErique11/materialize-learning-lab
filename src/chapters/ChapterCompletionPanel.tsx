@@ -1,6 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { chapterPath, chapters, type ChapterDefinition } from './chapterRegistry';
+import { chapterPath, chapters, formatChapterNumber, type ChapterDefinition } from './chapterRegistry';
 import { chapterCompletionContent } from './chapterCompletionContent';
 import { ChapterCompletionDialog } from '../components/lab/ChapterCompletionDialog';
 import { Button } from '../components/ui/Button';
@@ -29,10 +29,12 @@ export function ChapterCompletionPanel({ chapter, open, onClose }: {
         <img src={chapter.overviewImage} alt="" aria-hidden="true" className="chapter-completion-art" />
       </div>
       <div className="chapter-completion-topics">
-        {content.topics.map(({ icon: Icon, title, description }) => (
+        {content.topics.map(({ title, description }, index) => (
           <section key={title}>
-            <Icon aria-hidden="true" />
-            <h3>{title}</h3>
+            <h3>
+              <span className="chapter-completion-topic-number" aria-hidden="true">{formatChapterNumber(index + 1)}</span>
+              <span>{title}</span>
+            </h3>
             <p>{description}</p>
           </section>
         ))}

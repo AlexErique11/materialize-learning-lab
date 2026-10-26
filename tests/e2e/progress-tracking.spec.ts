@@ -103,7 +103,7 @@ for (const chapter of chapters) {
         await expect(dialog.locator('.chapter-completion-intro')).toHaveCSS('display', 'grid');
         await expect(dialog.locator('.chapter-completion-topics')).toHaveCSS('display', 'grid');
         await expect(dialog.locator('.chapter-completion-topics section')).toHaveCount(3);
-        await expect(dialog.locator('.chapter-completion-topics section > svg')).toHaveCount(3);
+        await expect(dialog.locator('.chapter-completion-topic-number')).toHaveText(['01', '02', '03']);
         const artwork = dialog.locator('.chapter-completion-art');
         await expect(artwork).toBeVisible();
         await expect(artwork).toHaveAttribute('src', chapter.overviewImage!);

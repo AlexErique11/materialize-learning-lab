@@ -18,9 +18,9 @@
 
 .chapter-completion-dialog .chapter-completion-topics section { padding: 16px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface-muted); }
 
-.chapter-completion-dialog .chapter-completion-topics svg { color: var(--accent); width: 24px; height: 24px; margin-bottom: 12px; }
+.chapter-completion-dialog .chapter-completion-topic-number { display: grid; place-items: center; flex: 0 0 32px; width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--accent); font-size: 12px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; }
 
-.chapter-completion-dialog .chapter-completion-topics h3 { font-size: 14px; font-weight: 650; margin-bottom: 8px; }
+.chapter-completion-dialog .chapter-completion-topics h3 { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 650; margin-bottom: 10px; }
 
 .chapter-completion-dialog .chapter-completion-topics p, .chapter-completion-dialog .chapter-completion-takeaway p { color: var(--text-muted); font-size: 14px; line-height: 1.6; }
 
@@ -43,11 +43,9 @@
 
   .chapter-completion-dialog .chapter-completion-art { max-width: 180px; justify-self: center; }
 
-  .chapter-completion-dialog .chapter-completion-topics { grid-template-columns: 1fr; margin-top: 12px; gap: 8px; }
+  .chapter-completion-dialog .chapter-completion-topics { grid-template-columns: 1fr; margin-top: 12px; gap: 6px; }
 
-  .chapter-completion-dialog .chapter-completion-topics section { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 6px 12px; padding: 10px; }
-
-  .chapter-completion-dialog .chapter-completion-topics svg { grid-row: span 2; margin: 0; }
+  .chapter-completion-dialog .chapter-completion-topics section { display: grid; gap: 4px; padding: 8px; }
 
   .chapter-completion-dialog .chapter-completion-topics h3 { margin: 0; }
 
@@ -66,8 +64,6 @@
   .chapter-completion-dialog .chapter-completion-topics { margin-top: 16px; }
 
   .chapter-completion-dialog .chapter-completion-topics section { padding: 12px; }
-
-  .chapter-completion-dialog .chapter-completion-topics svg { margin-bottom: 8px; }
 
   .chapter-completion-dialog .chapter-completion-takeaway { margin-top: 12px; padding: 8px 12px; }
 

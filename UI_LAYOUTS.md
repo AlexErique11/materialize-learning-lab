@@ -130,7 +130,9 @@ and smaller frames below 1350px. SVG transparency blends naturally into both the
 overview and reused completion artwork need no color filters or blend modes.
 
 All seven chapter recaps use `ChapterCompletionPanel`, with chapter-owned copy
-and three icon topics in `chapterCompletionContent.ts`. The shared
+and three numbered topics in `chapterCompletionContent.ts`. Topic headings place
+01–03 boxes beside their titles, using the sidebar number box dimensions and
+rounded shape, with descriptions underneath. The shared
 `chapter-completion.css` preserves Chapter 1's header, illustration, topic cards,
 key-idea callout, footer and compact-screen treatment. Each recap uses its own
 overview SVG. The panel imports this stylesheet directly so its rules load with

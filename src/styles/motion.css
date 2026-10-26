@@ -45,7 +45,6 @@
 
 .exercise-next-question { animation: motion-small-reveal 200ms var(--motion-ease); }
 .exercise-question[data-result='correct'] .exercise-question-copy h2 > svg path { stroke-dasharray: 24; animation: motion-check 260ms var(--motion-ease); }
-.chapter-completion-topics svg { animation: motion-small-reveal 240ms var(--motion-ease); }
 
 .progress-motion { position: relative; }
 .progress-semantic { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; }
