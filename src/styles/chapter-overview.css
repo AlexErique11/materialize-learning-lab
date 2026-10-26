@@ -116,7 +116,8 @@
 }
 
 .chapter-overview[data-chapter='progress-and-freshness'] .chapter-overview-illustration-image,
-.chapter-overview[data-chapter='consistent-reads'] .chapter-overview-illustration-image {
+.chapter-overview[data-chapter='consistent-reads'] .chapter-overview-illustration-image,
+.chapter-overview[data-chapter='live-applications-subscribe'] .chapter-overview-illustration-image {
   --overview-image-height: 172px;
 }
 

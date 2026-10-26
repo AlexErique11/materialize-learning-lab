@@ -5,7 +5,7 @@ test('homepage tracks authored chapters and clearly labels planned challenges', 
     await page.goto('/');
     await page.getByRole('button', { name: `Switch to ${theme} mode`, exact: true }).click();
     await expect(page.getByRole('progressbar', { name: 'Core chapters completed' })).toHaveAttribute('value', '0');
-    await expect(page.getByRole('progressbar', { name: 'Core chapters completed' })).toHaveAttribute('max', '7');
+    await expect(page.getByRole('progressbar', { name: 'Core chapters completed' })).toHaveAttribute('max', '8');
     await expect(page.getByRole('progressbar', { name: 'Featured challenges completed' })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Track your progress' })).toBeVisible();
     await expect(page.getByText('Coming soon', { exact: true })).toHaveCount(2);
@@ -19,9 +19,9 @@ test('homepage tracks authored chapters and clearly labels planned challenges', 
     const sidebarProgress = page.locator('.sidebar-progress').first();
     await expect(sidebarProgress.locator('progress')).toHaveAttribute('aria-label', 'Core chapters completed');
     await expect(sidebarProgress.locator('progress')).toHaveAttribute('value', '0');
-    await expect(sidebarProgress.locator('progress')).toHaveAttribute('max', '7');
-    await expect(sidebarProgress).toHaveText('0/7 completed');
-    await expect(page.locator('.desktop-sidebar .chapter-links > li')).toHaveCount(7);
+    await expect(sidebarProgress.locator('progress')).toHaveAttribute('max', '8');
+    await expect(sidebarProgress).toHaveText('0/8 completed');
+    await expect(page.locator('.desktop-sidebar .chapter-links > li')).toHaveCount(8);
     await expect(page.getByText('Optional · advanced', { exact: true })).toHaveCount(0);
     await expect(page.getByText(/To be done|0 \/ 4/)).toHaveCount(0);
 

@@ -41,6 +41,7 @@ export function ShortcutHelp({ lecture, showReference, onOpenChange }: {
       aria-label="Keyboard shortcuts" aria-haspopup="dialog" aria-expanded={open} aria-controls={id}
       onClick={event => {
         event.preventDefault();
+        event.currentTarget.focus();
         const panel = panelRef.current;
         if (!panel || !panel.togglePopover()) return;
         // Native toggle events arrive after a paint; position in the opening action.
@@ -87,7 +88,7 @@ export function ShortcutHelp({ lecture, showReference, onOpenChange }: {
         <h3>{lecture ? 'During a guided run' : 'Chapter complete'}</h3>
         <dl>
           {lecture ? <ShortcutRow label="Back / next step or effect" keys="ArrowLeft ArrowRight" />
-            : <ShortcutRow label="Go to the next chapter" keys="Enter" />}
+            : <ShortcutRow label="Continue from the completion window" keys="Enter" />}
           <ShortcutRow label={lecture ? 'Close guided run' : 'Close completion window'} keys="Escape" />
         </dl>
       </section>

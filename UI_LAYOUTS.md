@@ -9,8 +9,8 @@ and shared CSS, not independently maintained mockup files.
 | Template | Current users | Behavior |
 | --- | --- | --- |
 | `LectureScreen`, `layout="with-tip"` | Chapter 1 lectures 1–2 | Chapter 1 reference frame, metrics, visualization, playback, and bottom tip when it fits. |
-| `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 3 lectures 1–3; Chapter 4 lectures 1–4; Chapter 5 lectures 1–4; Chapters 6–7 lectures 1–3 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
-| `ExerciseFrame` through `GuidedLabScreen` | Chapter 1–7 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
+| `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 3 lectures 1–3; Chapter 4 lectures 1–4; Chapter 5 lectures 1–4; Chapters 6–8 lectures 1–3 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
+| `ExerciseFrame` through `GuidedLabScreen` | Chapter 1–8 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
 
 `src/labs/components/LectureScreen.tsx` accepts `metrics`, `visualization`, and
 `playback` slots plus the common screen props. Chapter 2 supplies them through
@@ -390,11 +390,38 @@ management. Only the visible activity owns the browser title, including on resiz
   or workspace scrolling and without a diagram/question toggle. Short laptop
   frames use common compact lane spacing and omit repeated exercise captions.
   Questions use normal vertical flow in narrower or shorter viewports; shared headers, typography, and navigation
-  styles remain unchanged. The final completion dialog returns to the learning
-  path because the current curriculum ends at Chapter 7.
+  styles remain unchanged. The final completion dialog continues to Chapter 8.
   Outside guidance, Chapter 7's Previous/Next controls, autoplay, and step counter
   visit only checkpoints with visible state changes; explanation-only checkpoints
   stay in guided runs and consume no autoplay interval.
+
+- Chapter 8's `live-applications-subscribe/TimestampTrays.tsx` and `chapter.css`
+  own the selected timestamp-tray composition. Three lectures and three exercises
+  share the Materialize → subscription → application flow, two fixed tray slots, strict completeness divider,
+  native history selectors, and published application table. A complete group can
+  remain unpublished under the explicit-progress publication policy. Progress
+  records never occupy business-row table slots. Loading, missing baseline, ready
+  empty, and disconnected states remain distinct.
+  `SubscribeLecture` uses the no-tip `LectureScreen`, `useLectureRun`, and shared
+  prediction/reveal and playback. `SubscribeExercisePage` uses `ExerciseFrame`
+  with the same `LectureWorkspace` and diagram in a 4/5/7-question sequence.
+  Chapter-local responsive rules place the application heading beside its table
+  and omit redundant provenance copy on short desktop windows, preserving table
+  typography, questions, and navigation. Phones stack the same trays and rotate
+  the dotted divider; page flow keeps all evidence and answers reachable. Diagram
+  key opens the established dialog and pauses lecture playback. The shared page
+  templates continue to own titles, toolbars, footer clearance, and completion.
+  The flow uses three equally sized nodes with centered arrows. Tray cards share
+  padding, separate title and status rows, and aligned table headers. The published
+  result spans the tray pair, with its heading beside the table on desktop and
+  above it on phones. A continuous elbow connector starts at the completed tray's
+  center and ends at the result's center; stacked trays route it around pending
+  changes through a reserved gutter. Lectures and exercises share the same card
+  alignment and table sizing. Short exercise screens use a single heading/status
+  row and a shorter connector, preserving the shared playback baseline. Lecture
+  evidence sits directly below the tables and above playback at every width.
+  Single-option history pickers are omitted, keeping tray heading and
+  row dimensions fixed.
 
 - `useResponsiveLabLayout` measures each activity's actual content width, title,
   and controls, including sidebar changes and saved completion checkmarks.
@@ -491,7 +518,8 @@ management. Only the visible activity owns the browser title, including on resiz
   uses saved activity progress for Guided labs. Planned chapters and challenges
   display Coming soon and a useful return link, including direct section URLs.
   Challenge achievement indicators stay absent until completion is implemented.
-  Chapter 7 remains in the seven-chapter progress denominator.
+  All eight core chapters contribute to the progress denominator. Existing saved
+  activity completions remain valid when new chapter paths are registered.
 
 ## Chapter style and layout
 

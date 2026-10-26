@@ -35,6 +35,8 @@ import { ProgressLecture } from './progress-and-freshness/ProgressLecture';
 import { ProgressExercisePage } from './progress-and-freshness/ProgressExercisePage';
 import { ConsistentReadsLecture } from './consistent-reads/ConsistentReadsLecture';
 import { ConsistentReadsExercisePage } from './consistent-reads/ConsistentReadsExercisePage';
+import { SubscribeLecture } from './live-applications-subscribe/SubscribeLecture';
+import { SubscribeExercisePage } from './live-applications-subscribe/SubscribeExercisePage';
 
 export function ChapterContentPage() {
   const chapter = useOutletContext<ChapterDefinition>();
@@ -57,6 +59,13 @@ export function ChapterContentPage() {
   if (!section || (pageSlug !== undefined && !page)) return <NotFoundPage />;
 
   const navigation = getChapterNavigation(chapter, section, page);
+  if (chapter.slug === 'live-applications-subscribe' && page) {
+    const index = section.pages.findIndex(item => item.slug === page.slug);
+    const controls = <ChapterPagination {...navigation} showTooltips={false} hideLinks />;
+    return section.slug === 'tutorial'
+      ? <SubscribeLecture key={page.slug} chapter={chapter} navigation={controls} lectureIndex={index} />
+      : <SubscribeExercisePage key={page.slug} chapter={chapter} navigation={controls} exerciseIndex={index} />;
+  }
   if (chapter.slug === 'consistent-reads' && page) {
     const index = section.pages.findIndex(item => item.slug === page.slug);
     const controls = <ChapterPagination {...navigation} showTooltips={false} hideLinks />;

@@ -18,8 +18,8 @@ describe('chapter registry', () => {
     for (const chapter of chapters) expect(chapter.slug).toMatch(/^[a-z0-9]+(?:-[a-z0-9]+)*$/);
   });
 
-  it('contains seven core chapters and no optional advanced chapters', () => {
-    expect(coreChapters).toHaveLength(7);
+  it('contains eight core chapters and no optional advanced chapters', () => {
+    expect(coreChapters).toHaveLength(8);
     expect(coreChapters.every((chapter) => !chapter.optional)).toBe(true);
     expect(advancedChapters).toHaveLength(0);
   });

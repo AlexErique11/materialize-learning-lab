@@ -231,7 +231,11 @@ export function GuidedLabScreen({
               <div className="guided-lab-progress reserved-lab-progress" aria-hidden="true" />
             ))}
           {showReference && (
-            <Button data-walkthrough="sql" aria-keyshortcuts="S" onClick={() => setReferenceOpen(true)}>
+            <Button data-walkthrough="sql" aria-keyshortcuts="S" onClick={event => {
+              event.currentTarget.focus();
+              if (simulation?.playing) simulation.onRun();
+              setReferenceOpen(true);
+            }}>
               SQL &amp; Objectives
             </Button>
           )}

@@ -70,7 +70,8 @@ requested range. Exercise 2 has four ordering/ingestion questions. Exercise 3
 is the six-question dashboard stall/recovery challenge. Wrong predictions do not
 apply actions. Hints preserve inputs; Show Answer accepts the full solution.
 Computed classifications and ages are hidden before acceptance. The chapter
-completion dialog returns to the learning path; the curriculum ends at Chapter 7.
+completion dialog continues to Chapter 8, where learners consume a result stream
+and publish complete timestamps in an application.
 
 `simulation.test.ts` covers boundary equality, empty windows, monotone frontiers,
 protected history, policies, sealed outcomes, external stages, deterministic replay,

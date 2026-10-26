@@ -3,6 +3,7 @@ import { publicAsset } from '../app/publicAsset';
 import { objectDocumentationLinks } from './views-indexes-materialized-views/resources';
 import { documentationLinks as progressDocumentationLinks } from './progress-and-freshness/resources';
 import { documentationLinks as readDocumentationLinks } from './consistent-reads/resources';
+import { documentationLinks as subscriptionDocumentationLinks } from './live-applications-subscribe/resources';
 
 export interface ChapterDefinition {
   readonly number: number;
@@ -137,6 +138,17 @@ export const chapters: readonly ChapterDefinition[] = [
     overviewImage: publicAsset('consistent-reads-overview.svg'),
     overviewImageFit: 'contain',
     documentationLinks: readDocumentationLinks,
+  },
+  {
+    number: 8,
+    slug: 'live-applications-subscribe',
+    title: 'SUBSCRIBE — From Maintained Results to Live Applications',
+    shortTitle: 'SUBSCRIBE',
+    description: 'Turn a result stream into a correct live application.',
+    introduction: 'Build a client baseline, apply signed result changes, and publish complete timestamps. Three guided tutorials and three exercises use timestamp trays to distinguish received records, pending changes, and the application’s published result.',
+    overviewImage: publicAsset('live-applications-subscribe-overview.svg'),
+    overviewImageFit: 'contain',
+    documentationLinks: subscriptionDocumentationLinks,
   },
 ];
 

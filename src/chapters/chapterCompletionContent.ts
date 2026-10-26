@@ -81,4 +81,14 @@ export const chapterCompletionContent: Readonly<Record<string, ChapterCompletion
     ],
     takeaway: 'A consistent read uses the same retained, complete timestamp for every input. Transaction order does not prove that an external write has arrived, and a freshness policy can reject an otherwise readable snapshot.',
   },
+  'live-applications-subscribe': {
+    title: 'Turn a changing result into a correct live display',
+    description: 'You initialized a client from a snapshot, applied signed result changes, and kept partial deliveries out of the published application.',
+    topics: [
+      { title: 'A complete baseline', description: 'Initialize every current row. Without a snapshot, a fresh client misses unchanged rows.' },
+      { title: 'Full rows and copies', description: 'Apply signed copies of full rows. Replace old aggregates and remove vanished groups.' },
+      { title: 'Complete, then publish', description: 'At boundary T, only times below T are complete. Keep received changes separate from published rows.' },
+    ],
+    takeaway: 'Publish complete timestamp groups together. A disconnected client retains a stale last-known result; durable replay and exactly-once external effects require retained history and coordinated checkpoints.',
+  },
 };

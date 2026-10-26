@@ -135,7 +135,7 @@ test('learning path, chapter navigation, and browser history', async ({ page }, 
 
 test('sidebar navigation opens lectures and exercises in both directions', async ({ page, isMobile }) => {
   const navigate = async (title: string, section: string) => {
-    const sidebar = page.locator(isMobile ? '.mobile-sidebar' : '.desktop-sidebar');
+    const sidebar = page.locator('#main-content').locator(isMobile ? '.mobile-sidebar' : '.desktop-sidebar');
     if (isMobile) await sidebar.locator(':scope > summary').click();
     const group = sidebar.locator('.chapter-branch-selected .chapter-section').filter({ has: page.locator('summary', { hasText: section }) });
     if (await group.getAttribute('open') === null) await group.locator('summary').click();
@@ -557,7 +557,7 @@ test('unknown locations show useful not-found pages', async ({ page }) => {
     ['/labs/maintained-state', 'Chapter not found'],
     ['/labs/query-optimization', 'Chapter not found'],
     ['/labs/clusters-replicas-recovery', 'Chapter not found'],
-    ['/labs/live-applications-subscribe', 'Chapter not found'],
+    ['/labs/nonexistent-chapter', 'Chapter not found'],
     ['/labs/sinks-downstream-delivery', 'Chapter not found'],
     ['/labs/recursive-queries', 'Chapter not found'],
     [`${chapterPath(firstChapter)}/workspace`, 'Page not found'],
