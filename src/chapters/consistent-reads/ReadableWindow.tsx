@@ -13,9 +13,9 @@ const percent = (value: number, snapshot: ReadSnapshot) => `${Math.max(0, Math.m
 const position = (value: number, snapshot: ReadSnapshot): CSSProperties => ({ left: percent(value, snapshot) });
 export type ReadRefs = Record<ReadTarget, RefObject<HTMLElement | null>>;
 
-export function ReadableWindow({ snapshot: s, refs, caption, revealOutcome = true, onSelectTime, disabled = false, assessment = false }: {
+export function ReadableWindow({ snapshot: s, refs, caption, revealOutcome = true, onSelectTime, onInspect, disabled = false, assessment = false }: {
   snapshot: ReadSnapshot; refs?: ReadRefs; caption: string; revealOutcome?: boolean;
-  onSelectTime?: (timestamp: number) => void; disabled?: boolean; assessment?: boolean;
+  onSelectTime?: (timestamp: number) => void; onInspect?: () => void; disabled?: boolean; assessment?: boolean;
 }) {
   const [keyOpen, setKeyOpen] = useState(false);
   const window = sharedWindow(s);
@@ -56,7 +56,7 @@ export function ReadableWindow({ snapshot: s, refs, caption, revealOutcome = tru
       </section>
       <div className="read-diagram-bottom"><span className="read-interval" aria-label="Shared complete interval">{revealOutcome ? window.retained < window.write ? `Shared: [${formatReadTime(s, window.retained)}, ${formatReadTime(s, window.write)})` : 'Shared window is empty' : 'Compare the retained and complete boundaries'}</span>
         <div className="read-legend" aria-hidden="true"><span><i className="read-key-frontier" />Frontier</span><span><i className="read-key-complete" />Complete</span><span><i className="read-key-retained" />Retained</span></div>
-        <Button variant="ghost" className="read-key" aria-haspopup="dialog" onClick={() => setKeyOpen(true)}><CircleHelp size={13} aria-hidden="true" />Diagram key</Button>
+        <Button variant="ghost" className="read-key" aria-haspopup="dialog" onClick={() => { onInspect?.(); setKeyOpen(true); }}><CircleHelp size={13} aria-hidden="true" />Diagram key</Button>
       </div>
     </section>
     <section ref={refs?.result} className="read-result" data-status={status ?? 'prediction'} aria-label="Query outcome" aria-live="polite">

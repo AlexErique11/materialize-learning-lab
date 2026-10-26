@@ -110,8 +110,10 @@ and table spacing match the lectures. The complete diagram is raised by up to
 55px, limited by clearance beneath the heading and controls. Questions use a
 separate anchor 5px below the unshifted lecture canvas bottom. The reference is refreshed on
 window or sidebar resize; assessment feedback cannot shift the diagram.
-Questions stay below the canvas, with compact inline headings and a checkbox
-selection dialog when there is insufficient space for the full answer list.
+Questions stay below the canvas, with compact inline headings and a selection
+dialog when there is insufficient space for the full answer list. Single-answer
+questions use radios; multiple-answer questions use checkboxes. Hidden measurement
+copies remove input names so they cannot alter the learner's radio selections.
 Each checkpoint reserves the tallest question, hint and grading message before
 choosing its layout. Top-aligned copy and controls therefore remain fixed when
 revealing an answer or displaying feedback.

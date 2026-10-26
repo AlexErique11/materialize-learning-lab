@@ -1,5 +1,8 @@
 import { expect, test } from './fixtures';
 
+// Static geometry is checked separately from the animation suite.
+test.use({ reducedMotion: 'reduce' });
+
 const activities = [
   ['changing-relations', 1], ['incremental-maintenance', 2],
   ['views-indexes-materialized-views', 2], ['getting-data-in', 3],

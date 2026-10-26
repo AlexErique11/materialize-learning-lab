@@ -288,15 +288,16 @@ test('manual answers, incorrect retries, hints and the final design work', async
       const compact = await picker.isVisible();
       if (compact) await picker.click();
       const choices = compact ? page.getByRole('dialog', { name: 'Select answers', exact: true }) : page;
-      for (const id of checkpoint.solution) await choices.getByRole('checkbox', { name: checkpoint.choices.find(choice => choice.id === id)!.label, exact: true }).check();
+      const role = checkpoint.solution.length === 1 ? 'radio' : 'checkbox';
+      for (const id of checkpoint.solution) await choices.getByRole(role, { name: checkpoint.choices.find(choice => choice.id === id)!.label, exact: true }).check();
       if (compact) await choices.getByRole('button', { name: 'Done', exact: true }).click();
       await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
       await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'correct');
       if (await picker.isVisible()) {
         await picker.click();
         const review = page.getByRole('dialog', { name: 'Select answers', exact: true });
-        await expect(review.getByRole('checkbox', { checked: true })).toHaveCount(checkpoint.solution.length);
-        await expect(review.getByRole('checkbox').first()).toBeDisabled();
+        await expect(review.getByRole(role, { checked: true })).toHaveCount(checkpoint.solution.length);
+        await expect(review.getByRole(role).first()).toBeDisabled();
         await review.getByRole('button', { name: 'Done', exact: true }).click();
       }
       if (exerciseIndex === 1) await expect(page.locator('.flow-definitions code')).toHaveText(stage === 0
@@ -455,7 +456,14 @@ test('question text and answer controls stay anchored through feedback', async (
         const before = await positions();
         for (const action of ['Hint', 'Check Answer', 'Show Answer']) {
           await page.getByRole('button', { name: action, exact: true }).click();
-          await expect.poll(positions, `${size.width}x${size.height}, exercise ${exercise}, question ${question + 1}: ${action}`).toEqual(before);
+          if (await page.locator('.object-exercise-page').evaluate(element => element.hasAttribute('data-responsive-flow'))) {
+            // A new query observation enters normal flow below the fixed diagram.
+            await expect.poll(async () => (await positions())[0]).toEqual(before[0]);
+            await expect(page.locator('.exercise-question')).toBeVisible();
+            await expect(page.locator('.exercise-answers')).toBeVisible();
+          } else {
+            await expect.poll(positions, `${size.width}x${size.height}, exercise ${exercise}, question ${question + 1}: ${action}`).toEqual(before);
+          }
           await expect(page.locator('.object-exercise-workspace')).toHaveAttribute('data-fits', 'true');
         }
         if (question < 3) await page.getByRole('button', { name: 'Next question', exact: true }).click();

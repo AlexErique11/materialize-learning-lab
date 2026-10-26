@@ -58,6 +58,8 @@ export function ObjectExerciseWorkspace({ chapter, navigation, visualization, qu
       clone.inert = true;
       clone.removeAttribute('id');
       clone.querySelectorAll('[id]').forEach(element => element.removeAttribute('id'));
+      // Measurement copies must not join and uncheck the learner's radio group.
+      clone.querySelectorAll('[name]').forEach(element => element.removeAttribute('name'));
       Object.assign(clone.style, { visibility: 'hidden', pointerEvents: 'none', top: '0px' });
       const copy = clone.querySelector<HTMLElement>('.exercise-question-copy')!;
       copy.style.minHeight = '0px';

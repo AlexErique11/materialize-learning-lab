@@ -31,7 +31,7 @@ export function ConsistentReadsLecture({ chapter, lectureIndex, navigation }: { 
   const frame = frames.filter(item => item.time <= state.selectedTime).at(-1);
   const normalStep = frames.filter(item => item.time <= state.selectedTime).length;
   const current = exploration ?? (state.guided ? applied?.snapshot : frame?.lesson.snapshot) ?? lecture.initial;
-  const focus = useGuidedFocus(`${state.step}:${state.revealed}`, [lesson.target], refs, { query: 'Query settings', axis: 'Logical-time axis', windows: 'Retained and complete windows', result: 'Query outcome' });
+  const focus = useGuidedFocus(`${state.guided}:${state.step}:${state.revealed}`, [lesson.target, ...(!pending ? lesson.related ?? [] : [])], refs, { query: 'Query settings', axis: 'Logical-time axis', windows: 'Retained and complete windows', result: 'Query outcome' });
   useEffect(() => { if (helpOpen) dispatch({ type: 'pause' }); }, [helpOpen, dispatch]);
   useEffect(() => { setExploration(null); }, [state.selectedTime, state.guided, state.revealed]);
   useEffect(() => {
@@ -56,6 +56,7 @@ export function ConsistentReadsLecture({ chapter, lectureIndex, navigation }: { 
       simulation={{ completed: state.guided ? state.step : normalStep, total: state.guided ? lecture.lessons.length : frames.length, progressLabel: state.guided ? 'Tutorial' : 'Changes', playing: state.playing,
         onReset: reset, onRun: () => { setExploration(null); if (!state.playing && normalStep === frames.length) dispatch({ type: 'reset' }); dispatch({ type: 'play' }); }, onStartGuidedRun: () => { setExploration(null); dispatch({ type: 'start-guided' }); } }}
       visualization={<ReadableWindow snapshot={current} refs={refs} caption={pending ? `Predict · ${lesson.title}` : (state.guided ? applied : frame?.lesson)?.title ?? 'Select a time or step through the scenario.'} disabled={state.guided || state.playing}
+        onInspect={() => dispatch({ type: 'pause' })}
         onSelectTime={timestamp => { dispatch({ type: 'pause' }); setExploration(applyRead(current, { type: 'request', request: { policy: 'timestamp', timestamp } })); }} />}
       playback={<div className="relation-playback-controls" aria-label="Scenario playback"><ActivityCompletion complete={finished} kind="tutorial" /><div>
         <Button aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || normalStep === 0} onClick={() => advance(false)}><ArrowLeft size={14} aria-hidden="true" />Previous change</Button>

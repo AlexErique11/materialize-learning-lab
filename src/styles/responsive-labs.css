@@ -36,17 +36,25 @@
 
 @media (max-width: 639px) {
   .guided-lab-help .guided-lab-help-slot:not(:has(.chapter-walkthrough-button)) { display: none; }
+  .guided-lab-help .guided-lab-help-slot > .chapter-walkthrough-button { position: static; transform: none; }
+}
+
+/* Leave room for an earned title check on short laptops before stacking actions. */
+@media (min-width: 1151px) and (max-width: 1350px) and (max-height: 740px) {
+  .app-shell-guided-labs .guided-lab-page:is(.changing-relations-exercise-page, .maintenance-exercise-page, .getting-data-in-exercise-page, .temporal-exercise-page) .guided-lab-controls { gap: 8px; }
+  .guided-lab-page:is(.changing-relations-exercise-page, .maintenance-exercise-page, .getting-data-in-exercise-page, .temporal-exercise-page) .guided-lab-controls .button { padding-inline: 8px; font-size: 12px; height: 36px; min-height: 36px; }
+  .guided-lab-page:is(.changing-relations-exercise-page, .maintenance-exercise-page, .getting-data-in-exercise-page, .temporal-exercise-page) .guided-lab-progress { margin-right: 0; }
 }
 
 /* On the smallest phones, both help buttons fit directly above the actions. */
-@media (max-width: 379px) {
+@media (max-width: 359px) {
   .app-shell-guided-labs .guided-lab-page[data-viewport-fit]:has(.chapter-walkthrough-button) .guided-lab-title,
   .app-shell-guided-labs .guided-lab-page[data-viewport-fit]:has(.chapter-walkthrough-button) .guided-lab-title h1 { grid-column: 1 / -1; grid-row: 1; }
   .app-shell-guided-labs .guided-lab-page[data-viewport-fit]:has(.chapter-walkthrough-button) .guided-lab-top-row { grid-column: 1 / -1; grid-row: 2; justify-content: flex-end; margin-bottom: 0; }
   .app-shell-guided-labs .guided-lab-page[data-viewport-fit]:has(.chapter-walkthrough-button) .guided-lab-controls { grid-row: 3; }
   .app-shell-guided-labs .guided-lab-page[data-viewport-fit]:has(.chapter-walkthrough-button) .guided-lab-controls > .button-primary { margin-left: auto; }
   .app-shell-guided-labs .guided-lab-page[data-viewport-fit]:has(.chapter-walkthrough-button) .guided-lab-canvas { grid-row: 4; }
-  .app-shell-guided-labs :is(.lecture-layout-page:has([data-lecture-layout='without-tip']), .maintenance-lecture-page)[data-viewport-fit] .guided-lab-title > p { grid-row: 4; }
+  .app-shell-guided-labs :is(.lecture-layout-page:has([data-lecture-layout='without-tip']), .maintenance-lecture-page)[data-viewport-fit]:has(.chapter-walkthrough-button) .guided-lab-title > p { grid-row: 4; }
   .app-shell-guided-labs :is(.lecture-layout-page:has([data-lecture-layout='without-tip']), .maintenance-lecture-page)[data-viewport-fit] .guided-lab-canvas { grid-row: 5; }
 }
 

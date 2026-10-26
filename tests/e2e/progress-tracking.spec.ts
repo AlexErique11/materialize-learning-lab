@@ -188,7 +188,9 @@ for (const chapter of chapters) {
       expect(bounds.x - pageBounds.x).toBe(isMobile ? 16 : 28);
       expect(Math.abs(pageBounds.y + pageBounds.height - bounds.y - bounds.height - inset)).toBeLessThan(1);
       const next = (await page.locator('[data-shortcut="exercise-forward"]').boundingBox())!;
-      expect(bounds.x + bounds.width).toBeLessThanOrEqual(next.x);
+      expect(bounds.x + bounds.width <= next.x || next.x + next.width <= bounds.x
+        || bounds.y + bounds.height <= next.y || next.y + next.height <= bounds.y,
+      'Completion feedback must not overlap navigation, including when it moves onto its own row').toBe(true);
       await expectFooterClear(page);
       if (index === 0) await page.screenshot({ path: testInfo.outputPath('exercise-completed.png') });
       const question = await page.locator('.exercise-question').boundingBox();

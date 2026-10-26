@@ -1,5 +1,8 @@
 import { expect, seedChapterPrerequisites, test } from './fixtures';
 
+// Static geometry is checked separately from the animation suite.
+test.use({ reducedMotion: 'reduce' });
+
 test('all Chapter 2 exercises support retries, hints, reveal, advancement and reset', async ({ page, isMobile }) => {
  test.setTimeout(60_000);
  for (const [exercise, total] of [[1, 3], [3, 3]]) {
@@ -247,10 +250,14 @@ test('Next requires a correct answer or reveal, supports retries and opens the n
   }
   for (const index of [2]) {
    const groups = await page.locator('.exercise-choice').evaluateAll(elements => elements.map(element => {
-    const rect = element.getBoundingClientRect(); return { top: rect.top, bottom: rect.bottom, left: rect.left };
+    const rect = element.getBoundingClientRect(); return { top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right };
    }));
-   expect(groups[1]!.top).toBeGreaterThanOrEqual(groups[0]!.bottom);
-   expect(groups[1]!.left).toEqual(groups[0]!.left);
+   if (!isMobile && size.height <= 740) {
+    expect(groups[1]!.left).toBeGreaterThanOrEqual(groups[0]!.right);
+   } else {
+    expect(groups[1]!.top).toBeGreaterThanOrEqual(groups[0]!.bottom);
+    expect(groups[1]!.left).toEqual(groups[0]!.left);
+   }
    const fit = await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight && document.documentElement.scrollWidth <= innerWidth);
    expect(fit, `Question ${index + 1} fits at ${size.width} x ${size.height}`).toBe(true);
 

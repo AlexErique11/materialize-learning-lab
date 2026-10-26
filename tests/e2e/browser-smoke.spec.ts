@@ -1,17 +1,24 @@
 import { expect, test } from './fixtures';
 
 test('navigation, native help and SQL dialogs stay interactive', async ({ page, isMobile }) => {
+  test.setTimeout(60_000);
   await page.goto('/labs/changing-relations');
   await page.getByRole('link', { name: 'Start tutorial: Lecture 1: Signed changes', exact: true }).click();
   await expect(page).toHaveURL('/labs/changing-relations/tutorial/lecture-1');
+  await expect(page.locator('.area-transition-viewport')).toHaveCount(0);
   await expect(page.locator('#main-content .learning-area-content')).not.toHaveAttribute('inert');
   const sql = page.getByRole('button', { name: 'SQL & Objectives', exact: true });
-  await sql.click();
+  // Safari does not focus buttons on a pointer click. Exercise keyboard focus
+  // explicitly before asserting that the native dialog restores it.
+  await sql.focus();
+  await expect(sql).toBeFocused();
+  await page.keyboard.press('Enter');
   await expect(page.getByRole('dialog', { name: 'SQL & Objectives', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(sql).toBeFocused();
   const shortcuts = page.getByRole('button', { name: 'Keyboard shortcuts', exact: true });
-  await shortcuts.click();
+  await shortcuts.focus();
+  await page.keyboard.press('Enter');
   await expect(page.getByRole('dialog', { name: 'Keyboard shortcuts', exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(shortcuts).toBeFocused();

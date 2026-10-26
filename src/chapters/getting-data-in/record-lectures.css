@@ -68,6 +68,10 @@
   .record-changes > .record-summary { margin-top: 6px; }
   .record-layout .relation-count { padding-block: 0; }
 }
+@media (min-width: 1151px) and (max-height: 740px) {
+  /* Include both borders around the decoded before/after table. */
+  .record-lecture-page .record-input-frame:has(.record-version-table) { height: 206px; }
+}
 @media (max-width: 1023px), (min-width: 1024px) and (max-width: 1150px) and (max-height: 700px) {
   .record-layout .ingestion-panel { padding: 12px; }
   .record-layout .record-record { border-right: 0; }

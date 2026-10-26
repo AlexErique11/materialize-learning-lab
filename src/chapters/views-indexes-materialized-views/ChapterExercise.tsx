@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronDown } from 'lucide-react';
 import type { ChapterDefinition } from '../chapterRegistry';
@@ -25,6 +25,12 @@ export function ObjectChapterExercise({ chapter, navigation, exerciseIndex }: { 
   const checkpoint = exercise.checkpoints[flow.stage]!;
   const [answers, setAnswers] = useState<Record<number, readonly string[]>>({});
   const selected = answers[flow.stage] ?? [];
+  const answerId = useId();
+  const singleAnswer = checkpoint.solution.length === 1;
+  const choose = (id: string, checked: boolean) => {
+    setAnswers(previous => ({ ...previous, [flow.stage]: singleAnswer ? [id] : checked ? [...selected, id] : selected.filter(value => value !== id) }));
+    flow.dispatch({ type: 'edit' });
+  };
   const [panel, setPanel] = useState<DiagramPanel>('input');
   const { open: openChapterCompletion, close: closeChapterCompletion } = useChapterCompletion();
   const [answersOpen, setAnswersOpen] = useState(false);
@@ -46,8 +52,7 @@ export function ObjectChapterExercise({ chapter, navigation, exerciseIndex }: { 
       visualization={<FlowGraph snapshot={flow.accepted ? checkpoint.after : checkpoint.before} showClusterB compact selectedPanel={panel} onSelectPanel={setPanel} pending={!flow.accepted} />}
       renderWorkspace={({ visualization, question, navigation: questionNavigation }) => <ObjectExerciseWorkspace chapter={chapter} navigation={navigation} visualization={visualization} question={question} footer={questionNavigation} copyVariants={copyVariants} />}
       answers={<><div className="object-answer-picker"><span>{checkpoint.solution.length === 1 ? 'Choose one' : 'Choose all'}</span><Button aria-label="Select answers" aria-haspopup="dialog" onClick={() => setAnswersOpen(true)}>{selected.length ? `${selected.length} selected` : 'Answers'}<ChevronDown size={12} aria-hidden="true" /></Button></div><fieldset className="object-answer-choices" disabled={flow.accepted}><legend>Select {checkpoint.solution.length === 1 ? 'one answer' : 'every correct statement'}</legend>
-        {checkpoint.choices.map(item => <label key={item.id}><input type="checkbox" checked={selected.includes(item.id)} onChange={event => { const checked = event.target.checked;
-          setAnswers(previous => ({ ...previous, [flow.stage]: checked ? [...selected, item.id] : selected.filter(id => id !== item.id) })); flow.dispatch({ type: 'edit' }); }} />{item.label}</label>)}
+        {checkpoint.choices.map(item => <label key={item.id}><input type={singleAnswer ? 'radio' : 'checkbox'} name={`${answerId}-${flow.stage}-inline`} checked={selected.includes(item.id)} onChange={event => choose(item.id, event.target.checked)} />{item.label}</label>)}
       </fieldset></>}
       onCheck={() => flow.dispatch({ type: 'check', grade: gradeObjectPrediction(checkpoint, selected) })}
       onShowAnswer={() => { setAnswers(previous => ({ ...previous, [flow.stage]: checkpoint.solution })); flow.dispatch({ type: 'check', grade: gradeObjectPrediction(checkpoint, checkpoint.solution) }); }}
@@ -55,9 +60,7 @@ export function ObjectChapterExercise({ chapter, navigation, exerciseIndex }: { 
       onReset={() => { flow.dispatch({ type: 'reset' }); setAnswers({}); setPanel('input'); closeChapterCompletion(); }} />
     <Dialog open={answersOpen} onClose={() => setAnswersOpen(false)} title="Select answers">
       <fieldset className="object-answer-choices object-answer-dialog" disabled={flow.accepted}><legend>Select {checkpoint.solution.length === 1 ? 'one answer' : 'every correct statement'}</legend>
-        {checkpoint.choices.map(item => <label key={item.id}><input type="checkbox" checked={selected.includes(item.id)} onChange={event => {
-          setAnswers(previous => ({ ...previous, [flow.stage]: event.target.checked ? [...selected, item.id] : selected.filter(id => id !== item.id) })); flow.dispatch({ type: 'edit' });
-        }} />{item.label}</label>)}
+        {checkpoint.choices.map(item => <label key={item.id}><input type={singleAnswer ? 'radio' : 'checkbox'} name={`${answerId}-${flow.stage}-dialog`} checked={selected.includes(item.id)} onChange={event => choose(item.id, event.target.checked)} />{item.label}</label>)}
       </fieldset>
       <Button onClick={() => setAnswersOpen(false)}>Done</Button>
     </Dialog>

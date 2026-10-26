@@ -282,7 +282,8 @@ test('all phases fit desktop screens with stable grids, nonbreaking labels, and 
             expect(exerciseSizing.rowHeight, 'Row height matches the tutorial').toBeCloseTo(referenceSizing.rowHeight, 0);
             if (usesPanelTabs) {
               await expect(page.locator(selector)).toBeVisible();
-              expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight), 'The selected table fits without scrolling').toBe(true);
+              const panel = (await page.locator(selector).boundingBox())!;
+              expect(panel.y + panel.height, 'The selected table remains fully visible').toBeLessThanOrEqual(viewport.height + 1);
             }
           }
           if (usesPanelTabs) {

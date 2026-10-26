@@ -205,7 +205,7 @@ test('record playback pauses for help, replays, and resets when navigating lectu
   if (!isMobile) {
     await page.getByRole('link', { name: 'Lecture 3: Keys, renames, and deletions', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'Lecture 3', exact: true })).toBeVisible();
-    await expect(page.getByTestId('records-read')).toHaveText('0');
-    await expect(page.getByTestId('record-key')).toHaveText('Coffee');
+    await expect(page.locator('#main-content').getByTestId('records-read')).toHaveText('0');
+    await expect(page.locator('#main-content').getByTestId('record-key')).toHaveText('Coffee');
   }
 });

@@ -124,10 +124,10 @@
   .read-exercise-page .read-question-slot .exercise-question { height: 110px; padding-block: 7px; }
 }
 @media (min-width:1280px) and (min-height:640px) {
-  /* A completion badge uses the existing title/control gap instead of wrapping
-     the toolbar after the last answer. */
+  /* Match the shared badge's text alignment while keeping it in the existing
+     title/control gap, so completion does not wrap the toolbar. */
   .read-exercise-page .guided-lab-title h1 { position: relative; }
-  .read-exercise-page .activity-title-check { position: absolute; }
+  .read-exercise-page .activity-title-check { position: absolute; top: calc(50% + .05em); transform: translateY(-50%); }
   html:has(.read-exercise-page:not([data-narrow-panels]):not([data-compact-header])),
   body:has(.read-exercise-page:not([data-narrow-panels]):not([data-compact-header])) {
     height: 100dvh;

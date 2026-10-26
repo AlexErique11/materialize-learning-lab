@@ -9,7 +9,7 @@ import {
 import { ArrowRight, CheckCircle2, Lightbulb, Pause, Play } from 'lucide-react';
 import { useLocation } from 'react-router';
 import { materializeDocumentation } from '../../app/resources';
-import { chapterPath, guidedLabsHomePath, type ChapterDefinition } from '../../chapters/chapterRegistry';
+import { chapterPath, chapters, guidedLabsHomePath, type ChapterDefinition } from '../../chapters/chapterRegistry';
 import { SqlObjectivesPanel } from '../../components/lab/SqlObjectivesPanel';
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs';
 import { useWalkthrough } from '../../components/walkthrough/WalkthroughProvider';
@@ -187,7 +187,8 @@ export function GuidedLabScreen({
         />
         <div className="guided-lab-help">
           {!simulation && navigation}
-          {available && <ShortcutHelp key={pathname} lecture={Boolean(simulation)} showReference={showReference} onOpenChange={setShortcutHelpOpen} />}
+          {available && <ShortcutHelp key={pathname} lecture={Boolean(simulation)} showReference={showReference}
+            completionLabel={chapters.at(-1)?.slug === chapter.slug ? 'Return to learning path' : 'Go to the next chapter'} onOpenChange={setShortcutHelpOpen} />}
           {simulation && navigation}
         </div>
       </div>

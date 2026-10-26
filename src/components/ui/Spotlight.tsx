@@ -83,8 +83,14 @@ export function Spotlight({ open, targetRef, step, total, title, description, ph
         if (above >= 12) cardTop = above;
         else {
           const workspace = target.closest('.relation-workspace')?.getBoundingClientRect() ?? { left: 12, right: innerWidth - 12 };
-          const leftSpace = rect.left - padding - gap - workspace.left;
-          const rightSpace = workspace.right - rect.right - padding - gap;
+          let leftSpace = rect.left - padding - gap - workspace.left;
+          let rightSpace = workspace.right - rect.right - padding - gap;
+          // A tall diagram can fill its workspace while the sidebar still leaves
+          // enough screen space for an explanation without covering the target.
+          if (Math.max(leftSpace, rightSpace) < 260) {
+            leftSpace = rect.left - padding - gap - 12;
+            rightSpace = innerWidth - 12 - rect.right - padding - gap;
+          }
           const sideSpace = Math.max(leftSpace, rightSpace);
           if (sideSpace >= 260) {
             cardWidth = Math.min(preferredWidth, sideSpace);

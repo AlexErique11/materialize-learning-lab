@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router';
 import { ChevronDown } from 'lucide-react';
 import type { ChapterDefinition } from '../chapterRegistry';
@@ -22,6 +22,7 @@ export function ConsistentReadsExercisePage({ chapter, exerciseIndex, navigation
   const question = exercise.questions[flow.stage]!;
   const [answers, setAnswers] = useState<Record<number, ReadPrediction>>({});
   const [choicesOpen, setChoicesOpen] = useState<string | null>(null);
+  const answerId = useId();
   const { open: openChapterCompletion, close: closeChapterCompletion } = useChapterCompletion();
   const navigate = useNavigate();
   const prediction = answers[flow.stage] ?? {};
@@ -39,11 +40,14 @@ export function ConsistentReadsExercisePage({ chapter, exerciseIndex, navigation
         playback={<div className="relation-playback-controls">{footer}</div>} />}
       answers={<div className="read-answer-groups">{question.groups.map(group => {
         const values = prediction[group.id] ?? [];
-        return <fieldset key={group.id} className="read-answer-group" disabled={flow.accepted} data-error={Boolean(flow.grade?.errors[group.id])}>
+        const error = flow.grade?.errors[group.id];
+        const errorId = error ? `${answerId}-${group.id}-error` : undefined;
+        return <fieldset key={group.id} className="read-answer-group" disabled={flow.accepted} data-error={Boolean(error)} aria-invalid={Boolean(error)} aria-describedby={errorId}>
           <legend>{group.label}</legend>
-          {group.kind === 'integer' ? <input aria-label={group.label} inputMode="numeric" autoComplete="off" value={values[0] ?? ''} aria-invalid={Boolean(flow.grade?.errors[group.id])} onChange={event => edit(group.id, [event.target.value])} />
-            : group.kind === 'single' ? <select aria-label={group.label} value={values[0] ?? ''} aria-invalid={Boolean(flow.grade?.errors[group.id])} onChange={event => edit(group.id, event.target.value ? [event.target.value] : [])}><option value="">Choose an answer</option>{group.choices!.map(choice => <option key={choice.id} value={choice.id}>{choice.label}</option>)}</select>
-              : <Button aria-label={`Choose ${group.label}`} aria-haspopup="dialog" onClick={() => setChoicesOpen(group.id)}>{values.length ? `${values.length} selected` : 'Choose statements'}<ChevronDown size={12} aria-hidden="true" /></Button>}
+          {group.kind === 'integer' ? <input aria-label={group.label} inputMode="numeric" autoComplete="off" value={values[0] ?? ''} aria-invalid={Boolean(error)} aria-describedby={errorId} onChange={event => edit(group.id, [event.target.value])} />
+            : group.kind === 'single' ? <select aria-label={group.label} value={values[0] ?? ''} aria-invalid={Boolean(error)} aria-describedby={errorId} onChange={event => edit(group.id, event.target.value ? [event.target.value] : [])}><option value="">Choose an answer</option>{group.choices!.map(choice => <option key={choice.id} value={choice.id}>{choice.label}</option>)}</select>
+              : <Button aria-label={`Choose ${group.label}`} aria-haspopup="dialog" aria-invalid={Boolean(error)} aria-describedby={errorId} onClick={() => setChoicesOpen(group.id)}>{values.length ? `${values.length} selected` : 'Choose statements'}<ChevronDown size={12} aria-hidden="true" /></Button>}
+          {error && <span className="sr-only" id={errorId}>{error}</span>}
         </fieldset>;
       })}</div>}
       onCheck={() => flow.dispatch({ type: 'check', grade: gradeRead(question, prediction) })}
@@ -51,7 +55,7 @@ export function ConsistentReadsExercisePage({ chapter, exerciseIndex, navigation
       onNext={() => { if (!flow.accepted) return; if (!flow.complete) flow.dispatch({ type: 'next' }); else if (nextExercise) navigate(`/labs/${chapter.slug}/exercises/${nextExercise.slug}`); else openChapterCompletion(); }}
       onReset={() => { flow.dispatch({ type: 'reset' }); setAnswers({}); setChoicesOpen(null); closeChapterCompletion(); }} />
     <Dialog open={choicesOpen !== null} onClose={() => setChoicesOpen(null)} title={question.groups.find(group => group.id === choicesOpen)?.label ?? 'Choose statements'}>
-      {question.groups.filter(group => group.id === choicesOpen).map(group => <fieldset key={group.id} className="read-multiple-choices"><legend className="sr-only">{group.label}</legend>{group.choices!.map(choice => <label key={choice.id}><input type="checkbox" checked={(prediction[group.id] ?? []).includes(choice.id)} onChange={event => { const values = prediction[group.id] ?? []; edit(group.id, event.target.checked ? [...values, choice.id] : values.filter(value => value !== choice.id)); }} />{choice.label}</label>)}</fieldset>)}
+      {question.groups.filter(group => group.id === choicesOpen).map(group => <fieldset key={group.id} className="read-multiple-choices" disabled={flow.accepted}><legend className="sr-only">{group.label}</legend>{group.choices!.map(choice => <label key={choice.id}><input type="checkbox" checked={(prediction[group.id] ?? []).includes(choice.id)} aria-invalid={Boolean(flow.grade?.errors[group.id])} aria-describedby={flow.grade?.errors[group.id] ? `${answerId}-${group.id}-error` : undefined} onChange={event => { const values = prediction[group.id] ?? []; edit(group.id, event.target.checked ? [...values, choice.id] : values.filter(value => value !== choice.id)); }} />{choice.label}</label>)}</fieldset>)}
       <Button onClick={() => setChoicesOpen(null)}>Done</Button>
     </Dialog>
   </>;

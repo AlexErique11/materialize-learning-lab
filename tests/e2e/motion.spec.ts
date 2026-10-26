@@ -451,7 +451,8 @@ test('Chapter 6 split questions animate without moving the aligned diagram or an
   await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-aligned', 'true');
   const geometry = () => page.locator('.progress-lane-panel').evaluate(element => {
     const box = element.getBoundingClientRect();
-    return { x: box.x, y: box.y, width: box.width, height: box.height };
+    // Clicking an action near the phone's edge can scroll it into view.
+    return { x: box.x + scrollX, y: box.y + scrollY, width: box.width, height: box.height };
   });
   const before = await geometry();
   await page.getByRole('button', { name: 'Hint', exact: true }).click();

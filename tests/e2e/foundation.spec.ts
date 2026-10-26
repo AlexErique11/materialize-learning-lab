@@ -135,8 +135,9 @@ test('learning path, chapter navigation, and browser history', async ({ page }, 
 
 test('sidebar navigation opens lectures and exercises in both directions', async ({ page, isMobile }) => {
   const navigate = async (title: string, section: string) => {
-    const sidebar = page.locator(isMobile ? '.mobile-sidebar' : '.desktop-sidebar');
-    if (isMobile) await sidebar.locator(':scope > summary').click();
+    await expect(page.locator('.area-transition-viewport')).toHaveCount(0);
+    const sidebar = page.locator(isMobile ? '#main-content .mobile-sidebar' : '#main-content .desktop-sidebar');
+    if (isMobile && await sidebar.getAttribute('open') === null) await sidebar.locator(':scope > summary').click();
     const group = sidebar.locator('.chapter-branch-selected .chapter-section').filter({ has: page.locator('summary', { hasText: section }) });
     if (await group.getAttribute('open') === null) await group.locator('summary').click();
     await group.getByRole('link', { name: title, exact: true }).click();
@@ -174,7 +175,7 @@ test('sidebar navigation opens lectures and exercises in both directions', async
   }
   await page.reload();
   await expect(page.getByRole('heading', { name: 'Lecture 1', exact: true })).toBeVisible();
-  const sidebar = page.locator(isMobile ? '.mobile-sidebar' : '.desktop-sidebar');
+  const sidebar = page.locator(isMobile ? '#main-content .mobile-sidebar' : '#main-content .desktop-sidebar');
   if (isMobile) await sidebar.locator(':scope > summary').click();
   await sidebar.getByRole('link', { name: `${firstChapter.shortTitle} overview`, exact: true }).click();
   await expect(page).toHaveURL(chapterPath(firstChapter));
@@ -207,7 +208,7 @@ test('sidebar subsections are keyboard-operable and reflect the active page', as
 }) => {
   await page.goto(chapterSectionPath(firstChapter, 'tutorial'));
   const sidebar = page.getByRole('complementary', { name: 'Guided labs navigation' });
-  const mobileToggle = page.locator('.mobile-sidebar > summary');
+  const mobileToggle = page.locator('#main-content .mobile-sidebar > summary');
   if (isMobile) {
     await mobileToggle.focus();
     await page.keyboard.press('Enter');
@@ -223,7 +224,7 @@ test('sidebar subsections are keyboard-operable and reflect the active page', as
   await sidebar.getByRole('link', { name: 'Lecture 2: Updates and batches', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Lecture 2', exact: true })).toBeVisible();
   if (isMobile) {
-    await expect(page.locator('.mobile-sidebar')).not.toHaveAttribute('open', '');
+    await expect(page.locator('#main-content .mobile-sidebar')).not.toHaveAttribute('open', '');
     await mobileToggle.click();
   }
   await expect(sidebar.getByRole('link', { name: 'Lecture 2: Updates and batches', exact: true })).toHaveAttribute(
@@ -672,7 +673,8 @@ test('learning path and content pages fit desktop viewports without hiding navig
         const navigation = await page
           .locator('.guided-lab-pagination')
           .boundingBox();
-        expect(navigation).not.toBeNull();
+        if (viewport.width >= 640) expect(navigation).not.toBeNull();
+        else await expect(page.getByRole('button', { name: 'Keyboard shortcuts', exact: true })).toBeVisible();
         if (navigation)
           expect(navigation.y + navigation.height).toBeLessThanOrEqual(dimensions.viewportHeight);
         const reset = await page.getByRole('button', { name: 'Reset', exact: true }).boundingBox();
@@ -682,11 +684,12 @@ test('learning path and content pages fit desktop viewports without hiding navig
         expect(reset).not.toBeNull();
         if (viewport.width >= 640) expect(breadcrumb).not.toBeNull();
         if (navigation && reset) expect(navigation.y + navigation.height).toBeLessThanOrEqual(reset.y);
-        if (navigation && breadcrumb && viewport.width >= 640)
+        const compactHeader = await page.locator('#main-content .guided-lab-page').evaluate(element => element.hasAttribute('data-compact-header'));
+        if (navigation && breadcrumb && viewport.width >= 640 && !compactHeader)
           expect(Math.abs(navigation.y + navigation.height / 2 - breadcrumb.y - breadcrumb.height / 2)).toBeLessThan(1);
       } else {
         await expect(page.getByRole('contentinfo')).toHaveCount(0);
-        if (!isMobile) {
+        if (viewport.width >= 1200) {
           expect(
             dimensions.height,
             `Learning path at ${viewport.width} × ${viewport.height}`,

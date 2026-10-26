@@ -12,14 +12,18 @@ cursor; there is no independently advancing third shared frontier.
 - `lecture-scenarios.ts`: 28 guided checkpoints; `exercise-scenarios.ts`: 15
   questions, hints, before/after fixtures, range-aware grading, and exact evidence sets.
 - `ReadableWindow.tsx`: one renderer for all six activities, native time selection,
-  accessible descriptions, and the Diagram key.
+  accessible descriptions, and the Diagram key, which pauses lecture playback.
 - `ConsistentReadsLecture.tsx`: `LectureScreen` without-tip, `useLectureRun`,
   `Spotlight`, shared completion, rewind, autoplay, and prediction/reveal.
   Manual and automatic playback visit only visual changes (6/5/8 per lecture);
   all 28 teaching checkpoints remain available in guided runs. The step counter
   and Previous/Next controls use the visual sequence outside guidance.
+  Revealed steps inspect their authored related regions with the shared guided
+  focus navigation; inspecting an effect does not advance the scenario.
 - `ConsistentReadsExercisePage.tsx`: `ExerciseFrame`, `useExerciseStages`, and
   the same `LectureWorkspace`/diagram. Questions use `afterVisualization`.
+  Incorrect answer controls and choice dialogs reference their field-specific
+  error descriptions without adding visible feedback rows.
 - `resources.ts`, `lessonText.ts`: objective, SQL, documentation, and consistent
   object/measurement references; `chapter.css`: visualization content only.
 

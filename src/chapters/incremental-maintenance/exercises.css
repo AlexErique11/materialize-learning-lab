@@ -59,6 +59,8 @@
  .join-filter-exercise-page .maintenance-panels > .relation-panel { height: 174px; padding: 3px; }
  .join-filter-exercise-page .exercise-question { padding-block: 6px; gap: 6px; }
  .join-filter-exercise-page .exercise-answers { gap: 6px; }
+ .join-filter-exercise-page .exercise-answers { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); align-items: start; }
+ .join-filter-exercise-page .exercise-choice:only-child { grid-column: 1 / -1; }
  .join-filter-exercise-page .exercise-question:has(.exercise-choice:only-child) { padding-block: 12px; gap: 12px; }
 }
 

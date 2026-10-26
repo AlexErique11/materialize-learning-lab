@@ -1,6 +1,10 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
+
 import { temporalExercises, temporalQuestionState, type TemporalQuestion } from '../../src/chapters/time-in-materialize/exercise-scenarios';
+
+// Static geometry is checked separately from the animation suite.
+test.use({ reducedMotion: 'reduce' });
 
 const path = (exercise: number) => `/labs/time-in-materialize/exercises/exercise-${exercise}`;
 async function answer(page: Page, question: TemporalQuestion) {

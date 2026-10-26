@@ -68,7 +68,7 @@
 @media (min-width: 640px) and (max-height: 700px) {
   .temporal-exercise-page { --temporal-height: 230px; }
   .temporal-exercise-page .temporal-workspace:has(.temporal-clocks) { height: calc(var(--temporal-height) + 6px); }
-  .guided-lab-page.temporal-exercise-page[data-viewport-fit] .relation-workspace { gap: 6px; }
+  .guided-lab-page.temporal-exercise-page[data-viewport-fit] .relation-workspace { gap: 4px; }
   .temporal-exercise-page .temporal-status-bar { min-height: 48px; margin-top: 0; }
   .temporal-exercise-page .temporal-status-bar .relation-metric { padding-block: 4px; }
   .temporal-exercise-page .temporal-workspace[data-selected-stage] > .temporal-panel { padding-block: 6px; }

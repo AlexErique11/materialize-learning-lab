@@ -13,8 +13,8 @@ function positionPanel(panel: HTMLElement, trigger: HTMLElement) {
   panel.style.top = `${Math.max(12, Math.min(bounds.bottom + 8, innerHeight - panel.offsetHeight - 12))}px`;
 }
 
-export function ShortcutHelp({ lecture, showReference, onOpenChange }: {
-  lecture: boolean; showReference: boolean; onOpenChange: (open: boolean) => void;
+export function ShortcutHelp({ lecture, showReference, completionLabel, onOpenChange }: {
+  lecture: boolean; showReference: boolean; completionLabel: string; onOpenChange: (open: boolean) => void;
 }) {
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -87,7 +87,7 @@ export function ShortcutHelp({ lecture, showReference, onOpenChange }: {
         <h3>{lecture ? 'During a guided run' : 'Chapter complete'}</h3>
         <dl>
           {lecture ? <ShortcutRow label="Back / next step or effect" keys="ArrowLeft ArrowRight" />
-            : <ShortcutRow label="Go to the next chapter" keys="Enter" />}
+            : <ShortcutRow label={completionLabel} keys="Enter" />}
           <ShortcutRow label={lecture ? 'Close guided run' : 'Close completion window'} keys="Escape" />
         </dl>
       </section>

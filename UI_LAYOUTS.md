@@ -32,7 +32,9 @@ and table spacing. The whole exercise diagram is lifted up to 55px from that
 baseline, limited by header clearance; questions have a separate anchor at the
 unshifted lecture canvas bottom plus 5px.
 Compact
-questions use a checkbox selection dialog; the prompt itself stays visible.
+questions use a selection dialog; single answers use radios and multiple answers
+use checkboxes. Measurement copies remove input names to preserve the live radio
+groups. The prompt itself stays visible.
 Query observations sit above the diagram. The existing Next question footer stays
 independently anchored to the page. Narrow windows select a reference panel.
 Chapter 3 owns this viewport fit and route-scoped scroll lock.
@@ -407,6 +409,10 @@ management. Only the visible activity owns the browser title, including on resiz
   the sticky navbar and above activity content. Chapter-owned styles reuse stage selectors for Chapter 2 and temporal
   exercise panels when their tables cannot fit side by side. No data rows or
   instructional content are removed to achieve a fit.
+  Mobile Controls tour buttons stay in normal flow, matching Chapter 6, so they
+  cannot widen the visual viewport and displace playback hit targets. Short
+  laptop exercises reuse the compact toolbar sizing before completed titles
+  force a second header row; Chapter 2 can place its answer groups side by side.
   Anchored Chapter 3/6 exercises use the same graph, evidence, question, answers,
   and navigation in normal document flow on narrow tablets or very short windows.
   Both workspaces remeasure their lecture reference after container/header resize
