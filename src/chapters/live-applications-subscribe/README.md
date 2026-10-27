@@ -9,8 +9,10 @@ replacement, quiet progress, group removal, an empty result, and disconnect.
 - `simulation.ts` owns immutable receipt, signed full-row consolidation, pending
   changes, completeness knowledge, progress-only publication, and authored fixtures.
 - `lecture-scenarios.ts` authors 24 guided checkpoints across the three lectures.
-  Manual playback skips explanation-only checkpoints; named fixture replays are
-  explicit and do not imply a real stream moves backwards.
+  Manual playback skips explanation-only checkpoints. Named comparisons establish
+  their own baseline before prediction and label the separate replay explicitly.
+  They do not imply a real stream moves backwards. Related evidence uses the shared
+  grouped spotlight with sequential inspection when the regions cannot fit together.
 - `exercise-scenarios.ts` authors 4/5/7 questions, exact accepted answers, hints,
   explanations, and before/after states. The final exercise is the chapter challenge.
 - `TimestampTrays.tsx` renders the same two tray slots, divider, native history
@@ -62,13 +64,23 @@ application as three equally sized icon cards with centered arrows. Exercises
 keep the question below this lecture diagram in a centered workspace. The question
 copy and compact answer controls share a row on tablet and desktop screens;
 numeric inputs and result selectors have bounded widths. Fields in each row
-align at their lower edge when labels wrap. Short, narrow laptop windows replace
+align at their lower edge when labels wrap. Long result choices span the answer
+area; three-part questions place their two numeric fields above the result choice.
+Compact tuple labels follow the tables' region/orders/total order. Question boxes
+use modest minimum padding while a shared slot reserves feedback room. Incorrect
+feedback uses the question's conceptual hint and preserves all entries.
+Short, narrow laptop windows replace
 the repeated summary strip with a source label to preserve room for the question.
 Startup copy explains
 the snapshot before progress arrives. A publication connector leads from the
 completed tray into the app and remains visible in compact layouts. Stacked trays
 route it around the pending tray. History pickers appear only with multiple groups.
-Lectures place scenario evidence directly below the tables, above playback. A short,
+Lectures place received-record evidence directly below the tables, above playback,
+with a noninteractive information icon. Diff, Copies, and both boundaries reuse
+the shared animated hover/focus/touch help; the Diagram key icon previews the key
+while its text button opens the full reference. Inspecting help pauses playback.
+The application consistently labels its published-before boundary, including when
+the retained display is stale after disconnect. A short,
 continuous publication connector uses the same aligned endpoints in lectures and exercises.
 The same order is used on phones.
 On desktop viewports the application label sits beside its

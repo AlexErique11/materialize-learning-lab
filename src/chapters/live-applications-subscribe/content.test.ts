@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { getChapterPages } from '../chapterOutline';
 import { findChapter } from '../chapterRegistry';
 import { gradeSubscription, solutionFor, subscriptionExercises } from './exercise-scenarios';
-import { subscriptionFrames, subscriptionLectures } from './lecture-scenarios';
+import { subscriptionEvidence, subscriptionFrames, subscriptionLectures } from './lecture-scenarios';
 import { applySubscriptions, createSubscription, duplicateStart, timestampGroups } from './simulation';
 import { subscriptionSqlFor } from './resources';
 import { subscriptionText } from './lessonText';
@@ -54,12 +54,31 @@ describe('SUBSCRIBE learning coverage', () => {
     for (const exercise of subscriptionExercises) for (const question of exercise.questions) {
       const answer = solutionFor(question);
       expect(gradeSubscription(question, answer).correct, question.title).toBe(true);
-      expect(gradeSubscription(question, {}).correct, question.title).toBe(false);
+      const missing = gradeSubscription(question, {});
+      expect(missing.correct, question.title).toBe(false);
+      expect(missing.explanation.map(part => typeof part === 'string' ? part : part.text).join('')).toContain(question.hint);
       for (const group of question.groups) {
         const wrong = { ...answer, [group.id]: group.kind === 'integer' ? String(Number(group.solution) + 1) : 'invalid-choice' };
         expect(gradeSubscription(question, wrong).errors[group.id], question.title).toBeDefined();
       }
     }
+  });
+  it('establishes separate replay baselines before applying their future changes', () => {
+    const replayLessons = subscriptionLectures.flatMap(lecture => lecture.lessons.filter(lesson => lesson.replay));
+    expect(replayLessons).toHaveLength(5);
+    for (const lesson of replayLessons) {
+      expect(lesson.before).toBeTruthy();
+      expect(lesson.actions[0]).toEqual({ type: 'fixture', state: lesson.replay!.initial });
+      expect(subscriptionEvidence(lesson.replay!.initial, lesson, true)).toContain('Separate example:');
+    }
+    const copies = subscriptionLectures[1]!.lessons.at(-1)!;
+    expect(copies.replay!.initial.published[0]!.count).toBe(2);
+    expect(copies.state.published[0]!.count).toBe(1);
+    const laterData = subscriptionLectures[2]!.lessons[6]!;
+    expect(laterData.replay!.initial).toMatchObject({ progress: 12, knownCompleteBefore: 12, publishedBefore: 12 });
+    expect(laterData.state).toMatchObject({ progress: 12, knownCompleteBefore: 15, publishedBefore: 12 });
+    expect(subscriptionEvidence(laterData.state, laterData)).toContain('Received t = 15');
+    expect(subscriptionEvidence(laterData.state, laterData)).toContain('Published before 12');
   });
   it('shows SQL for the active relation and its actual snapshot setting', () => {
     expect(subscriptionSqlFor(createSubscription())).toContain('COUNT(*) AS orders');
@@ -72,7 +91,7 @@ describe('SUBSCRIBE learning coverage', () => {
   });
   it('never hides authored data beyond the two displayed row slots', () => {
     const states = [
-      ...subscriptionLectures.flatMap(lecture => [lecture.initial, ...lecture.lessons.map(lesson => lesson.state)]),
+      ...subscriptionLectures.flatMap(lecture => [lecture.initial, ...lecture.lessons.flatMap(lesson => [lesson.state, ...(lesson.replay ? [lesson.replay.initial] : [])])]),
       ...subscriptionExercises.flatMap(exercise => exercise.questions.flatMap(question => [question.before, question.after])),
     ];
     for (const state of states) {

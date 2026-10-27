@@ -31,11 +31,11 @@ export function SubscribeExercisePage({ chapter, exerciseIndex, navigation }: { 
     renderWorkspace={({ visualization, question: prompt, navigation: footer }) => <LectureWorkspace layout="without-tip" guided={false}
       visualization={<div className="subscribe-exercise-layout">{visualization}<div className="subscribe-question-slot">{prompt}</div></div>}
       playback={<div className="relation-playback-controls">{footer}</div>} />}
-    answers={<div className="subscribe-answer-groups">{question.groups.map(group => <fieldset key={group.id} className="subscribe-answer-group" disabled={flow.accepted}>
-      <legend>{group.label}</legend>
-      {group.kind === 'integer' ? <input aria-label={group.label} inputMode="numeric" autoComplete="off" value={prediction[group.id] ?? ''} aria-invalid={Boolean(flow.grade?.errors[group.id])} onChange={event => edit(group.id, event.target.value)} />
-        : <select aria-label={group.label} value={prediction[group.id] ?? ''} aria-invalid={Boolean(flow.grade?.errors[group.id])} onChange={event => edit(group.id, event.target.value)}><option value="">Choose an answer</option>{group.choices!.map(choice => <option key={choice.id} value={choice.id}>{choice.label}</option>)}</select>}
-    </fieldset>)}</div>}
+    answers={<div className="subscribe-answer-groups">{question.groups.map(group => <label key={group.id} className="subscribe-answer-group" data-wide={group.wide || undefined}>
+      <span className="subscribe-answer-label">{group.label}</span>
+      {group.kind === 'integer' ? <input aria-label={group.label} disabled={flow.accepted} inputMode="numeric" autoComplete="off" value={prediction[group.id] ?? ''} aria-invalid={Boolean(flow.grade?.errors[group.id])} onChange={event => edit(group.id, event.target.value)} />
+        : <select aria-label={group.label} disabled={flow.accepted} value={prediction[group.id] ?? ''} aria-invalid={Boolean(flow.grade?.errors[group.id])} onChange={event => edit(group.id, event.target.value)}><option value="">Choose an answer</option>{group.choices!.map(choice => <option key={choice.id} value={choice.id}>{choice.label}</option>)}</select>}
+    </label>)}</div>}
     onCheck={() => flow.dispatch({ type: 'check', grade: gradeSubscription(question, prediction) })}
     onShowAnswer={() => { const answer = solutionFor(question); setAnswers(previous => ({ ...previous, [flow.stage]: answer })); flow.dispatch({ type: 'check', grade: gradeSubscription(question, answer) }); }}
     onNext={() => { if (!flow.accepted) return; if (!flow.complete) flow.dispatch({ type: 'next' }); else if (nextExercise) navigate(`/labs/${chapter.slug}/exercises/${nextExercise.slug}`); else completion.open(); }}

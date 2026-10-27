@@ -1,8 +1,9 @@
 import { useEffect, useState, type RefObject } from 'react';
-import { ArrowRight, CircleHelp, Database, Radio, Table2, Unplug } from 'lucide-react';
+import { ArrowRight, Database, Info, Radio, Table2, Unplug } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
 import { LessonText } from '../../components/lesson/LessonText';
+import { RelationHelp } from '../../components/lesson/RelationHelp';
 import { timestampGroups, type RowCount, type StreamRecord, type SubscriptionState } from './simulation';
 import type { SubscriptionTarget } from './lecture-scenarios';
 import { subscriptionText } from './lessonText';
@@ -10,8 +11,16 @@ import { subscriptionText } from './lessonText';
 export type SubscriptionRefs = Record<SubscriptionTarget, RefObject<HTMLElement | null>>;
 type Group = ReturnType<typeof timestampGroups>[number];
 
+const help = {
+  diff: 'A signed change to the number of copies of the entire result row. Negative retracts copies; positive adds them. It does not change a currency cell by that amount.',
+  copies: 'The number of identical full result rows in the application. Orders is a value inside the row; Copies is its multiplicity.',
+  complete: 'All timestamps strictly below this boundary are known complete. The boundary timestamp stays open. Later data, as well as progress records, can advance this evidence.',
+  published: 'The application has applied complete changes strictly below this timestamp. This client publishes on progress records, so knowledge can advance before publication. Disconnect retains this last boundary.',
+  key: 'The trays show received signed rows, their completeness, and what the application has published. Open Diagram key for the full explanation of the symbols and client policy.',
+};
+
 function RecordsTable({ records }: { records: readonly Extract<StreamRecord, { kind: 'data' }>[] }) {
-  return <table className="subscribe-table" aria-label="Signed full-row changes"><thead><tr><th>Diff</th><th>Region</th><th>Orders</th><th>Total</th></tr></thead>
+  return <table className="subscribe-table" aria-label="Signed full-row changes"><thead><tr><th><span className="subscribe-column-label">Diff<RelationHelp label="Diff" text={help.diff} /></span></th><th>Region</th><th>Orders</th><th>Total</th></tr></thead>
     <tbody>{Array.from({ length: 2 }, (_, index) => {
       const record = records[index];
       return record ? <tr key={index}><td data-sign={record.diff < 0 ? 'negative' : 'positive'}>{record.diff === 0 ? '0' : `${record.diff > 0 ? '+' : '−'}${Math.abs(record.diff)}`}</td><td>{record.row.region}</td><td>{record.row.orders}</td><td>{record.row.total}</td></tr>
@@ -20,7 +29,7 @@ function RecordsTable({ records }: { records: readonly Extract<StreamRecord, { k
   </table>;
 }
 function ApplicationTable({ rows }: { rows: readonly RowCount[] }) {
-  return <table className="subscribe-table" aria-label="Published application rows"><thead><tr><th>Region</th><th>Orders</th><th>Total</th><th>Copies</th></tr></thead>
+  return <table className="subscribe-table" aria-label="Published application rows"><thead><tr><th>Region</th><th>Orders</th><th>Total</th><th><span className="subscribe-column-label">Copies<RelationHelp label="Copies" text={help.copies} /></span></th></tr></thead>
     <tbody>{Array.from({ length: 2 }, (_, index) => {
       const entry = rows[index];
       return entry ? <tr key={index}><td>{entry.row.region}</td><td>{entry.row.orders}</td><td>{entry.row.total}</td><td>{entry.count}</td></tr>
@@ -28,14 +37,15 @@ function ApplicationTable({ rows }: { rows: readonly RowCount[] }) {
     })}</tbody>
   </table>;
 }
-function Tray({ group, side, state, selected, onSelect, disabled }: {
+function Tray({ group, side, state, selected, onSelect, disabled, sectionRef }: {
   group: Group | undefined; side: 'complete' | 'pending'; state: SubscriptionState;
   selected: string; onSelect: (value: string) => void; disabled: boolean;
+  sectionRef?: RefObject<HTMLElement | null>;
 }) {
   const groups = timestampGroups(state).filter(item => side === 'complete' ? item.complete : !item.complete);
   const status = !group ? side === 'complete' ? state.knownCompleteBefore === null ? 'Waiting for progress' : 'No completed changes' : !state.snapshot ? 'Changes only · no baseline' : state.ready ? 'Nothing waiting' : `Snapshot starts at ${state.start}`
     : !state.snapshot ? 'Changes only · no baseline' : group.published ? 'Published' : group.complete ? 'Complete · not published' : 'Open · pending';
-  return <section className="subscribe-tray" data-side={side} data-state={!group ? 'empty' : !state.snapshot ? 'uninitialized' : group.published ? 'published' : group.complete ? 'complete' : 'pending'} aria-label={`${side === 'complete' ? 'Complete' : 'Pending'} timestamp tray`}>
+  return <section ref={sectionRef} className="subscribe-tray" data-side={side} data-state={!group ? 'empty' : !state.snapshot ? 'uninitialized' : group.published ? 'published' : group.complete ? 'complete' : 'pending'} aria-label={`${side === 'complete' ? 'Complete' : 'Pending'} timestamp tray`}>
     <div className="subscribe-tray-heading"><strong>{group ? `t = ${group.timestamp}` : side === 'complete' ? 'Completed changes' : 'Incoming changes'}</strong>{groups.length > 1 && <span className="subscribe-tray-picker"><select value={group?.timestamp ?? ''} onChange={event => onSelect(event.target.value)} disabled={disabled} aria-label={`${side === 'complete' ? 'Completed' : 'Pending'} timestamp group`} title={selected ? 'Inspecting received history' : 'Latest received group'}>
       {groups.map(item => <option key={item.timestamp} value={item.timestamp}>{item.timestamp}</option>)}
     </select></span>}<span className="subscribe-tray-status">{status}</span></div>
@@ -44,11 +54,11 @@ function Tray({ group, side, state, selected, onSelect, disabled }: {
 }
 
 export function SubscriptionCaption({ caption }: { caption: string }) {
-  return <section className="subscribe-caption" aria-label="Scenario evidence"><CircleHelp size={14} aria-hidden="true" /><p><LessonText content={subscriptionText(caption)} /></p></section>;
+  return <section className="subscribe-caption" aria-label="Scenario evidence"><Info size={14} aria-hidden="true" /><p><LessonText content={subscriptionText(caption)} /></p></section>;
 }
 
-export function TimestampTrays({ state, refs, assessment = false, disabled = false, onOpenKey }: {
-  state: SubscriptionState; refs?: SubscriptionRefs; assessment?: boolean; disabled?: boolean; onOpenKey?: () => void;
+export function TimestampTrays({ state, refs, assessment = false, disabled = false, onInspect }: {
+  state: SubscriptionState; refs?: SubscriptionRefs; assessment?: boolean; disabled?: boolean; onInspect?: () => void;
 }) {
   const [keyOpen, setKeyOpen] = useState(false);
   const [selection, setSelection] = useState({ complete: '', pending: '' });
@@ -58,32 +68,34 @@ export function TimestampTrays({ state, refs, assessment = false, disabled = fal
   const pending = groups.filter(group => !group.complete);
   const left = completed.find(group => String(group.timestamp) === selection.complete) ?? completed.at(-1);
   const right = pending.find(group => String(group.timestamp) === selection.pending) ?? pending.at(-1);
-  const appStatus = !state.connected ? state.ready ? 'Disconnected · last result held' : 'Disconnected · no complete baseline' : !state.snapshot ? 'No initial baseline' : state.ready ? state.published.length ? `Showing times < ${state.publishedBefore}` : 'Ready · no rows' : 'Waiting for full snapshot';
+  const appStatus = !state.connected ? state.ready ? `Stale · published before ${state.publishedBefore}` : 'Disconnected · no complete baseline' : !state.snapshot ? 'No initial baseline' : state.ready ? `${state.published.length ? '' : 'Ready · no rows · '}Published before ${state.publishedBefore}` : 'Waiting for full snapshot';
   const boundaryText = state.knownCompleteBefore === null ? 'Waiting for progress' : `Complete before ${state.knownCompleteBefore}`;
   const boundaryDetail = state.knownCompleteBefore === null ? state.snapshot ? 'The snapshot is still loading' : 'The initial snapshot is disabled' : `Time ${state.knownCompleteBefore} is still open`;
   const streamStatus = !state.connected ? 'Connection stopped' : state.progress === null ? state.snapshot ? 'Snapshot, then updates' : 'Updates only · no snapshot' : `P(${state.progress}) received${state.snapshot ? '' : ' · no snapshot'}`;
-  return <div className="subscribe-workspace" data-assessment={assessment || undefined} data-testid="subscribe-workspace">
+  return <div className="subscribe-workspace" data-assessment={assessment || undefined} data-testid="subscribe-workspace"
+    onPointerOver={event => { if (event.target instanceof Element && event.target.closest('.relation-help')) onInspect?.(); }}
+    onFocusCapture={event => { if (event.target.closest('.relation-help')) onInspect?.(); }}>
     <section ref={refs?.subscription} className="subscribe-strip" aria-label="Subscription settings">
       <div className="subscribe-flow-node"><Database size={19} aria-hidden="true" /><div className="subscribe-node-copy"><span>Materialize result</span><strong title={state.name}>{state.name}</strong></div></div>
       <ArrowRight className="subscribe-flow-arrow" size={18} aria-hidden="true" />
-      <div className="subscribe-flow-node" data-connected={state.connected}><Radio size={19} aria-hidden="true" /><div className="subscribe-node-copy"><span>Live subscription <i className="subscribe-connection-dot" aria-label={state.connected ? 'Connected' : 'Disconnected'} /></span><strong title={streamStatus}>{streamStatus}</strong></div></div>
+      <section ref={refs?.connection} className="subscribe-flow-node" data-connected={state.connected}><Radio size={19} aria-hidden="true" /><div className="subscribe-node-copy"><span>Live subscription <i className="subscribe-connection-dot" aria-label={state.connected ? 'Connected' : 'Disconnected'} /></span><strong title={streamStatus}>{streamStatus}</strong></div></section>
       <ArrowRight className="subscribe-flow-arrow" size={18} aria-hidden="true" />
       <div className="subscribe-flow-node"><Table2 size={19} aria-hidden="true" /><div className="subscribe-node-copy"><span>Your application</span><strong title={appStatus}>{appStatus}</strong></div></div>
     </section>
     <section className="subscribe-diagram" aria-label="Timestamp trays and published application" data-testid="subscribe-diagram">
-      <section ref={refs?.boundary} className="subscribe-boundary-label" aria-label="Completeness boundary">
+      <section className="subscribe-boundary-label" aria-label="Completeness boundary">
         {assessment && <span className="subscribe-assessment-source"><Database size={15} aria-hidden="true" />{state.name}</span>}
-        <strong>{boundaryText}</strong><span>{boundaryDetail}</span>
-        {!assessment && <Button className="subscribe-key-button" variant="ghost" aria-haspopup="dialog" onClick={event => { event.currentTarget.focus(); onOpenKey?.(); setKeyOpen(true); }}><CircleHelp size={13} aria-hidden="true" />Diagram key</Button>}
+        <strong ref={refs?.boundary} className="subscribe-boundary-value">{boundaryText}<RelationHelp label="Complete before" text={help.complete} /></strong><span>{boundaryDetail}</span>
+        {!assessment && <span className="subscribe-key-control"><RelationHelp label="Diagram key" text={help.key} /><Button className="subscribe-key-button" variant="ghost" aria-haspopup="dialog" onClick={event => { event.currentTarget.focus(); onInspect?.(); setKeyOpen(true); }}>Diagram key</Button></span>}
       </section>
-      <section ref={refs?.trays} className="subscribe-trays" aria-label="Received changes grouped by timestamp">
-        <Tray group={left} side="complete" state={state} selected={selection.complete} onSelect={value => setSelection(previous => ({ ...previous, complete: value }))} disabled={disabled} />
+      <section className="subscribe-trays" aria-label="Received changes grouped by timestamp">
+        <Tray sectionRef={refs?.complete} group={left} side="complete" state={state} selected={selection.complete} onSelect={value => setSelection(previous => ({ ...previous, complete: value }))} disabled={disabled} />
         <div className="subscribe-divider" aria-hidden="true" />
-        <Tray group={right} side="pending" state={state} selected={selection.pending} onSelect={value => setSelection(previous => ({ ...previous, pending: value }))} disabled={disabled} />
+        <Tray sectionRef={refs?.pending} group={right} side="pending" state={state} selected={selection.pending} onSelect={value => setSelection(previous => ({ ...previous, pending: value }))} disabled={disabled} />
       </section>
       <div className="subscribe-publication-arrow" role="img" aria-label="Completed changes flow into the application on progress"><span aria-hidden="true" /></div>
       <section ref={refs?.application} className="subscribe-application" aria-label="Published application" aria-live="polite" data-testid="subscribe-application">
-        <div className="subscribe-application-heading"><div><strong>Your live result</strong><span>{appStatus}</span></div>{!state.connected && <Unplug size={16} aria-hidden="true" />}</div>
+        <div className="subscribe-application-heading"><div><strong>Your live result</strong><span className="subscribe-publication-status">{appStatus}<RelationHelp label="Published before" text={help.published} /></span></div>{!state.connected && <Unplug size={16} aria-hidden="true" />}</div>
         <ApplicationTable rows={state.ready ? state.published : []} />
       </section>
       <div className="subscribe-diagram-footer"><span>Illustrative delivery · not packet or FETCH boundaries</span></div>

@@ -10,7 +10,7 @@ import { Spotlight } from '../../components/ui/Spotlight';
 import { LessonText } from '../../components/lesson/LessonText';
 import { useGuidedFocus } from '../../components/lesson/useGuidedFocus';
 import { SubscriptionCaption, TimestampTrays } from './TimestampTrays';
-import { subscriptionFrames, subscriptionLectures } from './lecture-scenarios';
+import { subscriptionEvidence, subscriptionFrames, subscriptionLectures } from './lecture-scenarios';
 import { objective, referenceLinks, subscriptionSqlFor } from './resources';
 import { subscriptionText } from './lessonText';
 import '../../styles/lesson.css';
@@ -20,15 +20,16 @@ export function SubscribeLecture({ chapter, lectureIndex, navigation }: { chapte
   const lecture = subscriptionLectures[lectureIndex]!;
   const { state, dispatch, completed, finished } = useLectureRun({ totalChanges: lecture.lessons.length, steps: lecture.lessons.map((lesson, index) => ({ time: index + 1, before: lesson.before })) });
   const { open: helpOpen } = useWalkthrough();
-  const refs = { subscription: useRef<HTMLElement>(null), trays: useRef<HTMLElement>(null), boundary: useRef<HTMLElement>(null), application: useRef<HTMLElement>(null) };
+  const refs = { subscription: useRef<HTMLElement>(null), connection: useRef<HTMLElement>(null), complete: useRef<HTMLElement>(null), pending: useRef<HTMLElement>(null), boundary: useRef<HTMLElement>(null), application: useRef<HTMLElement>(null) };
   const lesson = lecture.lessons[Math.min(state.step, lecture.lessons.length - 1)]!;
   const applied = state.selectedTime ? lecture.lessons[state.selectedTime - 1] : undefined;
   const frames = subscriptionFrames(lecture);
   const frame = frames.filter(item => item.time <= state.selectedTime).at(-1);
   const normalStep = frames.filter(item => item.time <= state.selectedTime).length;
-  const current = (state.guided ? applied?.state : frame?.lesson.state) ?? lecture.initial;
-  const focus = useGuidedFocus(`${state.step}:${state.revealed}`, [lesson.target], refs, { subscription: 'Subscription settings', trays: 'Timestamp trays', boundary: 'Completeness boundary', application: 'Published application' });
   const prediction = state.guided && !state.revealed;
+  const current = (prediction ? lesson.replay?.initial : undefined) ?? (state.guided ? applied?.state : frame?.lesson.state) ?? lecture.initial;
+  const focus = useGuidedFocus(`${state.step}:${state.revealed}`, [lesson.target, ...(!prediction ? lesson.related ?? [] : [])], refs,
+    { subscription: 'Subscription settings', connection: 'Connection', complete: 'Complete changes', pending: 'Pending changes', boundary: 'Completeness boundary', application: 'Published application' });
   useEffect(() => { if (helpOpen) dispatch({ type: 'pause' }); }, [helpOpen, dispatch]);
   useEffect(() => {
     if (!state.playing) return;
@@ -47,13 +48,13 @@ export function SubscribeLecture({ chapter, lectureIndex, navigation }: { chapte
       reference={{ objective: `${lecture.title}. ${objective}`, sql: subscriptionSqlFor(current), documentationLinks: referenceLinks }}
       simulation={{ completed: state.guided ? state.step : normalStep, total: state.guided ? lecture.lessons.length : frames.length, progressLabel: state.guided ? 'Tutorial' : 'Changes', playing: state.playing,
         onReset: () => dispatch({ type: 'reset' }), onRun: () => { if (!state.playing && normalStep === frames.length) dispatch({ type: 'reset' }); dispatch({ type: 'play' }); }, onStartGuidedRun: () => dispatch({ type: 'start-guided' }) }}
-      visualization={<><TimestampTrays state={current} refs={refs} disabled={state.guided || state.playing} onOpenKey={() => dispatch({ type: 'pause' })} /><SubscriptionCaption caption={prediction ? `Predict · ${lesson.title}` : (state.guided ? applied : frame?.lesson)?.title ?? 'Step through subscription delivery. Playback steps are not logical timestamps.'} /></>}
+      visualization={<><TimestampTrays state={current} refs={refs} disabled={state.guided || state.playing} onInspect={() => dispatch({ type: 'pause' })} /><SubscriptionCaption caption={subscriptionEvidence(current, state.guided ? lesson : frame?.lesson, prediction)} /></>}
       playback={<div className="relation-playback-controls" aria-label="Scenario playback"><ActivityCompletion complete={finished} kind="tutorial" /><div>
         <Button aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || normalStep === 0} onClick={() => advance(false)}><ArrowLeft size={14} aria-hidden="true" />Previous change</Button>
         <Button data-walkthrough="next-change" aria-keyshortcuts="ArrowRight" disabled={state.guided || state.playing || normalStep === frames.length} onClick={() => advance(true)}>Next change<ArrowRight size={14} aria-hidden="true" /></Button>
       </div></div>} />
     <Spotlight open={state.guided} {...focus.props} step={Math.min(state.step + 1, lecture.lessons.length)} total={lecture.lessons.length} title={lesson.title}
-      description={<span className="subscribe-lesson-text"><LessonText content={subscriptionText(prediction ? lesson.before! : lesson.explanation)} /></span>} phaseLabel={prediction ? 'Predict the effect' : 'Explanation'} visual={null}
+      description={<span className="subscribe-lesson-text"><LessonText content={subscriptionText(prediction ? lesson.before! : lesson.explanation)} /></span>} phaseLabel={`${lesson.replay ? 'Separate example · ' : ''}${prediction ? 'Predict the effect' : 'Explanation'}`} visual={null}
       onClose={() => dispatch({ type: 'close-guided' })} navigation={{ backDisabled: state.step === 0 && (!lesson.before || !state.revealed), onBack: () => dispatch({ type: 'back' }),
         onNext: () => dispatch({ type: prediction ? 'reveal' : 'next' }), nextLabel: prediction ? 'Show effect' : state.step === lecture.lessons.length - 1 ? 'Finish tutorial' : 'Next' }} />
   </>;

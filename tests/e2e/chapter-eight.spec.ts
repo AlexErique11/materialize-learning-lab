@@ -6,6 +6,18 @@ import { LAB_PROGRESS_KEY } from '../../src/progress/labProgress';
 
 const base = '/labs/live-applications-subscribe';
 
+async function expectSelectedAnswersReadable(page: import('@playwright/test').Page) {
+  const selected = await page.locator('.subscribe-answer-group select').evaluateAll(elements => elements.map(element => {
+    const select = element as HTMLSelectElement;
+    const style = getComputedStyle(select);
+    const context = document.createElement('canvas').getContext('2d')!;
+    context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+    const text = select.selectedOptions[0]!.label;
+    return { text, textWidth: context.measureText(text).width, available: select.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight) - 20 };
+  }));
+  for (const answer of selected) expect(answer.textWidth, `The selected answer ${answer.text} is readable`).toBeLessThanOrEqual(answer.available);
+}
+
 for (const width of [320, 390, 480]) {
   test(`Chapter 8 phone exercises keep complete table labels and reachable answers at ${width}px`, async ({ page }) => {
     test.setTimeout(90000);
@@ -15,7 +27,10 @@ for (const width of [320, 390, 480]) {
       await page.goto(`${base}/exercises/${exercise.slug}`);
       for (let question = 0; question < exercise.questions.length; question++) {
         for (const accepted of [false, true]) {
-          if (accepted) await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+          if (accepted) {
+            await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+            await expectSelectedAnswersReadable(page);
+          }
           const headers = await page.locator('.subscribe-table th').evaluateAll(cells => cells.map(cell => {
             const range = document.createRange();
             range.selectNodeContents(cell);
@@ -106,6 +121,16 @@ for (const [index, lecture] of subscriptionLectures.entries()) {
       const dialog = page.locator('.relation-guide[open]');
       await expect(dialog.getByRole('heading', { name: lesson.title, exact: true })).toBeVisible();
       if (lesson.before) {
+        if (lesson.replay) {
+          await expect(dialog.locator('.relation-guide-phase')).toContainText('Separate example');
+          await expect(page.locator('.subscribe-flow-node strong').first()).toHaveText(lesson.replay.initial.name);
+          const first = lesson.replay.initial.published[0];
+          if (lesson.replay.initial.ready && first) {
+            const row = page.getByRole('table', { name: 'Published application rows' }).locator('tbody tr').first();
+            await expect(row.locator('td').nth(2)).toHaveText(String(first.row.total));
+            await expect(row.locator('td').nth(3)).toHaveText(String(first.count));
+          }
+        }
         const before = await page.getByTestId('subscribe-workspace').innerText();
         await dialog.getByRole('button', { name: 'Show effect', exact: true }).click();
         await expect(dialog).toContainText(lesson.explanation);
@@ -113,6 +138,7 @@ for (const [index, lecture] of subscriptionLectures.entries()) {
         expect(await page.getByTestId('subscribe-workspace').innerText()).toBe(before);
         await dialog.getByRole('button', { name: 'Show effect', exact: true }).click();
       }
+      await expect(dialog).toHaveAttribute('data-focus-count', String(1 + (lesson.related?.length ?? 0)));
       await expectGuideClearOfTargets(page);
       await advanceGuidedLesson(page, step === lecture.lessons.length - 1);
     }
@@ -122,6 +148,56 @@ for (const [index, lecture] of subscriptionLectures.entries()) {
     await expect(page.locator('.guided-lab-progress strong')).toContainText('0 /');
   });
 }
+
+test('Chapter 8 uses shared contextual help and retains publication evidence after disconnect', async ({ page, isMobile }) => {
+  await page.goto(`${base}/tutorial/lecture-3`);
+  const help = page.getByRole('button', { name: 'About Diagram key', exact: true });
+  if (isMobile) await help.click();
+  else await help.hover();
+  await expect(page.getByRole('tooltip')).toContainText('Open Diagram key');
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Run', exact: true }).click();
+  await page.getByRole('button', { name: 'About Diff', exact: true }).first().click();
+  await expect(page.getByRole('tooltip')).toContainText('entire result row');
+  await expect(page.getByRole('button', { name: 'Run', exact: true })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await page.getByRole('button', { name: 'Reset', exact: true }).click();
+  for (let step = 0; step < 8; step++) await page.getByRole('button', { name: 'Next change', exact: true }).click();
+  await expect(page.getByTestId('subscribe-application')).toContainText('Stale · published before 16');
+  await expect(page.getByTestId('subscribe-application')).toContainText('130');
+  await page.getByRole('button', { name: 'About Published before', exact: true }).click();
+  await expect(page.getByRole('tooltip')).toContainText('Disconnect retains this last boundary');
+});
+
+test('Chapter 8 short exercise frames remain stable through incorrect answers, hints, and feedback', async ({ page }) => {
+  test.setTimeout(90000);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  for (const viewport of [{ width: 1280, height: 640 }, { width: 870, height: 668 }]) {
+    await page.setViewportSize(viewport);
+    for (const exercise of subscriptionExercises) {
+      await page.goto(`${base}/exercises/${exercise.slug}`);
+      const diagram = page.getByTestId('subscribe-diagram');
+      const bounds = await diagram.boundingBox();
+      for (const [index, question] of exercise.questions.entries()) {
+        const group = question.groups[0]!;
+        const field = page.getByRole(group.kind === 'integer' ? 'textbox' : 'combobox', { name: group.label, exact: true });
+        const wrong = group.kind === 'integer' ? '123' : group.choices!.find(choice => choice.id !== group.solution)!.id;
+        if (group.kind === 'integer') await field.fill(wrong);
+        else await field.selectOption(wrong);
+        await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
+        await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'incorrect');
+        await expect(field).toHaveValue(wrong);
+        await expect(page.locator('.exercise-question-copy')).toContainText(question.hint);
+        await page.getByRole('button', { name: 'Hint', exact: true }).click();
+        expect(await diagram.boundingBox()).toEqual(bounds);
+        await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+        expect(await diagram.boundingBox()).toEqual(bounds);
+        expect(await page.evaluate(() => document.documentElement.scrollHeight <= innerHeight)).toBe(true);
+        if (index < exercise.questions.length - 1) await page.getByRole('button', { name: 'Next question', exact: true }).click();
+      }
+    }
+  }
+});
 
 for (const [index, exercise] of subscriptionExercises.entries()) {
   test(`Chapter 8 exercise ${index + 1}: assessment, hints, real solutions, and completion`, async ({ page }) => {
@@ -317,6 +393,7 @@ for (const viewport of [{ width: 1440, height: 900 }, { width: 1477, height: 691
                 expect(panel!.x).toBeCloseTo(bounds!.x, 0);
                 expect(panel!.width).toBeCloseTo(bounds!.width, 0);
                 await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+                await expectSelectedAnswersReadable(page);
                 expect(await diagram.boundingBox()).toEqual(bounds);
                 const accepted = await page.locator('.exercise-question').boundingBox();
                 expect(accepted!.y + accepted!.height).toBeLessThanOrEqual(viewport.height);

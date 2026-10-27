@@ -415,6 +415,12 @@ management. Only the visible activity owns the browser title, including on resiz
   the dotted divider; page flow keeps all evidence and answers reachable. Diagram
   key opens the established dialog and pauses lecture playback. The shared page
   templates continue to own titles, toolbars, footer clearance, and completion.
+  Chapter-local hover help uses `RelationHelp` for signed diffs, copies, both
+  boundaries, and the Diagram key preview. Replay predictions start from an
+  explicitly labeled independent baseline. Guided explanations inspect related
+  evidence through the shared grouped/sequential spotlight. Exercise result
+  selectors receive full-row space when needed, with two numeric fields above
+  the third result selector; compact question padding retains a feedback reserve.
   The flow uses three equally sized nodes with centered arrows. Tray cards share
   padding, separate title and status rows, and aligned table headers. The published
   result spans the tray pair, with its heading beside the table on desktop and
