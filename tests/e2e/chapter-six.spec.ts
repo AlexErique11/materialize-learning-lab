@@ -525,9 +525,36 @@ test('exercise pages show diagram and question together without wheel or keyboar
   }
 });
 
+test('Chapter 6 exercises separate groups while keeping related rows close', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'The phone frame retains its compact spacing.');
+  for (const viewport of [{ width: 1500, height: 740 }, { width: 1920, height: 800 }]) {
+    await page.setViewportSize(viewport);
+    const gaps: number[] = [];
+    for (const [index, exercise] of progressExercises.entries()) {
+      await page.goto(`${base}/exercises/${exercise.slug}`);
+      await expect(page.locator('.progress-exercise-layout')).toHaveAttribute('data-fits', 'true');
+      const heading = (await page.locator('.guided-lab-heading').boundingBox())!;
+      const headers = (await page.locator('.progress-stage-row').boundingBox())!;
+      const panel = (await page.locator('.progress-lane-panel').boundingBox())!;
+      const evidence = (await page.locator('.progress-exercise-evidence').boundingBox())!;
+      const question = (await page.locator('.exercise-question').boundingBox())!;
+      const footer = (await page.locator('.progress-exercise-playback').boundingBox())!;
+      const gap = question.y - evidence.y - evidence.height;
+      gaps.push(gap);
+      expect(headers.y - heading.y - heading.height).toBeGreaterThanOrEqual(47.5);
+      expect(panel.y - headers.y - headers.height).toBeGreaterThanOrEqual(7.5);
+      expect(panel.y - headers.y - headers.height).toBeLessThanOrEqual(10.5);
+      expect(evidence.y - panel.y - panel.height).toBeCloseTo(index < 2 ? 36 : 24, 0);
+      expect(gap).toBeCloseTo(8, 0);
+      expect(question.y + question.height).toBeLessThanOrEqual(footer.y);
+    }
+    expect(Math.max(...gaps) - Math.min(...gaps)).toBeLessThanOrEqual(1.5);
+  }
+});
+
 test('Chapter 6 combined exercise layouts fit every question and feedback without moving lanes', async ({ page, isMobile }) => {
   test.setTimeout(240_000);
-  const viewports = isMobile ? [{ width: 390, height: 664 }, { width: 390, height: 844 }, { width: 360, height: 740 }, { width: 610, height: 668 }] : [{ width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 800, height: 600 }];
+  const viewports = isMobile ? [{ width: 390, height: 664 }, { width: 390, height: 844 }, { width: 360, height: 740 }, { width: 610, height: 668 }] : [{ width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1500, height: 740 }, { width: 1920, height: 800 }, { width: 800, height: 600 }];
   for (const viewport of viewports) {
     await page.setViewportSize(viewport);
     for (const [index, exercise] of progressExercises.entries()) {
@@ -552,8 +579,9 @@ test('Chapter 6 combined exercise layouts fit every question and feedback withou
       }, responsiveFlow);
       for (let step = 0; step < exercise.questions.length; step++) {
         const { viewport: diagram, documentTop: diagramTop } = await diagramPosition();
+        const diagramOffset = Number(await page.locator('.progress-exercise-layout').getAttribute('data-diagram-offset'));
         expect(diagram.x).toBeCloseTo(lectureDiagram.x, 1);
-        if (!responsiveFlow) expect(diagram.y).toBeCloseTo(lectureDiagram.y, 1);
+        if (!responsiveFlow) expect(diagram.y).toBeCloseTo(lectureDiagram.y + diagramOffset, 1);
         expect(diagram.width).toBeCloseTo(lectureDiagram.width, 1);
         expect(diagram.height).toBeCloseTo(lectureDiagram.height, 1);
         expect(await geometry()).toEqual(lectureGeometry);
@@ -579,7 +607,7 @@ test('Chapter 6 combined exercise layouts fit every question and feedback withou
           expect(headerBox.x).toBeCloseTo(lectureHeaders.x, 1);
           expect(headerBox.width).toBeCloseTo(lectureHeaders.width, 1);
           expect(headerBox.height).toBeCloseTo(lectureHeaders.height, 1);
-          if (!responsiveFlow) expect(headerBox.y).toBeCloseTo(lectureHeaders.y, 1);
+          if (!responsiveFlow) expect(headerBox.y).toBeCloseTo(lectureHeaders.y + diagramOffset, 1);
           expect(headerBox.y + headerBox.height).toBeLessThanOrEqual(currentDiagram.y);
           for (const region of regions) {
             const overlap = Math.min(headerBox.y + headerBox.height, region!.y + region!.height) - Math.max(headerBox.y, region!.y);

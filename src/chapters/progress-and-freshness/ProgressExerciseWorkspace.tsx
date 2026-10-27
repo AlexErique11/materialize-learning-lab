@@ -64,26 +64,45 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
         root.dataset.splitQuestion = 'false';
         root.dataset.dockAnswers = 'false';
         root.dataset.legendEvidence = 'false';
+        root.dataset.diagramOffset = '0';
         root.dataset.fits = 'true';
         return;
       }
       root.dataset.dockAnswers = 'false';
       root.dataset.legendEvidence = 'false';
-      const gap = innerHeight <= 740 ? 2 : 4;
+      root.dataset.splitQuestion = 'false';
+      const compactGap = innerHeight <= 740 ? 2 : 4;
+      const preferredGap = parseFloat(getComputedStyle(root).getPropertyValue('--progress-exercise-section-gap')) || compactGap;
+      const preferredHeadingGap = parseFloat(getComputedStyle(root).getPropertyValue('--progress-exercise-heading-gap')) || compactGap;
+      const preferredQuestionGap = parseFloat(getComputedStyle(root).getPropertyValue('--progress-exercise-question-gap')) || compactGap;
+      const gap = compactGap;
       const controls = root.closest('.progress-exercise-page')!.querySelector('.guided-lab-controls')!;
-      const promptLimit = Math.min(0, controls.getBoundingClientRect().bottom - root.getBoundingClientRect().top + gap);
-      const limit = footer.getBoundingClientRect().top - root.getBoundingClientRect().top - gap;
+      const footerTop = footer.getBoundingClientRect().top - root.getBoundingClientRect().top;
       const outsideSpace = parseFloat(getComputedStyle(panel).marginBottom) || 0;
       const panelHeight = panel.getBoundingClientRect().height + outsideSpace;
       const evidenceHeight = evidence.getBoundingClientRect().height;
       const headerGap = parseFloat(getComputedStyle(root).getPropertyValue('--exercise-header-gap'));
-      const headerTop = anchor - root.querySelector<HTMLElement>('.progress-stage-row')!.getBoundingClientRect().height - headerGap;
-      root.style.setProperty('--exercise-diagram-top', `${anchor}px`);
+      const referenceHeaderTop = anchor - root.querySelector<HTMLElement>('.progress-stage-row')!.getBoundingClientRect().height - headerGap;
+      const heading = root.closest('.progress-exercise-page')!.querySelector('.guided-lab-heading')!;
+      const headingBottom = heading.getBoundingClientRect().bottom - root.getBoundingClientRect().top;
+      const diagramOffset = preferredHeadingGap > gap ? Math.max(0, headingBottom + preferredHeadingGap - referenceHeaderTop) : 0;
+      const diagramTop = anchor + diagramOffset;
+      // Separate the two groups while keeping evidence and its question together.
+      // Measure full feedback even when the diagnosis card currently clips it.
+      const questionHeight = Math.max(questionPanel.getBoundingClientRect().height, questionPanel.scrollHeight + 2);
+      const availableGap = footerTop - gap - diagramTop - panelHeight - evidenceHeight - questionHeight;
+      const questionGap = Math.max(gap, Math.min(preferredQuestionGap, Math.floor(availableGap / 2)));
+      const sectionGap = Math.max(gap, Math.min(preferredGap, availableGap - questionGap));
+      const promptLimit = Math.min(0, controls.getBoundingClientRect().bottom - root.getBoundingClientRect().top + gap);
+      const limit = footerTop - gap;
+      const headerTop = referenceHeaderTop + diagramOffset;
+      root.dataset.diagramOffset = String(diagramOffset);
+      root.style.setProperty('--exercise-diagram-top', `${diagramTop}px`);
       if (lectureIndex === 2) {
         // Keep the diagnosis and its answers together below the four-lane diagram.
         root.dataset.splitQuestion = 'false';
-        const evidenceTop = anchor + panelHeight + gap;
-        const questionTop = evidenceTop + evidenceHeight + gap;
+        const evidenceTop = diagramTop + panelHeight + sectionGap;
+        const questionTop = evidenceTop + evidenceHeight + questionGap;
         root.style.setProperty('--exercise-evidence-top', `${evidenceTop}px`);
         root.style.setProperty('--exercise-question-top', `${questionTop}px`);
         root.style.setProperty('--exercise-question-space', `${Math.max(0, limit - questionTop)}px`);
@@ -97,8 +116,8 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
         const copyHeight = copy.getBoundingClientRect().height;
         const answerHeight = answers.getBoundingClientRect().height;
         for (const evidenceAbove of [false, true]) {
-          const evidenceTop = evidenceAbove ? headerTop - evidenceHeight - gap : anchor + panelHeight + gap;
-          const questionTop = anchor + panelHeight + gap + (evidenceAbove ? 0 : evidenceHeight + gap);
+          const evidenceTop = evidenceAbove ? headerTop - evidenceHeight - gap : diagramTop + panelHeight + sectionGap;
+          const questionTop = diagramTop + panelHeight + sectionGap + (evidenceAbove ? 0 : evidenceHeight + questionGap);
           const copyTop = split ? headerTop - copyHeight - gap - (evidenceAbove ? evidenceHeight + gap : 0) : questionTop;
           const bottom = questionTop + (split ? answerHeight : questionHeight);
           if (copyTop < promptLimit || evidenceTop < 0 || bottom > limit) continue;
@@ -127,10 +146,10 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
         if (copyTop < promptLimit && copyHeight <= headerTop - promptLimit) copyTop = promptLimit;
         root.style.setProperty('--exercise-question-top', `${answerTop}px`);
         root.style.setProperty('--exercise-prompt-top', `${copyTop}px`);
-        let evidenceTop = anchor + panelHeight + gap;
+        let evidenceTop = diagramTop + panelHeight + sectionGap;
         // The omitted fourth lane leaves usable space below a three-lane box.
         // Keep longer feedback there when the new headers fill the upper gap.
-        const belowPanel = anchor + panel.getBoundingClientRect().height + gap;
+        const belowPanel = diagramTop + panel.getBoundingClientRect().height + gap;
         const aboveHeaders = headerTop - evidenceHeight - gap;
         if (completed && evidenceTop + evidenceHeight + gap > answerTop && belowPanel + evidenceHeight + gap <= answerTop) evidenceTop = belowPanel;
         if (copyTop < promptLimit && belowPanel + copyHeight + gap <= answerTop) {
@@ -156,7 +175,7 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
             root.style.setProperty('--exercise-evidence-width', `${width}px`);
             const height = evidence.getBoundingClientRect().height;
             root.style.setProperty('--exercise-evidence-top', `${legendBox.bottom + (completed ? 0 : outsideSpace) - origin.top - height}px`);
-            placed = height <= legendBox.height && anchor + (completed ? panel.getBoundingClientRect().height : panelHeight) + gap <= answerTop;
+            placed = height <= legendBox.height && diagramTop + (completed ? panel.getBoundingClientRect().height : panelHeight) + gap <= answerTop;
           }
         }
       }
@@ -170,7 +189,7 @@ export function ProgressExerciseWorkspace({ chapter, lectureIndex, navigation, v
     return () => observer.disconnect();
   }, [anchor, question, lectureIndex]);
 
-  return <div ref={rootRef} className="progress-exercise-layout" data-aligned={anchor !== null} data-question-below={lectureIndex === 2 || undefined}>
+  return <div ref={rootRef} className="progress-exercise-layout" data-aligned={anchor !== null} data-exercise={lectureIndex + 1} data-question-below={lectureIndex === 2 || undefined}>
     {visualization}{question}
     {reference && createPortal(<div ref={referenceRef} className="progress-exercise-reference" aria-hidden="true" inert style={{ position: 'fixed', left: reference.left, top: reference.top, width: reference.width, height: reference.height, visibility: 'hidden', pointerEvents: 'none' }}>
       <ProgressLecture chapter={chapter} navigation={navigation} lectureIndex={lectureIndex} manageDocumentTitle={false} />

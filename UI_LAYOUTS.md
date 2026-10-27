@@ -463,7 +463,7 @@ management. Only the visible activity owns the browser title, including on resiz
   scale positions every lane. Compact views keep the dependency lanes together;
   stage buttons select the evidence detail. Lectures reuse `LectureScreen`
   without-tip and its playback baseline. Three-row diagrams omit the unused Revenue row inside the box; equivalent
-  outside space keeps the top edge, existing rows and surrounding content fixed.
+  outside space keeps the top edge, existing rows and surrounding content fixed in lectures.
   Phone subtitles reserve two lines up to 480px; the lag legend shares the normal
   caption footprint. Chapter CSS owns these matching visualization dimensions.
   Chapter 6 lecture headers use compact icons and titles with a selected underline;
@@ -471,8 +471,13 @@ management. Only the visible activity owns the browser title, including on resiz
   value, while frontiers and lag stay in their existing lanes and evidence areas.
   Exercises reuse `ExerciseFrame` actions and questions with all relevant lanes
   permanently visible with the question. `ProgressExerciseWorkspace` measures the
-  actual matching lecture once on entry/resize to share its complete diagram
-  geometry, including panel bounds, axis, padding and lane/track spacing. Its hidden, inert reference is removed immediately after measurement.
+  actual matching lecture once on entry/resize to share its diagram dimensions,
+  axis, padding and lane/track spacing. Its hidden, inert reference is removed immediately after measurement.
+  Desktop exercises keep the metric rows together, ensure 48px clearance below the
+  heading, and omit the unused-row spacer after three-lane diagrams. The diagram
+  and evidence are separated by 36px in Exercises 1–2 and 24px in Exercise 3; evidence and question stay together with
+  an 8px gap. Tight frames reduce those gaps to fit. Header controls and navigation
+  retain their positions.
   One compact clock/query/evidence strip replaces large metric cards and repeated
   details. The prompt may occupy space above the anchored diagram, with answers
   below, when the full question does not fit beneath it. Bounds checks prevent

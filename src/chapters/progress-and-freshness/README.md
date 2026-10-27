@@ -140,14 +140,19 @@ the footer. Reference positions are measured only on entry and window resize, so
 hints, errors and accepted answers cannot recenter the lanes.
 Lectures and exercises share the same stage headers without metric cards. Exercise
 headers sit above the fixed diagram; short screens use compact header padding.
-Three-row boxes are one
-row shorter; outside spacing preserves all other positions, including questions.
+Three-row boxes are one row shorter. Lectures keep the omitted row as outside
+spacing. Desktop exercises remove that spacer, leaving 36px between the actual
+diagram and the evidence strip in Exercises 1–2 and 24px in Exercise 3, then 8px
+before the question. The complete metric group reserves at least 48px below the
+heading when needed; its internal header gap,
+lane dimensions and navigation stay unchanged. Tight frames reduce the gaps to fit.
 Compact exercises use native selects for single answers, checkboxes for multiple
 answers, and one row of numeric fields for timing questions. In the shortest
 windows, answers dock beside the navigation button; multiple-choice selections
 use a checkbox dialog. Short legends retain full accessible field names.
 Evidence may occupy the unused left side of a wide legend row. The axis, markers,
-color vocabulary and Diagram key are shared with lectures. The diagram has no exercise-only spacing overrides.
+color vocabulary and Diagram key are shared with lectures. Internal diagram
+geometry has no exercise-only overrides.
 
 Exercise routes explicitly clip document scrolling and disable overscroll;
 leaving the exercise removes that rule automatically. Wheel and PageDown checks

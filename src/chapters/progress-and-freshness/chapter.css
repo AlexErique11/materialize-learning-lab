@@ -270,6 +270,11 @@ html:has(.progress-exercise-page), body:has(.progress-exercise-page) {
 /* Anchor diagrams to the measured lecture frame. Prompts can occupy its upper
    whitespace while answers stay below the diagram in compact windows. */
 .progress-exercise-layout { position: relative; display: block; padding: 0; }
+@media (min-width: 1151px) {
+  .progress-exercise-layout { --progress-exercise-heading-gap: 48px; --progress-exercise-section-gap: 24px; --progress-exercise-question-gap: 8px; }
+  .progress-exercise-layout:is([data-exercise='1'], [data-exercise='2']) { --progress-exercise-section-gap: 36px; }
+  .progress-exercise-page .progress-lane-panel { margin-bottom: 0; }
+}
 
 /* Keep the timeline, evidence and answers in their existing order in compact frames. */
 .app-shell-guided-labs .progress-exercise-page[data-responsive-flow] form.relation-workspace { flex-direction: column; gap: 12px; }
