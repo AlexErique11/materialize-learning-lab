@@ -5,10 +5,11 @@ import { objectSql, stackedSql } from './scenario';
 interface Choice { readonly id: string; readonly label: string; readonly misconception: string }
 export interface ObjectCheckpoint {
   readonly title: string; readonly question: string; readonly hint: string;
+  readonly inlineAnswers?: boolean;
   readonly choices: readonly Choice[]; readonly solution: readonly string[];
   readonly explanation: string; readonly before: ObjectSnapshot; readonly after: ObjectSnapshot;
 }
-interface ObjectExercise { readonly title: string; readonly sql: string; readonly checkpoints: readonly ObjectCheckpoint[] }
+interface ObjectExercise { readonly title: string; readonly description: string; readonly sql: string; readonly checkpoints: readonly ObjectCheckpoint[] }
 const choice = (id: string, label: string, misconception = ''): Choice => ({ id, label, misconception });
 const view = makeSnapshot({ view: true });
 const indexed = makeSnapshot({ view: true, viewIndexes: ['a'] });
@@ -18,7 +19,7 @@ const shared = makeSnapshot({ stacked: true, materialized: true });
 const complete = makeSnapshot({ ...shared.setup, materializedIndexes: ['a', 'b'] });
 
 export const objectExercises: readonly ObjectExercise[] = [
-  { title: 'Choose and inspect objects', sql: objectSql, checkpoints: [
+  { title: 'Choose and inspect objects', description: 'Choose objects and predict where their state lives.', sql: objectSql, checkpoints: [
     { title: 'Save a definition', question: 'You need reusable regional-revenue SQL, without maintaining its result. Select the one object that meets this requirement.', hint: 'Decide whether the requirement asks you to store SQL or maintained result rows.',
       choices: [choice('view', 'Regular view'), choice('index', 'Index', 'An index adds maintained full results in cluster memory.'), choice('mv', 'Materialized view', 'A materialized view adds maintained durable output.')], solution: ['view'],
       explanation: 'A regular view saves SQL without running or maintaining its result. Indexes and materialized views add maintained state.', before: makeSnapshot(), after: view },
@@ -33,7 +34,7 @@ export const objectExercises: readonly ObjectExercise[] = [
       choices: [choice('compute', 'B computes the saved view query'), choice('remote', 'B reads A’s index', 'A’s index is inaccessible from B.'), choice('missing', 'The view is inaccessible in B', 'Regular view definitions can be referenced across clusters.'), choice('wrong', 'B must return a different answer', 'A different access path need not change the SQL result.')], solution: ['compute'],
       explanation: 'B can reference the saved definition, but not A’s index. It computes the view query and returns the same North $150 / South $80 result.', before: indexed, after: makeSnapshot(indexed.setup, undefined, { object: 'revenue_v', cluster: 'b' }) },
   ] },
-  { title: 'Design shared serving', sql: stackedSql, checkpoints: [
+  { title: 'Design shared serving', description: 'Design a shared result for two serving clusters.', sql: stackedSql, checkpoints: [
     { title: 'Keep intermediate views simple', question: 'order_base → order_enriched → revenue. Only final revenue is served. Select what the two intermediate stages need for this requirement.', hint: 'Which stages are independently queried? Saving their definitions can be sufficient.',
       choices: [choice('base', 'order_base as a regular view'), choice('enriched', 'order_enriched as a regular view'), choice('allmv', 'Materialize every stage', 'Separately maintaining every intermediate is unnecessary for this fixture.'), choice('allindex', 'Index every intermediate stage', 'These stages have no independent serving requirement.')], solution: ['base', 'enriched'],
       explanation: 'Regular views save intermediate SQL. The final dataflow can retain intermediate state without materializing each definition.', before: makeSnapshot(), after: intermediates },
@@ -43,7 +44,7 @@ export const objectExercises: readonly ObjectExercise[] = [
     { title: 'Serve from both memories', question: 'A and B must each serve the shared result from their own memory. Select every index needed.', hint: 'Each serving cluster needs local access to the same already-maintained output.',
       choices: [choice('a', 'Index revenue_mv in A'), choice('b', 'Index revenue_mv in B'), choice('remote', 'Share A’s index with B', 'Indexes are local, so B needs its own.'), choice('duplicate', 'Maintain two separate aggregations', 'The stated requirement asks Transform to maintain the original transformation once.')], solution: ['a', 'b'],
       explanation: 'Create one index on revenue_mv in each serving cluster. Both indexes maintain local access to the same durable result without repeating the original aggregate.', before: shared, after: complete },
-    { title: 'Complete architecture', question: 'New fixture: two SQL-only intermediates; final maintenance in Transform; memory serving in A and B. Correct order 1 to $120. Select every required object.', hint: 'Separate SQL definitions, final durable maintenance, and each cluster’s local serving state.',
+    { title: 'Complete architecture', inlineAnswers: true, question: 'New fixture: two SQL-only intermediates; final maintenance in Transform; memory serving in A and B. Correct order 1 to $120. Select every required object.', hint: 'Separate SQL definitions, final durable maintenance, and each cluster’s local serving state.',
       choices: [choice('intermediate', 'Regular intermediates'), choice('final', 'Final materialized view'), choice('a', 'Index revenue_mv in A'), choice('b', 'Index revenue_mv in B'), choice('all', 'Materialize each stage', 'The intermediate stages only organize SQL in this requirement.'), choice('remote', 'Use A’s index from B', 'Each serving cluster needs its own index.'), choice('sql', 'Save final SQL only', 'A saved definition alone neither maintains durable output nor creates local memory results.')], solution: ['intermediate', 'final', 'a', 'b'],
       explanation: 'Regular intermediate views → final materialized view in Transform → indexes in A and B. At $120 for order 1, all three results are North $170 / South $80.',
       before: makeSnapshot(), after: makeSnapshot(complete.setup, updatedOrders, { object: 'revenue_mv', cluster: 'b' }) },

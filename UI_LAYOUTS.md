@@ -35,6 +35,8 @@ Compact
 questions use a selection dialog; single answers use radios and multiple answers
 use checkboxes. Measurement copies remove input names to preserve the live radio
 groups. The prompt itself stays visible.
+Exercise 2's final architecture question keeps all seven checkboxes inline, using
+normal document flow when its full answer card cannot fit the anchored space.
 Query observations sit above the diagram. The existing Next question footer stays
 independently anchored to the page. Narrow windows select a reference panel.
 Chapter 3 owns this viewport fit and route-scoped scroll lock.

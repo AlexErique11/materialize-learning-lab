@@ -5,6 +5,55 @@ import { objectLectures } from '../../src/chapters/views-indexes-materialized-vi
 
 const chapterPath = '/labs/views-indexes-materialized-views';
 
+test('exercise descriptions stay visible in short and narrow windows', async ({ page, isMobile }) => {
+  const sizes = isMobile ? [[390, 844], [375, 667]] : [[1440, 900], [1500, 740], [1280, 650], [900, 700]];
+  for (const [width, height] of sizes) {
+    await page.setViewportSize({ width: width!, height: height! });
+    for (const [index, exercise] of objectExercises.entries()) {
+      await page.goto(`${chapterPath}/exercises/exercise-${index + 1}`);
+      const description = page.locator('.guided-lab-title > p');
+      await expect(description).toBeVisible();
+      await expect(description).toHaveText(exercise.description);
+      await expect(page.locator('.object-exercise-workspace')).toHaveAttribute('data-fits', 'true');
+      const controls = await page.locator('.guided-lab-controls').boundingBox();
+      await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+      await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'correct');
+      await expect(description).toBeVisible();
+      await expect(description).toHaveText(exercise.description);
+      expect(await page.locator('.guided-lab-controls').boundingBox()).toEqual(controls);
+    }
+  }
+});
+
+test('the final architecture question keeps every checkbox inline before and after grading', async ({ page, isMobile }) => {
+  test.setTimeout(90_000);
+  const sizes = isMobile ? [[390, 844], [375, 667]] : [[1440, 900], [1500, 740], [1280, 650]];
+  const checkpoint = objectExercises[1]!.checkpoints[3]!;
+  for (const [width, height] of sizes) {
+    await page.setViewportSize({ width: width!, height: height! });
+    await page.goto(`${chapterPath}/exercises/exercise-2`);
+    for (let stage = 0; stage < 3; stage++) {
+      await page.getByRole('button', { name: 'Show Answer', exact: true }).click();
+      await page.getByRole('button', { name: 'Next question', exact: true }).click();
+    }
+    const answers = page.locator('.exercise-answers > .object-answer-choices');
+    await expect(answers.getByRole('checkbox')).toHaveCount(checkpoint.choices.length);
+    for (const choice of checkpoint.choices) await expect(answers.getByRole('checkbox', { name: choice.label, exact: true })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Select answers', exact: true })).toHaveCount(0);
+    for (const id of checkpoint.solution) await answers.getByRole('checkbox', { name: checkpoint.choices.find(choice => choice.id === id)!.label, exact: true }).check();
+    await page.getByRole('button', { name: 'Check Answer', exact: true }).click();
+    await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'correct');
+    await expect(answers.getByRole('checkbox', { checked: true })).toHaveCount(checkpoint.solution.length);
+    for (const checkbox of await answers.getByRole('checkbox').all()) {
+      await expect(checkbox).toBeVisible();
+      await expect(checkbox).toBeDisabled();
+    }
+    await page.getByRole('button', { name: 'Finish chapter', exact: true }).scrollIntoViewIfNeeded();
+    await expect(page.getByRole('button', { name: 'Finish chapter', exact: true })).toBeInViewport();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  }
+});
+
 test('shared controls, reference dialog and playback match the previous chapter', async ({ page, isMobile }) => {
   test.setTimeout(60_000);
   const geometry = async () => {
@@ -95,19 +144,21 @@ test('tables and questions stay visible together without scrolling and match Cha
         }
       };
       for (let stage = 0; stage < 4; stage++) {
+        const inlineAnswerFlow = await page.locator('.object-exercise-page').evaluate(el => el.hasAttribute('data-inline-answer-flow'));
+        const flowing = responsiveFlow || inlineAnswerFlow;
         await fit();
         const footer = (await page.locator('.object-exercise-footer').boundingBox())!;
-        await expect.poll(graphGeometry).toEqual(reference);
-        if (!responsiveFlow) {
+        if (!inlineAnswerFlow) await expect.poll(graphGeometry).toEqual(reference);
+        if (!flowing) {
           await page.mouse.move(width! - 35, height! / 2);
           await page.mouse.wheel(0, 900);
           await page.keyboard.press('PageDown');
           expect(await page.evaluate(() => scrollY)).toBe(0);
         }
-        await expect.poll(graphGeometry).toEqual(reference);
+        if (!inlineAnswerFlow) await expect.poll(graphGeometry).toEqual(reference);
         const tablePositions = () => page.locator('.flow-canvas, .flow-panel:visible, .flow-input table').evaluateAll(elements => elements.map(element => {
           const box = element.getBoundingClientRect();
-          const flow = document.querySelector('.object-exercise-page')!.hasAttribute('data-responsive-flow');
+          const flow = document.querySelector('.object-exercise-page')!.matches('[data-responsive-flow], [data-inline-answer-flow]');
           return { left: box.left, top: box.top + (flow ? scrollY : 0), width: box.width, height: box.height };
         }));
         const beforeReveal = await tablePositions();
@@ -124,14 +175,14 @@ test('tables and questions stay visible together without scrolling and match Cha
           await page.getByLabel('Diagram panel', { exact: true }).selectOption('input');
         }
         const next = (await page.getByRole('button', { name: stage < 3 ? 'Next question' : exercise === 1 ? 'Exercise 2' : 'Finish chapter', exact: true }).boundingBox())!;
-        if (!isMobile && !responsiveFlow) {
+        if (!isMobile && !flowing) {
           const inset = height! >= 850 ? 24 : height! >= 741 ? 16 : 12;
           expect(height! - next.y - next.height, `${width}×${height}`).toBeCloseTo(inset, 0);
         }
-        else if (!responsiveFlow) expect(next.y).toBe(footer.y + (footer.height - next.height) / 2);
-        expect(next.x + next.width).toBeCloseTo(referenceNext.x + referenceNext.width, 0);
+        else if (!flowing) expect(next.y).toBe(footer.y + (footer.height - next.height) / 2);
+        expect(next.x + next.width).toBeCloseTo(inlineAnswerFlow ? footer.x + footer.width : referenceNext.x + referenceNext.width, 0);
         expect(next.height).toBeCloseTo(referenceNext.height, 2);
-        await expect.poll(graphGeometry).toEqual(reference);
+        if (!inlineAnswerFlow) await expect.poll(graphGeometry).toEqual(reference);
         if ((width === 1366 || (width === 1280 && height === 650)) && exercise === 2 && stage === 3) await page.screenshot({ path: test.info().outputPath(`combined-exercise-${width}x${height}.png`) });
         if (stage < 3) await page.getByRole('button', { name: 'Next question', exact: true }).click();
       }
@@ -445,7 +496,8 @@ test('question text and answer controls stay anchored through feedback', async (
     : [{ width: 1917, height: 893 }, { width: 1440, height: 900 }, { width: 1366, height: 768 }];
   const positions = () => page.locator('.flow-canvas, .exercise-question, .exercise-question-copy, .exercise-question-copy h2, .exercise-question-copy p, .exercise-answers, .object-exercise-footer').evaluateAll(elements => elements.map(element => {
     const { x, y } = element.getBoundingClientRect();
-    return { x, y };
+    const flowing = document.querySelector('.object-exercise-page')!.matches('[data-responsive-flow], [data-inline-answer-flow]');
+    return { x, y: y + (flowing ? scrollY : 0) };
   }));
   for (const size of sizes) {
     await page.setViewportSize(size);
@@ -456,7 +508,7 @@ test('question text and answer controls stay anchored through feedback', async (
         const before = await positions();
         for (const action of ['Hint', 'Check Answer', 'Show Answer']) {
           await page.getByRole('button', { name: action, exact: true }).click();
-          if (await page.locator('.object-exercise-page').evaluate(element => element.hasAttribute('data-responsive-flow'))) {
+          if (await page.locator('.object-exercise-page').evaluate(element => element.matches('[data-responsive-flow], [data-inline-answer-flow]'))) {
             // A new query observation enters normal flow below the fixed diagram.
             await expect.poll(async () => (await positions())[0]).toEqual(before[0]);
             await expect(page.locator('.exercise-question')).toBeVisible();

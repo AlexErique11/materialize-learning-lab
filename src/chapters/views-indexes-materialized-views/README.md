@@ -114,6 +114,10 @@ Questions stay below the canvas, with compact inline headings and a selection
 dialog when there is insufficient space for the full answer list. Single-answer
 questions use radios; multiple-answer questions use checkboxes. Hidden measurement
 copies remove input names so they cannot alter the learner's radio selections.
+Exercise 2's final architecture question always shows all seven checkboxes inline,
+including after acceptance. Wide screens use three choice columns; if the full
+card cannot fit its anchored space, this question uses normal document flow with
+reachable navigation. Resizing back to a roomy window restores the anchored frame.
 Each checkpoint reserves the tallest question, hint and grading message before
 choosing its layout. Top-aligned copy and controls therefore remain fixed when
 revealing an answer or displaying feedback.

@@ -4,9 +4,10 @@ import type { ChapterDefinition } from '../chapterRegistry';
 import { ObjectChapterLecture } from './ChapterLecture';
 
 /** Use the actual lecture frame, including its responsive centering. */
-export function ObjectExerciseWorkspace({ chapter, navigation, visualization, question, footer, copyVariants }: {
+export function ObjectExerciseWorkspace({ chapter, navigation, visualization, question, footer, copyVariants, inlineAnswers = false }: {
   chapter: ChapterDefinition; navigation: ReactNode; visualization: ReactNode; question: ReactNode; footer: ReactNode;
   copyVariants: readonly { title: string; text: string; result: string }[];
+  inlineAnswers?: boolean;
 }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const referenceRef = useRef<HTMLDivElement>(null);
@@ -17,8 +18,14 @@ export function ObjectExerciseWorkspace({ chapter, navigation, visualization, qu
     const root = rootRef.current!;
     const page = root.closest<HTMLElement>('.object-exercise-page')!;
     let previous = '';
+    let fitSize = '';
     const measure = () => {
-      if (page.hasAttribute('data-responsive-flow')) {
+      const size = `${innerWidth},${innerHeight},${page.getBoundingClientRect().left}`;
+      if (size !== fitSize) {
+        page.removeAttribute('data-inline-answer-flow');
+        fitSize = size;
+      }
+      if (page.matches('[data-responsive-flow], [data-inline-answer-flow]')) {
         previous = '';
         setAnchor(0);
         return;
@@ -34,10 +41,10 @@ export function ObjectExerciseWorkspace({ chapter, navigation, visualization, qu
     observer.observe(page);
     observer.observe(page.querySelector('.guided-lab-heading')!);
     const modeObserver = new MutationObserver(measure);
-    modeObserver.observe(page, { attributes: true, attributeFilter: ['data-responsive-flow'] });
+    modeObserver.observe(page, { attributes: true, attributeFilter: ['data-responsive-flow', 'data-inline-answer-flow'] });
     window.addEventListener('resize', measure);
-    return () => { observer.disconnect(); modeObserver.disconnect(); window.removeEventListener('resize', measure); };
-  }, []);
+    return () => { observer.disconnect(); modeObserver.disconnect(); window.removeEventListener('resize', measure); page.removeAttribute('data-inline-answer-flow'); };
+  }, [inlineAnswers]);
 
   useLayoutEffect(() => {
     if (!reference) return;
@@ -75,7 +82,8 @@ export function ObjectExerciseWorkspace({ chapter, navigation, visualization, qu
       root.style.setProperty('--object-copy-height', `${height}px`);
     };
     const place = () => {
-      if (root.closest('.guided-lab-page')!.hasAttribute('data-responsive-flow')) {
+      const page = root.closest('.guided-lab-page')!;
+      if (page.matches('[data-responsive-flow], [data-inline-answer-flow]')) {
         root.dataset.compactQuestion = 'false';
         root.dataset.fits = 'true';
         return;
@@ -87,11 +95,15 @@ export function ObjectExerciseWorkspace({ chapter, navigation, visualization, qu
       const limit = footerPanel.getBoundingClientRect().top - root.getBoundingClientRect().top - 1;
       root.dataset.compactQuestion = 'false';
       reserveCopy();
-      if (questionTop + questionPanel.getBoundingClientRect().height > limit) {
+      if (!inlineAnswers && questionTop + questionPanel.getBoundingClientRect().height > limit) {
         root.dataset.compactQuestion = 'true';
         reserveCopy();
       }
       root.dataset.fits = String(questionTop + questionPanel.getBoundingClientRect().height <= limit);
+      if (inlineAnswers && root.dataset.fits === 'false') {
+        page.setAttribute('data-inline-answer-flow', '');
+        return;
+      }
       const query = root.querySelector<HTMLElement>('.object-query-result');
       const picker = root.querySelector<HTMLElement>('.flow-panel-picker')!;
       const legend = root.querySelector<HTMLElement>('.flow-legend')!;
@@ -117,9 +129,9 @@ export function ObjectExerciseWorkspace({ chapter, navigation, visualization, qu
     observer.observe(questionPanel);
     observer.observe(canvas);
     return () => observer.disconnect();
-  }, [anchor, question, visualization, copyVariants]);
+  }, [anchor, question, visualization, copyVariants, inlineAnswers]);
 
-  return <><div ref={rootRef} className="object-exercise-workspace" data-aligned={anchor !== null}>
+  return <><div ref={rootRef} className="object-exercise-workspace" data-aligned={anchor !== null} data-inline-answers={inlineAnswers || undefined}>
     {visualization}{question}
     {reference && createPortal(<div ref={referenceRef} aria-hidden="true" inert style={{ position: 'fixed', left: reference.left, top: reference.top, width: reference.width, height: reference.height, visibility: 'hidden', pointerEvents: 'none' }}>
       <ObjectChapterLecture chapter={chapter} navigation={navigation} lectureIndex={1} manageDocumentTitle={false} />

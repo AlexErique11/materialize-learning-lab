@@ -224,7 +224,6 @@ html:has(.object-exercise-page), body:has(.object-exercise-page) { height: 100dv
   .object-exercise-page .guided-lab-title h1 { flex: 1; white-space: nowrap; }
   .object-exercise-page .guided-lab-heading { gap: 8px; }
   .object-exercise-page .guided-lab-controls { gap: 8px; }
-  .app-shell-guided-labs .object-exercise-page .guided-lab-title > p { display: none; }
 }
 @media (max-width: 1150px) {
   .object-exercise-page .flow-overview { display: none; }
@@ -233,12 +232,12 @@ html:has(.object-exercise-page), body:has(.object-exercise-page) { height: 100dv
   .object-exercise-page .exercise-question { min-height: 0; padding: 8px 10px; gap: 8px; }
 }
 @media (max-width: 639px) {
-  .app-shell-guided-labs .object-exercise-page[data-viewport-fit] { grid-template-rows: max-content max-content minmax(0, 1fr); gap: 4px; padding-block: 4px 0; }
+  .app-shell-guided-labs .object-exercise-page[data-viewport-fit] { grid-template-rows: max-content max-content max-content minmax(0, 1fr); gap: 4px; padding-block: 4px 0; }
   .object-exercise-page .guided-lab-title { display: contents; }
   .object-exercise-page .guided-lab-title h1 { grid-row: 1; grid-column: 1; }
   .object-exercise-page .guided-lab-controls { grid-row: 2; row-gap: 4px; }
-  .object-exercise-page .guided-lab-canvas { grid-row: 3; }
-  .app-shell-guided-labs .object-exercise-page .guided-lab-title > p { display: none; }
+  .object-exercise-page .guided-lab-canvas { grid-row: 4; }
+  .app-shell-guided-labs .object-exercise-page[data-viewport-fit] .guided-lab-title > p { display: block; grid-column: 1 / -1; grid-row: 3; margin-top: 0; max-width: none; }
   .object-exercise-page .exercise-question { padding: 4px 8px; gap: 4px; }
   .object-exercise-page .exercise-question-copy p { margin-top: 4px; }
   .object-exercise-page .object-answer-choices { gap: 4px 8px; }
@@ -257,11 +256,15 @@ html:has(.object-exercise-page), body:has(.object-exercise-page) { height: 100dv
 .object-answer-picker { display: none; width: 100%; min-width: 0; }
 
 /* The same graph and assessment enter normal flow when their fixed anchors cannot fit. */
-.app-shell-guided-labs .object-exercise-page[data-responsive-flow] form.relation-workspace { flex-direction: column; gap: 12px; }
-.object-exercise-page[data-responsive-flow] .object-exercise-workspace { display: grid; flex: none; gap: 12px; }
-.object-exercise-page[data-responsive-flow] .object-exercise-workspace > :is(.flow-graph, .exercise-question),
-.object-exercise-page[data-responsive-flow] .object-exercise-workspace :is(.flow-legend, .flow-panel-picker, .object-query-result) { position: static; transform: none; }
-.object-exercise-page[data-responsive-flow] .object-exercise-footer { position: static; width: 100%; flex-shrink: 0; }
+.app-shell-guided-labs .object-exercise-page:is([data-responsive-flow], [data-inline-answer-flow]) form.relation-workspace { flex-direction: column; gap: 12px; }
+.object-exercise-page:is([data-responsive-flow], [data-inline-answer-flow]) .object-exercise-workspace { display: grid; flex: none; gap: 12px; }
+.object-exercise-page:is([data-responsive-flow], [data-inline-answer-flow]) .object-exercise-workspace > :is(.flow-graph, .exercise-question),
+.object-exercise-page:is([data-responsive-flow], [data-inline-answer-flow]) .object-exercise-workspace :is(.flow-legend, .flow-panel-picker, .object-query-result) { position: static; transform: none; }
+.object-exercise-page:is([data-responsive-flow], [data-inline-answer-flow]) .object-exercise-footer { position: static; width: 100%; flex-shrink: 0; }
+/* Keep the complete architecture choices visible when the anchored card cannot fit. */
+html:has(.object-exercise-page[data-inline-answer-flow]), body:has(.object-exercise-page[data-inline-answer-flow]) { height: auto; overflow-x: clip; overflow-y: auto; overscroll-behavior: auto; }
+.app-shell-guided-labs .object-exercise-page[data-inline-answer-flow][data-viewport-fit] { height: auto; min-height: var(--page-available-height); padding-bottom: 12px; }
+.object-exercise-page[data-inline-answer-flow] .guided-lab-canvas { flex: none; }
 .object-exercise-workspace[data-compact-question='true'] > .exercise-question { grid-template-columns: minmax(0, 1fr) 176px; padding: 2px 4px; gap: 8px; min-height: 0; }
 .object-exercise-workspace[data-compact-question='true'] .exercise-question-copy h2 { float: left; margin: 0 6px 0 0; line-height: 17px; }
 .object-exercise-workspace[data-compact-question='true'] .exercise-question-copy h2 > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
@@ -273,6 +276,9 @@ html:has(.object-exercise-page), body:has(.object-exercise-page) { height: 100dv
 .object-exercise-workspace[data-compact-question='true'] .object-answer-picker { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 8px; font-size: 12px; }
 .object-answer-picker .button { min-height: 34px; padding: 4px 6px; justify-content: space-between; font-size: 12px; }
 .object-answer-dialog { grid-template-columns: 1fr; gap: 12px; margin-bottom: 18px; }
+@media (min-width: 1151px) {
+  .object-exercise-workspace[data-inline-answers] .object-answer-choices { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 @media (max-width: 639px) {
   .object-exercise-workspace[data-compact-question='true'] > .exercise-question { grid-template-columns: minmax(0, 1fr) 94px; padding-block: 0; }
   .object-exercise-workspace[data-compact-question='true'] .object-answer-picker { grid-template-columns: 1fr; gap: 3px; }
