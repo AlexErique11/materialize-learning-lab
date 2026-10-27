@@ -18,6 +18,12 @@
 
 .staged-exercise-page .relation-workspace { gap: 8px; }
 
+.guided-lab-controls .button[data-walkthrough='hint'][aria-expanded='true']:not(:disabled) {
+  color: var(--lab-purple);
+  border-color: var(--lab-purple);
+  background: var(--lab-tint);
+}
+
 .exercise-question {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
