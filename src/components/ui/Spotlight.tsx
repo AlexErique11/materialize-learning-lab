@@ -119,7 +119,9 @@ export function Spotlight({ open, targetRef, step, total, title, description, ph
       const related = focusTargets?.filter(item => item.ref.current !== target).map(item => ({
         id: item.id, rect: item.ref.current?.getBoundingClientRect(),
       })) ?? [];
-      if (innerWidth >= 1024 && related.length > 0 && related.length <= 2 && related.every(item => item.rect && item.rect.width > 0 && item.rect.height > 0
+      // Separate history views of the same panel need sequential inspection.
+      const distinctTargets = !focusTargets || new Set(focusTargets.map(item => item.ref.current)).size === focusTargets.length;
+      if (distinctTargets && innerWidth >= 1024 && related.length > 0 && related.length <= 2 && related.every(item => item.rect && item.rect.width > 0 && item.rect.height > 0
         && item.rect.top >= 12 && item.rect.bottom <= innerHeight - 12)) {
         const candidates = [primary, ...related.map(item => ({ id: item.id, top: item.rect!.top - padding, left: item.rect!.left - padding,
           width: item.rect!.width + padding * 2, height: item.rect!.height + padding * 2 }))];

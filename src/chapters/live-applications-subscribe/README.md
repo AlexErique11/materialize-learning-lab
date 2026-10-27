@@ -13,6 +13,9 @@ replacement, quiet progress, group removal, an empty result, and disconnect.
   their own baseline before prediction and label the separate replay explicitly.
   They do not imply a real stream moves backwards. Related evidence uses the shared
   grouped spotlight with sequential inspection when the regions cannot fit together.
+  Lecture 3's later-data checkpoint also exposes its incoming row. Its following
+  publication checkpoint gives each completed group its own inspection button;
+  switching groups changes only the received-history view, never client state.
 - `exercise-scenarios.ts` authors 4/5/7 questions, exact accepted answers, hints,
   explanations, and before/after states. The final exercise is the chapter challenge.
 - `TimestampTrays.tsx` renders the same two tray slots, divider, native history

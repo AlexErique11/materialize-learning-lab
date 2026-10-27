@@ -138,7 +138,7 @@ for (const [index, lecture] of subscriptionLectures.entries()) {
         expect(await page.getByTestId('subscribe-workspace').innerText()).toBe(before);
         await dialog.getByRole('button', { name: 'Show effect', exact: true }).click();
       }
-      await expect(dialog).toHaveAttribute('data-focus-count', String(1 + (lesson.related?.length ?? 0)));
+      await expect(dialog).toHaveAttribute('data-focus-count', String(1 + (lesson.related?.length ?? 0) + (lesson.completedGroups ? lesson.completedGroups.length - 1 : 0)));
       await expectGuideClearOfTargets(page);
       await advanceGuidedLesson(page, step === lecture.lessons.length - 1);
     }
@@ -146,6 +146,63 @@ for (const [index, lecture] of subscriptionLectures.entries()) {
     await expect(page.getByRole('heading', { name: `Lecture ${index + 1}`, exact: true })).toHaveAttribute('aria-description', 'Tutorial completed');
     await page.getByRole('button', { name: 'Reset', exact: true }).click();
     await expect(page.locator('.guided-lab-progress strong')).toContainText('0 /');
+  });
+}
+
+for (const viewport of [{ width: 1920, height: 1080 }, { width: 1280, height: 640 }, { width: 390, height: 844 }, { width: 844, height: 390 }]) {
+  test(`Chapter 8 inspects later data and both published groups at ${viewport.width}x${viewport.height}`, async ({ page }) => {
+    test.setTimeout(90000);
+    await page.setViewportSize(viewport);
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto(`${base}/tutorial/lecture-3`);
+    await page.getByRole('button', { name: 'Start guided run', exact: true }).click();
+    const guide = page.locator('.relation-guide[open]');
+    for (const lesson of subscriptionLectures[2]!.lessons.slice(0, 6)) {
+      if (lesson.before) await guide.getByRole('button', { name: 'Show effect', exact: true }).click();
+      await advanceGuidedLesson(page);
+    }
+    await guide.getByRole('button', { name: 'Show effect', exact: true }).click();
+    await guide.getByRole('button', { name: 'Pending changes', exact: true }).click();
+    await expect(guide.locator('.relation-guide-hole')).toHaveAttribute('data-focus', 'pending');
+    await expect(page.getByRole('region', { name: 'Pending timestamp tray', exact: true })).toContainText('t = 15');
+    await expect(page.getByRole('region', { name: 'Pending timestamp tray', exact: true })).toContainText('US');
+    await expectGuideClearOfTargets(page);
+    await advanceGuidedLesson(page);
+    await expect(guide.locator('.relation-guide-step')).toHaveText('8 of 10');
+    await expect(guide).toHaveAttribute('data-inspection-mode', 'sequential');
+    const tray = page.getByRole('region', { name: 'Complete timestamp tray', exact: true });
+    const application = page.getByTestId('subscribe-application');
+    const result = await application.innerText();
+    const documentBounds = () => tray.evaluate(element => {
+      const bounds = element.getBoundingClientRect();
+      return { x: bounds.x, y: bounds.y + scrollY, width: bounds.width, height: bounds.height };
+    });
+    const bounds = await documentBounds();
+    await guide.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(guide.getByRole('button', { name: 'EU · t = 12', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(tray.getByRole('combobox')).toHaveValue('12');
+    await expect(tray.locator('tbody tr').first()).toContainText('EU');
+    await expect(tray.locator('tbody tr').first().locator('td').last()).toHaveText('100');
+    await expect(tray.locator('tbody tr').nth(1).locator('td').last()).toHaveText('130');
+    await expectGuideClearOfTargets(page);
+    await guide.getByRole('button', { name: 'Next', exact: true }).click();
+    await expect(guide.getByRole('button', { name: 'US · t = 15', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(tray.getByRole('combobox')).toHaveValue('15');
+    await expect(tray.locator('tbody tr').first()).toContainText('US');
+    await expect(tray.locator('tbody tr').first().locator('td').last()).toHaveText('50');
+    expect(await application.innerText()).toBe(result);
+    const inspectedBounds = await documentBounds();
+    for (const property of ['x', 'y', 'width', 'height'] as const) expect(inspectedBounds[property]).toBeCloseTo(bounds[property], 1);
+    await expect(guide.locator('.relation-guide-step')).toHaveText('8 of 10');
+    await expectGuideClearOfTargets(page);
+    await guide.getByRole('button', { name: 'Back', exact: true }).click();
+    await expect(tray.getByRole('combobox')).toHaveValue('12');
+    expect(await application.innerText()).toBe(result);
+    await guide.getByRole('button', { name: 'Completeness boundary', exact: true }).click();
+    await advanceGuidedLesson(page);
+    await expect(guide.locator('.relation-guide-step')).toHaveText('9 of 10');
+    await expect(tray.getByRole('combobox')).toHaveValue('15');
+    expect(await application.innerText()).toBe(result);
   });
 }
 

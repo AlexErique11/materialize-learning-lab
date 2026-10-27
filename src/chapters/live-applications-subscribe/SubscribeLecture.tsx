@@ -10,11 +10,22 @@ import { Spotlight } from '../../components/ui/Spotlight';
 import { LessonText } from '../../components/lesson/LessonText';
 import { useGuidedFocus } from '../../components/lesson/useGuidedFocus';
 import { SubscriptionCaption, TimestampTrays } from './TimestampTrays';
-import { subscriptionEvidence, subscriptionFrames, subscriptionLectures } from './lecture-scenarios';
+import { subscriptionEvidence, subscriptionFrames, subscriptionLectures, type SubscriptionTarget } from './lecture-scenarios';
 import { objective, referenceLinks, subscriptionSqlFor } from './resources';
 import { subscriptionText } from './lessonText';
 import '../../styles/lesson.css';
 import './chapter.css';
+
+const targetLabels: Record<SubscriptionTarget, string> = {
+  subscription: 'Subscription settings', connection: 'Connection', complete: 'Complete changes',
+  pending: 'Pending changes', boundary: 'Completeness boundary', application: 'Published application',
+};
+interface SubscriptionInspection {
+  id: string;
+  target: SubscriptionTarget;
+  label: string;
+  completedTime?: number;
+}
 
 export function SubscribeLecture({ chapter, lectureIndex, navigation }: { chapter: ChapterDefinition; lectureIndex: number; navigation: ReactNode }) {
   const lecture = subscriptionLectures[lectureIndex]!;
@@ -28,8 +39,13 @@ export function SubscribeLecture({ chapter, lectureIndex, navigation }: { chapte
   const normalStep = frames.filter(item => item.time <= state.selectedTime).length;
   const prediction = state.guided && !state.revealed;
   const current = (prediction ? lesson.replay?.initial : undefined) ?? (state.guided ? applied?.state : frame?.lesson.state) ?? lecture.initial;
-  const focus = useGuidedFocus(`${state.step}:${state.revealed}`, [lesson.target, ...(!prediction ? lesson.related ?? [] : [])], refs,
-    { subscription: 'Subscription settings', connection: 'Connection', complete: 'Complete changes', pending: 'Pending changes', boundary: 'Completeness boundary', application: 'Published application' });
+  const inspections = [lesson.target, ...(!prediction ? lesson.related ?? [] : [])].flatMap<SubscriptionInspection>(target =>
+    target === 'complete' && lesson.completedGroups && !prediction
+      ? lesson.completedGroups.map(group => ({ id: `complete-${group.timestamp}`, target, label: group.label, completedTime: group.timestamp }))
+      : [{ id: target, target, label: targetLabels[target] }]);
+  const focus = useGuidedFocus(`${state.step}:${state.revealed}`, inspections.map(item => item.id),
+    Object.fromEntries(inspections.map(item => [item.id, refs[item.target]])), Object.fromEntries(inspections.map(item => [item.id, item.label])));
+  const completedTime = state.guided ? inspections.find(item => item.id === focus.id)?.completedTime : undefined;
   useEffect(() => { if (helpOpen) dispatch({ type: 'pause' }); }, [helpOpen, dispatch]);
   useEffect(() => {
     if (!state.playing) return;
@@ -48,7 +64,7 @@ export function SubscribeLecture({ chapter, lectureIndex, navigation }: { chapte
       reference={{ objective: `${lecture.title}. ${objective}`, sql: subscriptionSqlFor(current), documentationLinks: referenceLinks }}
       simulation={{ completed: state.guided ? state.step : normalStep, total: state.guided ? lecture.lessons.length : frames.length, progressLabel: state.guided ? 'Tutorial' : 'Changes', playing: state.playing,
         onReset: () => dispatch({ type: 'reset' }), onRun: () => { if (!state.playing && normalStep === frames.length) dispatch({ type: 'reset' }); dispatch({ type: 'play' }); }, onStartGuidedRun: () => dispatch({ type: 'start-guided' }) }}
-      visualization={<><TimestampTrays state={current} refs={refs} disabled={state.guided || state.playing} onInspect={() => dispatch({ type: 'pause' })} /><SubscriptionCaption caption={subscriptionEvidence(current, state.guided ? lesson : frame?.lesson, prediction)} /></>}
+      visualization={<><TimestampTrays state={current} refs={refs} completedTime={completedTime} disabled={state.guided || state.playing} onInspect={() => dispatch({ type: 'pause' })} /><SubscriptionCaption caption={subscriptionEvidence(current, state.guided ? lesson : frame?.lesson, prediction)} /></>}
       playback={<div className="relation-playback-controls" aria-label="Scenario playback"><ActivityCompletion complete={finished} kind="tutorial" /><div>
         <Button aria-keyshortcuts="ArrowLeft" disabled={state.guided || state.playing || normalStep === 0} onClick={() => advance(false)}><ArrowLeft size={14} aria-hidden="true" />Previous change</Button>
         <Button data-walkthrough="next-change" aria-keyshortcuts="ArrowRight" disabled={state.guided || state.playing || normalStep === frames.length} onClick={() => advance(true)}>Next change<ArrowRight size={14} aria-hidden="true" /></Button>

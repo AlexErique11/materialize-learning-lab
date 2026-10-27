@@ -57,8 +57,8 @@ export function SubscriptionCaption({ caption }: { caption: string }) {
   return <section className="subscribe-caption" aria-label="Scenario evidence"><Info size={14} aria-hidden="true" /><p><LessonText content={subscriptionText(caption)} /></p></section>;
 }
 
-export function TimestampTrays({ state, refs, assessment = false, disabled = false, onInspect }: {
-  state: SubscriptionState; refs?: SubscriptionRefs; assessment?: boolean; disabled?: boolean; onInspect?: () => void;
+export function TimestampTrays({ state, refs, completedTime, assessment = false, disabled = false, onInspect }: {
+  state: SubscriptionState; refs?: SubscriptionRefs; completedTime?: number; assessment?: boolean; disabled?: boolean; onInspect?: () => void;
 }) {
   const [keyOpen, setKeyOpen] = useState(false);
   const [selection, setSelection] = useState({ complete: '', pending: '' });
@@ -66,7 +66,7 @@ export function TimestampTrays({ state, refs, assessment = false, disabled = fal
   const groups = timestampGroups(state);
   const completed = groups.filter(group => group.complete);
   const pending = groups.filter(group => !group.complete);
-  const left = completed.find(group => String(group.timestamp) === selection.complete) ?? completed.at(-1);
+  const left = completed.find(group => group.timestamp === completedTime) ?? completed.find(group => String(group.timestamp) === selection.complete) ?? completed.at(-1);
   const right = pending.find(group => String(group.timestamp) === selection.pending) ?? pending.at(-1);
   const appStatus = !state.connected ? state.ready ? `Stale · published before ${state.publishedBefore}` : 'Disconnected · no complete baseline' : !state.snapshot ? 'No initial baseline' : state.ready ? `${state.published.length ? '' : 'Ready · no rows · '}Published before ${state.publishedBefore}` : 'Waiting for full snapshot';
   const boundaryText = state.knownCompleteBefore === null ? 'Waiting for progress' : `Complete before ${state.knownCompleteBefore}`;
@@ -89,7 +89,7 @@ export function TimestampTrays({ state, refs, assessment = false, disabled = fal
         {!assessment && <span className="subscribe-key-control"><RelationHelp label="Diagram key" text={help.key} /><Button className="subscribe-key-button" variant="ghost" aria-haspopup="dialog" onClick={event => { event.currentTarget.focus(); onInspect?.(); setKeyOpen(true); }}>Diagram key</Button></span>}
       </section>
       <section className="subscribe-trays" aria-label="Received changes grouped by timestamp">
-        <Tray sectionRef={refs?.complete} group={left} side="complete" state={state} selected={selection.complete} onSelect={value => setSelection(previous => ({ ...previous, complete: value }))} disabled={disabled} />
+        <Tray sectionRef={refs?.complete} group={left} side="complete" state={state} selected={completedTime === undefined ? selection.complete : String(completedTime)} onSelect={value => setSelection(previous => ({ ...previous, complete: value }))} disabled={disabled} />
         <div className="subscribe-divider" aria-hidden="true" />
         <Tray sectionRef={refs?.pending} group={right} side="pending" state={state} selected={selection.pending} onSelect={value => setSelection(previous => ({ ...previous, pending: value }))} disabled={disabled} />
       </section>

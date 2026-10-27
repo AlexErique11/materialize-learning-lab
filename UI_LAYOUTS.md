@@ -316,6 +316,7 @@ separate regions are exposed together when the viewport has room for the card
 without covering them. Otherwise Next/Back inspect each region in order before
 advancing the lesson. The inspection buttons also allow direct selection.
 Inspection changes only the target, never the simulation checkpoint or time.
+Different history views sharing one panel stay sequential so each can be inspected.
 Back from the first region retains the lesson's existing prediction/rewind
 behavior. Keep related targets in causal order and include changed counts,
 status, or limits when the explanation depends on them. Avoid adding every
