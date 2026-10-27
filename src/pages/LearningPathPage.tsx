@@ -61,7 +61,7 @@ export function LearningPathPage() {
           </Link>
           <ul className="learning-path-features learning-path-challenge-features">
             <li><CircleArrowRight className="learning-path-marker" size={26} aria-hidden="true" /><div><h3>{challenge.pageTitle}</h3><p>Restore a trustworthy live-orders dashboard during a flash sale.</p></div></li>
-            <li><CircleArrowRight className="learning-path-marker" size={26} aria-hidden="true" /><div><h3>Six connected decisions</h3><p>Inspect evidence and repair the pipeline from source to live client.</p></div></li>
+            <li><CircleArrowRight className="learning-path-marker" size={26} aria-hidden="true" /><div><h3>One incident to investigate</h3><p>Explore the evidence, run SQL, and prove your repair works.</p></div></li>
             <li><CircleArrowRight className="learning-path-marker" size={26} aria-hidden="true" /><div><h3>Pick up where you left off</h3><p>Your repairs, hints, and progress save as you work.</p></div></li>
           </ul>
           <div className="learning-path-challenge-footer"><span>{challenge.durationMinutes[0]}–{challenge.durationMinutes[1]} minutes · Chapters 1–{challenge.afterChapter}</span><Link className="button button-primary" to={challenge.path} state={{ challengeIntro: true }}>{challengeActionLabel(challengeProgress)}<ArrowRight size={15} aria-hidden="true" /></Link></div>

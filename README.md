@@ -46,20 +46,26 @@ The authored chapters include 26 lectures and 20 exercises:
 | 8: SUBSCRIBE | 3 | 3 | Client baselines, signed result changes, timestamp trays, and complete publication |
 
 Open **Challenge** on the main page to enter **Save the Flash Sale** directly at
-`/challenge`. This is the platform’s only challenge: a six-checkpoint,
-10–20 minute incident combining Chapters 1–8. Repair ingestion, choose maintained
-objects, handle temporal changes, diagnose progress, choose honest read policies,
-and publish complete live-client updates. There is no challenge catalog or list of
-planned capstones. Previous `/challenges` and `/challenges/live-order-operations`
-links redirect to `/challenge` and preserve the same saved run.
+`/challenge`. This is the platform's only challenge: an open 10–20 minute
+incident combining Chapters 1–8. Start with one reported dashboard discrepancy;
+explore Dashboard, Data, SQL, System, and Client in any order. Run diagnostic
+SELECTs, edit and deploy the inherited query's temporal predicate, make
+operational changes, pin before/after evidence, and verify the full system.
+There is no checklist revealing the faulty components or required repair order.
+Previous `/challenges` URLs redirect to the same incident.
 
-Challenge drafts, applied repairs, hints, and achievements save in this browser.
-Pause, refresh, or open a lecture reference in a new tab and resume the incident.
-Worked repairs are recorded as walkthrough assistance. Replaying preserves earlier
-achievements. Challenge progress is separate from the eight core chapters, and
-challenge navigation does not enter the chapter sidebar or completion sequence.
-The full learning plan is in [CURRICULUM.md](./CURRICULUM.md); the scenario and
-implementation specification are in [CAPSTONE_PLAN.md](./CAPSTONE_PLAN.md).
+SQL executes in a lazy, isolated PGlite browser worker. Materialize-specific
+source, cluster, progress, read-policy, and subscription behavior is simulated.
+Chapter 7/8 semantics are reused. The SQL runtime's WASM/data assets load only
+when an investigation starts, and are bundled locally for static deployment.
+
+Drafts, deployed configuration, workspace, replay position, observations, notes,
+and assistance save automatically. Returning resumes directly; Restart preserves
+achievements and chapter progress. Version 2 has a separate store, so first-version
+saved runs remain intact and their completions appear as historical achievements.
+Optional worked repairs are recorded honestly. The challenge has no chapter
+sidebar entry or completion credit. See [the investigation plan](./CHALLENGE_SECOND_VERSION_PLAN.md)
+and [implementation map](./src/challenges/live-order-operations/README.md).
 
 ## Verification
 

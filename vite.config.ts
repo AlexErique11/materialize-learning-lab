@@ -57,4 +57,6 @@ function staticRouteFiles(): Plugin {
 export default defineConfig({
   base: process.env.GITHUB_PAGES === 'true' ? '/materialize-learning-lab/' : '/',
   plugins: [react(), tailwindcss(), staticRouteFiles()],
+  optimizeDeps: { exclude: ['@electric-sql/pglite'] },
+  worker: { format: 'es' },
 });

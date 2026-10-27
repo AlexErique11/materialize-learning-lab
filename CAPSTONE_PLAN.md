@@ -1,8 +1,12 @@
 # Final capstone: Live Order Operations
 
-Status: implemented in `src/challenges/live-order-operations/`; see its README for
-the code map and verification. The 10–20 minute duration remains a learner-testing
-estimate. Facilitated timing sessions are still a follow-up.
+Status: historical specification for the guided first version, preserved at
+commit `da81e4d` on `challenge-first-version`. The current implementation follows
+[the second-version plan](./CHALLENGE_SECOND_VERSION_PLAN.md). The 10–20 minute
+duration remains a learner-testing estimate.
+
+The implemented second version replaces the guided checkpoints with an open
+investigation. See [the second-version plan](./CHALLENGE_SECOND_VERSION_PLAN.md).
 
 Navigation decision: the platform has one challenge, opened directly through
 **main page → Challenge** at `/challenge`. There is no challenge catalog or

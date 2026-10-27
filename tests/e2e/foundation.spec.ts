@@ -522,7 +522,7 @@ test('Challenge opens the single incident directly from the main page', async ({
   await expect(
     page.getByRole('heading', { name: challenge.pageTitle, exact: true }),
   ).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Start incident', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Start investigation', exact: true })).toBeVisible();
   await page.getByRole('link', { name: 'Back to main page', exact: true }).click();
   await expect(page).toHaveURL('/');
   await expect(page.getByText('Not started', { exact: true })).toHaveCount(0);

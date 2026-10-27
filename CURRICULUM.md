@@ -551,9 +551,12 @@ its own workspace.
 After Chapter 8, restore an operational dashboard during a flash sale. Combine
 source interpretation, maintained objects, updates, cancellations, temporal
 filters, freshness diagnosis, consistent reads, and correct live publication in
-one continuous 10–20 minute incident. The complete scenario, answer oracle,
-assessment, and platform implementation plan are in
-[CAPSTONE_PLAN.md](./CAPSTONE_PLAN.md).
+one continuous 10–20 minute incident. Learners receive one reported symptom and
+investigate data, SQL, system progress, and live-client behavior in any order.
+SQL executes locally; snapshots and streaming use the explicit lab models. The
+scenario, oracle, assessment, and implementation plan are in
+[CHALLENGE_SECOND_VERSION_PLAN.md](./CHALLENGE_SECOND_VERSION_PLAN.md).
+The earlier [capstone plan](./CAPSTONE_PLAN.md) documents the guided first version.
 
 This expands the earlier after-Chapter-5 proposal. The complete challenge is
 available directly through **main page → Challenge** at `/challenge`, with its

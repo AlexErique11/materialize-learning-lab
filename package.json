@@ -17,6 +17,7 @@
     "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
+    "@electric-sql/pglite": "^0.5.12",
     "lucide-react": "^0.468.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

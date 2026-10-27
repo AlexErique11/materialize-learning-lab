@@ -1,100 +1,133 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock3, Flag, Pause, Play, RotateCcw } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, Clock3, Flag, Lightbulb, Pause, Play, RotateCcw, Undo2 } from 'lucide-react';
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs';
 import { ActivityHeading } from '../../components/lab/ActivityHeading';
 import { ShortcutHelp } from '../../components/lab/ShortcutHelp';
-import { ProgressBar } from '../../components/ui/ProgressBar';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
-import { SqlObjectivesPanel } from '../../components/lab/SqlObjectivesPanel';
-import { documentationLinks, referenceSql, requirements, stages, STAGE_IDS, stageDefinition } from './scenario';
-import { gradeRepair } from './grading';
-import { assessmentAt, type RunAction } from './run';
-import { useChallengeRun } from './useChallengeRun';
-import { ChallengeEvidence, EvidenceCard, PipelineStrip } from './ChallengeEvidence';
-import { ChallengeDecisions } from './ChallengeDecisions';
-import { ChallengeReport } from './ChallengeReport';
 import { useLabShortcuts } from '../../hooks/useLabShortcuts';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import { useChangeMotion } from '../../motion/useChangeMotion';
 import { useWorkspaceMotion } from '../../motion/useWorkspaceMotion';
+import { businessRequirements, initialPredicate, incidentMessage, traceTimes, workspaces, workspaceHints, type TraceFrame } from './incident';
+import { useChallengeRun } from './useChallengeRun';
+import { EvidenceCard } from './ChallengeEvidence';
+import { ChallengeReport } from './ChallengeReport';
+import { ClientPanel, DashboardPanel, DataPanel, SystemPanel } from './InvestigationPanels';
+import { InvestigationSql, previewKey, type QueryPreview } from './InvestigationSql';
+import { aggregateSql } from './predicate';
+import { SqlClient } from './sqlClient';
+import { validateIncident } from './grading';
+import { documentationLinks } from './scenario';
 import '../../styles/lesson.css';
 import './challenge.css';
 
-const shortcuts = {
-  Enter: '[data-challenge-action="test"]',
-  ArrowRight: '[data-challenge-action="apply"]',
-  h: '[data-challenge-action="hint"]',
-  r: '[data-challenge-action="retry"]',
-  s: '.sql-objectives-panel [data-dialog-close], [data-challenge-action="sql"]',
-  'Control+Enter': '[data-challenge-action="worked"]',
-};
-
+const shortcuts = { 'Control+Enter': '[data-incident-action="run-sql"]', ArrowRight: '[data-incident-action="advance"]', h: '[data-incident-action="hint"]', r: '[data-incident-action="restart"]', s: '.incident-reference [data-dialog-close], [data-incident-action="reference"]' };
 export function LiveOrderOperationsPage() {
-  const [referenceOpen, setReferenceOpen] = useState(false);
-  const [briefOpen, setBriefOpen] = useState(false);
-  const [restartOpen, setRestartOpen] = useState(false);
-  const [overviewOpen, setOverviewOpen] = useState(false);
+  const [dialog, setDialog] = useState<'reference' | 'brief' | 'restart' | 'help' | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
-  const controller = useChallengeRun(referenceOpen || briefOpen || restartOpen || overviewOpen || shortcutsOpen);
-  const { run, progress, isPaused } = controller;
-  const stageId = STAGE_IDS[run.stage]!;
-  const definition = stageDefinition(stageId);
-  const signature = JSON.stringify(run.drafts[stageId] ?? {});
-  const [tested, setTested] = useState<{ runId: string; stage: string; signature: string } | null>(null);
-  const [mobilePanel, setMobilePanel] = useState<'evidence' | 'task'>('task');
-  const headingRef = useRef<HTMLHeadingElement>(null);
+  const controller = useChallengeRun(Boolean(dialog) || shortcutsOpen);
+  const { run, progress, isPaused, dispatch } = controller;
+  const [client] = useState(() => new SqlClient());
+  const [retry, setRetry] = useState(0);
+  const [traceState, setTrace] = useState<{ key: string; frames: TraceFrame[] | null; error: string }>({ key: '', frames: null, error: '' });
+  const [mode, setMode] = useState<'repair' | 'diagnostic'>('repair');
+  const [preview, setPreview] = useState<QueryPreview | null>(null);
+  const [operation, setOperation] = useState<string | null>(null);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const operationId = useRef(0);
+  const latest = useRef({ run, mode }); latest.current = { run, mode };
   const pageRef = useRef<HTMLElement>(null);
-  const workspaceRef = useRef<HTMLDivElement>(null);
-  const grade = (tested?.runId === run.id && tested.stage === stageId && tested.signature === signature) || assessmentAt(run, stageId).workedRepair || run.commits.length > run.stage
-    ? gradeRepair(stageId, run.drafts[stageId] ?? {}) : null;
-  const active = run.phase === 'active';
+  const contentRef = useRef<HTMLDivElement>(null);
+  const notebookRef = useRef<HTMLDetailsElement>(null);
+  const queryKey = JSON.stringify([run.id, run.config.predicate, run.config.source, retry]);
+  const trace = traceState.key === queryKey ? traceState.frames : null;
+  const traceError = traceState.key === queryKey ? traceState.error : '';
+  const active = run.phase === 'investigating';
+  usePageTitle('Save the Flash Sale');
   useLabShortcuts(pageRef, shortcuts, active && !isPaused && !shortcutsOpen);
-  useWorkspaceMotion(pageRef, `${run.phase}-${stageId}-${isPaused}`);
-  useChangeMotion(workspaceRef, `${run.phase}-${stageId}-${isPaused}`, true, 'checkpoint');
+  useWorkspaceMotion(pageRef, `${run.phase}-${run.workspace}`);
+  useChangeMotion(contentRef, `${run.phase}-${run.workspace}-${isPaused}`, true, 'workspace');
   useEffect(() => {
-    headingRef.current?.focus({ preventScroll: true });
-    window.scrollTo({ top: 0, behavior: 'instant' });
-    setMobilePanel('task');
-  }, [run.stage, run.phase]);
-  const dispatch = (action: RunAction) => {
-    if (action.type === 'edit' || action.type === 'retry' || action.type === 'review') setTested(null);
-    controller.dispatch(action);
+    operationId.current++; setOperation(null); setPreview(null); setError('');
+    return () => { operationId.current++; client.cancel(); };
+  }, [client, run.id]);
+  useEffect(() => {
+    if (run.phase === 'briefing') return;
+    let current = true;
+    setTrace({ key: queryKey, frames: null, error: '' });
+    void client.request({ kind: 'trace', predicate: run.config.predicate, source: run.config.source }).then(response => {
+      if (current) setTrace({ key: queryKey, frames: response.trace!, error: '' });
+    }, failure => { if (current) setTrace({ key: queryKey, frames: null, error: failure.message }); });
+    return () => { current = false; };
+  }, [client, queryKey, run.phase === 'briefing']);
+  useEffect(() => { setNotice(''); setError(''); }, [run.workspace, run.id]);
+  useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [run.workspace, run.phase]);
+  const pin = (label: string, detail: string, time: number) => {
+    dispatch({ type: 'pin', observation: { label, detail: detail.slice(0, 5000), time } });
+    setNotice('Observation pinned to your incident notebook.');
   };
-  const testRepair = () => { controller.dispatch({ type: 'test' }); setTested({ runId: run.id, stage: stageId, signature }); };
-  const showWorkedRepair = () => { controller.dispatch({ type: 'worked' }); setMobilePanel('task'); };
-  const brief = <div className="capstone-brief-copy"><p>You are supporting Northstar Shop’s flash sale. Operations uses a live dashboard to decide where to assign staff. Some orders are counted twice, cancelled orders remain visible, and a region occasionally flashes empty. Support reports that fast responses can still contain old data.</p><p><strong>Your job:</strong> inspect the evidence, test repairs, and hand over a system the team can trust.</p><h3>Definition of success</h3><ul>{requirements.map(requirement => <li key={requirement}>{requirement}</li>)}</ul><p>Snapshot age measures logical-time freshness. It cannot establish that every external business change has already arrived.</p></div>;
-
-  return <section ref={pageRef} className="guided-lab-page capstone-page">
-    <div className="guided-lab-top-row">
-      <Breadcrumbs items={[{ label: 'Learning path', to: '/' }, { label: 'Challenge' }]} />
-      {active && <div className="capstone-page-tools"><ShortcutHelp lecture={false} challenge showReference onOpenChange={setShortcutsOpen} /></div>}
-    </div>
-    <ActivityHeading title="Save the Flash Sale" description="Restore a trustworthy live-orders dashboard, from incoming records to the application."
-      controlsLabel="Challenge controls" controls={<>
-        <div className="guided-lab-progress"><div><span>Repairs</span><strong>{run.commits.length} / {stages.length}</strong></div><ProgressBar value={run.commits.length} total={stages.length} label="Incident repairs applied" /></div>
-        {active ? <><Button data-challenge-action="sql" aria-keyshortcuts="S" onClick={() => setReferenceOpen(true)}>SQL &amp; Objectives</Button><Button onClick={() => setBriefOpen(true)}>Mission brief</Button><Button onClick={() => controller.setIsPaused(!isPaused)}>{isPaused ? <Play size={13} aria-hidden="true" /> : <Pause size={13} aria-hidden="true" />}{isPaused ? 'Resume' : 'Pause'}</Button></> : <span className="capstone-duration"><Clock3 size={15} aria-hidden="true" />10–20 minutes</span>}
-      </>} />
-    {progress.recovery && <div className="capstone-notice" data-tone="warning" role="status">The saved run is incompatible or incomplete. Start a fresh run; valid historical achievements are preserved.</div>}
-    {progress.memoryOnly && <p className="capstone-notice" data-tone="warning" role="status">Storage is unavailable. You can continue, but this session’s progress will not survive closing the tab.</p>}
-    <div ref={workspaceRef} className="capstone-content">
-      {run.phase === 'briefing' ? <>
-        <div className="capstone-brief-grid"><EvidenceCard title="Your incident ticket" icon={<Flag size={19} />}>{brief}<div className="capstone-brief-actions"><Button variant="primary" onClick={() => dispatch({ type: 'start' })}>Start incident<ArrowRight size={17} aria-hidden="true" /></Button><Link to="/" className="text-link">Back to main page</Link></div></EvidenceCard><div className="capstone-brief-aside"><EvidenceCard title="A complete working session" icon={<Clock3 size={18} />}><p>About 16 minutes. No countdown. Pause and resume whenever you need.</p><ol className="capstone-agenda">{stages.map(stage => <li key={stage.id}><span>{stage.title}</span><strong>{stage.minutes} min</strong></li>)}</ol></EvidenceCard><EvidenceCard title="Bring what you learned" icon={<BookOpen size={18} />}><p>Recommended after Chapters 1–8. Every required concept is taught there; source setup and production administration are supplied by the simulation.</p><p>Hints point to evidence. Worked repairs are available and recorded honestly in your handover.</p><p className="capstone-caption">All data, state units, and processing times are illustrative. The simulation runs in your browser without a database connection.</p></EvidenceCard>{progress.achievements.length > 0 && <p className="capstone-notice" data-tone="success">Previous completion saved. Replaying this incident does not erase it or any chapter progress.</p>}</div></div>
-      </> : active ? <>
-        <nav className="capstone-stage-nav" aria-label="Incident checkpoints"><ol>{stages.map((stage, index) => <li key={stage.id}><button type="button" aria-current={run.stage === index ? 'step' : undefined} aria-label={`${index + 1}. ${stage.label}${index < run.commits.length ? ' · Applied' : ''}`} disabled={index > run.commits.length} onClick={() => dispatch({ type: 'review', stage: index })}><span>{index < run.commits.length ? <CheckCircle2 size={16} aria-hidden="true" /> : String(index + 1).padStart(2, '0')}</span><strong>{stage.label}</strong></button></li>)}</ol></nav>
-        <div className="capstone-stage-heading"><div><span className="eyebrow">Northstar Shop · Checkpoint {run.stage + 1} of {stages.length}</span><h2 ref={headingRef} tabIndex={-1}>{definition.title}</h2><p>{definition.ticket}</p></div><Button size="compact" onClick={() => setOverviewOpen(true)}>System overview<ArrowRight size={14} aria-hidden="true" /></Button></div>
-        {isPaused ? <div className="capstone-paused" role="status"><Pause size={28} aria-hidden="true" /><h3>Incident paused</h3><p>Your decisions are saved. The simulation and active-time counter are paused.</p><Button variant="primary" onClick={() => controller.setIsPaused(false)}>Resume incident</Button></div> : <>
-          <div className="capstone-mobile-tabs" role="group" aria-label="Challenge workspace panels"><Button aria-pressed={mobilePanel === 'task'} onClick={() => setMobilePanel('task')}>Task</Button><Button aria-pressed={mobilePanel === 'evidence'} onClick={() => setMobilePanel('evidence')}>Evidence &amp; dashboard</Button></div>
-          <div className="capstone-workspace" data-mobile-panel={mobilePanel}><section className="capstone-evidence" aria-label="Incident evidence"><ChallengeEvidence run={run} preview={Boolean(grade)} accepted={Boolean(grade?.correct)} dispatch={dispatch} /></section><section className="capstone-decisions" aria-label="Your repair"><ChallengeDecisions run={run} grade={grade} dispatch={dispatch} onTest={testRepair} onWorked={showWorkedRepair} /></section></div>
-          {grade && <div className="capstone-mobile-next"><Button onClick={() => setMobilePanel(mobilePanel === 'task' ? 'evidence' : 'task')}>{mobilePanel === 'task' ? 'Inspect consequence preview' : 'Return to your repair'}<ArrowRight size={14} aria-hidden="true" /></Button></div>}
+  const runSql = async () => {
+    if (operation) return;
+    const id = ++operationId.current;
+    const key = previewKey(run, mode);
+    setOperation('Executing SQL…'); setError(''); setNotice('');
+    try {
+      const sql = mode === 'repair' ? aggregateSql(run.draft) : run.diagnostic;
+      const output = (await client.request({ kind: 'query', sql, source: run.config.source, time: traceTimes[run.frame]! })).output!;
+      const inherited = mode === 'repair' ? (await client.request({ kind: 'query', sql: aggregateSql(initialPredicate), source: { envelope: 'UPSERT', key: 'order_id' }, time: traceTimes[run.frame]! })).output : undefined;
+      if (id === operationId.current && previewKey(latest.current.run, latest.current.mode) === key) setPreview({ key, output, inherited });
+    } catch (failure) { if (id === operationId.current && previewKey(latest.current.run, latest.current.mode) === key) setError(failure instanceof Error ? failure.message : 'SQL execution failed.'); }
+    finally { if (id === operationId.current) setOperation(null); }
+  };
+  const validate = async () => {
+    if (operation) return;
+    const id = ++operationId.current;
+    const validationKey = (r: typeof run) => JSON.stringify([r.id, r.configurationRevision, r.time, r.processed, r.read]);
+    const key = validationKey(run);
+    setOperation('Replaying acceptance scenarios…'); setError('');
+    try {
+      const checks = await validateIncident(run, client);
+      if (id === operationId.current && validationKey(latest.current.run) === key) dispatch({ type: 'validation', runId: run.id, configuration: run.configurationRevision, checks });
+      else if (id === operationId.current) setNotice('The incident changed during validation. Run the checks again against the current deployment.');
+    } catch (failure) { if (id === operationId.current) setError(failure instanceof Error ? failure.message : 'Validation failed to execute.'); }
+    finally { if (id === operationId.current) setOperation(null); }
+  };
+  const cancel = () => { operationId.current++; client.cancel(); setOperation(null); setPreview(null); setError('Execution cancelled. Drafts and applied changes are preserved.'); setRetry(value => value + 1); };
+  const props = { run, trace, dispatch, pin };
+  const brief = <><p className="incident-quotation">“{incidentMessage}”</p><p>You have inherited Northstar Shop’s dashboard. Investigate the system, make reversible changes, and hand over evidence that it meets the operating contract. Choose where to look and what to test.</p><h3 className="incident-subheading">Operating contract</h3><ul className="incident-requirements">{businessRequirements.map(requirement => <li key={requirement}>{requirement}</li>)}</ul></>;
+  const hintCount = run.hints[run.workspace] ?? 0;
+  return <section ref={pageRef} className="guided-lab-page incident-page">
+    <div className="guided-lab-top-row"><Breadcrumbs items={[{ label: 'Learning path', to: '/' }, { label: 'Challenge' }]} />{run.phase !== 'briefing' && <ShortcutHelp lecture={false} challenge showReference onOpenChange={setShortcutsOpen} />}</div>
+    <ActivityHeading title="Save the Flash Sale" description="Investigate the discrepancy. Repair the system. Prove it is ready for the next sale wave." controlsLabel="Challenge controls" controls={run.phase === 'briefing' ? <span className="incident-duration"><Clock3 size={15} aria-hidden="true" />10–20 minutes · Chapters 1–8</span> : <><span className="incident-status">{run.phase === 'completed' ? 'Handed over' : run.phase === 'handover' ? 'Handover' : 'Investigating'}</span><Button data-incident-action="reference" onClick={() => setDialog('reference')} aria-keyshortcuts="S">Reference</Button>{active && <Button onClick={() => controller.setIsPaused(!isPaused)}>{isPaused ? <Play size={13} aria-hidden="true" /> : <Pause size={13} aria-hidden="true" />}{isPaused ? 'Resume' : 'Pause'}</Button>}{active && <Button variant="primary" onClick={() => dispatch({ type: 'handover' })}>Submit handover<ArrowRight size={14} aria-hidden="true" /></Button>}</>} />
+    {progress.recovery && <p role="status" className="incident-notice">The saved investigation is incompatible or incomplete. A new attempt is available; valid historical achievements are preserved.</p>}
+    {progress.memoryOnly && <p role="status" className="incident-notice">Storage is unavailable. You can continue for this session, but closing the tab will lose its progress.</p>}
+    <div ref={contentRef} className="incident-content">
+      {run.phase === 'briefing' ? <div className="incident-brief-grid"><EvidenceCard title="An incident from operations" icon={<Flag size={18} aria-hidden="true" />}>{brief}<div className="incident-actions"><Button variant="primary" onClick={() => dispatch({ type: 'start' })}>Start investigation<ArrowRight size={16} aria-hidden="true" /></Button><Link className="text-link" to="/">Back to main page</Link></div></EvidenceCard><EvidenceCard title="Your working environment" icon={<BookOpen size={18} aria-hidden="true" />}><p>Explore the data, deployed SQL, system observations, and application in any order. A notebook keeps the evidence you choose to pin.</p><p>SQL queries execute locally. Streaming, connection progress, and cluster behavior use the lab simulation. No database credentials or infrastructure setup are needed.</p><p>Pause at any time. Drafts and applied changes resume automatically. Hints and worked repairs are optional and recorded honestly.</p>{progress.achievements.some(a => a.scenarioVersion === 1) && <p className="incident-notice">First version · historical completion preserved. This investigation is a separate attempt.</p>}{progress.achievements.some(a => a.scenarioVersion === 2) && <p className="incident-notice">Previous investigation completion saved. Replaying preserves it and all chapter progress.</p>}</EvidenceCard></div> : <>
+        {active && <nav className="incident-tabs" aria-label="Investigation workspaces">{workspaces.map(workspace => <button key={workspace} type="button" aria-current={run.workspace === workspace ? 'page' : undefined} onClick={() => dispatch({ type: 'workspace', workspace })}>{workspace}</button>)}</nav>}
+        {active && <div className="incident-workspace-bar"><div><span className="eyebrow">Northstar Shop · Operations incident</span><p>{incidentMessage}</p></div><Button size="compact" onClick={() => setDialog('brief')}>Incident brief</Button></div>}
+        {isPaused && active ? <div className="incident-paused" role="status"><Pause size={28} aria-hidden="true" /><h2>Investigation paused</h2><p>The incident clock does not advance while you read or edit. Your work is preserved.</p><Button variant="primary" onClick={() => controller.setIsPaused(false)}>Resume investigation</Button></div> : <>
+          {operation && <div className="incident-runtime" role="status"><span className="incident-spinner" aria-hidden="true" />{operation}<Button size="compact" onClick={cancel}>Cancel execution</Button></div>}
+          {!trace && <div className="incident-runtime" role="status">{traceError ? <><span>{traceError}</span><Button onClick={() => { client.cancel(); setRetry(n => n + 1); }}>Retry SQL engine</Button></> : <><span className="incident-spinner" aria-hidden="true" />Preparing the local SQL workspace… You can inspect data and configuration while it starts.</>}</div>}
+          {notice && <p role="status" className="incident-notice">{notice}</p>}
+          {error && run.workspace !== 'SQL' && <p role="alert" className="incident-notice" data-tone="warning">{error}</p>}
+          {active ? <div className="incident-workspace" aria-label={`${run.workspace} workspace`}>
+            {run.workspace === 'Dashboard' && <DashboardPanel {...props} />}
+            {run.workspace === 'Data' && <DataPanel {...props} />}
+            {run.workspace === 'SQL' && <InvestigationSql {...props} mode={mode} setMode={next => { setMode(next); setError(''); }} preview={preview} busy={Boolean(operation)} error={error} onRun={() => void runSql()} onDeploy={() => { if (preview?.key === previewKey(run, 'repair') && !operation) { dispatch({ type: 'deploy', runId: run.id, configuration: run.configurationRevision, predicate: run.draft }); setNotice('Query deployed. Dependent snapshots and the subscription baseline were invalidated.'); } }} />}
+            {run.workspace === 'System' && <SystemPanel {...props} />}
+            {run.workspace === 'Client' && <ClientPanel {...props} />}
+          </div> : <ChallengeReport run={run} dispatch={dispatch} busy={Boolean(operation)} onValidate={() => void validate()} />}
         </>}
-        <details className="capstone-inspector capstone-incident-log"><summary>Incident log · {run.commits.length} of 6 repairs applied</summary><ol>{run.commits.map(commit => <li key={commit.stage}><CheckCircle2 size={14} aria-hidden="true" />{stageDefinition(commit.stage).title}: verified and applied.</li>)}{!run.commits.length && <li>No repairs applied yet. A tested preview does not change the committed system.</li>}</ol></details>
-        <div className="capstone-bottom-nav"><Link to="/" className="text-link"><ArrowLeft size={14} aria-hidden="true" />Back to main page</Link>{run.commits.length === 6 && <Button onClick={() => dispatch({ type: 'handover' })}>Return to handover</Button>}<Button size="compact" variant="ghost" onClick={() => setRestartOpen(true)}><RotateCcw size={14} aria-hidden="true" />Restart challenge</Button></div>
-      </> : <ChallengeReport run={run} dispatch={dispatch} onRestart={() => setRestartOpen(true)} />}
+        {active && <><details ref={notebookRef} className="incident-details incident-notebook"><summary>Incident notebook · {run.observations.length} observations</summary><p>Pin before/after evidence from different configurations. Each observation retains its snapshot time and configuration; different times can legitimately have different rows.</p><ul className="incident-observations">{run.observations.map(o => <li key={o.id}><div><strong>{o.label}</strong><span>{o.workspace} · {(o.time / 1000).toFixed(3)} s · configuration {o.configuration}</span></div><pre>{o.detail}</pre><Button size="compact" variant="ghost" onClick={() => dispatch({ type: 'unpin', id: o.id })}>Remove observation</Button></li>)}</ul><label className="incident-label" htmlFor="incident-note">Working hypothesis and handover notes</label><textarea id="incident-note" rows={3} maxLength={4000} value={run.note} onChange={e => dispatch({ type: 'note', value: e.target.value })} /><details><summary>Applied change history</summary><ol className="incident-change-log">{run.changes.map((change, index) => <li key={index}>{(change.time / 1000).toFixed(3)} s · {change.label}</li>)}</ol></details></details><div className="incident-actions incident-footer"><Link className="text-link" to="/"><ArrowLeft size={14} aria-hidden="true" />Back to main page</Link><Button data-incident-action="hint" aria-keyshortcuts="H" variant="ghost" onClick={() => setDialog('help')}><Lightbulb size={14} aria-hidden="true" />Investigation help</Button><Button variant="ghost" disabled={!run.undo.length} onClick={() => dispatch({ type: 'undo' })}><Undo2 size={14} aria-hidden="true" />Undo last change</Button></div></>}
+        <div className="incident-reset"><Button data-incident-action="restart" aria-keyshortcuts="R" variant="ghost" onClick={() => setDialog('restart')}><RotateCcw size={14} aria-hidden="true" />Restart challenge</Button></div>
+      </>}
     </div>
-    <Dialog open={briefOpen} onClose={() => setBriefOpen(false)} title="Mission brief" eyebrow="Northstar Shop · Flash sale">{brief}</Dialog>
-    <SqlObjectivesPanel open={referenceOpen} onClose={() => setReferenceOpen(false)} objective={<><p>{definition.goal}</p><p>The SQL below is a worked reference for the complete design. Opening it is optional and does not apply a repair.</p></>} sql={referenceSql} documentationLinks={documentationLinks} />
-    <Dialog open={overviewOpen} onClose={() => setOverviewOpen(false)} title="System overview"><PipelineStrip verified={run.commits.length} /><p className="capstone-overview-copy">Kafka order messages and a snapshotted PostgreSQL customer relation feed the recent-orders query. One maintained regional aggregate is shared through indexes in operations and support. The live client receives signed result changes and progress.</p><p>Verified means that the relevant decisions in this replay have been applied. Other stages remain unverified, even if their current rows happen to look correct.</p></Dialog>
-    <Dialog open={restartOpen} onClose={() => setRestartOpen(false)} title="Restart this incident?"><p>This replaces your active challenge run and its drafts. Previously earned challenge achievements and chapter completions stay saved.</p><div className="capstone-dialog-actions"><Button onClick={() => setRestartOpen(false)}>Keep this run</Button><Button variant="primary" onClick={() => { controller.restart(); setRestartOpen(false); setTested(null); }}>Restart incident</Button></div></Dialog>
+    <Dialog open={dialog === 'brief'} onClose={() => setDialog(null)} title="Incident brief">{brief}</Dialog>
+    <Dialog open={dialog === 'reference'} onClose={() => setDialog(null)} title="Incident reference" className="incident-reference"><h3 className="incident-subheading">Schemas and time</h3><pre className="incident-code">{'orders(order_id, customer_id, status, amount, event_at, arrived_at)\ncustomers(customer_id, region)'}</pre><p>Event time records when the business event occurred. Arrival time records ingestion. SQL timestamps use UTC on 1 January 2026; displays show seconds from that same origin. The local mz_now() compatibility function freezes logical time at the selected replay snapshot.</p><p>Materialize supports mz_now() directly compared with a row timestamp expression, combining temporal comparisons with AND. Place interval arithmetic on the row expression.</p><h3 className="incident-subheading">Operating contract</h3><ul className="incident-requirements">{businessRequirements.map(text => <li key={text}>{text}</li>)}</ul><p className="incident-caption">SQL results execute in local PostgreSQL (PGlite). The clock compatibility function models supported timestamp comparisons, not Materialize's full mz_timestamp type. Sources, maintained progress, read policies, state units, and subscriptions are explicitly simulated. Quiet external sources and unsent business changes are separate from a complete ingested snapshot.</p><ul className="incident-reference-links">{documentationLinks.map(link => <li key={link.href}><a href={link.href} target="_blank" rel="noopener noreferrer" className="text-link">{link.label}</a></li>)}</ul><Link className="text-link" to="/labs" target="_blank" rel="noopener noreferrer">Review the lectures (opens a new tab)</Link></Dialog>
+    <Dialog open={dialog === 'help'} onClose={() => setDialog(null)} title="Investigation help" eyebrow={run.workspace}><p>Help is optional. Hints are recorded; a worked repair marks the eventual completion as assisted.</p><ol className="incident-requirements">{workspaceHints[run.workspace].slice(0, hintCount).map(hint => <li key={hint}>{hint}</li>)}</ol><div className="incident-actions"><Button disabled={hintCount >= 3} onClick={() => dispatch({ type: 'hint', workspace: run.workspace })}>Get next hint</Button>{['SQL', 'System', 'Client'].includes(run.workspace) && <Button onClick={() => { dispatch({ type: 'worked', workspace: run.workspace }); setDialog(null); setNotice(run.workspace === 'SQL' ? 'Worked SQL repair placed in the editor. Run and deploy it to change the system.' : 'Worked intervention applied. Verify its consequences in the incident.'); }}>Show worked repair</Button>}</div></Dialog>
+    <Dialog open={dialog === 'restart'} onClose={() => setDialog(null)} title="Restart this investigation?"><p>This replaces your active investigation and drafts. Prior achievements, the first version's saved run, and chapter completions stay preserved.</p><div className="incident-actions"><Button onClick={() => setDialog(null)}>Keep this run</Button><Button variant="primary" onClick={() => { client.cancel(); controller.restart(); setDialog(null); setNotice(''); }}>Restart investigation</Button></div></Dialog>
   </section>;
 }

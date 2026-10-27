@@ -1,6 +1,5 @@
-import { applyRead, windowFixture, type ReadSnapshot } from '../../chapters/consistent-reads/simulation';
-import { applySubscriptions, createSubscription, data, progress, receive, type ResultRow, type StreamRecord } from '../../chapters/live-applications-subscribe/simulation';
-import { incidentRules, type Answers } from './scenario';
+import type { ResultRow } from '../../chapters/live-applications-subscribe/simulation';
+import { incidentRules } from './scenario';
 
 export interface Order {
   readonly orderId: number;
@@ -91,69 +90,4 @@ export function runOrders(source = correctSource, query = correctQuery): readonl
     eligible = nextEligible; result = nextResult;
     return snapshot;
   });
-}
-
-export function queryConfiguration(answers: Answers): QueryConfiguration {
-  return { paidOnly: answers.status === 'paid', lower: answers.lower === 'event', upper: answers.upper === 'inclusive' ? 'inclusive' : answers.upper === 'arrival' ? 'arrival' : 'exclusive' };
-}
-export function querySql(answers: Answers): string {
-  const status = answers.status === 'paid' ? "o.status = 'paid'" : answers.status === 'all' ? 'TRUE -- all statuses' : '/* choose status filter */';
-  const lower = answers.lower === 'event' ? 'mz_now() >= o.event_at' : answers.lower === 'none' ? 'TRUE -- no entry bound' : '/* choose entry bound */';
-  const upper = answers.upper === 'exclusive' ? "mz_now() < o.event_at + INTERVAL '5 minutes'"
-    : answers.upper === 'inclusive' ? "mz_now() <= o.event_at + INTERVAL '5 minutes'"
-      : answers.upper === 'arrival' ? "mz_now() < arrival_at + INTERVAL '5 minutes' -- fixture comparison only" : '/* choose expiration bound */';
-  return `SELECT c.region, COUNT(*) AS orders, SUM(o.amount) AS total\nFROM orders AS o JOIN customers AS c\n  ON o.customer_id = c.customer_id\nWHERE ${status}\n  AND ${lower}\n  AND ${upper}\nGROUP BY c.region;`;
-}
-export function stateCost(answers: Answers): number {
-  return (answers.helper === 'materialized' ? 4 : 0) + (answers.final === 'materialized' ? 4 : 0) + (answers.indexes === 'both' ? 4 : answers.indexes && answers.indexes !== 'none' ? 2 : 0);
-}
-
-export function progressState(resumed = false, caughtUp = false) {
-  if (caughtUp && !resumed) throw new Error('Resume the limiting connection before finishing catch-up');
-  const orders = incidentRules.caughtUpFrontier;
-  const customers = resumed ? incidentRules.caughtUpFrontier : incidentRules.stalledFrontier;
-  const permitted = Math.min(orders, customers, incidentRules.wallClock + 1);
-  const aggregate = caughtUp ? permitted : incidentRules.stalledFrontier;
-  return { clock: incidentRules.wallClock, orders, customers, permitted, aggregate, serving: aggregate, queryMs: 40 };
-}
-
-export function readFixture(caughtUp = false): ReadSnapshot {
-  const state = progressState(true, caughtUp);
-  return windowFixture(600000, state.serving, 610000, state.orders, {
-    inputs: [{ id: 'totals', name: 'Operations aggregate index', retained: 600000, write: state.serving }, { id: 'orders', name: 'Orders read input', retained: 610000, write: state.orders }],
-    clock: state.clock, axis: [600000, 640000], label: 'Incident read · supplied retained history',
-  });
-}
-export function boundedRead(bound: number, caughtUp = false) { return applyRead(readFixture(caughtUp), { type: 'request', request: { policy: 'bounded', bound } }).attempt!; }
-export function strictRead() { return applyRead(readFixture(), { type: 'request', request: { policy: 'strict', timestamp: 630000 } }).attempt!; }
-
-const baseline = runOrders()[9]!.rows;
-const lastChanges = runOrders()[10]!.diffs;
-export const clientRecords: readonly StreamRecord[] = [
-  progress(631000), ...baseline.map(row => data(631000, 1, row)), progress(631001),
-  ...lastChanges.filter(change => change.diff < 0).map(change => data(632000, change.diff, change.row)),
-  progress(632000), ...lastChanges.filter(change => change.diff > 0).map(change => data(632000, change.diff, change.row)), progress(632001),
-];
-export function clientAt(deliveries: number, snapshot = true) {
-  const records = snapshot ? clientRecords : clientRecords.filter(record => record.kind !== 'data' || record.timestamp !== 631000);
-  return applySubscriptions(createSubscription(snapshot, 'regional_order_totals', 631000), records.slice(0, deliveries).map(receive));
-}
-
-export function clientPreview(answers: Answers, deliveries: number): readonly ResultRow[] {
-  if (answers.snapshot === 'off') return [];
-  const state = clientAt(deliveries);
-  if (answers.apply === 'signed' && answers.publish === 'later') return state.published.map(entry => entry.row);
-  let rows: readonly ResultRow[] = [];
-  const received = clientRecords.slice(0, deliveries);
-  for (const record of received) {
-    if (record.kind !== 'data') continue;
-    const safe = record.timestamp < (state.publishedBefore ?? 631000);
-    const equal = record.timestamp <= (state.progress ?? 0);
-    const pair = received.some(item => item.kind === 'data' && item.timestamp === record.timestamp && item.diff > 0) && received.some(item => item.kind === 'data' && item.timestamp === record.timestamp && item.diff < 0);
-    if (!safe && answers.publish !== 'each' && !(answers.publish === 'equal' && equal) && !(answers.publish === 'pair' && pair)) continue;
-    if (answers.apply === 'region') rows = [...rows.filter(row => row.region !== record.row.region), ...(record.diff > 0 ? [record.row] : [])];
-    else if (record.diff > 0) rows = [...rows, record.row];
-    else if (answers.apply !== 'positive') rows = rows.filter(row => tupleKey(row) !== tupleKey(record.row));
-  }
-  return rows;
 }

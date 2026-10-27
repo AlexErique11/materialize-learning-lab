@@ -6,9 +6,9 @@ describe('challenge persistence', () => {
   it('resumes valid drafts and recovers invalid runs while retaining valid achievements', async () => {
     const { parseChallengeProgress } = await import('./challengeProgress');
     const run = updateRun(createRun('saved'), { type: 'start' });
-    expect(parseChallengeProgress(JSON.stringify({ version: 1, run, achievements: [] })).run).toEqual(run);
-    const achievement = { runId: 'past', scenarioVersion: 1, assisted: false, hints: 1, durationMs: 1000, completedAt: 1 };
-    const recovered = parseChallengeProgress(JSON.stringify({ version: 1, run: { ...run, scenarioVersion: 0 }, achievements: [achievement, null] }));
+    expect(parseChallengeProgress(JSON.stringify({ version: 2, run, achievements: [] })).run).toEqual(run);
+    const achievement = { runId: 'past', scenarioVersion: 2, assisted: false, hints: 1, durationMs: 1000, completedAt: 1 };
+    const recovered = parseChallengeProgress(JSON.stringify({ version: 2, run: { ...run, scenarioVersion: 0 }, achievements: [achievement, null] }));
     expect(recovered).toMatchObject({ run: null, recovery: true, achievements: [achievement] });
     for (const input of ['broken', '[]', '{"version":2}', 'null']) expect(parseChallengeProgress(input).recovery).toBe(true);
   });
@@ -20,7 +20,7 @@ describe('challenge persistence', () => {
     saveChallengeRun(run);
     expect(getChallengeProgress().run).toEqual(run);
     expect(getChallengeProgress()).toBe(getChallengeProgress());
-    const achievement = { runId: run.id, scenarioVersion: 1, assisted: true, hints: 2, durationMs: 1000, completedAt: 1 };
+    const achievement = { runId: run.id, scenarioVersion: 2, assisted: true, hints: 2, durationMs: 1000, completedAt: 1 };
     saveChallengeRun(run, achievement); saveChallengeRun(run, achievement);
     expect(getChallengeProgress().achievements).toHaveLength(1);
   });

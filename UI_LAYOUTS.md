@@ -11,36 +11,43 @@ and shared CSS, not independently maintained mockup files.
 | `LectureScreen`, `layout="with-tip"` | Chapter 1 lectures 1–2 | Chapter 1 reference frame, metrics, visualization, playback, and bottom tip when it fits. |
 | `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 3 lectures 1–3; Chapter 4 lectures 1–4; Chapter 5 lectures 1–4; Chapters 6–8 lectures 1–3 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
 | `ExerciseFrame` through `GuidedLabScreen` | Chapter 1–8 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
-| `LiveOrderOperationsPage` | The single course challenge | Separate incident workspace at `/challenge`, six checkpoints, evidence beside decisions, and a handover report. Reuses shared UI primitives without chapter context. |
+| `LiveOrderOperationsPage` | The single course challenge | Open investigation at `/challenge`: one complaint, five freely accessible workspaces, executable SQL, evidence notebook, and handover. |
 
-`src/challenges/live-order-operations/challenge.css` owns the incident workspace,
-pipeline verification strip, checkpoint navigation, decision controls, and report.
-It shares the white lab theme, `ActivityHeading` title and controls, `ProgressBar`,
-`relation-panel` and table styles, buttons, SQL reference, dialogs, and `ShortcutHelp`
-with lectures and exercises. `GuidedLabScreen` also uses `ActivityHeading`; its DOM
-and geometry are unchanged. Incident-specific tokens map to that shared theme in
-both light and dark mode. A horizontal six-checkpoint navigation and an incident
-ticket above the evidence/repair columns distinguish this workflow from playback.
-Desktop shows evidence beside decisions; below 801px, Task and Evidence & dashboard
-selectors preserve the same saved answers and allow normal scrolling. The challenge
-reuses Chapter 7's readable-window diagram and Chapter 8's timestamp trays with
-their existing semantics and styles. It supplies their visualization tokens and
-does not alter chapter frame geometry. Focus moves to the stage heading after
-progression; dialogs restore focus, and native form controls support keyboard use.
-The same `useWorkspaceMotion` value/row animations and `useChangeMotion` transitions
-animate the incident. `useLabShortcuts` activates the existing test, hint, worked
-repair, retry, apply, and SQL controls with their normal validation. All motion
-respects reduced-motion preferences.
-The main page’s singular Challenge card opens the incident directly. It uses the
-same feature-list styling as Guided labs and includes one Start/Resume/Review
-action. Both entry links use `LabEntryTransition` and its existing flask animation,
-with challenge-specific copy and no chapter tour. Direct URLs and reloads open the
-saved incident immediately. There is no catalog, planned-challenge list, chapter-sidebar entry, or
-chapter completion handoff. Challenge state and achievements live in the separate
-`materialize-learning-lab-challenges-v1` browser store.
-Saved checkpoints and drafts resume automatically on return. Open tabs synchronize
-the current run without a manual loading prompt. Restart challenge explicitly
-starts from the beginning and preserves achievements and chapter progress.
+`src/challenges/live-order-operations/challenge.css` owns the incident-specific
+layout. It reuses `ActivityHeading`, the white lab theme, relation panels/tables,
+buttons, dialogs, `ShortcutHelp`, `useChangeMotion`, and `useWorkspaceMotion`.
+There is no numbered fault checklist or repair progress bar. Dashboard, Data,
+SQL, System, and Client tabs change the selected view without applying repairs.
+Desktop related panes sit side by side; narrow windows stack the same panes and
+retain normal scrolling. SQL drafts survive pane changes and refresh.
+
+Chapter 7's `ReadableWindow` and Chapter 8's `TimestampTrays` retain their
+existing semantics and styles. The incident supplies their model state without
+changing chapter geometry. `TimestampTrays` accepts an explicit publication policy
+and execution note for the incident; its default lecture behavior is unchanged.
+The incident uses the full tray layout so mobile tables stack at readable widths.
+Query results execute in a lazy browser SQL worker;
+streaming/progress remain explicit simulations. Loading and recovery appear
+locally in the workspace without replaying the global intro for each query.
+Stale previews cannot deploy, and stale validation responses cannot complete a
+changed run. SQL execution, previews, deployment, operational processing, and
+client publication are distinct actions.
+
+Keyboard controls activate existing visible buttons: Ctrl+Enter runs SQL; S
+opens Reference; H opens optional help; R opens Restart; ArrowRight advances an
+available system event. Native text inputs keep typing behavior and dialogs own
+focus. Motion respects reduced-motion preferences. Reference contains schema and
+concept help; full worked repairs require explicit optional assistance.
+
+The main page's singular Challenge card opens the incident directly and shares
+its feature-list styling with Guided labs. Start/Resume/Review uses
+`LabEntryTransition` and the flask animation, without a chapter tour. Direct URL
+entry and refresh restore work immediately. No catalog, chapter-sidebar entry,
+or chapter-completion credit is added. Autosave and cross-tab synchronization use
+`materialize-learning-lab-challenge-v2`. Restart preserves chapter progress and
+historical achievements. The first version's store remains untouched, and its
+completions are labeled First version rather than completing the investigation.
+No saved-status label or manual Load saved run step is displayed.
 
 `src/labs/components/LectureScreen.tsx` accepts `metrics`, `visualization`, and
 `playback` slots plus the common screen props. Chapter 2 supplies them through

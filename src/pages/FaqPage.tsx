@@ -16,11 +16,11 @@ export function FaqPage() {
         </details>
         <details>
           <summary>What is the difference between the labs and challenge?</summary>
-          <p>Guided labs introduce concepts through tutorials and exercises. <Link to={challenge.path}>Challenge</Link> opens Live Order Operations directly: a 10–20 minute incident combining Chapters 1–8, with its own workspace and progress. Chapter completion is recommended, not required.</p>
+          <p>Guided labs introduce concepts through tutorials and exercises. <Link to={challenge.path}>Challenge</Link> opens Live Order Operations directly: a 10–20 minute investigation combining Chapters 1–8, with freely accessible workspaces, executable SQL, and its own progress. Chapter completion is recommended, not required.</p>
         </details>
         <details>
           <summary>Is my progress saved?</summary>
-          <p>Completed tutorials and exercises are saved in this browser. Your Guided labs and Learning path progress bars count eight core chapters: finish all tutorials and exercises in a chapter to earn one completion. Completed activities stay marked when you return or reset a practice session. Individual chapter answers and playback positions restart when you revisit an activity. The challenge saves its current checkpoint, drafts, applied repairs, and achievements separately. Hints are recorded; worked repairs produce a “Completed with walkthrough” achievement. Restarting an incident preserves earlier achievements and chapter progress. If browser storage is unavailable, the challenge clearly reports that it can save for the current session only.</p>
+          <p>Completed tutorials and exercises are saved in this browser. Your Guided labs and Learning path progress bars count eight core chapters: finish all tutorials and exercises in a chapter to earn one completion. Completed activities stay marked when you return or reset a practice session. Individual chapter answers and playback positions restart when you revisit an activity. The challenge saves its selected workspace, SQL drafts, deployed changes, replay position, pinned evidence, notes, and achievements separately. Returning resumes directly. SQL queries execute locally; Materialize streaming and progress use the browser simulation. First-version completions remain historical and do not complete the investigation. Hints are recorded; worked repairs produce a “Completed with walkthrough” achievement. Restarting an incident preserves earlier achievements and chapter progress. If browser storage is unavailable, the challenge clearly reports that it can save for the current session only.</p>
         </details>
       </section>
     </PageContainer>

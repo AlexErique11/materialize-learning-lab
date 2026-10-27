@@ -71,10 +71,9 @@ export function ShortcutHelp({ lecture, showReference, onOpenChange, challenge =
         <h3>{challenge ? 'Challenge' : lecture ? 'Lecture' : 'Exercise'}</h3>
         <dl>
           {challenge ? <>
-            <ShortcutRow label="Test repair" keys="Enter" />
-            <ShortcutRow label="Apply verified repair" keys="ArrowRight" />
-            <ShortcutRow label="Show hint" keys="H" />
-            <ShortcutRow label="Show worked repair" keys="Control+Enter" />
+            <ShortcutRow label="Run SQL in the editor" keys="Control+Enter" />
+            <ShortcutRow label="Advance the next system event" keys="ArrowRight" />
+            <ShortcutRow label="Open investigation help" keys="H" />
           </> : lecture ? <>
             <ShortcutRow label="Start guided run" keys="Enter" />
             <ShortcutRow label="Run / pause playback" keys="Space" />
@@ -85,10 +84,10 @@ export function ShortcutHelp({ lecture, showReference, onOpenChange, challenge =
             <ShortcutRow label="Show / hide hint" keys="H" />
             <ShortcutRow label="Show answer" keys="Control+Enter" />
           </>}
-          {showReference && <ShortcutRow label="Open / close SQL & Objectives" keys="S" />}
-          <ShortcutRow label={challenge ? 'Retry checkpoint' : 'Reset'} keys="R" />
+          {showReference && <ShortcutRow label={challenge ? 'Open / close Reference' : 'Open / close SQL & Objectives'} keys="S" />}
+          <ShortcutRow label={challenge ? 'Restart challenge' : 'Reset'} keys="R" />
         </dl>
-        {challenge ? <p className="shortcut-help-note">Apply becomes available after a correct test and any required evidence replay. The final repair opens your handover.</p> : !lecture && <p className="shortcut-help-note">*After the answer is accepted. The final button may open the next exercise or complete the chapter.</p>}
+        {challenge ? <p className="shortcut-help-note">Explore workspaces in any order. Running SQL previews a draft; deploying it changes the incident. Restart asks before replacing your run.</p> : !lecture && <p className="shortcut-help-note">*After the answer is accepted. The final button may open the next exercise or complete the chapter.</p>}
       </section>
       {!challenge && <section>
         <h3>{lecture ? 'During a guided run' : 'Chapter complete'}</h3>
@@ -98,7 +97,7 @@ export function ShortcutHelp({ lecture, showReference, onOpenChange, challenge =
           <ShortcutRow label={lecture ? 'Close guided run' : 'Close completion window'} keys="Escape" />
         </dl>
       </section>}
-      <p className="shortcut-help-note">Esc closes this reference{showReference ? ' or SQL & Objectives' : ''}. Letter shortcuts pause while you type. A focused button keeps its usual Enter and Space actions.</p>
+      <p className="shortcut-help-note">Esc closes this reference{showReference ? challenge ? ' or the incident Reference' : ' or SQL & Objectives' : ''}. Letter shortcuts pause while you type. A focused button keeps its usual Enter and Space actions.</p>
     </div>
   </>;
 }
