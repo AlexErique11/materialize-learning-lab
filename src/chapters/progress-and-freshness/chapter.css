@@ -70,6 +70,7 @@
 .progress-inspector-facts > div { min-width: 0; }
 .progress-inspector-facts dt { color: var(--lab-muted); }
 .progress-inspector-facts dd { margin: 3px 0 0; font-size: 12px; font-weight: 600; overflow-wrap: anywhere; }
+.progress-inspector-value { --progress-fact-fill: color-mix(in srgb, var(--lab-purple) 8%, var(--lab-surface)); border-radius: 3px; background: var(--progress-fact-fill); box-shadow: 0 0 0 2px var(--progress-fact-fill), 0 0 0 3px var(--lab-border); -webkit-box-decoration-break: clone; box-decoration-break: clone; }
 .progress-inspector-facts .relation-inline { padding: 0; background: transparent; font-size: inherit; }
 .progress-caption { min-height: 32px; margin: 0; font-size: 12px; color: var(--lab-muted); line-height: 1.4; }
 .progress-caption[data-upcoming='true'] { color: var(--lab-purple); }
