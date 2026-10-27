@@ -541,29 +541,27 @@ is currently private preview; recheck availability before any extension ships.
 
 ---
 
-## Capstones
+## Final challenge
 
-Capstones are separate from chapters and combine several established mental
-models with less guidance.
+One final challenge combines the chapters' mental models with less guidance in
+its own workspace.
 
-### Capstone 1: Live Order Operations
+### Live Order Operations — Save the Flash Sale
 
-After Chapter 5, build and explain a live recent-orders view from a changing
-source. Handle updates, cancellations, late events, and automatic expiration.
+After Chapter 8, restore an operational dashboard during a flash sale. Combine
+source interpretation, maintained objects, updates, cancellations, temporal
+filters, freshness diagnosis, consistent reads, and correct live publication in
+one continuous 10–20 minute incident. The complete scenario, answer oracle,
+assessment, and platform implementation plan are in
+[CAPSTONE_PLAN.md](./CAPSTONE_PLAN.md).
 
-### Capstone 2: The Dashboard Is Fresh but Expensive
-
-Diagnose maintained state, skew, query shape, index use, and
-freshness for a costly operational dashboard. Redesign it under a fixed resource
-budget.
-
-### Capstone 3: Recover Without Corrupting Delivery
-
-After Chapter 8 and additional recovery instruction, handle a cluster restart,
-hydration and catch-up, a live-client reconnection, and a downstream consumer
-crash without silently losing or duplicating business effects. Durable replay
-and atomic checkpoint/effect handling belong to that additional instruction;
-Chapter 8 establishes live consumption and disconnect awareness only.
+This expands the earlier after-Chapter-5 proposal. The complete challenge is
+available directly through **main page → Challenge** at `/challenge`, with its
+own workspace, saved run, and achievement tracking. Chapter 8 is an advisory
+prerequisite; chapter navigation and the eight-chapter progress count remain
+separate. This is the only challenge; there is no catalog or planned-challenge
+list. Durable recovery and external delivery guarantees require additional
+instruction and remain outside this exercise.
 
 ## Shared scenario strategy
 

@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures';
 
-test('homepage tracks authored chapters and clearly labels planned challenges', async ({ page }) => {
+test('homepage tracks authored chapters and opens its single challenge directly', async ({ page }) => {
   for (const theme of ['light', 'dark']) {
     await page.goto('/');
     await page.getByRole('button', { name: `Switch to ${theme} mode`, exact: true }).click();
@@ -8,7 +8,8 @@ test('homepage tracks authored chapters and clearly labels planned challenges', 
     await expect(page.getByRole('progressbar', { name: 'Core chapters completed' })).toHaveAttribute('max', '8');
     await expect(page.getByRole('progressbar', { name: 'Featured challenges completed' })).toHaveCount(0);
     await expect(page.getByRole('heading', { name: 'Track your progress' })).toBeVisible();
-    await expect(page.getByText('Coming soon', { exact: true })).toHaveCount(2);
+    await expect(page.getByText('Coming soon', { exact: true })).toHaveCount(0);
+    await expect(page.getByRole('link', { name: 'Challenge', exact: true })).toHaveAttribute('href', '/challenge');
 
     await page.goto('/labs/progress-and-freshness/tutorial');
     await expect(page.getByRole('heading', { name: 'Tutorial', exact: true })).toBeVisible();

@@ -11,6 +11,36 @@ and shared CSS, not independently maintained mockup files.
 | `LectureScreen`, `layout="with-tip"` | Chapter 1 lectures 1–2 | Chapter 1 reference frame, metrics, visualization, playback, and bottom tip when it fits. |
 | `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 3 lectures 1–3; Chapter 4 lectures 1–4; Chapter 5 lectures 1–4; Chapters 6–8 lectures 1–3 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
 | `ExerciseFrame` through `GuidedLabScreen` | Chapter 1–8 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
+| `LiveOrderOperationsPage` | The single course challenge | Separate incident workspace at `/challenge`, six checkpoints, evidence beside decisions, and a handover report. Reuses shared UI primitives without chapter context. |
+
+`src/challenges/live-order-operations/challenge.css` owns the incident workspace,
+pipeline verification strip, checkpoint navigation, decision controls, and report.
+It shares the white lab theme, `ActivityHeading` title and controls, `ProgressBar`,
+`relation-panel` and table styles, buttons, SQL reference, dialogs, and `ShortcutHelp`
+with lectures and exercises. `GuidedLabScreen` also uses `ActivityHeading`; its DOM
+and geometry are unchanged. Incident-specific tokens map to that shared theme in
+both light and dark mode. A horizontal six-checkpoint navigation and an incident
+ticket above the evidence/repair columns distinguish this workflow from playback.
+Desktop shows evidence beside decisions; below 801px, Task and Evidence & dashboard
+selectors preserve the same saved answers and allow normal scrolling. The challenge
+reuses Chapter 7's readable-window diagram and Chapter 8's timestamp trays with
+their existing semantics and styles. It supplies their visualization tokens and
+does not alter chapter frame geometry. Focus moves to the stage heading after
+progression; dialogs restore focus, and native form controls support keyboard use.
+The same `useWorkspaceMotion` value/row animations and `useChangeMotion` transitions
+animate the incident. `useLabShortcuts` activates the existing test, hint, worked
+repair, retry, apply, and SQL controls with their normal validation. All motion
+respects reduced-motion preferences.
+The main page’s singular Challenge card opens the incident directly. It uses the
+same feature-list styling as Guided labs and includes one Start/Resume/Review
+action. Both entry links use `LabEntryTransition` and its existing flask animation,
+with challenge-specific copy and no chapter tour. Direct URLs and reloads open the
+saved incident immediately. There is no catalog, planned-challenge list, chapter-sidebar entry, or
+chapter completion handoff. Challenge state and achievements live in the separate
+`materialize-learning-lab-challenges-v1` browser store.
+Saved checkpoints and drafts resume automatically on return. Open tabs synchronize
+the current run without a manual loading prompt. Restart challenge explicitly
+starts from the beginning and preserves achievements and chapter progress.
 
 `src/labs/components/LectureScreen.tsx` accepts `metrics`, `visualization`, and
 `playback` slots plus the common screen props. Chapter 2 supplies them through
@@ -517,7 +547,8 @@ management. Only the visible activity owns the browser title, including on resiz
   controls, excluded from focus and accessibility. The learning-path page
   uses saved activity progress for Guided labs. Planned chapters and challenges
   display Coming soon and a useful return link, including direct section URLs.
-  Challenge achievement indicators stay absent until completion is implemented.
+  The single Live Order Operations challenge shows Start, Resume, or Review on
+  the main page from its separate saved run and opens directly at `/challenge`.
   All eight core chapters contribute to the progress denominator. Existing saved
   activity completions remain valid when new chapter paths are registered.
 

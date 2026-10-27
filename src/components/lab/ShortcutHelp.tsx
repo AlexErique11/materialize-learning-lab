@@ -13,8 +13,9 @@ function positionPanel(panel: HTMLElement, trigger: HTMLElement) {
   panel.style.top = `${Math.max(12, Math.min(bounds.bottom + 8, innerHeight - panel.offsetHeight - 12))}px`;
 }
 
-export function ShortcutHelp({ lecture, showReference, onOpenChange }: {
+export function ShortcutHelp({ lecture, showReference, onOpenChange, challenge = false }: {
   lecture: boolean; showReference: boolean; onOpenChange: (open: boolean) => void;
+  challenge?: boolean;
 }) {
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -67,9 +68,14 @@ export function ShortcutHelp({ lecture, showReference, onOpenChange }: {
         </button>
       </div>
       <section>
-        <h3>{lecture ? 'Lecture' : 'Exercise'}</h3>
+        <h3>{challenge ? 'Challenge' : lecture ? 'Lecture' : 'Exercise'}</h3>
         <dl>
-          {lecture ? <>
+          {challenge ? <>
+            <ShortcutRow label="Test repair" keys="Enter" />
+            <ShortcutRow label="Apply verified repair" keys="ArrowRight" />
+            <ShortcutRow label="Show hint" keys="H" />
+            <ShortcutRow label="Show worked repair" keys="Control+Enter" />
+          </> : lecture ? <>
             <ShortcutRow label="Start guided run" keys="Enter" />
             <ShortcutRow label="Run / pause playback" keys="Space" />
             <ShortcutRow label="Previous / next playback step" keys="ArrowLeft ArrowRight" />
@@ -80,18 +86,18 @@ export function ShortcutHelp({ lecture, showReference, onOpenChange }: {
             <ShortcutRow label="Show answer" keys="Control+Enter" />
           </>}
           {showReference && <ShortcutRow label="Open / close SQL & Objectives" keys="S" />}
-          <ShortcutRow label="Reset" keys="R" />
+          <ShortcutRow label={challenge ? 'Retry checkpoint' : 'Reset'} keys="R" />
         </dl>
-        {!lecture && <p className="shortcut-help-note">*After the answer is accepted. The final button may open the next exercise or complete the chapter.</p>}
+        {challenge ? <p className="shortcut-help-note">Apply becomes available after a correct test and any required evidence replay. The final repair opens your handover.</p> : !lecture && <p className="shortcut-help-note">*After the answer is accepted. The final button may open the next exercise or complete the chapter.</p>}
       </section>
-      <section>
+      {!challenge && <section>
         <h3>{lecture ? 'During a guided run' : 'Chapter complete'}</h3>
         <dl>
           {lecture ? <ShortcutRow label="Back / next step or effect" keys="ArrowLeft ArrowRight" />
             : <ShortcutRow label="Continue from the completion window" keys="Enter" />}
           <ShortcutRow label={lecture ? 'Close guided run' : 'Close completion window'} keys="Escape" />
         </dl>
-      </section>
+      </section>}
       <p className="shortcut-help-note">Esc closes this reference{showReference ? ' or SQL & Objectives' : ''}. Letter shortcuts pause while you type. A focused button keeps its usual Enter and Space actions.</p>
     </div>
   </>;

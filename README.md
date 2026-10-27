@@ -45,9 +45,21 @@ The authored chapters include 26 lectures and 20 exercises:
 | 7: Consistent Reads | 3 | 3 | Readable windows, transaction ordering, freshness policies, and external ingestion |
 | 8: SUBSCRIBE | 3 | 3 | Client baselines, signed result changes, timestamp trays, and complete publication |
 
-The three capstone challenges are planned and labeled Coming soon.
-Chapter progress counts all eight core chapters; challenges do not yet track
-completion. The full learning plan is in [CURRICULUM.md](./CURRICULUM.md).
+Open **Challenge** on the main page to enter **Save the Flash Sale** directly at
+`/challenge`. This is the platform’s only challenge: a six-checkpoint,
+10–20 minute incident combining Chapters 1–8. Repair ingestion, choose maintained
+objects, handle temporal changes, diagnose progress, choose honest read policies,
+and publish complete live-client updates. There is no challenge catalog or list of
+planned capstones. Previous `/challenges` and `/challenges/live-order-operations`
+links redirect to `/challenge` and preserve the same saved run.
+
+Challenge drafts, applied repairs, hints, and achievements save in this browser.
+Pause, refresh, or open a lecture reference in a new tab and resume the incident.
+Worked repairs are recorded as walkthrough assistance. Replaying preserves earlier
+achievements. Challenge progress is separate from the eight core chapters, and
+challenge navigation does not enter the chapter sidebar or completion sequence.
+The full learning plan is in [CURRICULUM.md](./CURRICULUM.md); the scenario and
+implementation specification are in [CAPSTONE_PLAN.md](./CAPSTONE_PLAN.md).
 
 ## Verification
 
@@ -59,3 +71,6 @@ run `npx playwright test tests/e2e/browser-smoke.spec.ts --workers=2` for the
 representative Chromium desktop/phone, Firefox desktop, and WebKit phone checks.
 Linux hosts can use `--with-deps` when installing browsers; CI does this automatically.
 The larger layout suite retains its existing Chromium desktop/phone projects.
+Run `npx playwright test tests/e2e/live-order-operations.spec.ts --workers=2`
+for the complete independent and assisted challenge journeys, save/resume,
+automatic cross-tab synchronization, saved-run resume, optional restart, storage recovery, and responsive interaction checks.

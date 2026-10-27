@@ -1,5 +1,36 @@
 import { expect, test } from './fixtures';
 
+test('the separate capstone completes with honest assistance and saved achievements', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('link', { name: 'Challenge', exact: true }).click();
+  await expect(page).toHaveURL('/challenge');
+  await expect(page.locator('.chapter-sidebar')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Start incident', exact: true }).click();
+  const switchPanel = async (name: string) => {
+    const panels = page.getByRole('group', { name: 'Challenge workspace panels' });
+    if (await panels.isVisible()) await panels.getByRole('button', { name, exact: true }).click();
+  };
+  for (let stage = 0; stage < 6; stage++) {
+    await switchPanel('Task');
+    await page.getByRole('button', { name: 'Show worked repair', exact: true }).click();
+    if (stage === 4) {
+      await switchPanel('Evidence & dashboard');
+      for (const name of ['Test normal policy', 'Finish catch-up', 'Issue new normal read']) await page.getByRole('button', { name, exact: true }).click();
+    }
+    if (stage === 5) {
+      await switchPanel('Evidence & dashboard');
+      for (let i = 0; i < 8; i++) await page.getByRole('button', { name: 'Next delivery', exact: true }).click();
+      await expect(page.getByTestId('subscribe-application')).toContainText('90');
+    }
+    await switchPanel('Task');
+    await page.getByRole('button', { name: stage === 5 ? 'Continue to handover' : 'Apply and continue', exact: true }).click();
+  }
+  await page.getByRole('button', { name: 'Run acceptance checks', exact: true }).click();
+  await expect(page.getByText('Completed with walkthrough', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('Completed with walkthrough', { exact: true })).toBeVisible();
+});
+
 test('SUBSCRIBE holds partial changes and publishes complete timestamp groups', async ({ page }) => {
   await page.goto('/labs/live-applications-subscribe/tutorial/lecture-3');
   const next = page.getByRole('button', { name: 'Next change', exact: true });

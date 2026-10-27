@@ -3,7 +3,7 @@ import { publicAsset } from '../../app/publicAsset';
 import { motion } from '../../motion/motion';
 import '../../styles/lab-intro.css';
 
-export function LabIntroScreen({ phase }: { phase: 'reacting' | 'revealing' }) {
+export function LabIntroScreen({ phase, challenge = false }: { phase: 'reacting' | 'revealing'; challenge?: boolean }) {
   const id = useId().replaceAll(':', '');
   const glassId = `${id}-glass`;
   const edgeId = `${id}-edge`;
@@ -22,7 +22,7 @@ export function LabIntroScreen({ phase }: { phase: 'reacting' | 'revealing' }) {
       data-phase={phase}
       role="status"
       aria-live="polite"
-      aria-label="Preparing guided labs"
+      aria-label={challenge ? 'Preparing challenge' : 'Preparing guided labs'}
     >
       <div className="lab-intro-content">
         <div className="lab-intro-art">
@@ -86,8 +86,8 @@ export function LabIntroScreen({ phase }: { phase: 'reacting' | 'revealing' }) {
           <span className="lab-intro-shadow" />
         </div>
         <div className="lab-intro-copy">
-          <p className="lab-intro-label">Guided labs</p>
-          <p className="lab-intro-title">Preparing your lab</p>
+          <p className="lab-intro-label">{challenge ? 'Challenge' : 'Guided labs'}</p>
+          <p className="lab-intro-title">{challenge ? 'Preparing your incident' : 'Preparing your lab'}</p>
         </div>
       </div>
     </div>

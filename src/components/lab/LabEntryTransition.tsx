@@ -5,11 +5,13 @@ import { useWalkthrough } from '../walkthrough/WalkthroughProvider';
 import { shouldStartChapterTour } from '../walkthrough/walkthroughStorage';
 import { LabIntroScreen } from './LabIntroScreen';
 import { motion } from '../../motion/motion';
+import { challenge } from '../../challenges/challengeRegistry';
 
 type IntroPhase = 'reacting' | 'revealing';
 
 interface IntroRun {
   entryKey: string;
+  challenge: boolean;
   targetPath: string;
   showTour: boolean;
   reducedMotion: boolean;
@@ -21,11 +23,9 @@ interface IntroRun {
 }
 
 export function isLabIntroEntry(location: { pathname: string; state: unknown }) {
-  return location.pathname === '/labs'
-    && typeof location.state === 'object'
-    && location.state !== null
-    && 'labIntro' in location.state
-    && location.state.labIntro === true;
+  if (typeof location.state !== 'object' || location.state === null) return false;
+  return (location.pathname === '/labs' && 'labIntro' in location.state && location.state.labIntro === true)
+    || (location.pathname === challenge.path && 'challengeIntro' in location.state && location.state.challengeIntro === true);
 }
 
 function cancelRun(run: IntroRun | null) {
@@ -56,8 +56,9 @@ export function LabEntryTransition({ children }: { children: ReactNode }) {
       if (!firstChapter) throw new Error('The guided labs need a first core chapter.');
       const run: IntroRun = {
         entryKey: location.key,
-        targetPath: chapterPath(firstChapter),
-        showTour: shouldStartChapterTour(),
+        challenge: location.pathname === challenge.path,
+        targetPath: location.pathname === challenge.path ? challenge.path : chapterPath(firstChapter),
+        showTour: location.pathname !== challenge.path && shouldStartChapterTour(),
         reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         awaitingDestination: false,
         revealing: false,
@@ -122,7 +123,7 @@ export function LabEntryTransition({ children }: { children: ReactNode }) {
       >
         {children}
       </div>
-      {active && <LabIntroScreen phase={phase ?? 'reacting'} />}
+      {active && <LabIntroScreen phase={phase ?? 'reacting'} challenge={runRef.current?.challenge ?? location.pathname === challenge.path} />}
     </>
   );
 }

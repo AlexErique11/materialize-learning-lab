@@ -4,14 +4,12 @@ import {
   chapterSectionPath,
   getChapterPages,
 } from '../../src/chapters/chapterOutline';
-import { challenges, challengePath } from '../../src/challenges/challengeRegistry';
+import { challenge } from '../../src/challenges/challengeRegistry';
 import { THEME_STORAGE_KEY } from '../../src/hooks/theme';
 import { expect, test } from './fixtures';
 
 const firstChapter = coreChapters[0];
-const firstChallenge = challenges[0];
-if (!firstChapter || !firstChallenge)
-  throw new Error('The learning path must have chapters and capstones.');
+if (!firstChapter) throw new Error('The learning path must have chapters.');
 
 test('chapter overview lists collapse independently and start their content', async ({ page, isMobile }, testInfo) => {
   const chapter = coreChapters.find((item) => item.slug === 'time-in-materialize');
@@ -207,7 +205,7 @@ test('sidebar subsections are keyboard-operable and reflect the active page', as
 }) => {
   await page.goto(chapterSectionPath(firstChapter, 'tutorial'));
   const sidebar = page.getByRole('complementary', { name: 'Guided labs navigation' });
-  const mobileToggle = page.locator('.mobile-sidebar > summary');
+  const mobileToggle = page.locator('#main-content .mobile-sidebar > summary');
   if (isMobile) {
     await mobileToggle.focus();
     await page.keyboard.press('Enter');
@@ -223,7 +221,7 @@ test('sidebar subsections are keyboard-operable and reflect the active page', as
   await sidebar.getByRole('link', { name: 'Lecture 2: Updates and batches', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Lecture 2', exact: true })).toBeVisible();
   if (isMobile) {
-    await expect(page.locator('.mobile-sidebar')).not.toHaveAttribute('open', '');
+    await expect(page.locator('#main-content .mobile-sidebar')).not.toHaveAttribute('open', '');
     await mobileToggle.click();
   }
   await expect(sidebar.getByRole('link', { name: 'Lecture 2: Updates and batches', exact: true })).toHaveAttribute(
@@ -517,22 +515,20 @@ test('every chapter opens its overview and tutorial reference controls remain ac
   await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
 });
 
-test('challenges have real overview and detail URLs', async ({ page }) => {
+test('Challenge opens the single incident directly from the main page', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('main').getByRole('link', { name: 'Challenges', exact: true }).click();
-  await expect(page).toHaveURL('/challenges');
-  await page.getByRole('link', { name: new RegExp(firstChallenge.title) }).click();
-  await expect(page).toHaveURL(challengePath(firstChallenge));
+  await page.getByRole('main').getByRole('link', { name: 'Challenge', exact: true }).click();
+  await expect(page).toHaveURL(challenge.path);
   await expect(
-    page.getByRole('heading', { name: firstChallenge.title, exact: true }),
+    page.getByRole('heading', { name: challenge.pageTitle, exact: true }),
   ).toBeVisible();
-  await expect(page.getByRole('region', { name: 'Coming soon', exact: true })).toBeVisible();
-  await page.getByRole('link', { name: 'All challenges', exact: true }).click();
-  await expect(page).toHaveURL('/challenges');
+  await expect(page.getByRole('button', { name: 'Start incident', exact: true })).toBeVisible();
+  await page.getByRole('link', { name: 'Back to main page', exact: true }).click();
+  await expect(page).toHaveURL('/');
   await expect(page.getByText('Not started', { exact: true })).toHaveCount(0);
 });
 
-test('Chapter 7 is available while planned challenges explain their availability', async ({ page }) => {
+test('Chapter 7 and the single challenge are available without planned placeholders', async ({ page }) => {
   await page.goto('/labs/consistent-reads');
   await expect(page.getByRole('heading', { name: 'Consistent Reads', exact: true })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Coming soon', exact: true })).toHaveCount(0);
@@ -541,11 +537,11 @@ test('Chapter 7 is available while planned challenges explain their availability
     await expect(page.locator('.chapter-content-list a')).toHaveCount(3);
     await expect(page.getByRole('region', { name: 'Coming soon', exact: true })).toHaveCount(0);
   }
-  await page.goto('/challenges');
-  await expect(page.getByText('Coming soon', { exact: true })).toHaveCount(challenges.length);
-  for (const challenge of challenges) {
-    await page.goto(challengePath(challenge));
-    await expect(page.getByRole('region', { name: 'Coming soon', exact: true })).toBeVisible();
+  for (const path of [challenge.path, ...challenge.legacyPaths]) {
+    await page.goto(path);
+    await expect(page).toHaveURL(challenge.path);
+    await expect(page.getByRole('heading', { name: challenge.pageTitle, exact: true })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Coming soon', exact: true })).toHaveCount(0);
   }
 });
 
@@ -657,6 +653,9 @@ test('learning path and content pages fit desktop viewports without hiding navig
         viewportWidth: window.innerWidth,
         viewportHeight: window.innerHeight,
         footerBottom: document.querySelector('footer')?.getBoundingClientRect().bottom,
+        mainCardColumns: document.querySelector('.learning-path-grid')
+          ? getComputedStyle(document.querySelector('.learning-path-grid')!).gridTemplateColumns.split(' ').length : null,
+        compactHeader: document.querySelector('.guided-lab-page')?.hasAttribute('data-compact-header') ?? false,
       }));
       expect(dimensions.width, `${route.path} at ${viewport.width}px`).toBeLessThanOrEqual(
         dimensions.viewportWidth,
@@ -672,7 +671,9 @@ test('learning path and content pages fit desktop viewports without hiding navig
         const navigation = await page
           .locator('.guided-lab-pagination')
           .boundingBox();
-        expect(navigation).not.toBeNull();
+        // Compact phone headers hide the pagination numbers; Shortcuts stays reachable.
+        if (viewport.width >= 640) expect(navigation).not.toBeNull();
+        else await expect(page.getByRole('button', { name: 'Keyboard shortcuts', exact: true })).toBeVisible();
         if (navigation)
           expect(navigation.y + navigation.height).toBeLessThanOrEqual(dimensions.viewportHeight);
         const reset = await page.getByRole('button', { name: 'Reset', exact: true }).boundingBox();
@@ -682,11 +683,13 @@ test('learning path and content pages fit desktop viewports without hiding navig
         expect(reset).not.toBeNull();
         if (viewport.width >= 640) expect(breadcrumb).not.toBeNull();
         if (navigation && reset) expect(navigation.y + navigation.height).toBeLessThanOrEqual(reset.y);
-        if (navigation && breadcrumb && viewport.width >= 640)
+        if (navigation && breadcrumb && viewport.width >= 640 && !dimensions.compactHeader)
           expect(Math.abs(navigation.y + navigation.height / 2 - breadcrumb.y - breadcrumb.height / 2)).toBeLessThan(1);
       } else {
         await expect(page.getByRole('contentinfo')).toHaveCount(0);
-        if (!isMobile) {
+        // The main page deliberately stacks its cards below the container breakpoint.
+        // That layout scrolls normally, including on tablet-sized desktop windows.
+        if (!isMobile && dimensions.mainCardColumns === 2) {
           expect(
             dimensions.height,
             `Learning path at ${viewport.width} × ${viewport.height}`,
