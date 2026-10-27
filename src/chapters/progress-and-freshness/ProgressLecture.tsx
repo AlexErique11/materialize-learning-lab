@@ -43,8 +43,9 @@ export function ProgressLecture({ chapter, navigation, lectureIndex, manageDocum
   const focus = useGuidedFocus(`${state.guided}:${state.step}:${state.revealed}`, [primary, ...(!pending ? lesson.related ?? [] : [])], refs,
     { axis: 'Logical-time axis', lanes: 'Aligned progress lanes', orders: 'Orders', payments: 'Payments', join: 'Paid orders', revenue: 'Revenue', detail: 'Current evidence', metrics: 'Progress overview', lag: 'Lag breakdown' });
   const lane = state.guided ? focus.id : target;
-  const active = lane === 'orders' || lane === 'payments' || lane === 'join' || lane === 'revenue' ? lane
-    : target === 'orders' || target === 'payments' || target === 'join' || target === 'revenue' ? target : selected;
+  const detailLane = state.guided && focus.id === 'detail' ? lesson.detailLane : undefined;
+  const active = detailLane ?? (lane === 'orders' || lane === 'payments' || lane === 'join' || lane === 'revenue' ? lane
+    : target === 'orders' || target === 'payments' || target === 'join' || target === 'revenue' ? target : selected);
   const guidedPrevious = !pending && lesson.action.type !== 'fixture' ? state.step > 0 ? lecture.lessons[state.step - 1]!.snapshot : lecture.initial : undefined;
   useEffect(() => { if (helpOpen) dispatch({ type: 'pause' }); }, [helpOpen, dispatch]);
   // Keep concept-only checkpoints in the guide, while normal playback shows actions.

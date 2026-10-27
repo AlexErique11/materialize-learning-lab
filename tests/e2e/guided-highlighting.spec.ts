@@ -27,11 +27,18 @@ const cases = [
   { chapter: 'views-indexes-materialized-views', lecture: 3, title: 'Follow one update through the design', targets: ['input', 'durable', 'a', 'b'] },
   { chapter: 'getting-data-in', lecture: 1, title: 'Catch up the deletion', targets: ['relation', 'metrics', 'ingestion'] },
   { chapter: 'time-in-materialize', lecture: 4, title: 'Extend an active lifetime', targets: ['result', 'source', 'timeline'] },
-  { chapter: 'progress-and-freshness', lecture: 2, title: 'Permission is not completed processing', targets: ['payments', 'join'] },
+  { chapter: 'progress-and-freshness', lecture: 1, title: 'Observed is different from complete', targets: ['orders', 'detail'] },
+  { chapter: 'progress-and-freshness', lecture: 2, title: 'Catch up to the current input limit', targets: ['join', 'detail'] },
+  { chapter: 'progress-and-freshness', lecture: 2, title: 'Permission is not completed processing', targets: ['payments', 'join', 'detail'] },
+  { chapter: 'progress-and-freshness', lecture: 2, title: 'The limiting input can change', targets: ['payments', 'orders', 'join', 'detail'] },
+  { chapter: 'progress-and-freshness', lecture: 2, title: 'A tie still constrains progress', targets: ['orders', 'payments', 'join', 'detail'] },
   { chapter: 'progress-and-freshness', lecture: 3, title: 'Introduce the simulated wall clock', targets: ['axis', 'metrics'] },
   { chapter: 'progress-and-freshness', lecture: 3, title: 'New incident: a stalled source', targets: ['lanes', 'detail', 'lag'] },
   { chapter: 'progress-and-freshness', lecture: 3, title: 'New incident: maintained computation', targets: ['lanes', 'detail', 'lag'] },
   { chapter: 'progress-and-freshness', lecture: 3, title: 'New incident: current data, slow query', targets: ['detail', 'lanes', 'metrics'] },
+  { chapter: 'consistent-reads', lecture: 2, title: 'A table and its derived result', targets: ['query', 'result'] },
+  { chapter: 'consistent-reads', lecture: 2, title: 'Separate request order and data time', targets: ['axis', 'windows'] },
+  { chapter: 'consistent-reads', lecture: 3, title: 'Introduce a clock-aligned fixture', targets: ['axis', 'query', 'windows'] },
 ];
 
 for (const item of cases) {
@@ -65,6 +72,21 @@ for (const item of cases) {
       expect(opening!.width).toBeGreaterThan(100);
       expect(opening!.height).toBeGreaterThan(20);
       await expectGuideClearOfTargets(page);
+      if (target === 'detail' && item.lecture === 2 && item.chapter === 'progress-and-freshness') {
+        const evidence = page.getByTestId('progress-detail');
+        await expect(evidence).toHaveAttribute('data-relation', 'join');
+        const fact = (label: string) => evidence.locator('.progress-inspector-facts > div').filter({ has: page.getByText(label, { exact: true }) }).locator('dd');
+        const values: Record<string, [string, string, string]> = {
+          'Catch up to the current input limit': ['8', 'Payments', '0'],
+          'Permission is not completed processing': ['14', 'Payments', '6'],
+          'The limiting input can change': ['16', 'Orders', '2'],
+          'A tie still constrains progress': ['18', 'Orders and Payments', '4'],
+        };
+        const [limit, limiter, gap] = values[item.title]!;
+        await expect(fact('Input limit')).toHaveText(limit);
+        await expect(fact('Limiting input')).toHaveText(limiter);
+        await expect(fact('Processing gap')).toHaveText(gap);
+      }
       await expect(dialog.locator('.relation-guide-step')).toHaveText(step!);
       expect(await signature()).toBe(original);
     }

@@ -69,6 +69,10 @@ playback positions. Chapter CSS does not override those positions. Compact lanes
 retain the relationship between all inputs and output, while stage buttons choose
 the detail. Both themes use common tokens; marker shapes and explicit text
 duplicate color meaning. Guides spotlight actual lanes or the evidence section.
+Revealed observation and join-progress checkpoints also expose their evidence
+panel. A checkpoint can specify the evidence relation separately from its source
+lane, so inspecting a changed input limit keeps Paid orders' gap and limiter
+visible without applying another action or changing the reserved panel size.
 
 All lanes use the same row dimensions. Lectures 1–2 omit the fourth row inside
 the box and retain equivalent space outside it, so introducing Revenue does not

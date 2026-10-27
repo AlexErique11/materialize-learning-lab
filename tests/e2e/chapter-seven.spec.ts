@@ -40,6 +40,47 @@ for (const [index, lecture] of readLectures.entries()) {
   });
 }
 
+test('Chapter 7 lecture snapshot ages stay visible in the existing result slot', async ({ page, isMobile }) => {
+  test.setTimeout(90_000);
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const viewports = isMobile ? [{ width: 320, height: 568 }, { width: 390, height: 844 }, { width: 844, height: 390 }]
+    : [{ width: 1920, height: 1080 }, { width: 1280, height: 640 }, { width: 1024, height: 768 }];
+  for (const viewport of viewports) for (const theme of ['light', 'dark']) {
+    await page.setViewportSize(viewport);
+    await page.goto(`${base}/tutorial/lecture-3`);
+    if (await page.locator('html').getAttribute('data-theme') !== theme) await page.getByRole('button', { name: `Switch to ${theme} mode`, exact: true }).click();
+    const result = page.locator('.read-result');
+    const geometry = () => result.evaluate(element => {
+      const rect = element.getBoundingClientRect();
+      return [rect.x, rect.y + scrollY, rect.width, rect.height];
+    });
+    const original = await geometry();
+    await page.getByRole('button', { name: 'Start guided run', exact: true }).click();
+    await advanceGuidedLesson(page);
+    const dialog = page.locator('.relation-guide[open]');
+    for (const age of [2, 5, 8]) {
+      await dialog.getByRole('button', { name: 'Show effect', exact: true }).click();
+      await dialog.getByRole('button', { name: 'Query outcome', exact: true }).click();
+      const ageLabel = result.locator('.read-snapshot-age');
+      await expect(ageLabel).toBeVisible();
+      await expect(ageLabel).toHaveText(`Snapshot age: ${age} s`);
+      const headingFits = await result.locator('.read-result-heading').evaluate(heading => {
+        const status = heading.querySelector('strong')!.getBoundingClientRect();
+        const age = heading.querySelector('.read-snapshot-age')!.getBoundingClientRect();
+        const panel = heading.closest('.read-result')!.getBoundingClientRect();
+        return status.right <= age.left && age.right <= panel.right && age.bottom <= panel.bottom;
+      });
+      expect(headingFits, 'The age and status remain readable without overlapping').toBe(true);
+      const current = await geometry();
+      current.forEach((value, index) => expect(value).toBeCloseTo(original[index]!, 1));
+      expect(await result.evaluate(element => element.scrollHeight <= element.clientHeight + 1)).toBe(true);
+      await expectGuideClearOfTargets(page);
+      if (age < 8) await advanceGuidedLesson(page);
+    }
+    await dialog.getByRole('button', { name: 'Close guided run', exact: true }).click();
+  }
+});
+
 test('Chapter 7 cursor boundaries, diagram key, tour pause and normal playback', async ({ page }) => {
   const total = readPlaybackFrames(readLectures[0]!).length;
   await page.clock.install();

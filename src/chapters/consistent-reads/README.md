@@ -20,6 +20,8 @@ cursor; there is no independently advancing third shared frontier.
   and Previous/Next controls use the visual sequence outside guidance.
   Revealed steps inspect their authored related regions with the shared guided
   focus navigation; inspecting an effect does not advance the scenario.
+  Ordering introductions expose the earlier observation and input windows;
+  the clock introduction exposes current time and the shared complete window.
 - `ConsistentReadsExercisePage.tsx`: `ExerciseFrame`, `useExerciseStages`, and
   the same `LectureWorkspace`/diagram. Questions use `afterVisualization`.
   Incorrect answer controls and choice dialogs reference their field-specific
@@ -63,6 +65,9 @@ is contacted, and the cursor does not offer arbitrary time-travel SQL.
 All activities reuse one query strip, axis, lane geometry, marker vocabulary, key,
 result slot, and responsive rules. Shared templates own headings, controls, help,
 and playback/navigation. Layout ownership is recorded in `UI_LAYOUTS.md`.
+Lecture snapshot ages remain visible inside the existing result heading on narrow
+screens. Supplementary fixture labels and exercise prediction visibility retain
+their existing responsive rules and reserved footprints.
 Laptop exercise viewports of at least 1280×640 with the standard sidebar show the diagram, question, answers,
 and navigation together without scrolling or a diagram/question switch. Shared
 workspace measurements include the question's height; short laptop spacing is

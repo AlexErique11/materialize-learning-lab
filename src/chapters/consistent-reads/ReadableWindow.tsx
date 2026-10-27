@@ -60,7 +60,7 @@ export function ReadableWindow({ snapshot: s, refs, caption, revealOutcome = tru
       </div>
     </section>
     <section ref={refs?.result} className="read-result" data-status={status ?? 'prediction'} aria-label="Query outcome" aria-live="polite">
-      <div className="read-result-heading"><strong><Icon size={14} aria-hidden="true" />{status ? statusNames[status] : revealOutcome ? 'Choose a snapshot' : 'Predict the outcome'}</strong><span>{!revealOutcome ? 'Predict before applying the action' : s.attempt?.age !== undefined ? `Snapshot age: ${s.attempt.age / 1000} s` : s.label}</span></div>
+      <div className="read-result-heading"><strong><Icon size={14} aria-hidden="true" />{status ? statusNames[status] : revealOutcome ? 'Choose a snapshot' : 'Predict the outcome'}</strong><span className={revealOutcome && s.attempt?.age !== undefined ? 'read-snapshot-age' : undefined}>{!revealOutcome ? 'Predict before applying the action' : s.attempt?.age !== undefined ? `Snapshot age: ${s.attempt.age / 1000} s` : s.label}</span></div>
       <p><LessonText content={readText(detail)} /></p>
       {!assessment && <div className="read-support">{s.row && !s.row.ingested ? `Upstream order ${s.row.id} committed · not ingested${s.ingestionPaused ? ' · ingestion paused' : ''}` : s.row?.ingested && !s.row.processed ? `Order ${s.row.id} ingested · processing pending` : s.observed && s.row && revealOutcome ? `Last completed read: ${formatReadTime(s, s.observed.timestamp)} · order ${s.row.id} ${s.observed.rowVisible ? 'present' : 'absent'}` : 'Illustrative timestamp-selection model'}{s.queryMs !== undefined && revealOutcome ? ` · execution ${s.queryMs / 1000} s` : ''}</div>}
     </section>

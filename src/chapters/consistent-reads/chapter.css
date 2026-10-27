@@ -81,6 +81,7 @@
 }
 @media (max-width:1150px) {
   .read-result-heading > span { display: none; }
+  .read-workspace:not([data-assessment]) .read-result-heading > .read-snapshot-age { display: inline; }
   .read-query { gap: 8px; }
 }
 @media (max-width:767px) {
