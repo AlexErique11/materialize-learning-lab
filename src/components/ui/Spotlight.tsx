@@ -37,7 +37,7 @@ interface SpotlightGeometry {
 
 export function Spotlight({ open, targetRef, step, total, title, description, phaseLabel, visual, children, focusTargets, focusIndex = 0, onFocusChange, navigation, closeLabel = 'Close guided run', placement = 'auto', onClose }: SpotlightProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  useLabShortcuts(dialogRef, guideShortcuts, open && Boolean(navigation));
+  useLabShortcuts(dialogRef, navigation ? guideShortcuts : {}, open);
   const cardRef = useRef<HTMLDivElement>(null);
   const [geometry, setGeometry] = useState<SpotlightGeometry | null>(null);
   const titleId = useId();

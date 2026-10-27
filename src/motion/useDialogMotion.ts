@@ -1,5 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
 import { animateMotion, reveal } from './motion';
+import { focusLabContext, isShortcutInteraction } from '../components/ui/keyboardFocus';
 
 export function useDialogMotion(
   ref: RefObject<HTMLDialogElement | null>, open: boolean, onClose: () => void,
@@ -24,6 +25,7 @@ export function useDialogMotion(
     const finish = () => {
       if (generation.current !== token) return;
       dialog.close();
+      if (isShortcutInteraction(dialog)) focusLabContext();
       delete dialog.dataset.motionClosing;
       closing.current = false;
       if (notify) onCloseRef.current();
@@ -41,6 +43,7 @@ export function useDialogMotion(
       delete dialog.dataset.motionClosing;
       if (!dialog.open) {
         dialog.showModal();
+        if (isShortcutInteraction(dialog)) focusLabContext();
         reveal(targetRef?.current ?? dialog, 'dialog-enter', 8);
       }
     } else if (dialog.open) close(false);

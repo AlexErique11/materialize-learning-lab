@@ -298,15 +298,20 @@ Space toggles playback and Enter starts a guided run. R resets a lecture or
 exercise. Exercise Enter checks the answer, including from a single-line answer
 input; once accepted, Enter or Right activates the forward button, including the
 next exercise or chapter completion. Ctrl+Enter reveals the answer, H shows the
-exercise hint, and S toggles SQL & Objectives (Escape also closes it). Native button
-activation, editing, selects, text selection, other modifiers, and IME composition
-retain their behavior. Letter shortcuts do not run while typing in an input.
+exercise hint, and S toggles SQL & Objectives (Escape also closes it). Deliberate
+Tab navigation retains native button activation and visible focus. Shortcut use
+clears incidental button/table focus and returns focus to the active modal or page;
+the last mouse-clicked control cannot override Enter or Space. Form editing,
+selects, text selection, other modifiers, and IME composition retain their behavior.
+Letter shortcuts do not run while typing in an input.
 Held keys do not repeatedly advance or toggle actions. A modal blocks underlying
 page shortcuts; Escape retains native dialog cancellation and tooltip dismissal.
 The shared screen, guide, and exercise frame own these bindings across chapters.
 Chapter completion marks its next-chapter button with `data-dialog-primary`.
-The shared dialog focuses this action on opening and supports Enter to activate
-it; Escape closes the window and restores focus to the finished exercise.
+The shared dialog supports Enter to activate this action. Shortcut interaction
+focuses the dialog itself, then returns to the page on close. Other interactions
+retain primary-button focus and native trigger restoration, with visible control
+focus reserved for deliberate Tab navigation.
 
 `Spotlight` owns guide placement, masking, and related-region navigation.
 Lessons name a primary target and optional `related` targets; `useGuidedFocus`

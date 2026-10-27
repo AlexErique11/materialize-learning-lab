@@ -27,6 +27,7 @@ test('navigation, native help and SQL dialogs stay interactive', async ({ page, 
   const sql = page.getByRole('button', { name: 'SQL & Objectives', exact: true });
   // Safari does not focus buttons on a pointer click. Exercise keyboard focus
   // explicitly before asserting that the native dialog restores it.
+  await page.keyboard.press('Tab');
   await sql.focus();
   await expect(sql).toBeFocused();
   await page.keyboard.press('Enter');

@@ -3,6 +3,7 @@ import { X } from 'lucide-react';
 import { IconButton } from './IconButton';
 import { useDialogMotion } from '../../motion/useDialogMotion';
 import { useLabShortcuts } from '../../hooks/useLabShortcuts';
+import { isShortcutInteraction } from './keyboardFocus';
 
 const dialogShortcuts = { Enter: '[data-dialog-primary]' };
 
@@ -29,7 +30,7 @@ export function Dialog({ open, onClose, title, eyebrow, children, className = ''
   const requestClose = useDialogMotion(ref, open, onClose);
   useLabShortcuts(ref, dialogShortcuts, open);
   useLayoutEffect(() => {
-    if (open) ref.current?.querySelector<HTMLButtonElement>('[data-dialog-primary]')?.focus({ preventScroll: true });
+    if (open && ref.current && !isShortcutInteraction(ref.current)) ref.current.querySelector<HTMLButtonElement>('[data-dialog-primary]')?.focus({ preventScroll: true });
   }, [open]);
 
   return (

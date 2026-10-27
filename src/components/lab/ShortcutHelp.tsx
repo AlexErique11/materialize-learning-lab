@@ -2,6 +2,7 @@ import { Keyboard, X } from 'lucide-react';
 import { useId, useLayoutEffect, useRef, useState } from 'react';
 import { animateMotion } from '../../motion/motion';
 import { ShortcutKeys } from '../ui/ShortcutKeys';
+import { isTabNavigation } from '../ui/keyboardFocus';
 
 function ShortcutRow({ label, keys }: { label: string; keys: string }) {
   return <div className="shortcut-row"><dt>{label}</dt><dd><ShortcutKeys shortcuts={keys} /></dd></div>;
@@ -46,6 +47,7 @@ export function ShortcutHelp({ lecture, showReference, completionLabel, onOpenCh
         if (!panel || !panel.togglePopover()) return;
         // Native toggle events arrive after a paint; position in the opening action.
         positionPanel(panel, event.currentTarget);
+        if (!isTabNavigation(event.currentTarget)) panel.focus({ preventScroll: true });
         animateMotion(panel, 'shortcut-help', [
           { opacity: 0, transform: 'translateY(-3px) scale(0.98)' },
           { opacity: 1, transform: 'translateY(0) scale(1)' },
@@ -54,7 +56,7 @@ export function ShortcutHelp({ lecture, showReference, completionLabel, onOpenCh
       <Keyboard size={16} aria-hidden="true" />
       <span>Shortcuts</span>
     </button>
-    <div ref={panelRef} id={id} className="shortcut-help-panel" role="dialog" aria-labelledby={`${id}-title`}
+    <div ref={panelRef} id={id} className="shortcut-help-panel" role="dialog" tabIndex={-1} aria-labelledby={`${id}-title`}
       popover="auto" onToggle={event => {
         const next = event.newState === 'open';
         setOpen(next);
@@ -92,7 +94,7 @@ export function ShortcutHelp({ lecture, showReference, completionLabel, onOpenCh
           <ShortcutRow label={lecture ? 'Close guided run' : 'Close completion window'} keys="Escape" />
         </dl>
       </section>
-      <p className="shortcut-help-note">Esc closes this reference{showReference ? ' or SQL & Objectives' : ''}. Letter shortcuts pause while you type. A focused button keeps its usual Enter and Space actions.</p>
+      <p className="shortcut-help-note">Esc closes this reference{showReference ? ' or SQL & Objectives' : ''}. Letter shortcuts pause while you type. Use Tab to focus controls and Enter or Space to activate them.</p>
     </div>
   </>;
 }

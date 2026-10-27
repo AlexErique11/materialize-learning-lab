@@ -68,6 +68,10 @@
     outline-offset: 3px;
   }
 
+  .app-shell:not([data-focus-input='tab']) :focus-visible:not(input, textarea, select, [contenteditable]:not([contenteditable='false']), [role='textbox'], [role='combobox'], [role='slider'], [role='listbox'], [role='menu'], [role='tree'], [role='tablist']) {
+    outline: none;
+  }
+
   ::selection {
     color: var(--text);
     background: var(--accent-soft);

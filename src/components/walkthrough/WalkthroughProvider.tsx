@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { Button } from '../ui/Button';
 import { Dialog } from '../ui/Dialog';
 import { Spotlight } from '../ui/Spotlight';
+import { focusLabContext, isShortcutInteraction } from '../ui/keyboardFocus';
 import { chapterTourSteps, chapterTourWelcome, getLectureWalkthrough, type WalkthroughStep } from './walkthroughContent';
 import { rememberChapterTour } from './walkthroughStorage';
 
@@ -31,8 +32,8 @@ export function WalkthroughProvider({ children }: { children: ReactNode }) {
     pendingRoute.current = null;
     setSession(null);
     requestAnimationFrame(() => {
-      if (triggerRef.current?.isConnected) triggerRef.current.focus({ preventScroll: true });
-      else document.getElementById('main-content')?.focus({ preventScroll: true });
+      if (triggerRef.current?.isConnected && !isShortcutInteraction(triggerRef.current)) triggerRef.current.focus({ preventScroll: true });
+      else focusLabContext();
     });
   };
   const startChapterTour = useCallback((replace = false) => {

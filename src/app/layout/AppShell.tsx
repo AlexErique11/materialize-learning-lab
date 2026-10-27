@@ -17,7 +17,9 @@ export function AppShell() {
   }, [pathname]);
 
   return (
-    <div className={`app-shell${isLearningPath ? ' app-shell-learning-path' : ''}${isGuidedLab ? ' app-shell-guided-labs' : ''}`}>
+    <div className={`app-shell${isLearningPath ? ' app-shell-learning-path' : ''}${isGuidedLab ? ' app-shell-guided-labs' : ''}`}
+      onKeyDownCapture={event => { if (event.key === 'Tab') event.currentTarget.dataset.focusInput = 'tab'; }}
+      onPointerDownCapture={event => { event.currentTarget.dataset.focusInput = 'pointer'; }}>
       <WalkthroughProvider>
         <UiMotion />
         <AreaTransition />

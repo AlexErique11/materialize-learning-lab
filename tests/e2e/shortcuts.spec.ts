@@ -48,7 +48,8 @@ for (const [chapter, total] of chapters) {
       await expect(page.locator('.relation-guide[open]')).toBeVisible();
       await page.keyboard.press('Escape');
       await expect(page.locator('.relation-guide[open]')).toHaveCount(0);
-      // A focused button keeps native Space activation; it must toggle only once.
+      // Deliberate Tab navigation keeps native Space activation; toggle only once.
+      await page.keyboard.press('Tab');
       await page.getByRole('button', { name: 'Run', exact: true }).focus();
       await page.keyboard.press('Space');
       await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
@@ -95,7 +96,8 @@ for (const [chapter, total] of chapters) {
     expect(await page.evaluate(() => (window as unknown as { submissions: number }).submissions)).toBe(1);
     await page.keyboard.press('ArrowRight');
     await expect(progress).toHaveText(initial!);
-    // Enter on another focused button keeps that button's own action.
+    // Deliberate Tab navigation keeps the focused button's own Enter action.
+    await page.keyboard.press('Tab');
     await page.getByRole('button', { name: 'Show Answer', exact: true }).focus();
     await page.keyboard.press('Enter');
     await expect(question).toHaveAttribute('data-result', 'correct');
@@ -140,7 +142,7 @@ test('guide arrows preserve predictions, related inspections and the simulation 
   await expect(page.getByTestId('snapshot-checkpoint')).toHaveText('t = 7');
   await page.keyboard.press('Escape');
   await expect(guide).not.toBeVisible();
-  await expect(page.getByRole('button', { name: 'Start guided run', exact: true })).toBeFocused();
+  await expect(page.locator('#main-content')).toBeFocused();
   await page.keyboard.press('ArrowLeft');
   await expect(page.getByTestId('snapshot-checkpoint')).toHaveText('t = 6');
 });
@@ -242,10 +244,10 @@ for (const [index, [chapter, exercise, nextChapter]] of chapterCompletions.entri
     }
     const completion = page.getByRole('dialog', { name: `You finished Chapter ${index + 1}`, exact: true });
     await expect(completion).toBeVisible();
-    await expect(completion.getByRole('button', { name: 'Go to next chapter', exact: true })).toBeFocused();
+    await expect(completion).toBeFocused();
     await page.keyboard.press('Escape');
     await expect(completion).not.toBeVisible();
-    await expect(finish).toBeFocused();
+    await expect(page.locator('#main-content')).toBeFocused();
     await page.keyboard.press('Enter');
     await expect(completion).toBeVisible();
     await page.keyboard.press('Enter');
