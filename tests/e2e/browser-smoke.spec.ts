@@ -10,7 +10,7 @@ test('SUBSCRIBE holds partial changes and publishes complete timestamp groups', 
   await expect(page.getByRole('region', { name: 'Pending timestamp tray', exact: true })).toContainText('Open · pending');
   await next.click();
   await expect(row).toContainText('130');
-  await expect(result).toContainText('Showing times < 13');
+  await expect(result).toContainText('Published before 13');
   await page.getByRole('button', { name: 'Diagram key', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Timestamp-tray diagram key', exact: true })).toContainText('mz_progressed = true');
   await page.keyboard.press('Escape');

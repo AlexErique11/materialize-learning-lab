@@ -155,6 +155,7 @@ test('chapter completion preserves the finished inventory, fits both themes, and
     await page.getByRole('button', { name: `Switch to ${theme} mode`, exact: true }).click();
     for (const viewport of viewports) {
       await page.setViewportSize(viewport);
+      await page.keyboard.press('Tab');
       await finish.focus();
       await page.keyboard.press('Enter');
       await expect(completion).toBeVisible();
@@ -183,6 +184,7 @@ test('chapter completion preserves the finished inventory, fits both themes, and
   await expect(progress(page)).toHaveAttribute('value', '0');
   await completeExercise();
   await finish.click();
+  await page.keyboard.press('Tab');
   await completion.getByRole('button', { name: 'Go to next chapter', exact: true }).focus();
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL('/labs/incremental-maintenance');
@@ -202,6 +204,8 @@ test('the chapter lists one exercise, preserves old links, and keeps the request
   const reference = page.getByRole('dialog', { name: 'SQL & Objectives', exact: true });
   for (const theme of ['light', 'dark']) {
     await page.getByRole('button', { name: `Switch to ${theme} mode`, exact: true }).click();
+    // Enter activates the focused control only after deliberate Tab navigation.
+    await page.keyboard.press('Tab');
     await referenceButton.focus();
     await page.keyboard.press('Enter');
     await expect(reference).toBeVisible();
@@ -287,6 +291,7 @@ test('all phases fit desktop screens with stable grids, nonbreaking labels, and 
             }
           }
           if (usesPanelTabs) {
+            await page.keyboard.press('Tab');
             await panelTabs.getByRole('button', { name: 'Question', exact: true }).focus();
             await page.keyboard.press('Enter');
           }

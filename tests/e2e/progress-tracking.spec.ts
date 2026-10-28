@@ -118,7 +118,8 @@ for (const chapter of chapters) {
           }
           await page.setViewportSize(viewport);
         }
-        await expect(dialog.getByRole('button', { name: nextChapter ? 'Go to next chapter' : 'Return to learning path', exact: true })).toBeFocused();
+        // Shortcut completion keeps neutral focus on the dialog, not its primary button.
+        await expect(dialog).toBeFocused();
       } else {
         await expect(dialog).toContainText('Chapter in progress');
         await expect(dialog).toContainText('You have left:');
@@ -135,8 +136,9 @@ for (const chapter of chapters) {
       }
       await page.keyboard.press('Escape');
       await expect(dialog).not.toBeVisible();
-      await expect(finish).toBeFocused();
+      await expect(prerequisitesComplete ? page.locator('#main-content') : finish).toBeFocused();
       await finish.click();
+      await expect(dialog.getByRole('button', { name: nextChapter ? 'Go to next chapter' : prerequisitesComplete ? 'Return to learning path' : 'Chapter overview', exact: true })).toBeFocused();
       await page.keyboard.press('Enter');
       await expect(page).toHaveURL(nextChapter ? `/labs/${nextChapter.slug}` : prerequisitesComplete ? '/' : `/labs/${chapter.slug}`);
     });
@@ -234,9 +236,10 @@ for (const chapter of chapters) {
       await finish(page);
       await expect(dialog).toBeVisible();
       await expect(progress(page)).toHaveAttribute('value', '1');
-      await expect(dialog.getByRole('button', { name: coreChapters[chapter.number] ? 'Go to next chapter' : 'Return to learning path', exact: true })).toBeFocused();
+      await expect(dialog).toBeFocused();
       await page.keyboard.press('Escape');
       await expect(dialog).not.toBeVisible();
+      await expect(page.locator('#main-content')).toBeFocused();
       await page.reload();
       await expect(dialog).not.toBeVisible();
       await expect(titleCheck(page)).toBeVisible();
@@ -267,6 +270,7 @@ test('chapter completion still requires earlier exercises after all tutorials ar
   const remaining = dialog.getByRole('list', { name: 'Remaining chapter activities' }).getByRole('link');
   await expect(remaining).toHaveCount(1);
   await expect(remaining).toHaveAttribute('href', missingPath);
+  await page.keyboard.press('Tab');
   await dialog.getByRole('button', { name: 'Chapter overview', exact: true }).focus();
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL('/labs/incremental-maintenance');
