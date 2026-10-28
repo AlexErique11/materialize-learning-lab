@@ -11,7 +11,7 @@ and shared CSS, not independently maintained mockup files.
 | `LectureScreen`, `layout="with-tip"` | Chapter 1 lectures 1–2 | Chapter 1 reference frame, metrics, visualization, playback, and bottom tip when it fits. |
 | `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 3 lectures 1–3; Chapter 4 lectures 1–4; Chapter 5 lectures 1–4; Chapters 6–8 lectures 1–3 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
 | `ExerciseFrame` through `GuidedLabScreen` | Chapter 1–8 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
-| `LiveOrderOperationsPage` | The single course challenge | Open investigation at `/challenge`: one complaint, five freely accessible workspaces, executable SQL, evidence notebook, and handover. |
+| `LiveOrderOperationsPage` | The single course challenge | Open investigation at `/challenge`: one complaint, five freely accessible workspaces, executable SQL, and handover. |
 
 `src/challenges/live-order-operations/challenge.css` owns the incident-specific
 layout. It reuses `ActivityHeading`, the white lab theme, relation panels/tables,
@@ -546,6 +546,10 @@ management. Only the visible activity owns the browser title, including on resiz
   after a short pointer grace period; focus, Escape, and outside clicks retain
   their existing behavior.
   `logicalTimestampHelp.ts` contains the cross-chapter timestamp definition.
+  Challenge panels, settings, metrics, and change history reuse this component through
+  `src/challenges/live-order-operations/ChallengeHelp.tsx`. `PanelHeader` accepts
+  an optional help slot beside its title, keeping heading names and trailing
+  controls separate.
 - `src/hooks/useExerciseStages.ts` owns exercise-stage state, grading types and integer parsing.
 - `src/styles/lesson.css` owns common lesson typography, metrics, panels, tables and help.
 - `src/styles/exercise.css` owns the shared question frame and controls. Chapter 1

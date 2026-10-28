@@ -30,8 +30,8 @@ appears before handover. The design and build rationale is in
   bounded results, a 3-second database statement setting and a 30-second external
   deadline. Cancel/timeout terminates the worker; retry rebuilds it from saved
   configuration. All WASM/data assets use Vite's base-aware generated URLs.
-- `run.ts`: free investigation actions, configuration revisions, undo, pinned
-  observations, deployment, explicit processing and reads, assistance, validation
+- `run.ts`: free investigation actions, configuration revisions, undo,
+  deployment, explicit processing and reads, assistance, validation
   invalidation, handover and persisted-state validation. No sequential stage.
 - `grading.ts`: checks real SQL traces against the independent oracle and an
   additional fixture with changed IDs, amounts and event times; checks source
@@ -43,7 +43,7 @@ appears before handover. The design and build rationale is in
   `materialize-learning-lab-challenges-v1`; its active run is never migrated.
   Valid old achievements are historical, not V2 completion.
 - `LiveOrderOperationsPage.tsx`: shared activity chrome, worker/context lifecycle,
-  dialogs, free workspace composition, optional help and notebook. SQL previews
+  dialogs, free workspace composition, optional help and automatic change history. SQL previews
   are bound to run/configuration/draft/mode/frame. Validation is also bound to
   time, processing and read context. Obsolete responses are discarded.
 - `InvestigationSql.tsx`: predicate editor, read-only diagnostic console, complete
@@ -51,7 +51,7 @@ appears before handover. The design and build rationale is in
 - `InvestigationPanels.tsx` / `ChallengeEvidence.tsx`: data/dashboard/system/client
   observations and controls, shared tables, Chapter 7 ReadableWindow, and Chapter
   8 TimestampTrays. Client data always derives from the deployed query.
-- `ChallengeReport.tsx`: acceptance results, actual pinned evidence, the learner's
+- `ChallengeReport.tsx`: acceptance results, the learner's
   explanation, and honest independent/worked-repair attribution.
 
 ## Model boundaries

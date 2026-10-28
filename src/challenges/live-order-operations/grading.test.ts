@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { aggregateSql, parsePredicate } from './predicate';
 import { initialPredicate, repairedPredicate, expectedAt, initialConfiguration, traceTimes, requestRead } from './incident';
 import { queryCheck, systemChecks } from './grading';
-import { assistedRun, createRun, hasComparison, parseRun, readyForHandover, updateRun } from './run';
+import { assistedRun, createRun, parseRun, readyForHandover, updateRun } from './run';
 const trace = traceTimes.map(time => ({ time, rows: [...expectedAt(time)] }));
 describe('free investigation and validation', () => {
   it('accepts equivalent predicates by grammar, without an answer-key comparison', () => {
@@ -43,23 +43,28 @@ describe('free investigation and validation', () => {
     run.config.publication = 'complete'; expect(systemChecks(run, trace).find(c => c.id === 'client')?.passed).toBe(true);
     run.config.snapshot = false; expect(systemChecks(run, trace).find(c => c.id === 'client')?.passed).toBe(false);
   });
-  it('invalidates stale checks, requires real comparisons, and preserves assistance on undo', () => {
+  it('completes without pinned observations, invalidates stale checks, and preserves assistance on undo', () => {
     let run = updateRun(createRun('checks'), { type: 'start' });
-    run = updateRun(run, { type: 'pin', observation: { label: 'Before', detail: 'Initial state', time: 630000 } });
     run = updateRun(run, { type: 'worked', workspace: 'Client' });
     expect(assistedRun(run)).toBe(true);
-    run = updateRun(run, { type: 'pin', observation: { label: 'After', detail: 'Changed state', time: 630000 } });
-    expect(hasComparison(run)).toBe(true);
     const checks = [queryCheck(trace), ...systemChecks({ ...run, config: { ...run.config, connected: true }, processed: true, read: requestRead({ ...run.config, connected: true }, 630000, true) }, trace)];
     run = updateRun(run, { type: 'validation', runId: run.id, configuration: 0, checks }); expect(run.validation).toBeNull();
     run = updateRun(run, { type: 'validation', runId: run.id, configuration: run.configurationRevision, checks }); expect(readyForHandover(run)).toBe(true);
     run = updateRun(run, { type: 'handover' }); expect(updateRun(run, { type: 'complete' }).phase).toBe('handover');
-    run = updateRun(run, { type: 'note', value: 'The before and after evidence explains the changed publication behavior.' });
+    run = updateRun(run, { type: 'note', value: 'I corrected the query, restored processing, and published complete timestamps.' });
     run = updateRun(run, { type: 'complete' }); expect(run.phase).toBe('completed'); expect(parseRun(run)).toEqual(run);
     run = updateRun(run, { type: 'undo' }); expect(run.validation).toBeNull(); expect(run.phase).toBe('investigating'); expect(assistedRun(run)).toBe(true);
   });
   it('rejects malformed persisted state without migrating a first-version run', () => {
-    for (const patch of [{ scenarioVersion: 1 }, { deliveries: 99 }, { draft: null }, { observations: [null] }, { hints: { SQL: 4 } }, { config: { ...initialConfiguration(), predicate: 'DROP TABLE orders' } }, { validation: { configuration: 0, checks: [] } }, { phase: 'completed' }]) expect(parseRun({ ...createRun('invalid'), ...patch })).toBeNull();
+    for (const patch of [{ scenarioVersion: 1 }, { deliveries: 99 }, { draft: null }, { hints: { SQL: 4 } }, { config: { ...initialConfiguration(), predicate: 'DROP TABLE orders' } }, { validation: { configuration: 0, checks: [] } }, { phase: 'completed' }]) expect(parseRun({ ...createRun('invalid'), ...patch })).toBeNull();
+  });
+  it('discards old notebook snapshots while preserving a saved investigation', () => {
+    let run = updateRun(createRun('existing'), { type: 'start' });
+    run = updateRun(run, { type: 'draft', value: repairedPredicate });
+    run = updateRun(run, { type: 'note', value: 'Keep this handover explanation.' });
+    const saved = { ...run, observations: [{ id: 'old-pin', label: 'Before', detail: 'Old snapshot', time: 630000, configuration: 0, workspace: 'Dashboard' }] };
+    expect(parseRun(saved)).toEqual(run);
+    expect(saved.observations).toHaveLength(1);
   });
 });
 

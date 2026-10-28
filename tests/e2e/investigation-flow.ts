@@ -9,7 +9,6 @@ export async function repairQuery(page: Page, sql = predicate) {
   await page.getByRole('button', { name: 'Run SQL', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Deploy query', exact: true })).toBeEnabled({ timeout: 45000 });
   await page.getByRole('button', { name: 'Deploy query', exact: true }).click();
-  await page.getByRole('button', { name: 'Pin deployed result', exact: true }).click();
 }
 export async function restoreServing(page: Page) {
   await workspace(page, 'System');
@@ -28,12 +27,11 @@ export async function handover(page: Page) {
   await page.getByRole('button', { name: 'Submit handover', exact: true }).click();
   await page.getByRole('button', { name: 'Run acceptance checks', exact: true }).click();
   await expect(page.getByText(/^Passed ·/)).toHaveCount(5, { timeout: 45000 });
-  await page.getByRole('textbox', { name: 'Explain what caused the discrepancy and how your evidence supports the repair', exact: true }).fill('The query expired orders by arrival time. I corrected it using event time, restored customer progress, and buffered complete subscription timestamps. The pinned before and after snapshots document the changed behavior.');
+  await page.getByRole('textbox', { name: 'Explain what caused the discrepancy and how you repaired it', exact: true }).fill('The query expired orders by arrival time. I corrected it using event time, restored customer progress, and buffered complete subscription timestamps.');
   await page.getByRole('button', { name: 'Complete handover', exact: true }).click();
 }
 export async function completeInvestigation(page: Page, reverse = false) {
   await start(page);
-  await page.getByRole('button', { name: 'Pin observation', exact: true }).click();
   if (reverse) { await repairClient(page); await restoreServing(page); }
   await repairQuery(page);
   if (!reverse) await repairClient(page);

@@ -50,7 +50,7 @@ Open **Challenge** on the main page to enter **Save the Flash Sale** directly at
 incident combining Chapters 1–8. Start with one reported dashboard discrepancy;
 explore Dashboard, Data, SQL, System, and Client in any order. Run diagnostic
 SELECTs, edit and deploy the inherited query's temporal predicate, make
-operational changes, pin before/after evidence, and verify the full system.
+operational changes, and verify the full system.
 There is no checklist revealing the faulty components or required repair order.
 Previous `/challenges` URLs redirect to the same incident.
 
@@ -59,7 +59,7 @@ source, cluster, progress, read-policy, and subscription behavior is simulated.
 Chapter 7/8 semantics are reused. The SQL runtime's WASM/data assets load only
 when an investigation starts, and are bundled locally for static deployment.
 
-Drafts, deployed configuration, workspace, replay position, observations, notes,
+Drafts, deployed configuration, workspace, replay position, handover explanation,
 and assistance save automatically. Returning resumes directly; Restart preserves
 achievements and chapter progress. Version 2 has a separate store, so first-version
 saved runs remain intact and their completions appear as historical achievements.

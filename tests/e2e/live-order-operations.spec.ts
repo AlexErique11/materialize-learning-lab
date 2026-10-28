@@ -17,7 +17,7 @@ test('main entry opens one complaint and an independently completed investigatio
 
 test('repair order is free and equivalent SQL passes the same behavior checks', async ({ page }) => {
   await page.goto('/challenge');
-  await start(page); await page.getByRole('button', { name: 'Pin observation', exact: true }).click();
+  await start(page);
   await repairClient(page); await restoreServing(page);
   await repairQuery(page, "(mz_now() < (event_at + INTERVAL '300 seconds')) AND (status = 'paid' AND mz_now() >= event_at)");
   await restoreServing(page); await handover(page);
@@ -58,9 +58,8 @@ test('SQL runs real read-only diagnostics and a wrong valid deployment has obser
   await expect(page.getByRole('dialog')).toContainText('This client publishes each signed change as soon as it arrives');
 });
 
-test('drafts, notebook, workspace and optional restart survive refresh and return', async ({ page }) => {
+test('drafts, workspace and optional restart survive refresh and return', async ({ page }) => {
   await page.goto('/challenge'); await start(page);
-  await page.getByRole('button', { name: 'Pin observation', exact: true }).click();
   await workspace(page, 'SQL');
   await page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true }).fill('unfinished predicate');
   await page.getByRole('link', { name: 'Back to main page', exact: true }).click();
@@ -91,7 +90,7 @@ test('open tabs synchronize automatically without loading prompts', async ({ pag
 });
 
 test('assistance is optional and recorded; syntax errors and stale previews cannot deploy', async ({ page }) => {
-  await page.goto('/challenge'); await start(page); await page.getByRole('button', { name: 'Pin observation', exact: true }).click();
+  await page.goto('/challenge'); await start(page);
   await workspace(page, 'SQL');
   await page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true }).fill('DROP TABLE orders');
   await page.getByRole('button', { name: 'Run SQL', exact: true }).click();
@@ -102,7 +101,6 @@ test('assistance is optional and recorded; syntax errors and stale previews cann
   await page.getByRole('button', { name: 'Show worked repair', exact: true }).click();
   await page.getByRole('button', { name: 'Run SQL', exact: true }).click();
   await page.getByRole('button', { name: 'Deploy query', exact: true }).click();
-  await page.getByRole('button', { name: 'Pin deployed result', exact: true }).click();
   await repairClient(page); await restoreServing(page); await handover(page);
   await expect(page.getByText('Completed with walkthrough', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Restart challenge', exact: true }).click(); await page.getByRole('button', { name: 'Restart investigation', exact: true }).click();

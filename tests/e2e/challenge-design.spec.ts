@@ -1,6 +1,123 @@
 import { expect, test } from './fixtures';
 import { start, workspace } from './investigation-flow';
 
+test('workspaces and handover have no notebook or pin controls', async ({ page }) => {
+  await page.goto('/challenge');
+  await start(page);
+  for (const name of ['Dashboard', 'Data', 'SQL', 'System', 'Client']) {
+    await workspace(page, name);
+    await expect(page.getByRole('button', { name: /^Pin / })).toHaveCount(0);
+    await expect(page.getByText(/incident notebook/i)).toHaveCount(0);
+    await expect(page.getByRole('textbox', { name: 'Working hypothesis and handover notes', exact: true })).toHaveCount(0);
+  }
+  await page.getByRole('button', { name: 'Submit handover', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Your repair explanation', exact: true })).toBeVisible();
+  await expect(page.getByText(/attach observations|before.and.after evidence/i)).toHaveCount(0);
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('materialize-learning-lab-challenge-v2')!).run)).not.toHaveProperty('observations');
+});
+
+test('context help works across challenge workspaces without changing the investigation', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  const showHelp = async (label: string, text: string, click = false) => {
+    const trigger = page.getByRole('button', { name: `About ${label}`, exact: true }).first();
+    if (click) await trigger.click();
+    else await trigger.hover();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    const tooltip = page.getByRole('tooltip').filter({ hasText: text });
+    await expect(tooltip).toBeVisible();
+    const box = (await tooltip.boundingBox())!;
+    const viewport = page.viewportSize()!;
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(viewport.width);
+    expect(box.y).toBeGreaterThanOrEqual(0);
+    expect(box.y + box.height).toBeLessThanOrEqual(viewport.height);
+    await page.keyboard.press('Escape');
+    await expect(tooltip).not.toBeVisible();
+  };
+  await page.goto('/challenge');
+  await showHelp('An incident from operations', 'explore the workspaces in any order');
+  await page.getByRole('button', { name: 'About Your working environment', exact: true }).focus();
+  await expect(page.getByRole('tooltip').filter({ hasText: 'SQL runs locally in your browser' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await start(page);
+  await expect(page.getByRole('tooltip')).toHaveCount(0);
+  await showHelp('Last complete snapshot age', 'Normal reads allow at most three seconds');
+  await showHelp('Operations dashboard', 'Check the snapshot time and age');
+  await showHelp('Pause investigation', 'stops the activity timer', true);
+  await expect(page.getByRole('button', { name: 'Pause', exact: true })).toBeVisible();
+  await workspace(page, 'Data');
+  await showHelp('Current orders relation', 'This is input data');
+  await showHelp('Event time', 'When the business event happened');
+  await showHelp('Retained producer messages', 'including earlier versions of orders', true);
+  await workspace(page, 'SQL');
+  await showHelp('Regional query draft', 'Deploy query makes a successfully tested draft live');
+  await showHelp('Historical replay snapshot', 'does not advance the live incident', true);
+  await expect(page.getByRole('combobox', { name: 'Historical replay snapshot', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Diagnostic SELECT', exact: true }).click();
+  await showHelp('Read-only diagnostic console', 'Diagnostic queries cannot be deployed');
+  await workspace(page, 'System');
+  await showHelp('Complete strictly below', 'The boundary timestamp itself is still open');
+  const configuration = page.locator('summary').filter({ hasText: 'Source and serving configuration' });
+  await showHelp('Source and serving configuration', 'settings change the simulated source', true);
+  await expect(configuration.locator('..')).not.toHaveAttribute('open');
+  await configuration.click();
+  await showHelp('Order envelope', 'latest full value for each key', true);
+  await expect(page.getByRole('combobox', { name: 'Order envelope', exact: true })).toHaveValue('UPSERT');
+  await workspace(page, 'Client');
+  await showHelp('Application subscription', 'Next delivery receives one batch');
+  await showHelp('Publish application updates', 'Chooses when received changes become visible', true);
+  await expect(page.getByRole('combobox', { name: 'Publish application updates', exact: true })).toHaveValue('each');
+  await expect(page.getByRole('checkbox', { name: 'Initialize with a coordinated snapshot', exact: true })).toBeChecked();
+  await showHelp('Coordinated starting snapshot', 'consistent complete result', true);
+  await page.getByRole('button', { name: 'Submit handover', exact: true }).click();
+  await showHelp('End-to-end acceptance', 'Run acceptance checks tests the deployed system');
+  await showHelp('Your repair explanation', 'at least 20 characters of explanation');
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('materialize-learning-lab-challenge-v2')!));
+  expect(saved.run.hints).toEqual({});
+  expect(saved.run.worked).toEqual([]);
+  await page.getByRole('button', { name: 'Return to investigation', exact: true }).click();
+  await page.setViewportSize({ width: 320, height: 740 });
+  await showHelp('Publish application updates', 'Chooses when received changes become visible', true);
+});
+
+test('the complete briefing fits laptop windows and stays readable on phones', async ({ page }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/challenge');
+  for (const viewport of [
+    { width: 1440, height: 900 },
+    { width: 1536, height: 728 },
+    { width: 1440, height: 720 },
+    { width: 1366, height: 768 },
+    { width: 1280, height: 720 },
+    { width: 1280, height: 640 },
+    { width: 1024, height: 768 },
+  ]) {
+    await page.setViewportSize(viewport);
+    const geometry = await page.evaluate(() => ({
+      width: innerWidth,
+      height: innerHeight,
+      scrollWidth: document.documentElement.scrollWidth,
+      scrollHeight: document.documentElement.scrollHeight,
+    }));
+    expect(geometry.scrollWidth, `Horizontal overflow at ${viewport.width}×${viewport.height}`).toBeLessThanOrEqual(geometry.width);
+    expect(geometry.scrollHeight, `Vertical overflow at ${viewport.width}×${viewport.height}`).toBeLessThanOrEqual(geometry.height);
+    await expect(page.getByRole('button', { name: 'Start investigation', exact: true })).toBeInViewport();
+    await expect(page.getByText('Pause at any time.', { exact: false })).toBeInViewport();
+    await expect(page.locator('.incident-brief-grid .incident-requirements > li')).toHaveCount(5);
+    if (viewport.width === 1536) {
+      const bodySize = await page.locator('.incident-brief-grid .incident-card-body > p').first().evaluate(el => parseFloat(getComputedStyle(el).fontSize));
+      expect(bodySize).toBeGreaterThanOrEqual(15);
+      await page.screenshot({ path: testInfo.outputPath('briefing-laptop.png') });
+    }
+  }
+  for (const width of [390, 320]) {
+    await page.setViewportSize({ width, height: 740 });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await page.getByRole('heading', { name: 'Your working environment', exact: true }).scrollIntoViewIfNeeded();
+    await expect(page.getByText('Pause at any time.', { exact: false })).toBeVisible();
+  }
+});
+
 test('investigation shares lecture chrome while exposing free workspaces and no fault checklist', async ({ page }) => {
   const appearance = () => page.evaluate(() => {
     const title = getComputedStyle(document.querySelector('.guided-lab-title h1')!);

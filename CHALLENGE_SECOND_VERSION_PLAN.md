@@ -5,6 +5,11 @@ Status: implemented on `challenge-second-version`. See
 map, execution boundaries, and verification. This document preserves the design
 and implementation gates; facilitated learner timing remains a release follow-up.
 
+Current simplification: manual notebooks, pinned observations, and evidence
+submission have been removed. Handover requires five passing technical checks
+and a short repair explanation. Notebook-related requirements below describe
+the earlier design and are historical.
+
 Starting point: commit `da81e4d` on `challenge-first-version`. Development branch:
 `challenge-second-version`. The first version remains recoverable on its branch.
 The previous [capstone plan](./CAPSTONE_PLAN.md) describes that guided version.
