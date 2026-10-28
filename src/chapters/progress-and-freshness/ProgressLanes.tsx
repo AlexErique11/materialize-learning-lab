@@ -1,10 +1,11 @@
 import { useId, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react';
-import { CircleHelp, Database, GitMerge, Sigma } from 'lucide-react';
+import { Database, GitMerge, Sigma } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Dialog } from '../../components/ui/Dialog';
 import { inputLimit, laneNames, type LaneId, type ProgressSnapshot } from './simulation';
 import type { Target } from './lecture-scenarios';
 import { LessonText } from '../../components/lesson/LessonText';
+import { RelationHelp } from '../../components/lesson/RelationHelp';
 import { progressText } from './lessonText';
 import { LagLegend } from './LagLegend';
 import { relationDetails } from './relation-details';
@@ -104,13 +105,15 @@ export function ProgressLanes({ snapshot: s, selected = 'orders', onSelect, high
           </div>
         </section>;
       })}</div>
-      <button type="button" className="progress-legend" aria-label="Explain diagram symbols" title="Click to read the diagram key" onClick={() => { onInspect?.(); setKeyOpen(true); }}>
+      <div className="progress-legend">
         <span><i className="progress-key-solid" /><span className="progress-legend-full">Purple: frontier</span><span className="progress-legend-short">Frontier</span></span>
         <span><i className="progress-key-complete" /><span className="progress-legend-full">Green: completed time</span><span className="progress-legend-short">Complete</span></span>
         {showLimit && <span><i className="progress-key-limit" /><span className="progress-legend-full">Orange: pending work / input limit</span><span className="progress-legend-short">Pending</span></span>}
         <span><span className="progress-legend-full">◇ Changes seen</span><span className="progress-legend-short">◇ Seen</span></span>
-        {s.clock !== undefined && <span title={`Simulated wall clock: ${s.clock} s`}><i className="progress-key-clock" /><span className="progress-legend-full">Wall clock: {s.clock} s</span><span className="progress-legend-short">{s.clock} s</span></span>}<span><CircleHelp size={13} aria-hidden="true" />Key</span>
-      </button>
+        {s.clock !== undefined && <span title={`Simulated wall clock: ${s.clock} s`}><i className="progress-key-clock" /><span className="progress-legend-full">Wall clock: {s.clock} s</span><span className="progress-legend-short">{s.clock} s</span></span>}
+        <RelationHelp className="progress-key-help" label="Diagram key" text="Read the frontier, completed-time and change markers. Press to see the full diagram key."
+          onActivate={() => { onInspect?.(); setKeyOpen(true); }} />
+      </div>
     </div>
     {compact ? <section className="progress-detail progress-exercise-evidence" aria-label="Current evidence" data-testid="progress-detail"><ExerciseEvidenceMetrics snapshot={s} /><p data-motion-value><LessonText content={progressText(compactEvidence)} /></p></section> : <section ref={element => { inspectorRef.current = element; if (refs?.detail) refs.detail.current = element; }} className="progress-detail" data-inspector data-relation={selected} tabIndex={0} aria-labelledby={`${id}-detail`} data-testid="progress-detail">
       <div className="progress-detail-heading"><strong data-motion-value id={`${id}-detail`}><LessonText content={progressText(`${laneNames[selected]} · frontier ${f}${unit}`)} /></strong>

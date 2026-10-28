@@ -90,8 +90,38 @@ test('Chapter 7 cursor boundaries, diagram key, tour pause and normal playback',
     await slider.fill(time);
     await expect(page.locator('.read-result-heading')).toContainText(outcome);
   }
-  await page.getByRole('button', { name: 'Diagram key', exact: true }).click();
-  await expect(page.getByRole('dialog', { name: 'Readable-window diagram key' })).toContainText('right boundary is excluded');
+  const key = page.getByRole('button', { name: 'Diagram key', exact: true });
+  await expect(page.locator('.read-legend button')).toHaveCount(1);
+  await key.hover();
+  const tooltip = page.getByRole('tooltip').filter({ hasText: 'Press to see the full diagram key' });
+  await expect(tooltip).toBeVisible();
+  await expect(tooltip).toContainText('frontier, completed-time and retained-history');
+  await key.click();
+  const diagramKey = page.getByRole('dialog', { name: 'Diagram key', exact: true });
+  await expect(diagramKey).toContainText('right boundary is excluded');
+  await expect(diagramKey.locator('.read-key-definitions dt > i')).toHaveCount(5);
+  await expect(tooltip).not.toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(diagramKey).not.toBeVisible();
+  await expect(tooltip).not.toBeVisible();
+  const heading = page.getByRole('heading', { name: 'Lecture 1', exact: true });
+  await heading.hover();
+  await key.hover();
+  await expect(tooltip).toBeVisible();
+  await key.click();
+  await diagramKey.getByRole('button', { name: 'Close Diagram key', exact: true }).click();
+  await expect(diagramKey).not.toBeVisible();
+  await expect(tooltip).not.toBeVisible();
+  await heading.hover();
+  await key.hover();
+  await expect(tooltip).toBeVisible();
+  await heading.hover();
+  await page.clock.fastForward(200);
+  await expect(tooltip).not.toBeVisible();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Shift+Tab');
+  await expect(key).toBeFocused();
+  await expect(tooltip).toBeVisible();
   await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Reset', exact: true }).click();
   await page.getByRole('button', { name: 'Run', exact: true }).click();
@@ -107,6 +137,37 @@ test('Chapter 7 cursor boundaries, diagram key, tour pause and normal playback',
   await expect(page.locator('.guided-lab-progress strong')).toHaveText(`${total} / ${total}`);
   await expect(page.getByRole('button', { name: 'Run', exact: true })).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Lecture 1', exact: true })).not.toHaveAttribute('aria-description', 'Tutorial completed');
+});
+
+test('Chapter 7 diagram help stays dismissed after switching away and returning', async ({ page }) => {
+  await page.goto(`${base}/tutorial/lecture-1`);
+  const key = page.getByRole('button', { name: 'Diagram key', exact: true });
+  const tooltip = page.getByRole('tooltip').filter({ hasText: 'Press to see the full diagram key' });
+  const heading = page.getByRole('heading', { name: 'Lecture 1', exact: true });
+  await key.focus();
+  await expect(tooltip).toBeVisible();
+  // Model window deactivation and the browser restoring focus to the same control.
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await expect(tooltip).not.toBeVisible();
+  await page.evaluate(() => window.dispatchEvent(new Event('focus')));
+  await key.dispatchEvent('focusin');
+  await expect(tooltip).not.toBeVisible();
+  await heading.hover();
+  await key.hover();
+  await expect(tooltip).toBeVisible();
+  // Switching browser tabs must dismiss help even when the pointer never leaves.
+  await page.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'hidden' });
+    document.dispatchEvent(new Event('visibilitychange'));
+    Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' });
+    document.dispatchEvent(new Event('visibilitychange'));
+  });
+  await key.dispatchEvent('focusin');
+  await expect(tooltip).not.toBeVisible();
+  await page.keyboard.press('Tab');
+  await page.keyboard.press('Shift+Tab');
+  await expect(key).toBeFocused();
+  await expect(tooltip).toBeVisible();
 });
 
 test('Chapter 7 keeps native keyboard controls and diagram structure in both themes and sidebar modes', async ({ page }) => {
@@ -290,7 +351,7 @@ test('Chapter 7 timeline marks match Chapter 6 in both themes and screen sizes',
 
 test('Chapter 7 reuses diagram geometry across all six activities and feedback states', async ({ page }) => {
   test.setTimeout(120000);
-  for (const viewport of [{ width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1280, height: 650 }, { width: 1024, height: 768 }, { width: 768, height: 900 }, { width: 390, height: 844 }, { width: 390, height: 664 }]) {
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1366, height: 768 }, { width: 1280, height: 650 }, { width: 1024, height: 768 }, { width: 768, height: 900 }, { width: 390, height: 844 }, { width: 390, height: 664 }, { width: 320, height: 568 }]) {
     await page.setViewportSize(viewport);
     let lectureGeometry: number[] | undefined;
     let exerciseGeometry: number[] | undefined;
@@ -313,6 +374,13 @@ test('Chapter 7 reuses diagram geometry across all six activities and feedback s
         for (const i of [0, 2, 3, 4, 5]) expect(Math.abs(geometry[i]! - lectureGeometry![i]!)).toBeLessThanOrEqual(1);
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth)).toBe(false);
+      expect(await page.locator('.read-legend').evaluate(legend => {
+        const panel = legend.closest('.read-diagram')!.getBoundingClientRect();
+        return Array.from(legend.children).every(item => {
+          const rect = item.getBoundingClientRect();
+          return rect.left >= panel.left && rect.right <= panel.right && rect.bottom <= panel.bottom + 2;
+        });
+      }), 'Every legend label and the key button fit inside the timeline panel').toBe(true);
       const fit = await page.locator('.read-result').evaluate(element => element.scrollHeight <= element.clientHeight + 1);
       expect(fit, 'Outcome text fits its reserved slot').toBe(true);
     }

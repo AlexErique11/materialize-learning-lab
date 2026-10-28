@@ -1,8 +1,10 @@
 import { HelpCircle } from 'lucide-react';
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { animateMotion } from '../../motion/motion';
 
-export function RelationHelp({ label, text }: { label: string; text: string }) {
+export function RelationHelp({ label, text, children, className = '', onActivate, showIcon = true }: {
+  label: string; text: string; children?: ReactNode; className?: string; onActivate?: () => void; showIcon?: boolean;
+}) {
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
   const tooltipRef = useRef<HTMLSpanElement>(null);
@@ -10,6 +12,7 @@ export function RelationHelp({ label, text }: { label: string; text: string }) {
   const openRef = useRef(open);
   openRef.current = open;
   const pointerOpenRef = useRef(false);
+  const dismissedRef = useRef(false);
   const closeTimerRef = useRef<number | undefined>(undefined);
   const animationRef = useRef<Animation | null>(null);
   const hiddenTransformRef = useRef('translateY(-3px) scale(0.98)');
@@ -20,10 +23,32 @@ export function RelationHelp({ label, text }: { label: string; text: string }) {
     cancelClose();
     closeTimerRef.current = window.setTimeout(() => {
       if (!triggerRef.current?.matches(':hover') && !tooltipRef.current?.matches(':hover')
-        && document.activeElement !== triggerRef.current) setOpen(false);
+        && (document.activeElement !== triggerRef.current || (onActivate && pointerOpenRef.current))) setOpen(false);
     }, 150);
   };
-  useEffect(() => () => window.clearTimeout(closeTimerRef.current), []);
+  useEffect(() => {
+    const dismissInactive = () => {
+      window.clearTimeout(closeTimerRef.current);
+      dismissedRef.current = true;
+      pointerOpenRef.current = false;
+      openRef.current = false;
+      animationRef.current?.cancel();
+      animationRef.current = null;
+      const tooltip = tooltipRef.current;
+      if (tooltip?.matches(':popover-open')) tooltip.hidePopover();
+      setOpen(false);
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') dismissInactive();
+    };
+    window.addEventListener('blur', dismissInactive);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    return () => {
+      window.clearTimeout(closeTimerRef.current);
+      window.removeEventListener('blur', dismissInactive);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, []);
 
   useLayoutEffect(() => {
     const tooltip = tooltipRef.current;
@@ -99,22 +124,47 @@ export function RelationHelp({ label, text }: { label: string; text: string }) {
   }, [open]);
 
   return (
-    <span className="relation-help">
+    <span className={`relation-help ${className}`}>
       <button
         ref={triggerRef}
         type="button"
-        aria-label={`About ${label}`}
+        className={onActivate ? 'button button-ghost' : undefined}
+        aria-label={onActivate ? label : `About ${label}`}
         aria-describedby={open ? id : undefined}
-        aria-expanded={open}
+        aria-expanded={onActivate ? undefined : open}
+        aria-haspopup={onActivate ? 'dialog' : undefined}
         onPointerEnter={(event) => {
-          if (event.pointerType === 'mouse') { cancelClose(); pointerOpenRef.current = true; setOpen(true); }
+          if (event.pointerType === 'mouse' && document.hasFocus() && !dismissedRef.current) { cancelClose(); pointerOpenRef.current = true; setOpen(true); }
         }}
-        onPointerLeave={event => { if (event.pointerType !== 'touch') leave(); }}
-        onClick={() => { cancelClose(); setOpen(true); }}
-        onFocus={() => { cancelClose(); pointerOpenRef.current = false; setOpen(true); }}
-        onBlur={leave}
+        onPointerMove={event => {
+          if (event.pointerType === 'mouse' && dismissedRef.current && document.hasFocus()
+            && (event.movementX !== 0 || event.movementY !== 0) && !document.querySelector('dialog:modal')) {
+            dismissedRef.current = false;
+            cancelClose(); pointerOpenRef.current = true; setOpen(true);
+          }
+        }}
+        onPointerLeave={event => {
+          if (event.pointerType !== 'touch') {
+            if (document.hasFocus() && !document.querySelector('dialog:modal')) dismissedRef.current = false;
+            leave();
+          }
+        }}
+        onClick={() => {
+          cancelClose();
+          if (onActivate) { dismissedRef.current = true; pointerOpenRef.current = false; }
+          setOpen(!onActivate);
+          onActivate?.();
+        }}
+        onFocus={() => {
+          if (document.hasFocus() && !dismissedRef.current) { cancelClose(); pointerOpenRef.current = false; setOpen(true); }
+        }}
+        onBlur={() => {
+          if (document.hasFocus() && !document.querySelector('dialog:modal')) dismissedRef.current = false;
+          leave();
+        }}
       >
-        <HelpCircle size={14} aria-hidden="true" />
+        {showIcon && <HelpCircle size={14} aria-hidden="true" />}
+        {children}
       </button>
 
       <span
@@ -124,7 +174,7 @@ export function RelationHelp({ label, text }: { label: string; text: string }) {
         popover="manual"
         className="relation-help-tooltip"
         style={position}
-        onPointerEnter={() => { cancelClose(); setOpen(true); }}
+        onPointerEnter={() => { if (document.hasFocus() && !dismissedRef.current) { cancelClose(); setOpen(true); } }}
         onPointerLeave={event => { if (event.pointerType !== 'touch') leave(); }}
       >
         <b>{label}</b>

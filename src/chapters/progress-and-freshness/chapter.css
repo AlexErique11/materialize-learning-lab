@@ -39,11 +39,12 @@
 .progress-observed-diamond { position: absolute; left: 0; top: 2px; width: 8px; height: 8px; border: 1.5px solid var(--practice-accent); background: var(--lab-surface); transform: rotate(45deg); }
 .progress-observed > span { position: absolute; left: 11px; top: 0; }
 .progress-wallclock { top: -19px; height: 40px; border-left: 1px dotted var(--text-muted); }
-.progress-legend { display: flex; width: 100%; flex-wrap: wrap; justify-content: flex-end; gap: 6px 16px; min-height: 21px; padding: 8px 0 0; border: 0; background: transparent; color: var(--lab-muted); font: inherit; font-size: 11px; text-align: left; cursor: pointer; }
-.progress-legend:hover { color: var(--lab-purple); }
+.progress-legend { display: flex; width: 100%; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 6px 16px; min-height: 21px; padding: 8px 0 0; border: 0; background: transparent; color: var(--lab-muted); font: inherit; font-size: 11px; text-align: left; }
 .progress-legend > span { display: inline-flex; align-items: center; gap: 5px; }
 .progress-legend .progress-legend-short { display: none; }
 .progress-legend i { display: inline-block; width: 10px; height: 10px; }
+.progress-key-help > button { width: auto; height: 20px; min-height: 20px; padding: 0; border: 0; gap: 5px; color: inherit; font: inherit; white-space: nowrap; }
+.progress-key-help > button > svg { width: 13px; height: 13px; }
 .progress-key-solid { border-radius: 50%; background: var(--lab-purple); }
 .progress-key-complete { background: color-mix(in srgb, var(--practice-accent) 20%, var(--lab-surface)); border: 1px solid var(--practice-accent); }
 .progress-key-limit { border-radius: 50%; border: 1px dashed var(--warning); }
@@ -79,7 +80,9 @@
 .progress-lag-legend dl { display: flex; flex-wrap: wrap; gap: 0 12px; margin: 0; }
 .progress-lag-legend dl > div { display: inline-flex; gap: 4px; white-space: nowrap; }
 .progress-lag-legend dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; }
-.progress-lag-legend abbr { text-decoration: underline dotted; text-underline-offset: 3px; cursor: help; }
+.progress-lag-legend .progress-lag-help { display: contents; }
+.progress-lag-legend .progress-lag-help > button { display: inline; width: auto; height: auto; padding: 0; border: 0; border-radius: 0; vertical-align: baseline; color: inherit; background: transparent; font: inherit; text-decoration: underline dotted; text-underline-offset: 3px; cursor: default; }
+.progress-lag-legend .progress-lag-help > button:is(:hover, :focus-visible, [aria-expanded='true']) { color: var(--lab-purple); background: transparent; }
 .progress-exercise-visualization { display: grid; gap: 14px; }
 html:has(.progress-exercise-page), body:has(.progress-exercise-page) {
   height: 100dvh;

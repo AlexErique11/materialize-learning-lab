@@ -376,12 +376,21 @@ test('normal playback shows real actions, keeps diamonds, and explains the symbo
   await expect(page.getByTestId('observed-change')).toHaveCount(2);
   await expect(page.getByTestId('observed-change').filter({ hasText: '18' })).toContainText('×2');
   await expect(next).toBeDisabled();
-  await page.getByRole('button', { name: 'Explain diagram symbols', exact: true }).click();
+  const keyButton = page.getByRole('button', { name: 'Diagram key', exact: true });
+  await expect(page.locator('.progress-legend button')).toHaveCount(1);
+  await page.locator('.progress-legend > span').first().click();
+  await expect(page.getByRole('dialog', { name: 'Diagram key', exact: true })).not.toBeVisible();
+  await keyButton.hover();
+  const help = page.getByRole('tooltip').filter({ hasText: 'Press to see the full diagram key' });
+  await expect(help).toBeVisible();
+  await keyButton.click();
   const key = page.getByRole('dialog', { name: 'Diagram key', exact: true });
   await expect(key).toContainText('Green band · completed time');
   await expect(key).toContainText('Orange horizontal band · processing still needed');
   await expect(key).toContainText('Diamonds remain as history');
   await page.keyboard.press('Escape');
+  await expect(key).not.toBeVisible();
+  await expect(help).not.toBeVisible();
   await page.getByRole('button', { name: 'Reset', exact: true }).click();
   await expect(page.getByTestId('observed-change')).toHaveCount(0);
 });
@@ -392,7 +401,7 @@ test('autoplay skips static introductions, pauses for the diagram key, and repla
   await page.getByRole('button', { name: 'Run', exact: true }).click();
   await page.clock.runFor(2500);
   await expect(page.getByTestId('lane-orders')).toHaveAttribute('aria-label', /frontier 12;/);
-  await page.getByRole('button', { name: 'Explain diagram symbols', exact: true }).click();
+  await page.getByRole('button', { name: 'Diagram key', exact: true }).click();
   await page.clock.runFor(5000);
   await expect(page.getByTestId('observed-change')).toHaveCount(0);
   await page.keyboard.press('Escape');
@@ -414,7 +423,7 @@ test('Lecture 3 starts at step 1 and shows all Revenue lags inline', async ({ pa
   const legend = page.getByRole('region', { name: 'Revenue lag breakdown' });
   const expectLags = async (values: number[]) => {
     await expect(legend).toBeVisible();
-    expect(await legend.locator('dt').allTextContents()).toEqual(['Source', 'Inherited', 'Local', 'Global', 'Wall-clock']);
+    expect(await legend.locator('dt button').allTextContents()).toEqual(['Source', 'Inherited', 'Local', 'Global', 'Wall-clock']);
     expect(await legend.locator('dd').allTextContents()).toEqual(values.map(String));
   };
   await expect(label).toHaveText('Step 1 · Stalled source');
@@ -423,6 +432,14 @@ test('Lecture 3 starts at step 1 and shows all Revenue lags inline', async ({ pa
   await expect(page.getByRole('button', { name: 'Previous change', exact: true })).toBeDisabled();
   await expect(page.getByRole('button', { name: 'Lag guide', exact: true })).toHaveCount(0);
   await expectLags([12, 0, 0, 0, 12]);
+  const lagRow = await legend.boundingBox();
+  await expect(legend.locator('[title]')).toHaveCount(0);
+  for (const name of ['Source', 'Inherited', 'Local', 'Global', 'Wall-clock']) {
+    await legend.getByRole('button', { name: `About ${name} lag`, exact: true }).hover();
+    await expect(page.getByRole('tooltip').filter({ hasText: `${name} lag` })).toBeVisible();
+    expect(await legend.boundingBox()).toEqual(lagRow);
+    await page.keyboard.press('Escape');
+  }
   const cases = [
     { name: 'Computation delay', lags: [2, 6, 0, 6, 8] },
     { name: 'Slow query', lags: [0, 0, 0, 0, 0] },
@@ -445,7 +462,7 @@ test('Lecture 3 starts at step 1 and shows all Revenue lags inline', async ({ pa
   await page.clock.runFor(2500);
   await expect(label).toHaveText('Step 2 · Computation delay');
   await expectLags([2, 6, 0, 6, 8]);
-  await page.getByRole('button', { name: 'Explain diagram symbols', exact: true }).click();
+  await page.getByRole('button', { name: 'Diagram key', exact: true }).click();
   const key = page.getByRole('dialog', { name: 'Diagram key' });
   await expect(key).toContainText('Inherited + local lag');
   await page.keyboard.press('Escape');

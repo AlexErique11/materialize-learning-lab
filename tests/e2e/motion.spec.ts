@@ -435,7 +435,7 @@ for (const lecture of [1, 2, 3]) {
     }));
     expect(boundaries.every(boundary => boundary.aligned && !boundary.animated)).toBe(true);
     expect(await geometry()).toEqual(before);
-    const key = page.getByRole('button', { name: 'Explain diagram symbols', exact: true });
+    const key = page.getByRole('button', { name: 'Diagram key', exact: true });
     await key.click();
     await expectMotion(page, 'dialog-enter');
     await page.keyboard.press('Escape');

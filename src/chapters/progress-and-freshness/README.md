@@ -92,13 +92,14 @@ The text and marker shapes still carry the meaning independently of color.
 Annotations use existing inline-reference styling, with theme-aware colors and
 plain colored text in compact evidence panels and answer choices.
 
-The clickable legend opens the Diagram key, defining the purple completion
+The legend's (?) button opens the Diagram key, defining the purple completion
 boundary, green completed range, observed-change diamonds, orange input limit,
 orange pending-processing range, and optional wall clock. Coincident input and
 actual frontiers share one centered marker and timestamp, retaining the orange
 outline around the purple circle. Opening
 the key pauses lecture playback. Compact exercises keep the Key
-control available even when the rest of the legend is condensed.
+control available even when the rest of the legend is condensed. Only this icon
+is interactive; its animated tooltip previews the key on hover or keyboard focus.
 
 Normal playback visits state-changing actions only (six in Lecture 1), with an
 action explanation in the selected lane's detail panel and emphasis on affected

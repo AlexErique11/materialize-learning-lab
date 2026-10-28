@@ -1,8 +1,8 @@
 import { useState, type CSSProperties, type RefObject } from 'react';
-import { CheckCircle2, CircleHelp, Clock3, History, XCircle } from 'lucide-react';
-import { Button } from '../../components/ui/Button';
+import { CheckCircle2, Clock3, Crosshair, History, Info, XCircle } from 'lucide-react';
 import { Dialog } from '../../components/ui/Dialog';
 import { LessonText } from '../../components/lesson/LessonText';
+import { RelationHelp } from '../../components/lesson/RelationHelp';
 import { classifyTimestamp, formatReadTime, policyNames, sharedWindow, statusNames, type ReadSnapshot, type ReadStatus } from './simulation';
 import type { ReadTarget } from './lecture-scenarios';
 import { readText } from './lessonText';
@@ -21,7 +21,7 @@ export function ReadableWindow({ snapshot: s, refs, caption, revealOutcome = tru
   const window = sharedWindow(s);
   const time = s.attempt?.timestamp;
   const status: ReadStatus | undefined = revealOutcome ? s.attempt?.status : undefined;
-  const Icon = status ? statusIcons[status] : CircleHelp;
+  const Icon = status ? statusIcons[status] : assessment ? Info : Crosshair;
   const cursorState = time === undefined ? undefined : classifyTimestamp(s, time);
   const ticks = Array.from({ length: 6 }, (_, i) => s.axis[0] + (s.axis[1] - s.axis[0]) * i / 5);
   const detail = !revealOutcome ? caption
@@ -55,8 +55,13 @@ export function ReadableWindow({ snapshot: s, refs, caption, revealOutcome = tru
         </section>)}
       </section>
       <div className="read-diagram-bottom"><span className="read-interval" aria-label="Shared complete interval">{revealOutcome ? window.retained < window.write ? `Shared: [${formatReadTime(s, window.retained)}, ${formatReadTime(s, window.write)})` : 'Shared window is empty' : 'Compare the retained and complete boundaries'}</span>
-        <div className="read-legend" aria-hidden="true"><span><i className="read-key-frontier" />Frontier</span><span><i className="read-key-complete" />Complete</span><span><i className="read-key-retained" />Retained</span></div>
-        <Button variant="ghost" className="read-key" aria-haspopup="dialog" onClick={() => { onInspect?.(); setKeyOpen(true); }}><CircleHelp size={13} aria-hidden="true" />Diagram key</Button>
+        <div className="read-legend">
+          <span><i className="read-key-frontier" aria-hidden="true" />Frontier</span>
+          <span><i className="read-key-complete" aria-hidden="true" />Complete</span>
+          <span><i className="read-key-retained" aria-hidden="true" />Retained</span>
+          <RelationHelp className="read-key" label="Diagram key" text="Read the frontier, completed-time and retained-history symbols. Press to see the full diagram key."
+            onActivate={() => { onInspect?.(); setKeyOpen(true); }} />
+        </div>
       </div>
     </section>
     <section ref={refs?.result} className="read-result" data-status={status ?? 'prediction'} aria-label="Query outcome" aria-live="polite">
@@ -65,9 +70,16 @@ export function ReadableWindow({ snapshot: s, refs, caption, revealOutcome = tru
       {!assessment && <div className="read-support">{s.row && !s.row.ingested ? `Upstream order ${s.row.id} committed · not ingested${s.ingestionPaused ? ' · ingestion paused' : ''}` : s.row?.ingested && !s.row.processed ? `Order ${s.row.id} ingested · processing pending` : s.observed && s.row && revealOutcome ? `Last completed read: ${formatReadTime(s, s.observed.timestamp)} · order ${s.row.id} ${s.observed.rowVisible ? 'present' : 'absent'}` : 'Illustrative timestamp-selection model'}{s.queryMs !== undefined && revealOutcome ? ` · execution ${s.queryMs / 1000} s` : ''}</div>}
     </section>
     {onSelectTime && <div className="read-exploration"><label>Explore a requested time<input aria-label="Requested logical timestamp" type="range" min={s.axis[0]} max={s.axis[1]} step={s.clock === undefined ? 1 : 1000} value={time ?? window.retained} disabled={disabled} onChange={event => onSelectTime(Number(event.target.value))} /></label></div>}
-    <Dialog open={keyOpen} onClose={() => setKeyOpen(false)} title="Readable-window diagram key">
-      <dl className="read-key-definitions"><div><dt>Retained boundary · square cap</dt><dd>The earliest retained snapshot, inclusive. Earlier history is compacted; this does not delete current business rows.</dd></div><div><dt>Write frontier · solid purple dot</dt><dd>Times strictly below this boundary are complete. The frontier time itself remains open.</dd></div><div><dt>Shared window · vertical shading</dt><dd>The overlap every queried input retains and completes. Its left boundary is included; its right boundary is excluded.</dd></div><div><dt>Query cursor · vertical line</dt><dd>One selected timestamp across all inputs. A waiting cursor is not a returned result. On clock-aligned examples, the dotted line is current logical time.</dd></div></dl>
-      <p className="read-key-note">Purple dots mark write frontiers and green bands show retained, complete time. Gray square caps mark retained boundaries; the blue cursor selects one query timestamp. Shapes and text carry meaning in both themes. The simulation does not execute SQL.</p>
+    <Dialog open={keyOpen} onClose={() => setKeyOpen(false)} title="Diagram key" eyebrow="How to read the windows">
+      <dl className="read-key-definitions">
+        <div><dt><i className="read-key-frontier" aria-hidden="true" />Purple circle · write frontier</dt><dd>Times strictly below this boundary are complete. At frontier 12, time 12 itself is still open. The circle is a boundary, not a row count.</dd></div>
+        <div><dt><i className="read-key-complete" aria-hidden="true" />Green band · retained, complete time</dt><dd>The green part of each lane runs from its retained boundary, included, to its write frontier, excluded. These are the snapshots that input can serve now.</dd></div>
+        <div><dt><i className="read-key-retained" aria-hidden="true" />Gray square cap · retained boundary</dt><dd>The earliest retained snapshot, inclusive. Earlier history is compacted; this does not delete current business rows.</dd></div>
+        <div><dt><i className="read-key-shared" aria-hidden="true" />Lavender vertical band · shared window</dt><dd>The overlap every queried input retains and completes. Its left boundary is included; its right boundary is excluded. A query needs one timestamp inside this shared window.</dd></div>
+        <div><dt><i className="read-key-cursor" aria-hidden="true" />Blue vertical line · query timestamp</dt><dd>One selected timestamp across all inputs. A waiting cursor is not a returned result.</dd></div>
+        {s.clock !== undefined && <div><dt><i className="read-key-clock" aria-hidden="true" />Dotted vertical line · current logical time</dt><dd>On clock-aligned examples, compare this time with the returned snapshot to read its age. The clock advancing does not mean the inputs have completed that time.</dd></div>}
+      </dl>
+      <p className="read-key-note">One query reads one logical moment across all its inputs. Shapes and text carry meaning in both themes. The simulation does not execute SQL.</p>
     </Dialog>
   </div>;
 }
