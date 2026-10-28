@@ -18,8 +18,38 @@ layout. It reuses `ActivityHeading`, the white lab theme, relation panels/tables
 buttons, dialogs, `ShortcutHelp`, `useChangeMotion`, and `useWorkspaceMotion`.
 There is no numbered fault checklist or repair progress bar. Dashboard, Data,
 SQL, System, and Client tabs change the selected view without applying repairs.
-Desktop related panes sit side by side; narrow windows stack the same panes and
-retain normal scrolling. SQL drafts survive pane changes and refresh.
+Challenge overview in the investigation toolbar reopens the complete opening page at
+`/challenge?view=overview`. Continue investigation returns to the saved workspace;
+handover and completed runs instead show Return to investigation in the toolbar.
+The handover footer places Back to main page before Complete handover. Handover
+shows the required repair explanation length and trimmed character count. A status
+beside completion explains pending checks, a missing explanation, or ongoing
+execution; it confirms when the handover is ready to complete. Overview navigation
+does not reset the run or apply drafts. Undo last change and Investigation help
+sit beside the other activity toolbar actions during investigation. The toolbar
+wraps beneath the title when needed, retaining standard control sizes. Footer
+navigation and restart reuse the standard bordered secondary button styles,
+including navigation links.
+`InvestigationWorkspace.tsx` owns the shared applied-state bar, scope labels,
+settings actions, and `WorkspacePair`: tinted controls on the left and read-only
+observations on the right. System pairs connection, snapshot-request, and serving controls
+with their results. Narrow windows stack controls above results in normal flow.
+Source settings belong in Data. Source, serving, and client settings are saved
+drafts until Apply changes; Discard edits restores applied values. SQL uses Run
+query preview and Apply query. View selectors and fallback authorization never
+apply configuration. Drafts survive navigation and refresh.
+
+The shared bar shows applied query version, live time, connection, processing,
+and client position. Advance incident names the next event and changes time and
+available input. Process pending updates separately advances complete output;
+the previous complete snapshot remains visible until then. Receive next delivery
+names its record and timestamp, warning if it will advance shared time. Replay
+resets deliveries without rewinding time. There is no activity Pause button;
+the simulation advances manually. Feedback names each action's effects. Client
+settings preserve SQL previews and reads; serving settings preserve deliveries;
+source/query changes clear dependent reads and reset deliveries. Preview keys
+depend on source, editor, mode, and historical frame, independently of unrelated
+configuration revisions.
 
 Chapter 7's `ReadableWindow` and Chapter 8's `TimestampTrays` retain their
 existing semantics and styles. The incident supplies their model state without
@@ -35,7 +65,7 @@ client publication are distinct actions.
 
 Keyboard controls activate existing visible buttons: Ctrl+Enter runs SQL; S
 opens Reference; H opens optional help; R opens Restart; ArrowRight advances an
-available system event. Native text inputs keep typing behavior and dialogs own
+available incident clock event. Native text inputs keep typing behavior and dialogs own
 focus. Motion respects reduced-motion preferences. Reference contains schema and
 concept help; full worked repairs require explicit optional assistance.
 

@@ -11,7 +11,7 @@ export function systemChecks(run: ChallengeRun, trace: readonly TraceFrame[]): C
   const expectedSource = ordersAt(run.time, { envelope: 'UPSERT', key: 'order_id' });
   const actualSource = ordersAt(run.time, run.config.source);
   const sourceOK = JSON.stringify(actualSource) === JSON.stringify(expectedSource);
-  const read = requestRead(run.config, run.time, run.processed);
+  const read = requestRead(run.config, run.time, run.processed ? run.time : run.processedTime);
   const serviceOK = run.config.connected && run.processed && read.status === 'available' && run.read?.status === 'available' && run.read.bound === 3000 && run.time - run.read.timestamp <= 3000 && run.read.timestamp >= 630000 && run.read.timestamp <= read.timestamp;
   const reference = { ...run.config, publication: 'complete' as const, snapshot: true };
   const length = streamFor(trace, true).length;
@@ -21,7 +21,7 @@ export function systemChecks(run: ChallengeRun, trace: readonly TraceFrame[]): C
     const expected = clientState(trace, reference, delivery);
     if (JSON.stringify(actual.published) !== JSON.stringify(expected.published) || actual.ready !== expected.ready) publicationOK = false;
   }
-  const f = frontiers(run.config, run.time, run.processed);
+  const f = frontiers(run.config, run.time, run.processed ? run.time : run.processedTime);
   return [
     { id: 'source', label: 'Order identity', passed: sourceOK, detail: sourceOK ? 'The retained producer log yields one latest value for each stable order ID.' : 'The source relation differs from the latest full keyed values. Inspect producer messages and source identity.' },
     { id: 'service', label: 'Normal service restored', passed: Boolean(serviceOK), detail: serviceOK ? `Recorded normal read: ${(run.read!.timestamp / 1000).toFixed(3)} s; current replay can serve ${(read.timestamp / 1000).toFixed(3)} s. Output frontier: ${(f.output / 1000).toFixed(3)} s.` : `Output is complete below ${(f.output / 1000).toFixed(3)} s. Restore processing and demonstrate a new successful three-second normal read; an incident fallback alone does not restore normal service.` },
@@ -36,4 +36,4 @@ export async function validateIncident(run: ChallengeRun, client: SqlClient): Pr
   const extra = queryCheck(additional.trace!, 1);
   return [query.passed ? extra : query, ...systemChecks(run, base.trace!)];
 }
-export const displayedRows = (trace: readonly TraceFrame[], time: number, processed: boolean, connected: boolean) => rowsAt(trace, processed && connected ? time : 622999);
+export const displayedRows = (trace: readonly TraceFrame[], time: number, processed: boolean | number, connected: boolean) => rowsAt(trace, typeof processed === 'number' ? processed : processed && connected ? time : 622999);

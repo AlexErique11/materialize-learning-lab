@@ -29,7 +29,7 @@ describe('free investigation and validation', () => {
     let run = updateRun(createRun('progress'), { type: 'start' });
     run = updateRun(run, { type: 'configure', key: 'connected', value: true });
     expect(systemChecks(run, trace).find(c => c.id === 'service')?.passed).toBe(false);
-    run = updateRun(run, { type: 'advance' });
+    run = updateRun(run, { type: 'process' });
     run = updateRun(run, { type: 'read', attempt: requestRead(run.config, run.time, run.processed, true) });
     expect(systemChecks(run, trace).find(c => c.id === 'service')?.passed).toBe(false);
     run = updateRun(run, { type: 'read', attempt: requestRead(run.config, run.time, run.processed) });
@@ -81,7 +81,7 @@ it('advances a shared clock for deliveries, preserves recent sealed reads and ne
   let run = updateRun(createRun('time'), { type: 'start' });
   run = updateRun(run, { type: 'configure', key: 'connected', value: true });
   run = updateRun(run, { type: 'configure', key: 'publication', value: 'complete' });
-  run = updateRun(run, { type: 'advance' });
+  run = updateRun(run, { type: 'process' });
   run = updateRun(run, { type: 'read', attempt: requestRead(run.config, run.time, run.processed) });
   for (const timestamp of [631000, 631000, 631000, 631001, 632000, 632000, 632000, 632001]) run = updateRun(run, { type: 'delivery', timestamp });
   expect(run.time).toBe(632001); expect(parseRun(run)).toEqual(run);

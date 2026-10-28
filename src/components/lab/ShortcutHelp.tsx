@@ -72,7 +72,7 @@ export function ShortcutHelp({ lecture, showReference, onOpenChange, challenge =
         <dl>
           {challenge ? <>
             <ShortcutRow label="Run SQL in the editor" keys="Control+Enter" />
-            <ShortcutRow label="Advance the next system event" keys="ArrowRight" />
+            <ShortcutRow label="Advance the incident clock" keys="ArrowRight" />
             <ShortcutRow label="Open investigation help" keys="H" />
           </> : lecture ? <>
             <ShortcutRow label="Start guided run" keys="Enter" />

@@ -10,15 +10,14 @@ export function useChallengeRun(paused: boolean) {
   const progress = useChallengeProgress();
   const [initialRun] = useState(newRun);
   const run = progress.run ?? initialRun;
-  const [isPaused, setIsPaused] = useState(false);
   const dispatch = useCallback((action: RunAction) => {
     const current = getChallengeProgress().run ?? initialRun;
     const next = updateRun(current, action);
     if (next !== current) persistRun(next);
   }, [initialRun]);
-  const restart = () => { persistRun(newRun()); setIsPaused(false); };
+  const restart = () => { persistRun(newRun()); };
   useEffect(() => {
-    if (run.phase !== 'investigating' || paused || isPaused) return;
+    if (run.phase !== 'investigating' || paused) return;
     let last = performance.now();
     const flush = () => {
       const now = performance.now();
@@ -29,6 +28,6 @@ export function useChallengeRun(paused: boolean) {
     const visibility = () => { last = performance.now(); };
     document.addEventListener('visibilitychange', visibility);
     return () => { clearInterval(timer); document.removeEventListener('visibilitychange', visibility); flush(); };
-  }, [run.id, run.phase, paused, isPaused, dispatch]);
-  return { run, dispatch, restart, progress, isPaused, setIsPaused };
+  }, [run.id, run.phase, paused, dispatch]);
+  return { run, dispatch, restart, progress };
 }

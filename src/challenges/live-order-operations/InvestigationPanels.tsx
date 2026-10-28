@@ -1,11 +1,12 @@
 import { useId } from 'react';
+import { ArrowRight } from 'lucide-react';
 import { ChallengeHelp } from './ChallengeHelp';
-import { Activity, ArrowRight, Clock3, Radio } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
 import { Table } from '../../components/ui/Table';
 import { ReadableWindow } from '../../chapters/consistent-reads/ReadableWindow';
 import { TimestampTrays } from '../../chapters/live-applications-subscribe/TimestampTrays';
 import { EvidenceCard, OrdersTable, TotalsTable } from './ChallengeEvidence';
+import { Scope, SettingsActions, WorkspacePair } from './InvestigationWorkspace';
 import { clientState, frontiers, objectCost, ordersAt, readWindow, requestRead, rowsAt, streamFor, type TraceFrame } from './incident';
 import { displayedRows } from './grading';
 import { events, formatTime, producerHistory } from './simulation';
@@ -14,100 +15,110 @@ import '../../chapters/consistent-reads/chapter.css';
 import '../../chapters/live-applications-subscribe/chapter.css';
 
 interface Props { run: ChallengeRun; trace: readonly TraceFrame[] | null; dispatch: (action: RunAction) => void }
+const processedAt = (run: ChallengeRun) => run.processed ? run.time : run.processedTime;
+
 export function DashboardPanel({ run, trace, dispatch }: Props) {
-  const f = frontiers(run.config, run.time, run.processed);
+  const id = useId();
+  const f = frontiers(run.config, run.time, processedAt(run));
   const time = f.output - 1;
-  const rows = trace ? displayedRows(trace, run.time, run.processed, run.config.connected) : [];
+  const rows = trace ? displayedRows(trace, run.time, processedAt(run), run.config.connected) : [];
   const app = trace ? clientState(trace, run.config, run.deliveries) : null;
-  return <>
-    <div className="incident-metrics">
-      <div><Clock3 size={22} aria-hidden="true" /><div><span className="incident-info-heading">Incident time<ChallengeHelp topic="incidentTime" /></span><strong data-motion-value>{formatTime(run.time)}</strong></div></div>
-      <div><Activity size={22} aria-hidden="true" /><div><span className="incident-info-heading">Last complete snapshot age<ChallengeHelp topic="snapshotAge" /></span><strong data-motion-value>{formatTime(run.time - time)}</strong></div></div>
-      <div><Radio size={22} aria-hidden="true" /><div><span className="incident-info-heading">Serving duration · illustrative<ChallengeHelp topic="servingDuration" /></span><strong>40 ms</strong></div></div>
-    </div>
-    <div className="incident-grid">
-      <EvidenceCard title="Operations dashboard" help="dashboard" trailing={<span className="incident-tag">{run.time - time > 3000 ? 'Last complete result · outside normal age bound' : 'Complete snapshot'}</span>}>
-        {trace ? <TotalsTable rows={rows} /> : <p>Preparing the query results…</p>}
-        <p>Snapshot: {formatTime(time)} · wall clock: {formatTime(run.time)}. Snapshot age concerns logical time; it cannot establish that unsent external changes have arrived.</p>
-      </EvidenceCard>
-      <EvidenceCard title="User-visible application" help="application">
-        {app ? <TotalsTable rows={app.published.map(item => item.row)} caption="Visible application totals" /> : <p>Preparing the application replay…</p>}
-        <p>{app?.ready ? `Published through the current client policy. ${run.deliveries} deliveries observed.` : 'Waiting for a coordinated baseline. An empty client is not an empty business result.'}</p>
-        <Button onClick={() => dispatch({ type: 'workspace', workspace: 'Client' })}>Inspect application deliveries<ArrowRight size={14} aria-hidden="true" /></Button>
-      </EvidenceCard>
-    </div>
-    <EvidenceCard title="Incident replay" help="replay" icon={<Clock3 size={17} aria-hidden="true" />}>
-      <p>The live incident opens at 630 seconds. Advancing processes the next system event; it does not choose or apply a repair. Historical SQL snapshots are independent of this live clock.</p>
-      <div className="incident-actions"><Button data-incident-action="advance" onClick={() => dispatch({ type: 'advance' })} disabled={run.time >= 632000 && (!run.config.connected || run.processed)}>Next event<ArrowRight size={14} aria-hidden="true" /></Button><span className="incident-caption">{run.config.connected && !run.processed ? 'Input progress is permitted; computation has work pending.' : run.time >= 632000 ? 'Price correction is available in the client replay.' : 'Inspect another workspace at any time.'}</span></div>
+  return <WorkspacePair controls={<>
+    <EvidenceCard title="Compare results" help="dashboard"><Scope>View only</Scope>
+      <label className="incident-label" htmlFor={id}>Show results</label>
+      <select id={id} value={run.inspection.comparison} onChange={e => dispatch({ type: 'inspect', key: 'comparison', value: e.target.value })}><option value="both">Database and application</option><option value="database">Database only</option><option value="application">Application only</option></select>
+      <p>This changes this view only. The database and application can show different results because they have different completeness and delivery positions.</p>
     </EvidenceCard>
-  </>;
+    <EvidenceCard title="Explore the incident" help="brief"><Scope>Navigation only</Scope><p>Choose where to investigate. Settings live beside the observations they affect.</p><div className="incident-navigation-links">{(['Data', 'SQL', 'System', 'Client'] as const).map(workspace => <Button key={workspace} onClick={() => dispatch({ type: 'workspace', workspace })}>{workspace}<ArrowRight size={14} aria-hidden="true" /></Button>)}</div></EvidenceCard>
+  </>}>
+    <div className="incident-result-summary"><span>Read-only results</span><strong>Compare timestamps as well as totals</strong></div>
+    {run.inspection.comparison !== 'application' && <EvidenceCard title="Operations dashboard" help="dashboard" trailing={<Scope>{run.time - time > 3000 ? 'Last complete · stale' : 'Current complete snapshot'}</Scope>}>
+      <div className="incident-snapshot-metrics"><span className="incident-info-heading">Snapshot <strong data-motion-value>{formatTime(time)}</strong><ChallengeHelp topic="snapshotTime" /></span><span className="incident-info-heading">Age <strong data-motion-value>{formatTime(run.time - time)}</strong><ChallengeHelp topic="snapshotAge" /></span><span className="incident-info-heading">Serving <strong>40 ms · illustrative</strong><ChallengeHelp topic="servingDuration" /></span></div>
+      {trace ? <TotalsTable rows={rows} /> : <p>Preparing the query results…</p>}
+      <p>{!run.config.connected ? 'The customer connection is paused; this is the last complete database result.' : !run.processed ? 'New input is available, but processing is pending. The last complete result stays visible.' : 'The connected inputs have been processed through the current incident time.'} Logical freshness cannot prove that unsent external changes have arrived.</p>
+    </EvidenceCard>}
+    {run.inspection.comparison !== 'database' && <EvidenceCard title="User-visible application" help="application" trailing={<Scope>Client position · {run.deliveries} deliveries</Scope>}>
+      {app ? <TotalsTable rows={app.published.map(item => item.row)} caption="Visible application totals" /> : <p>Preparing the application replay…</p>}
+      <p>{app?.ready ? `Published through the applied client policy. Latest received progress: ${app.progress === null ? 'none' : formatTime(app.progress)}.` : 'Waiting for a coordinated baseline. An empty client is not an empty business result.'} Receive deliveries in Client to inspect publication.</p>
+    </EvidenceCard>}
+  </WorkspacePair>;
 }
 
-export function DataPanel({ run }: Props) {
+export function DataPanel({ run, dispatch }: Props) {
+  const id = useId();
   const rows = ordersAt(run.time, run.config.source);
   const messages = [...producerHistory, ...events.filter(event => event.time <= run.time && event.record).map(event => event.record!)];
-  return <>
-    <EvidenceCard title="Current orders relation" help="orders"><OrdersTable rows={rows} /><div className="incident-actions"><span className="incident-caption">Latest ingested values at {formatTime(run.time)}; this inspection does not establish a complete serving snapshot.</span></div></EvidenceCard>
-    <div className="incident-details-with-help"><details className="incident-details" open><summary>Retained producer messages</summary><p>The Kafka producer sends full replacement values under a stable order-ID key. Arrival is ingestion metadata; event time is the business timestamp.</p><OrdersTable rows={messages} caption="Retained keyed message history" /></details><ChallengeHelp topic="producerMessages" /></div>
-    <EvidenceCard title="Customers relation" help="customers"><Table caption="Customer regions"><thead><tr><th scope="col">Customer</th><th scope="col">Region</th></tr></thead><tbody><tr><td>1</td><td>EU</td></tr><tr><td>2</td><td>US</td></tr></tbody></Table><p>Native PostgreSQL source. Initial snapshot completed; current connection activity is available in System.</p></EvidenceCard>
-  </>;
+  const selected = run.inspection.data;
+  const filtered = (selected === 'messages' ? messages : rows).filter(row => !run.inspection.order.trim() || String(row.orderId).includes(run.inspection.order.trim()));
+  return <WorkspacePair controls={<>
+    <EvidenceCard title="Inspect input data" help="orders"><Scope>View only</Scope>
+      <label className="incident-label" htmlFor={id + '-relation'}>Relation or history</label><select id={id + '-relation'} value={selected} onChange={e => dispatch({ type: 'inspect', key: 'data', value: e.target.value })}><option value="orders">Current orders</option><option value="messages">Retained producer messages</option><option value="customers">Customers</option></select>
+      <label className="incident-label" htmlFor={id + '-filter'}>Filter by order ID</label><input id={id + '-filter'} type="text" inputMode="numeric" disabled={selected === 'customers'} value={run.inspection.order} maxLength={100} onChange={e => dispatch({ type: 'inspect', key: 'order', value: e.target.value })} placeholder="All orders" />
+      <p>Selection and filtering do not change input records, SQL, or the shared clock.</p>
+    </EvidenceCard>
+    <EvidenceCard title="Source settings" help="configuration"><Scope>Changes shared system</Scope><p>Apply to rebuild orders from retained messages. Affects Data, SQL, Dashboard, and Client; clears the last read and resets client deliveries.</p>
+      <div className="incident-label"><div className="incident-info-heading"><label htmlFor={id + '-envelope'}>Order envelope</label><ChallengeHelp topic="envelope" /></div><select id={id + '-envelope'} value={run.settings.source.envelope} onChange={e => dispatch({ type: 'stage', key: 'source', value: { ...run.settings.source, envelope: e.target.value as 'UPSERT' | 'NONE' } })}><option value="UPSERT">UPSERT · latest full keyed value</option><option value="NONE">Append independent events</option></select></div>
+      <div className="incident-label"><div className="incident-info-heading"><label htmlFor={id + '-identity'}>Order identity</label><ChallengeHelp topic="identity" /></div><select id={id + '-identity'} value={run.settings.source.key} onChange={e => dispatch({ type: 'stage', key: 'source', value: { ...run.settings.source, key: e.target.value as 'order_id' | 'customer_id' } })}><option value="order_id">order_id</option><option value="customer_id">customer_id</option></select></div>
+      <SettingsActions run={run} dispatch={dispatch} group="source" />
+    </EvidenceCard>
+  </>}>
+    <div className="incident-result-summary"><span>Read-only result · live input at {formatTime(run.time)}</span><strong>Applied source: {run.config.source.envelope} · {run.config.source.key}</strong></div>
+    {selected === 'customers' ? <EvidenceCard title="Customers relation" help="customers"><Table caption="Customer regions"><thead><tr><th scope="col">Customer</th><th scope="col">Region</th></tr></thead><tbody><tr><td>1</td><td>EU</td></tr><tr><td>2</td><td>US</td></tr></tbody></Table><p>Native PostgreSQL source. Initial snapshot completed; connection activity and progress are in System.</p></EvidenceCard>
+      : <EvidenceCard title={selected === 'messages' ? 'Retained producer messages' : 'Current orders relation'} help={selected === 'messages' ? 'producerMessages' : 'orders'}><OrdersTable rows={filtered} caption={selected === 'messages' ? 'Retained keyed message history' : 'Current source rows'} />{!filtered.length && <p>No orders match this filter.</p>}<p>{selected === 'messages' ? 'The producer sends full replacement values under a stable order-ID key. Multiple messages can refer to one order. Source settings change the current relation, not this producer history.' : 'Latest ingested values under the applied source settings. These are inputs, not the regional query result or proof of a complete serving snapshot.'} Arrival is ingestion metadata; event time is the business timestamp.</p></EvidenceCard>}
+  </WorkspacePair>;
 }
 
 export function SystemPanel({ run, trace, dispatch }: Props) {
-  const fieldId = useId();
-  const f = frontiers(run.config, run.time, run.processed);
+  const id = useId();
+  const f = frontiers(run.config, run.time, processedAt(run));
   const read = run.read;
-  const cfg = <K extends Exclude<keyof ChallengeRun['config'], 'predicate' | 'source'>>(key: K, value: ChallengeRun['config'][K]) => dispatch({ type: 'configure', key, value });
   return <>
-    <div className="incident-grid">
-      <EvidenceCard title="Dependencies and progress" help="dependencies" icon={<Activity size={17} aria-hidden="true" />}>
+    <WorkspacePair controls={<EvidenceCard title="Connection and processing" help="connection"><Scope>Changes shared system</Scope><p>Affects database completeness, Dashboard, reads, and availability of Client deliveries. Resuming permits progress; processing is a separate action.</p><div className="incident-actions"><Button onClick={() => dispatch({ type: 'configure', key: 'connected', value: !run.config.connected })}>{run.config.connected ? 'Pause customer connection' : 'Resume customer connection'}</Button><Button disabled={!run.config.connected || run.processed} onClick={() => dispatch({ type: 'process' })}>Process pending updates</Button></div><p>{!run.config.connected ? 'Processing waits for the connection.' : run.processed ? 'No pending work at the current incident time.' : 'Available input has not yet reached the complete serving result.'}</p></EvidenceCard>}>
+      <EvidenceCard title="Dependencies and progress" help="dependencies" trailing={<Scope>Read-only result · current</Scope>}>
         <div className="incident-flow"><span>Orders + Customers</span><ArrowRight size={16} aria-hidden="true" /><span>Recent orders</span><ArrowRight size={16} aria-hidden="true" /><span>Regional totals</span></div>
         <Table caption="System write frontiers"><thead><tr><th scope="col">Object</th><th scope="col"><span className="relation-column-label">Complete strictly below<ChallengeHelp topic="frontier" /></span></th></tr></thead><tbody>{[['Orders input', f.orders], ['Customers input', f.customers], ['Regional aggregate', f.output], ['Serving index', f.output]].map(([name, value]) => <tr key={name}><th scope="row">{name}</th><td>{formatTime(Number(value))}</td></tr>)}</tbody></Table>
-        <p>Frontiers describe completeness, independently of query duration. Quiet business data can still make progress.</p>
+        <p className="incident-log-entry">623.000 s · Operator paused the customer connection. Progress reports stopped.</p><p>Current connection: <strong>{run.config.connected ? 'Running' : 'Paused'}</strong> · computation: <strong>{run.processed ? 'Caught up' : 'Pending'}</strong>. Progress describes completeness independently of query duration; quiet data can still make progress.</p>
       </EvidenceCard>
-      <EvidenceCard title="Customer connection" help="connection">
-        <p className="incident-log-entry">623.000 s · Operator paused the customer connection. Progress reports stopped.</p>
-        {run.config.connected && <p className="incident-log-entry">{formatTime(run.time)} · Connection resumed. {run.processed ? 'Aggregate and serving computation processed available work.' : 'Output computation remains pending.'}</p>}
-        <p>Current connection: <strong>{run.config.connected ? 'Running' : 'Paused'}</strong></p>
-        <div className="incident-actions"><Button onClick={() => cfg('connected', !run.config.connected)}>{run.config.connected ? 'Pause customer connection' : 'Resume customer connection'}</Button><Button data-incident-action="advance" disabled={!run.config.connected || run.processed} onClick={() => dispatch({ type: 'advance' })}>Next event</Button></div>
+    </WorkspacePair>
+    <WorkspacePair controls={<EvidenceCard title="Request a snapshot" help="reads"><Scope>Request only · uses shared system</Scope><p>A normal read allows at most three seconds of age. A labeled incident fallback allows ten seconds. Choosing fallback does not change the system or reset deliveries.</p><div className="incident-actions"><Button onClick={() => dispatch({ type: 'read', attempt: requestRead(run.config, run.time, processedAt(run)) })}>Request normal read</Button></div><span className="incident-check-help"><label className="incident-check"><input type="checkbox" checked={run.inspection.fallback} onChange={e => dispatch({ type: 'inspect', key: 'fallback', value: e.target.checked })} />Authorize labeled ten-second fallback</label><ChallengeHelp topic="fallback" /></span><Button disabled={!run.inspection.fallback} onClick={() => dispatch({ type: 'read', attempt: requestRead(run.config, run.time, processedAt(run), true) })}>Request incident fallback</Button></EvidenceCard>}>
+      <EvidenceCard title="Snapshot requests" help="reads" trailing={<Scope>{read ? 'Read-only · last request' : 'Read-only · current availability'}</Scope>}>
+        {(run.config.final !== 'materialized' || run.config.indexes === 'none') && <p className="incident-notice">The operations serving path is missing. A request waits for the maintained result and local index.</p>}
+        <div className="read-workspace"><ReadableWindow snapshot={readWindow(run.config, run.time, processedAt(run), read)} assessment caption="One retained, complete timestamp across all queried inputs." /></div>
+        {read ? <div className="incident-notice" data-tone={read.status === 'available' ? 'success' : 'warning'}><strong>{read.status === 'available' ? read.bound === 10000 ? 'Authorized incident fallback available' : 'Normal read available' : read.status === 'waiting' ? 'Read is waiting for serving output' : 'Snapshot-age bound cannot be met'}</strong><p>Last request: bound {read.bound! / 1000} s · snapshot {formatTime(read.timestamp)}{read.age !== undefined ? ` · age at request ${formatTime(read.age)} · request clock ${formatTime(read.timestamp + read.age)}` : ''}. This saved outcome does not update automatically; request again to test the current system.</p>{read.status === 'available' && trace && <TotalsTable rows={rowsAt(trace, read.timestamp)} caption="Requested snapshot rows" />}</div> : <p>No request recorded. The diagram shows current availability; use a request button to test it.</p>}
       </EvidenceCard>
-    </div>
-    <EvidenceCard title="Snapshot requests" help="reads" icon={<Clock3 size={17} aria-hidden="true" />}>
-      {(run.config.final !== 'materialized' || run.config.indexes === 'none') && <p className="incident-notice">The configured operations serving path is missing. A request waits until the shared maintained result and local serving index are available.</p>}
-      <div className="read-workspace"><ReadableWindow snapshot={readWindow(run.config, run.time, run.processed, read)} assessment caption="One retained, complete timestamp across all queried inputs." /></div>
-      <div className="incident-actions"><Button onClick={() => dispatch({ type: 'read', attempt: requestRead(run.config, run.time, run.processed) })}>Request normal read</Button><span className="incident-check-help"><label className="incident-check"><input type="checkbox" checked={run.config.fallback} onChange={e => cfg('fallback', e.target.checked)} />Authorize labeled ten-second fallback</label><ChallengeHelp topic="fallback" /></span><Button disabled={!run.config.fallback} onClick={() => dispatch({ type: 'read', attempt: requestRead(run.config, run.time, run.processed, true) })}>Request incident fallback</Button></div>
-      {read && <div role="status" className="incident-notice" data-tone={read.status === 'available' ? 'success' : 'warning'}><strong>{read.status === 'available' ? read.bound === 10000 ? 'Authorized incident fallback available' : 'Normal read available' : read.status === 'waiting' ? 'Read is waiting for serving output' : 'Snapshot-age bound cannot be met'}</strong><p>Requested bound: {read.bound! / 1000} s · snapshot {formatTime(read.timestamp)}{read.age !== undefined ? ` · age at request ${formatTime(read.age)} · request clock ${formatTime(read.timestamp + read.age)}` : ''}. A later successful request does not rewrite this request's outcome.</p>{read.status === 'available' && trace && <TotalsTable rows={rowsAt(trace, read.timestamp)} caption="Requested snapshot rows" />}</div>}
-    </EvidenceCard>
-    <div className="incident-details-with-help"><details className="incident-details"><summary>Source and serving configuration · {objectCost(run.config)} / 8 state units</summary>
-      <p>Changes rebuild the simulated source or serving configuration. They are reversible sandbox actions.</p>
-      <div className="incident-fields">
-        <div className="incident-label"><div className="incident-info-heading"><label htmlFor={`${fieldId}-envelope`}>Order envelope</label><ChallengeHelp topic="envelope" /></div><select id={`${fieldId}-envelope`} value={run.config.source.envelope} onChange={e => dispatch({ type: 'source', key: 'envelope', value: e.target.value })}><option value="UPSERT">UPSERT · latest full keyed value</option><option value="NONE">Append independent events</option></select></div>
-        <div className="incident-label"><div className="incident-info-heading"><label htmlFor={`${fieldId}-identity`}>Order identity</label><ChallengeHelp topic="identity" /></div><select id={`${fieldId}-identity`} value={run.config.source.key} onChange={e => dispatch({ type: 'source', key: 'key', value: e.target.value })}><option value="order_id">order_id</option><option value="customer_id">customer_id</option></select></div>
-        <div className="incident-label"><div className="incident-info-heading"><label htmlFor={`${fieldId}-helper`}>Recent-orders helper</label><ChallengeHelp topic="helper" /></div><select id={`${fieldId}-helper`} value={run.config.helper} onChange={e => cfg('helper', e.target.value as 'view' | 'materialized')}><option value="view">Regular view · 0 units</option><option value="materialized">Materialized view · 4 units</option></select></div>
-        <div className="incident-label"><div className="incident-info-heading"><label htmlFor={`${fieldId}-regionalTotals`}>Regional totals</label><ChallengeHelp topic="regionalTotals" /></div><select id={`${fieldId}-regionalTotals`} value={run.config.final} onChange={e => cfg('final', e.target.value as 'view' | 'materialized')}><option value="view">Regular view · 0 units</option><option value="materialized">Materialized result on transform · 4 units</option></select></div>
-        <div className="incident-label"><div className="incident-info-heading"><label htmlFor={`${fieldId}-indexes`}>Serving indexes</label><ChallengeHelp topic="indexes" /></div><select id={`${fieldId}-indexes`} value={run.config.indexes} onChange={e => cfg('indexes', e.target.value as 'both' | 'operations' | 'none')}><option value="both">Operations and support · 4 units</option><option value="operations">Operations only · 2 units</option><option value="none">None · 0 units</option></select></div>
-      </div>
-      <p className="incident-caption">Teaching units are illustrative, not memory measurements. Both serving clusters require local indexes on one shared durable result.</p>
-    </details><ChallengeHelp topic="configuration" /></div>
+    </WorkspacePair>
+    <WorkspacePair controls={<EvidenceCard title="Serving settings" help="configuration"><Scope>Changes shared system</Scope><p>Affects serving availability in System and acceptance checks. Applying clears the last read; input records, SQL previews, and client deliveries stay preserved.</p>
+      <div className="incident-label"><div className="incident-info-heading"><label htmlFor={id + '-helper'}>Recent-orders helper</label><ChallengeHelp topic="helper" /></div><select id={id + '-helper'} value={run.settings.helper} onChange={e => dispatch({ type: 'stage', key: 'helper', value: e.target.value })}><option value="view">Regular view · 0 units</option><option value="materialized">Materialized view · 4 units</option></select></div>
+      <div className="incident-label"><div className="incident-info-heading"><label htmlFor={id + '-final'}>Regional totals</label><ChallengeHelp topic="regionalTotals" /></div><select id={id + '-final'} value={run.settings.final} onChange={e => dispatch({ type: 'stage', key: 'final', value: e.target.value })}><option value="view">Regular view · 0 units</option><option value="materialized">Materialized result · 4 units</option></select></div>
+      <div className="incident-label"><div className="incident-info-heading"><label htmlFor={id + '-indexes'}>Serving indexes</label><ChallengeHelp topic="indexes" /></div><select id={id + '-indexes'} value={run.settings.indexes} onChange={e => dispatch({ type: 'stage', key: 'indexes', value: e.target.value })}><option value="both">Operations and support · 4 units</option><option value="operations">Operations only · 2 units</option><option value="none">None · 0 units</option></select></div><p>Draft budget: {objectCost(run.settings)} / 8 illustrative state units.</p><SettingsActions run={run} dispatch={dispatch} group="serving" />
+    </EvidenceCard>}>
+      <EvidenceCard title="Applied serving design" help="configuration" trailing={<Scope>Read-only result</Scope>}><Table caption="Applied serving objects"><thead><tr><th scope="col">Object</th><th scope="col">Applied setting</th></tr></thead><tbody><tr><th scope="row">Recent-orders helper</th><td>{run.config.helper === 'view' ? 'Regular view' : 'Materialized view'}</td></tr><tr><th scope="row">Regional totals</th><td>{run.config.final === 'view' ? 'Regular view' : 'One shared materialized result'}</td></tr><tr><th scope="row">Local serving indexes</th><td>{run.config.indexes === 'both' ? 'Operations and support' : run.config.indexes === 'operations' ? 'Operations only' : 'None'}</td></tr></tbody></Table><p><strong>{objectCost(run.config)} / 8 illustrative state units</strong>. Units are a teaching budget, not memory measurements. Operations and support need local indexes on one durable shared result.</p></EvidenceCard>
+    </WorkspacePair>
   </>;
 }
 
 export function ClientPanel({ run, trace, dispatch }: Props) {
-  const fieldId = useId();
+  const id = useId();
   const connected = run.config.connected && run.processed;
   const state = trace ? clientState(trace, run.config, run.deliveries) : null;
-  const length = trace ? streamFor(trace, run.config.snapshot).length : 0;
-  return <>
-    <EvidenceCard title="Application subscription" help="subscription" icon={<Radio size={17} aria-hidden="true" />}>
-      <div className="incident-fields">
-        <div className="incident-label"><div className="incident-info-heading"><label htmlFor={`${fieldId}-publication`}>Publish application updates</label><ChallengeHelp topic="publication" /></div><select id={`${fieldId}-publication`} value={run.config.publication} onChange={e => dispatch({ type: 'configure', key: 'publication', value: e.target.value })}><option value="each">After every received record</option><option value="equal">When progress reaches the timestamp</option><option value="complete">When progress is strictly beyond the timestamp</option></select></div>
-        <span className="incident-check-help"><label className="incident-check"><input type="checkbox" checked={run.config.snapshot} onChange={e => dispatch({ type: 'configure', key: 'snapshot', value: e.target.checked })} />Initialize with a coordinated snapshot</label><ChallengeHelp topic="baseline" /></span>
-      </div>
-      <p>The supplied client consolidates signed changes to full result rows. Delivery batches may split one timestamp. Changing its configuration starts a fresh replay.</p>
-      {!connected && <p className="incident-notice">The replay is waiting for current complete upstream output. Inspect live system progress; client settings can still be changed now.</p>}
-      <div className="incident-actions"><Button onClick={() => { const record = trace && streamFor(trace, run.config.snapshot)[run.deliveries]; if (record) dispatch({ type: 'delivery', timestamp: record.timestamp }); }} disabled={!connected || !trace || run.deliveries >= length}>Next delivery</Button><Button disabled={!run.deliveries} onClick={() => dispatch({ type: 'replay-client' })}>Replay deliveries</Button><span>{Math.min(run.deliveries, length)} / {length} deliveries</span></div>
-      {state ? <TimestampTrays state={state} publicationPolicy={run.config.publication} executionNote="Delivery is simulated from the deployed query's actual SQL results." /> : <p>Preparing the query-dependent subscription…</p>}
-      <p className="incident-caption">This session starts with a baseline at 631 s. Each new delivery advances the incident clock to at least its timestamp; replaying cannot rewind the incident. Trays show integer milliseconds; P(632001) means progress at 632.001 s. Results derive from the deployed query.</p>
+  const records = trace ? streamFor(trace, run.config.snapshot) : [];
+  const next = records[run.deliveries];
+  const last = records[run.deliveries - 1];
+  return <WorkspacePair controls={<>
+    <EvidenceCard title="Client settings" help="subscription"><Scope>Changes shared system</Scope><p>Affects the application in Client and Dashboard. Applying restarts client deliveries; database reads and SQL previews stay preserved.</p>
+      <div className="incident-label"><div className="incident-info-heading"><label htmlFor={id + '-publication'}>Publish application updates</label><ChallengeHelp topic="publication" /></div><select id={id + '-publication'} value={run.settings.publication} onChange={e => dispatch({ type: 'stage', key: 'publication', value: e.target.value })}><option value="each">After every received record</option><option value="equal">When progress reaches the timestamp</option><option value="complete">When progress is strictly beyond the timestamp</option></select></div>
+      <span className="incident-check-help"><label className="incident-check"><input type="checkbox" checked={run.settings.snapshot} onChange={e => dispatch({ type: 'stage', key: 'snapshot', value: e.target.checked })} />Initialize with a coordinated snapshot</label><ChallengeHelp topic="baseline" /></span><SettingsActions run={run} dispatch={dispatch} group="client" />
     </EvidenceCard>
-  </>;
+    <EvidenceCard title="Receive deliveries" help="subscription"><Scope>Advances client · may advance shared time</Scope><p>{next ? `Next: ${next.kind === 'progress' ? 'progress record' : 'signed row change'} at ${formatTime(next.timestamp)}. ${next.timestamp > run.time ? 'Receiving it advances the incident clock on every workspace.' : 'The incident clock stays unchanged.'}` : trace ? 'All deliveries received.' : 'Preparing the query-dependent stream…'}</p>
+      {!connected && <p className="incident-notice">Waiting for complete upstream output. Resume the connection and process pending updates in System.</p>}
+      <div className="incident-actions"><Button disabled={!connected || !next} onClick={() => { if (next) dispatch({ type: 'delivery', timestamp: next.timestamp }); }}>Receive next delivery</Button><Button disabled={!run.deliveries} onClick={() => dispatch({ type: 'replay-client' })}>Replay deliveries</Button></div><p>{Math.min(run.deliveries, records.length)} / {records.length} deliveries received. Replay clears the client only; time never rewinds.</p>
+    </EvidenceCard>
+  </>}>
+    <EvidenceCard title="Application subscription" help="subscription" trailing={<Scope>Read-only result · received deliveries</Scope>}>
+      <p>Applied publication: <strong>{run.config.publication === 'each' ? 'Every received record' : run.config.publication === 'equal' ? 'Progress reaches timestamp' : 'Progress strictly beyond timestamp'}</strong> · coordinated snapshot: <strong>{run.config.snapshot ? 'On' : 'Off'}</strong>.</p>
+      {state ? <TimestampTrays state={state} publicationPolicy={run.config.publication} executionNote="Delivery is simulated from the applied query's actual SQL results." /> : <p>Preparing the query-dependent subscription…</p>}
+      {last && <p className="incident-notice"><strong>Last received:</strong> {last.kind === 'progress' ? `Progress at ${formatTime(last.timestamp)}. Progress reports completeness; it does not change order amounts.` : `Signed change at ${formatTime(last.timestamp)}: ${last.diff > 0 ? 'add' : 'remove'} ${last.row.region}, ${last.row.orders} orders, total ${last.row.total}. The applied publication policy decides when it becomes visible.`}</p>}
+      <p>Signed changes can split a timestamp across deliveries. Progress records change completeness, not order amounts. The application may keep its last complete result while a timestamp is still open. No visible change can therefore be expected for some deliveries.</p><p className="incident-caption">Baseline: 631 s. Trays use integer milliseconds: P(632001) means 632.001 s. History selectors in the diagram are view only.</p>
+    </EvidenceCard>
+  </WorkspacePair>;
 }

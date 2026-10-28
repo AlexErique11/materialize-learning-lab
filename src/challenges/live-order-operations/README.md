@@ -44,10 +44,13 @@ appears before handover. The design and build rationale is in
   Valid old achievements are historical, not V2 completion.
 - `LiveOrderOperationsPage.tsx`: shared activity chrome, worker/context lifecycle,
   dialogs, free workspace composition, optional help and automatic change history. SQL previews
-  are bound to run/configuration/draft/mode/frame. Validation is also bound to
+  are bound to run/source/draft/mode/frame. Validation is also bound to
   time, processing and read context. Obsolete responses are discarded.
 - `InvestigationSql.tsx`: predicate editor, read-only diagnostic console, complete
   query execution preview, real errors, deployed/inherited comparison, deployment.
+- `InvestigationWorkspace.tsx`: shared applied-state bar, controls/results pairs,
+  scope labels, and staged settings actions. Drafts persist across tabs/reloads;
+  applying one settings group preserves pending edits in other groups.
 - `InvestigationPanels.tsx` / `ChallengeEvidence.tsx`: data/dashboard/system/client
   observations and controls, shared tables, Chapter 7 ReadableWindow, and Chapter
   8 TimestampTrays. Client data always derives from the deployed query.
@@ -62,6 +65,14 @@ ingestion time, complete read time, delivered progress, and active learner time
 remain distinct. Live input/output frontiers advance with the incident, rather
 than remaining fixed at the first version's 630.001 s fixture.
 
+Advance incident exposes named clock events independently of Process pending
+updates. The last complete snapshot remains visible until processing catches up.
+Client deliveries can advance shared time, as labeled before the action. The
+manual simulation has no activity Pause button. Source settings are in Data,
+serving settings in System, and publication settings in Client. These are saved
+drafts until Apply changes; Discard edits restores applied values. View filters
+and fallback authorization never change configuration.
+
 Historical SQL snapshots are cloned diagnostic contexts. They do not rewind the
 live clock or apply a draft. Deliveries from the session starting at 631 s advance
 the live clock without rewinding it during replay. Equal-time progress leaves a
@@ -72,7 +83,9 @@ within the three-second age bound; an authorized fallback alone cannot pass.
 Sources, Materialize objects/clusters, processing, read policy, state units and
 SUBSCRIBE are simulated; PGlite executes relational SELECT results only. There
 is no credential or backend requirement. Config changes have visible consequences;
-SQL/source changes invalidate dependent snapshots and rebaseline the replay.
+SQL/source changes clear dependent reads and rebaseline the replay. Client-only
+changes preserve reads and SQL previews; serving changes preserve deliveries.
+Existing V2 saves gain clean settings drafts without losing the investigation.
 Shared UI layouts are owned by [UI_LAYOUTS.md](../../../UI_LAYOUTS.md).
 
 ## Verification
@@ -85,6 +98,8 @@ undo, assistance, malformed storage, and preserved achievements.
 `tests/e2e/live-order-operations.spec.ts` covers independent/assisted completion,
 equivalent SQL, wrong deployments, diagnostic SQL, drafts, refresh, automatic
 multi-tab synchronization, optional reset, legacy history and storage failure.
+`challenge-workspaces.spec.ts` checks staged settings, precise dependency resets,
+explicit clock/processing, and controls/results geometry in both themes.
 `challenge-design.spec.ts` checks shared chrome, arbitrary workspaces, mobile
 widths, themes, loading and reduced motion. The cross-browser smoke suite runs
 the complete executable-SQL investigation in Chromium, Firefox and WebKit.

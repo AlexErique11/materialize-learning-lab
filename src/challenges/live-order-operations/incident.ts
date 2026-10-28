@@ -32,17 +32,18 @@ export function expectedAt(time: number, variant = 0) {
 }
 export function rowsAt(trace: readonly TraceFrame[], time: number): readonly ResultRow[] { return trace.find(frame => frame.time === time)?.rows ?? []; }
 export const objectCost = (config: Configuration) => (config.helper === 'materialized' ? 4 : 0) + (config.final === 'materialized' ? 4 : 0) + (config.indexes === 'both' ? 4 : config.indexes === 'operations' ? 2 : 0);
-export function frontiers(config: Configuration, time: number, processed: boolean) {
+export function frontiers(config: Configuration, time: number, processed: boolean | number) {
   const orders = time + 1;
-  const customers = config.connected ? time + 1 : 623000;
-  const output = processed && config.connected ? Math.min(orders, customers) : 623000;
+  const completeTime = typeof processed === 'number' ? processed : processed ? time : 622999;
+  const customers = config.connected ? time + 1 : completeTime + 1;
+  const output = Math.min(orders, customers, completeTime + 1);
   return { orders, customers, output, clock: time };
 }
-export function readWindow(config: Configuration, time: number, processed: boolean, attempt: ReadAttempt | null = null) {
+export function readWindow(config: Configuration, time: number, processed: boolean | number, attempt: ReadAttempt | null = null) {
   const f = frontiers(config, time, processed);
   return { ...windowFixture(600000, f.output, 610000, f.orders, { clock: time, axis: [600000, 640000], inputs: [{ id: 'totals', name: 'Regional totals', retained: 600000, write: f.output }, { id: 'orders', name: 'Orders input', retained: 610000, write: f.orders }] }), attempt };
 }
-export function requestRead(config: Configuration, time: number, processed: boolean, fallback = false) {
+export function requestRead(config: Configuration, time: number, processed: boolean | number, fallback = false) {
   const attempt = applyRead(readWindow(config, time, processed), { type: 'request', request: { policy: 'bounded', bound: fallback ? 10000 : 3000 } }).attempt!;
   return config.final === 'materialized' && config.indexes !== 'none' ? attempt : { ...attempt, status: 'waiting' as const, rowVisible: false };
 }
