@@ -2,7 +2,7 @@ import { useEffect, type RefObject } from 'react';
 import { focusLabContext, isTabNavigation } from '../components/ui/keyboardFocus';
 
 type ShortcutKey = 'ArrowLeft' | 'ArrowRight' | ' ' | 'Enter' | 'r' | 's' | 'h' | 'Control+Enter';
-type Shortcuts = Partial<Record<ShortcutKey, string>>;
+export type Shortcuts = Partial<Record<ShortcutKey, string>>;
 
 /** Activate existing controls so shortcuts share their validation and disabled state. */
 export function useLabShortcuts(scopeRef: RefObject<HTMLElement | null>, shortcuts: Shortcuts, enabled = true) {

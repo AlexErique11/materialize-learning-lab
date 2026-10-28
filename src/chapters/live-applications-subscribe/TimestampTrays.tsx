@@ -100,7 +100,7 @@ export function TimestampTrays({ state, refs, completedTime, assessment = false,
       </section>
       <div className="subscribe-diagram-footer"><span>Illustrative delivery · not packet or FETCH boundaries</span></div>
     </section>
-    <Dialog open={keyOpen} onClose={() => setKeyOpen(false)} title="Timestamp-tray diagram key">
+    <Dialog open={keyOpen} onClose={() => setKeyOpen(false)} closeOnBackdrop title="Timestamp-tray diagram key">
       <dl className="subscribe-key"><div><dt>Signed full rows</dt><dd>A diff changes the number of copies of the entire row. Orders counts open orders in a region; Copies counts identical result rows. A retraction removes row copies, not currency from a total cell.</dd></div>
         <div><dt>Complete before T</dt><dd>The dotted divider separates completed older timestamps from open ones. Timestamp T itself stays open. A later data timestamp also supplies this evidence.</dd></div>
         <div><dt>Complete versus published</dt><dd>Publishing means updating the application’s visible result. A complete group can still wait for publication. This client applies buffered changes only when a progress record P(T) arrives, and only for timestamps less than T.</dd></div>

@@ -19,6 +19,18 @@
 .relation-guide::backdrop {
   background: transparent;
 }
+/* The tour may scroll a target into view, but user gestures must not move the page. */
+html[data-walkthrough-active], html[data-walkthrough-active] body {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+html[data-walkthrough-active='scrollable'] { scrollbar-gutter: stable; }
+.walkthrough-dialog { overscroll-behavior: contain; }
+.walkthrough-dialog.relation-guide { touch-action: none; }
+.walkthrough-dialog.dialog, .walkthrough-dialog .relation-guide-card {
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
 .relation-guide-shade {
   position: absolute;
   background: var(--overlay);
