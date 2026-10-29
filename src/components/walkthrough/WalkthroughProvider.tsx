@@ -6,6 +6,13 @@ import { Spotlight } from '../ui/Spotlight';
 import { focusLabContext, isShortcutInteraction } from '../ui/keyboardFocus';
 import { chapterTourSteps, chapterTourWelcome, getLectureWalkthrough, type WalkthroughStep } from './walkthroughContent';
 import { rememberChapterTour } from './walkthroughStorage';
+import { useWalkthroughInteractionLock } from './useWalkthroughInteractionLock';
+
+const walkthroughShortcuts = {
+  ArrowLeft: '[data-walkthrough-action="back"]',
+  ArrowRight: '[data-walkthrough-action="forward"]',
+  Enter: '[data-walkthrough-action="forward"]',
+};
 
 interface WalkthroughSession { kind: 'chapter' | 'lecture'; steps: readonly WalkthroughStep[]; index: number; phase: 'welcome' | 'steps' }
 const WalkthroughContext = createContext({ open: false, lectureHelpAvailable: false, startLectureHelp: () => {}, startChapterTour: (_replace = false) => {} });
@@ -28,14 +35,15 @@ export function WalkthroughProvider({ children }: { children: ReactNode }) {
   const welcoming = session?.phase === 'welcome';
   const lectureSteps = getLectureWalkthrough(pathname);
 
-  const close = () => {
+  const close = useCallback(() => {
     pendingRoute.current = null;
     setSession(null);
     requestAnimationFrame(() => {
       if (triggerRef.current?.isConnected && !isShortcutInteraction(triggerRef.current)) triggerRef.current.focus({ preventScroll: true });
       else focusLabContext();
     });
-  };
+  }, []);
+  useWalkthroughInteractionLock(session !== null, close);
   const startChapterTour = useCallback((replace = false) => {
     rememberChapterTour();
     triggerRef.current = document.activeElement as HTMLElement;
@@ -84,24 +92,24 @@ export function WalkthroughProvider({ children }: { children: ReactNode }) {
 
   const actions = session && <>
     {session.kind === 'chapter' && <Button variant="ghost" onClick={close}>Exit tour</Button>}
-    <Button disabled={session.index === 0} onClick={() => move(session.index - 1)}>Back</Button>
-    <Button variant="primary" onClick={() => move(session.index + 1)}>{session.index === session.steps.length - 1 ? 'Finish' : 'Next'}</Button>
+    <Button data-walkthrough-action="back" aria-keyshortcuts="ArrowLeft" disabled={session.index === 0} onClick={() => move(session.index - 1)}>Back</Button>
+    <Button data-walkthrough-action="forward" aria-keyshortcuts="ArrowRight Enter" variant="primary" onClick={() => move(session.index + 1)}>{session.index === session.steps.length - 1 ? 'Finish' : 'Next'}</Button>
   </>;
 
   return <WalkthroughContext value={{ open: session !== null, lectureHelpAvailable: lectureSteps !== null, startChapterTour, startLectureHelp }}>
     {children}
-    {welcoming && session && pathname === step?.path && <Dialog open onClose={close} title={chapterTourWelcome.title} eyebrow="Chapter walkthrough">
+    {welcoming && session && pathname === step?.path && <Dialog open onClose={close} shortcuts={walkthroughShortcuts} className="walkthrough-dialog" title={chapterTourWelcome.title} eyebrow="Chapter walkthrough">
       <p className="text-sm leading-relaxed text-text-muted">{chapterTourWelcome.description}</p>
       <div className="mt-6 flex justify-end gap-3">
         <Button variant="ghost" onClick={close}>Exit</Button>
-        <Button variant="primary" onClick={() => setSession({ ...session, phase: 'steps' })}>Start walkthrough</Button>
+        <Button data-walkthrough-action="forward" aria-keyshortcuts="ArrowRight Enter" variant="primary" onClick={() => setSession({ ...session, phase: 'steps' })}>Start walkthrough</Button>
       </div>
     </Dialog>}
-    {!welcoming && session && step && !step.target && pathname === step.path && <Dialog open onClose={close} title={step.title} eyebrow="Chapter 1 tour" className="[&_h2]:text-4xl">
+    {!welcoming && session && step && !step.target && pathname === step.path && <Dialog open onClose={close} shortcuts={walkthroughShortcuts} title={step.title} eyebrow="Chapter 1 tour" className="walkthrough-dialog [&_h2]:text-4xl">
       <p className="text-sm leading-relaxed text-text-muted">{step.description}</p>
       <div className="mt-6 flex flex-wrap justify-end gap-3">{actions}</div>
     </Dialog>}
-    {ready && session && step && <Spotlight open targetRef={targetRef} step={session.index + 1} total={session.steps.length}
+    {ready && session && step && <Spotlight open className="walkthrough-dialog" shortcuts={walkthroughShortcuts} targetRef={targetRef} step={session.index + 1} total={session.steps.length}
       title={step.title} description={description} phaseLabel={session.kind === 'chapter' ? 'Chapter 1 tour' : 'Lecture controls'}
       visual={null} closeLabel="Close walkthrough" onClose={close}>
       {actions}

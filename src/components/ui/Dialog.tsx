@@ -2,7 +2,7 @@ import { useId, useLayoutEffect, useRef, type ReactNode } from 'react';
 import { X } from 'lucide-react';
 import { IconButton } from './IconButton';
 import { useDialogMotion } from '../../motion/useDialogMotion';
-import { useLabShortcuts } from '../../hooks/useLabShortcuts';
+import { useLabShortcuts, type Shortcuts } from '../../hooks/useLabShortcuts';
 import { isShortcutInteraction } from './keyboardFocus';
 
 const dialogShortcuts = { Enter: '[data-dialog-primary]' };
@@ -20,15 +20,16 @@ interface DialogProps {
   children: ReactNode;
   className?: string;
   closeOnBackdrop?: boolean;
+  shortcuts?: Shortcuts;
 }
 
-export function Dialog({ open, onClose, title, eyebrow, children, className = '', closeOnBackdrop = false }: DialogProps) {
+export function Dialog({ open, onClose, title, eyebrow, children, className = '', closeOnBackdrop = false, shortcuts = dialogShortcuts }: DialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const pointerStartedOutside = useRef(false);
   const titleId = useId();
 
   const requestClose = useDialogMotion(ref, open, onClose);
-  useLabShortcuts(ref, dialogShortcuts, open);
+  useLabShortcuts(ref, shortcuts, open);
   useLayoutEffect(() => {
     if (open && ref.current && !isShortcutInteraction(ref.current)) ref.current.querySelector<HTMLButtonElement>('[data-dialog-primary]')?.focus({ preventScroll: true });
   }, [open]);

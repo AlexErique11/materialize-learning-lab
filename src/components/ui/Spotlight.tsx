@@ -3,7 +3,7 @@ import { Lightbulb, X } from 'lucide-react';
 import { Button } from './Button';
 import { useDialogMotion } from '../../motion/useDialogMotion';
 import { animateMotion, reveal } from '../../motion/motion';
-import { useLabShortcuts } from '../../hooks/useLabShortcuts';
+import { useLabShortcuts, type Shortcuts } from '../../hooks/useLabShortcuts';
 
 const guideShortcuts = { ArrowLeft: '[data-guide-action="back"]', ArrowRight: '[data-guide-action="forward"]' };
 
@@ -23,6 +23,8 @@ interface SpotlightProps {
   navigation?: { onBack: () => void; onNext: () => void; backDisabled: boolean; nextLabel: string };
   closeLabel?: string;
   placement?: 'auto' | 'above-first';
+  className?: string;
+  shortcuts?: Shortcuts;
   onClose: () => void;
 }
 
@@ -35,9 +37,9 @@ interface SpotlightGeometry {
   shadePath: string;
 }
 
-export function Spotlight({ open, targetRef, step, total, title, description, phaseLabel, visual, children, focusTargets, focusIndex = 0, onFocusChange, navigation, closeLabel = 'Close guided run', placement = 'auto', onClose }: SpotlightProps) {
+export function Spotlight({ open, targetRef, step, total, title, description, phaseLabel, visual, children, focusTargets, focusIndex = 0, onFocusChange, navigation, closeLabel = 'Close guided run', placement = 'auto', className = '', shortcuts, onClose }: SpotlightProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
-  useLabShortcuts(dialogRef, navigation ? guideShortcuts : {}, open);
+  useLabShortcuts(dialogRef, shortcuts ?? (navigation ? guideShortcuts : {}), open);
   const cardRef = useRef<HTMLDivElement>(null);
   const [geometry, setGeometry] = useState<SpotlightGeometry | null>(null);
   const titleId = useId();
@@ -166,7 +168,7 @@ export function Spotlight({ open, targetRef, step, total, title, description, ph
   }, [open, targetRef, currentTarget, step, title, phaseLabel, placement, focusTargets, focusIndex]);
 
   return (
-    <dialog ref={dialogRef} className="relation-guide" aria-labelledby={titleId} aria-describedby={descriptionId}
+    <dialog ref={dialogRef} className={`relation-guide ${className}`} aria-labelledby={titleId} aria-describedby={descriptionId}
       data-inspection-mode={sequential ? 'sequential' : 'grouped'} data-focus-index={focusIndex} data-focus-count={focusTargets?.length ?? 1}
       onCancel={(event) => { event.preventDefault(); requestClose(); }}>
       {geometry && <>

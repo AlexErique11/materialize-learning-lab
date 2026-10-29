@@ -226,6 +226,8 @@ const chapterCompletions = [
   ['getting-data-in', 3, 'time-in-materialize'],
   ['time-in-materialize', 3, 'progress-and-freshness'],
   ['progress-and-freshness', 3, 'consistent-reads'],
+  ['consistent-reads', 3, 'live-applications-subscribe'],
+  ['live-applications-subscribe', 3, null],
 ] as const;
 
 for (const [index, [chapter, exercise, nextChapter]] of chapterCompletions.entries()) {
@@ -251,7 +253,7 @@ for (const [index, [chapter, exercise, nextChapter]] of chapterCompletions.entri
     await page.keyboard.press('Enter');
     await expect(completion).toBeVisible();
     await page.keyboard.press('Enter');
-    await expect(page).toHaveURL(`/labs/${nextChapter}`);
+    await expect(page).toHaveURL(nextChapter ? `/labs/${nextChapter}` : '/');
     await expect(page.getByRole('dialog')).toHaveCount(0);
   });
 }

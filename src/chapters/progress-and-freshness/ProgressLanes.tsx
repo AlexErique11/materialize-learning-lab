@@ -122,7 +122,7 @@ export function ProgressLanes({ snapshot: s, selected = 'orders', onSelect, high
       <p data-motion-value><LessonText content={progressText(detail)} /></p>
     </section>}
     {!compact && (caseLabel ? <LagLegend snapshot={s} sectionRef={refs?.lag} caseLabel={caseLabel} /> : <p data-motion-value className="progress-caption" aria-live="polite" data-upcoming={upcoming}><LessonText content={progressText(caption)} /></p>)}
-    <Dialog open={keyOpen} onClose={() => setKeyOpen(false)} title="Diagram key" eyebrow="How to read the lanes">
+    <Dialog open={keyOpen} onClose={() => setKeyOpen(false)} closeOnBackdrop title="Diagram key" eyebrow="How to read the lanes">
       <dl className="progress-symbol-definitions">
         <div><dt><i className="progress-key-solid" />Purple circle · actual frontier</dt><dd>At frontier 12, all changes before 12 are complete. Time 12 itself is still open. The circle is a boundary, not a row count.</dd></div>
         <div><dt><i className="progress-key-complete" />Green band · completed time</dt><dd>The green part of a lane covers times strictly before its purple circle. It grows when completion advances, even if no new business rows arrive.</dd></div>

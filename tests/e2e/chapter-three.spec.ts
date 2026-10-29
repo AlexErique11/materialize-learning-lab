@@ -101,14 +101,17 @@ test('shared controls, reference dialog and playback match the previous chapter'
   await expect(page.getByRole('button', { name: 'Lecture controls walkthrough', exact: true })).toBeFocused();
 });
 
-test('tables and questions stay visible together without scrolling and match Chapter 2 navigation', async ({ page, isMobile }) => {
-  test.setTimeout(240_000);
-  const sizes = isMobile ? [[390, 844], [375, 667], [610, 668]] : [[1536, 714], [1917, 893], [1440, 900], [1366, 768], [1280, 720], [1280, 650], [1024, 768], [1024, 700], [900, 800]];
-  const graphGeometry = () => page.locator('.flow-canvas, .flow-input').evaluateAll(elements => elements.map(element => {
-    const box = element.getBoundingClientRect();
-    return { left: box.left, width: box.width };
-  }));
-  for (const [width, height] of sizes) {
+for (const [device, sizes] of Object.entries({
+  desktop: [[1536, 714], [1917, 893], [1440, 900], [1366, 768], [1280, 720], [1280, 650], [1024, 768], [1024, 700], [900, 800]],
+  mobile: [[390, 844], [375, 667], [610, 668]],
+})) for (const [width, height] of sizes) {
+  test(`tables and questions match Chapter 2 navigation at ${width}×${height} (${device})`, async ({ page, isMobile }) => {
+    test.skip(isMobile !== (device === 'mobile'), 'Run in the matching device project.');
+    test.setTimeout(60_000);
+    const graphGeometry = () => page.locator('.flow-canvas, .flow-input').evaluateAll(elements => elements.map(element => {
+      const box = element.getBoundingClientRect();
+      return { left: box.left, width: box.width };
+    }));
     await page.setViewportSize({ width: width!, height: height! });
     await page.goto(`${chapterPath}/tutorial/lecture-2`);
     const reference = await graphGeometry();
@@ -189,8 +192,8 @@ test('tables and questions stay visible together without scrolling and match Cha
       await page.goto(`${chapterPath}/tutorial/lecture-2`);
       expect(await page.evaluate(() => getComputedStyle(document.documentElement).overflow)).not.toBe('clip');
     }
-  }
-});
+  });
+}
 
 test('each lecture gates effects behind predictions and completes its guided flow', async ({ page }) => {
   test.setTimeout(90_000);
@@ -303,10 +306,12 @@ test('graph connects each query to its actual source and preserves past answers'
   await expect(result).toContainText('Durable storage');
   if (!isMobile) {
     await expect(page.locator('.flow-connectors [data-source="durable"][data-target="b-query"]')).toHaveCount(1);
+    await page.keyboard.press('Tab');
     await page.getByRole('button', { name: 'Inspect Transform', exact: true }).focus();
     await page.keyboard.press('Enter');
     await expect(page.locator('.flow-inspector')).toContainText('intermediate state in memory');
   } else {
+    await page.keyboard.press('Tab');
     await page.locator('.flow-overview').getByRole('button', { name: 'Transform', exact: true }).focus();
     await page.keyboard.press('Enter');
     await expect(page.locator('.flow-transform')).toBeVisible();
@@ -332,8 +337,7 @@ test('manual answers, incorrect retries, hints and the final design work', async
       await expect(page.locator('.exercise-question')).toHaveAttribute('data-result', 'incorrect');
       expect(await page.getByTestId('object-diagram').innerText()).toBe(before);
       await expect(page.getByRole('button', { name: 'Next question', exact: true })).toHaveCount(0);
-      await page.getByRole('button', { name: 'Hint', exact: true }).focus();
-      await page.keyboard.press('Enter');
+      await page.getByRole('button', { name: 'Hint', exact: true }).click();
       await expect(page.getByRole('button', { name: 'Hint', exact: true })).toHaveAttribute('aria-expanded', 'true');
       const picker = page.getByRole('button', { name: 'Select answers', exact: true });
       const compact = await picker.isVisible();
@@ -414,10 +418,13 @@ test('the first query result keeps Lecture 2 graph and table positions fixed', a
   }
 });
 
-test('lectures fit intermediate and short window sizes without scrolling or clipping', async ({ page, isMobile }) => {
-  test.setTimeout(90_000);
-  const sizes = isMobile ? [[375, 667], [390, 700]] : [[1440, 850], [1366, 820], [1280, 810], [1366, 700], [1280, 650], [1024, 700], [900, 800], [768, 700], [640, 800]];
-  for (const [width, height] of sizes) {
+for (const [device, sizes] of Object.entries({
+  desktop: [[1440, 850], [1366, 820], [1280, 810], [1366, 700], [1280, 650], [1024, 700], [900, 800], [768, 700], [640, 800]],
+  mobile: [[375, 667], [390, 700]],
+})) for (const [width, height] of sizes) {
+  test(`lectures fit without scrolling or clipping at ${width}×${height} (${device})`, async ({ page, isMobile }) => {
+    test.skip(isMobile !== (device === 'mobile'), 'Run in the matching device project.');
+    test.setTimeout(60_000);
     await page.setViewportSize({ width: width!, height: height! });
     for (const lecture of [1, 2, 3]) {
       await page.goto(`${chapterPath}/tutorial/lecture-${lecture}`);
@@ -434,14 +441,18 @@ test('lectures fit intermediate and short window sizes without scrolling or clip
         if (step < objectLectures[lecture - 1]!.lessons.length) await page.getByRole('button', { name: 'Next change', exact: true }).click();
       }
     }
-  }
-});
+  });
+}
 
-test('all pages preserve shared graph dimensions and readable content in both themes', async ({ page, isMobile }) => {
-  test.setTimeout(120_000);
-  for (const size of isMobile ? [{ width: 390, height: 844 }, { width: 390, height: 750 }] : [{ width: 1440, height: 900 }, { width: 1280, height: 720 }]) {
+for (const [device, sizes] of Object.entries({
+  desktop: [{ width: 1440, height: 900 }, { width: 1280, height: 720 }],
+  mobile: [{ width: 390, height: 844 }, { width: 390, height: 750 }],
+})) for (const size of sizes) for (const theme of ['light', 'dark']) {
+  test(`all pages preserve graph dimensions and readable content at ${size.width}×${size.height} in ${theme} (${device})`, async ({ page, isMobile }) => {
+    test.skip(isMobile !== (device === 'mobile'), 'Run in the matching device project.');
+    test.setTimeout(60_000);
     await page.setViewportSize(size);
-    for (const theme of ['light', 'dark']) for (const section of ['tutorial', 'exercises']) for (const number of section === 'tutorial' ? [1, 2, 3] : [1, 2]) {
+    for (const section of ['tutorial', 'exercises']) for (const number of section === 'tutorial' ? [1, 2, 3] : [1, 2]) {
       await page.goto(`${chapterPath}/${section}/${section === 'tutorial' ? 'lecture' : 'exercise'}-${number}`);
       await page.evaluate(theme => document.documentElement.setAttribute('data-theme', theme), theme);
       const fit = async () => {
@@ -487,8 +498,8 @@ test('all pages preserve shared graph dimensions and readable content in both th
       }
       await page.screenshot({ path: test.info().outputPath(`${size.width}-${theme}-${section}-${number}.png`) });
     }
-  }
-});
+  });
+}
 
 test('question text and answer controls stay anchored through feedback', async ({ page, isMobile }) => {
   test.setTimeout(90_000);
