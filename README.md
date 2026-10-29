@@ -59,8 +59,9 @@ source, cluster, progress, read-policy, and subscription behavior is simulated.
 Chapter 7/8 semantics are reused. The SQL runtime's WASM/data assets load only
 when an investigation starts, and are bundled locally for static deployment.
 
-Drafts, deployed configuration, workspace, replay position, handover explanation,
-and assistance save automatically. Returning resumes directly; Restart preserves
+Drafts, deployed configuration, workspace, replay position, and assistance save
+automatically. Handover requires five passing checks with no written submission.
+Returning resumes directly; Restart preserves
 achievements and chapter progress. Version 2 has a separate store, so first-version
 saved runs remain intact and their completions appear as historical achievements.
 Optional worked repairs are recorded honestly. The challenge has no chapter

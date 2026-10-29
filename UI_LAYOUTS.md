@@ -21,10 +21,10 @@ SQL, System, and Client tabs change the selected view without applying repairs.
 Challenge overview in the investigation toolbar reopens the complete opening page at
 `/challenge?view=overview`. Continue investigation returns to the saved workspace;
 handover and completed runs instead show Return to investigation in the toolbar.
-The handover footer places Back to main page before Complete handover. Handover
-shows the required repair explanation length and trimmed character count. A status
-beside completion explains pending checks, a missing explanation, or ongoing
-execution; it confirms when the handover is ready to complete. Overview navigation
+The handover footer places Back to main page before Complete handover. All five
+current acceptance checks must pass to enable completion; there is no notes field
+or written submission. A status beside completion explains pending checks or ongoing
+execution and confirms when the handover is ready to complete. Overview navigation
 does not reset the run or apply drafts. Undo last change and Investigation help
 sit beside the other activity toolbar actions during investigation. The toolbar
 wraps beneath the title when needed, retaining standard control sizes. Footer
@@ -78,6 +78,16 @@ or chapter-completion credit is added. Autosave and cross-tab synchronization us
 historical achievements. The first version's store remains untouched, and its
 completions are labeled First version rather than completing the investigation.
 No saved-status label or manual Load saved run step is displayed.
+
+New investigations require repairing append ingestion of keyed replacements and
+the serving design (materialized helper, operations-only index, ten-unit cost).
+SQL opens with an unselected historical snapshot; execution requires an explicit
+choice, which persists across navigation and refresh. Inherited-query comparison
+uses the same applied source and timestamp as the draft.
+Successful Complete handover opens `ChallengeCompletion` using the shared Dialog:
+congratulations, finite fireworks, and View handover / Back to main page actions.
+It does not reopen merely on restoring a completed run. Reduced motion shows
+static sparks instead of animated fireworks.
 
 `src/labs/components/LectureScreen.tsx` accepts `metrics`, `visualization`, and
 `playback` slots plus the common screen props. Chapter 2 supplies them through

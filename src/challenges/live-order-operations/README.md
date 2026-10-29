@@ -11,8 +11,9 @@ appears before handover. The design and build rationale is in
 
 - `incident.ts`: initial configuration, neutral workspaces, business requirements,
   contextual hints, input snapshots, fronts/read requests, and query-derived
-  subscription replay. The author-only defects are arrival-based expiry, a paused
-  customer input, and per-record client publication.
+  subscription replay. The author-only defects are append ingestion of full keyed
+  replacements, arrival-based expiry, a paused customer input, an over-budget
+  materialized helper with no support index, and per-record client publication.
 - `simulation.ts`: immutable keyed ingestion, affected-region maintenance, signed
   full-row differences, and the hand-reviewed commerce fixture. `expectedAt` in
   the incident model uses this independent domain oracle, not edited SQL.
@@ -48,14 +49,19 @@ appears before handover. The design and build rationale is in
   time, processing and read context. Obsolete responses are discarded.
 - `InvestigationSql.tsx`: predicate editor, read-only diagnostic console, complete
   query execution preview, real errors, deployed/inherited comparison, deployment.
+  New runs have no historical snapshot selected; learners choose one before execution.
+  Inherited and draft previews use identical applied source settings.
 - `InvestigationWorkspace.tsx`: shared applied-state bar, controls/results pairs,
   scope labels, and staged settings actions. Drafts persist across tabs/reloads;
   applying one settings group preserves pending edits in other groups.
 - `InvestigationPanels.tsx` / `ChallengeEvidence.tsx`: data/dashboard/system/client
   observations and controls, shared tables, Chapter 7 ReadableWindow, and Chapter
   8 TimestampTrays. Client data always derives from the deployed query.
-- `ChallengeReport.tsx`: acceptance results, the learner's
-  explanation, and honest independent/worked-repair attribution.
+- `ChallengeReport.tsx`: acceptance results and honest independent/worked-repair
+  attribution. Five current passing checks enable completion without written notes.
+- `ChallengeCompletion.tsx` / `completion.css`: shared accessible completion dialog
+  and finite fireworks, with a static reduced-motion treatment. Opens on successful
+  handover completion, not on restored completed runs or checks alone.
 
 ## Model boundaries
 

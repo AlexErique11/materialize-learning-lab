@@ -47,25 +47,64 @@ describe('free investigation and validation', () => {
     let run = updateRun(createRun('checks'), { type: 'start' });
     run = updateRun(run, { type: 'worked', workspace: 'Client' });
     expect(assistedRun(run)).toBe(true);
-    const checks = [queryCheck(trace), ...systemChecks({ ...run, config: { ...run.config, connected: true }, processed: true, read: requestRead({ ...run.config, connected: true }, 630000, true) }, trace)];
+    const repaired = { ...run.config, source: { envelope: 'UPSERT' as const, key: 'order_id' as const }, helper: 'view' as const, indexes: 'both' as const, connected: true };
+    const checks = [queryCheck(trace), ...systemChecks({ ...run, config: repaired, processed: true, read: requestRead(repaired, 630000, true) }, trace)];
     run = updateRun(run, { type: 'validation', runId: run.id, configuration: 0, checks }); expect(run.validation).toBeNull();
     run = updateRun(run, { type: 'validation', runId: run.id, configuration: run.configurationRevision, checks }); expect(readyForHandover(run)).toBe(true);
-    run = updateRun(run, { type: 'handover' }); expect(updateRun(run, { type: 'complete' }).phase).toBe('handover');
-    run = updateRun(run, { type: 'note', value: 'I corrected the query, restored processing, and published complete timestamps.' });
+    run = updateRun(run, { type: 'handover' });
     run = updateRun(run, { type: 'complete' }); expect(run.phase).toBe('completed'); expect(parseRun(run)).toEqual(run);
+    expect(parseRun({ ...run, note: 'Old required explanation' })).toEqual(run);
     run = updateRun(run, { type: 'undo' }); expect(run.validation).toBeNull(); expect(run.phase).toBe('investigating'); expect(assistedRun(run)).toBe(true);
   });
   it('rejects malformed persisted state without migrating a first-version run', () => {
     for (const patch of [{ scenarioVersion: 1 }, { deliveries: 99 }, { draft: null }, { hints: { SQL: 4 } }, { config: { ...initialConfiguration(), predicate: 'DROP TABLE orders' } }, { validation: { configuration: 0, checks: [] } }, { phase: 'completed' }]) expect(parseRun({ ...createRun('invalid'), ...patch })).toBeNull();
   });
-  it('discards old notebook snapshots while preserving a saved investigation', () => {
+  it('discards old notes and notebook snapshots while preserving a saved investigation', () => {
     let run = updateRun(createRun('existing'), { type: 'start' });
     run = updateRun(run, { type: 'draft', value: repairedPredicate });
-    run = updateRun(run, { type: 'note', value: 'Keep this handover explanation.' });
-    const saved = { ...run, observations: [{ id: 'old-pin', label: 'Before', detail: 'Old snapshot', time: 630000, configuration: 0, workspace: 'Dashboard' }] };
+    const saved = { ...run, note: 'Legacy handover explanation', observations: [{ id: 'old-pin', label: 'Before', detail: 'Old snapshot', time: 630000, configuration: 0, workspace: 'Dashboard' }] };
     expect(parseRun(saved)).toEqual(run);
     expect(saved.observations).toHaveLength(1);
   });
+});
+
+it('blocks completion for absent, failed, or stale acceptance checks', () => {
+  const run = updateRun(updateRun(createRun('incomplete'), { type: 'start' }), { type: 'handover' });
+  expect(updateRun(run, { type: 'complete' })).toBe(run);
+  const checks = ['query', 'source', 'service', 'client', 'objects'].map(id => ({ id, label: id, passed: true, detail: '' }));
+  for (const validation of [
+    { configuration: 0, checks: checks.map(check => ({ ...check, passed: check.id !== 'source' })) },
+    { configuration: 1, checks },
+    { configuration: 0, checks: checks.slice(1) },
+  ]) {
+    const unready = { ...run, validation };
+    expect(updateRun(unready, { type: 'complete' })).toBe(unready);
+  }
+});
+
+it('requires source replacement semantics and both serving repairs independently', () => {
+  let run = updateRun(createRun('repairs'), { type: 'start' });
+  const passes = (id: string) => systemChecks(run, trace).find(check => check.id === id)!.passed;
+  expect(passes('source')).toBe(false);
+  expect(passes('objects')).toBe(false);
+  run = updateRun(run, { type: 'stage', key: 'source', value: { envelope: 'UPSERT', key: 'order_id' } });
+  expect(passes('source')).toBe(false);
+  run = updateRun(run, { type: 'apply-settings', group: 'source' });
+  expect(passes('source')).toBe(true);
+  run = updateRun(run, { type: 'configure', key: 'indexes', value: 'both' });
+  expect(passes('objects')).toBe(false);
+  run = updateRun(run, { type: 'configure', key: 'helper', value: 'view' });
+  expect(passes('objects')).toBe(true);
+});
+
+it('offers complete worked repairs for Data and System and records their assistance', () => {
+  let run = updateRun(createRun('assisted'), { type: 'start' });
+  run = updateRun(run, { type: 'worked', workspace: 'Data' });
+  run = updateRun(run, { type: 'worked', workspace: 'System' });
+  expect(systemChecks(run, trace).filter(check => ['source', 'objects'].includes(check.id)).every(check => check.passed)).toBe(true);
+  expect(run.config.connected).toBe(true);
+  expect(run.worked).toEqual(['Data', 'System']);
+  expect(parseRun(run)).toEqual(run);
 });
 
 it('guards deployment and validation against a replaced run or a changed configuration', () => {

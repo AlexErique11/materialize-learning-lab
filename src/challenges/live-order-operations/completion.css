@@ -1,0 +1,23 @@
+.incident-completion { width: min(560px, calc(100vw - 32px)); }
+.incident-completion-content { text-align: center; }
+.incident-completion-art { position: relative; display: grid; place-items: center; height: 176px; overflow: hidden; }
+.incident-completion-trophy { display: grid; place-items: center; width: 96px; height: 96px; border: 1px solid var(--lab-border); border-radius: 50%; background: var(--lab-tint); color: var(--lab-purple); }
+.incident-completion-content h3 { margin-block: 4px 12px; font-size: 26px; font-weight: 700; letter-spacing: -0.03em; }
+.incident-completion-content p { color: var(--lab-muted); line-height: 1.65; }
+.incident-completion-content .incident-completion-message { margin-top: 16px; color: var(--lab-text); font-weight: 600; }
+.incident-completion-content .incident-actions { justify-content: center; margin-top: 24px; }
+.incident-firework { position: absolute; left: 20%; top: 42%; color: var(--lab-purple); }
+.incident-firework:nth-child(2) { left: 80%; top: 35%; color: var(--success); }
+.incident-firework:nth-child(3) { left: 52%; top: 56%; color: var(--practice-accent); }
+.incident-firework i { position: absolute; width: 4px; height: 9px; border-radius: 3px; background: currentColor; box-shadow: 0 0 6px color-mix(in srgb, currentColor 45%, transparent); opacity: 0; animation: incident-firework-burst 1100ms ease-out 2 both; animation-delay: 180ms; }
+.incident-firework:nth-child(2) i { animation-delay: 480ms; }
+.incident-firework:nth-child(3) i { animation-delay: 780ms; }
+@keyframes incident-firework-burst {
+  0% { opacity: 0; transform: translate(0, 0) rotate(var(--spark-angle)) scale(0.2); }
+  12% { opacity: 1; }
+  65% { opacity: 1; transform: translate(calc(var(--spark-x) * 0.85), calc(var(--spark-y) * 0.85)) rotate(var(--spark-angle)) scale(1); }
+  100% { opacity: 0; transform: translate(var(--spark-x), var(--spark-y)) rotate(var(--spark-angle)) scale(0.6); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .incident-firework i { animation: none; opacity: 0.65; transform: translate(calc(var(--spark-x) * 0.65), calc(var(--spark-y) * 0.65)) rotate(var(--spark-angle)); }
+}

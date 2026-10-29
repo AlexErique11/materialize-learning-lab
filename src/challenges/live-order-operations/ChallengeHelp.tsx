@@ -2,7 +2,7 @@ import { RelationHelp } from '../../components/lesson/RelationHelp';
 
 const help = {
   brief: { label: 'An incident from operations', text: 'This is the report you are investigating. Read the operating contract, explore the workspaces in any order, and verify your repairs against the contract.' },
-  environment: { label: 'Your working environment', text: 'SQL runs locally in your browser. Connections, progress, and application deliveries are simulated. Your drafts, settings, and handover explanation save automatically in this browser.' },
+  environment: { label: 'Your working environment', text: 'SQL runs locally in your browser. Connections, progress, and application deliveries are simulated. Your drafts, settings, and progress save automatically in this browser.' },
   contract: { label: 'Operating contract', text: 'These are the requirements for the finished system. Acceptance checks test its behavior against them, including the five-minute order window, complete results, freshness, and shared serving budget.' },
   sharedState: { label: 'Shared system', text: 'These are applied values across all five workspaces. Draft settings do not appear here until applied. Advance incident moves the shared clock forward to the named event; it does not process pending updates or apply a repair. SQL historical selection is view only. Time cannot rewind; Restart challenge starts a new investigation.' },
   incidentTime: { label: 'Incident time', text: 'The current simulated incident clock, shown in seconds. Advance incident and Receive next delivery advance the replay; simply reading, editing, or switching tabs does not move this clock.' },
@@ -23,7 +23,7 @@ const help = {
   queryObservations: { label: 'Query observations', text: 'Shows the actual rows from your latest SQL execution. A changed editor or replay context requires a new run. Running a query does not deploy it.' },
   deployedQuery: { label: 'Deployed query at this snapshot', text: 'The live query evaluated against the selected historical snapshot. It is separate from the draft preview. Compare it with the draft result at the same historical time.' },
   inspectSql: { label: 'Deployed and inherited SQL', text: 'The deployed predicate is the filter currently used by the system. The inherited predicate is the original filter supplied with the incident. This section only displays them; it does not change either query.' },
-  compareSql: { label: 'Compare inherited query', text: 'Runs the original query and original source settings at exactly the same historical time as your preview. Comparing at the same time helps separate a query change from changes in the data.' },
+  compareSql: { label: 'Compare inherited query', text: 'Runs the original query with the same applied source settings at exactly the same historical time as your preview. Comparing the same inputs and time isolates the effect of the query change.' },
   dependencies: { label: 'Dependencies and progress', text: 'Shows how the inputs feed the regional result and serving index. The slowest required input can limit downstream completeness. These boundaries describe completeness independently of query speed.' },
   frontier: { label: 'Complete strictly below', text: 'All timestamps earlier than this boundary are complete: no further updates are expected there. The boundary timestamp itself is still open. Progress can advance even when no business rows change.' },
   connection: { label: 'Customer connection', text: 'Shows connection history and status. Pause customer connection stops input progress; Resume customer connection allows it again. After resuming, Process pending updates processes available work without advancing incident time. Changing the connection clears the last read but preserves complete snapshots and client deliveries.' },
@@ -40,7 +40,6 @@ const help = {
   baseline: { label: 'Coordinated starting snapshot', text: 'Starts the client with a consistent complete result before later changes are applied. With it disabled, the stream contains changes only and may not establish the full application state. Applying this setting starts a new delivery replay; selecting it alone leaves the current client unchanged.' },
   history: { label: 'Applied change history', text: 'A record of configuration changes and deployments during the investigation. It is recorded automatically as you make changes. Undo last change restores the previous configuration; this history is not a command replay.' },
   acceptance: { label: 'End-to-end acceptance', text: 'Run acceptance checks tests the deployed system for query correctness, order identity, normal service, complete client publication, and the shared state budget. Failed checks explain what still needs investigation; opening handover does not submit completion.' },
-  explanation: { label: 'Your repair explanation', text: 'Explain the cause of the discrepancy and what you changed to repair it. Complete handover requires all five checks to pass and at least 20 characters of explanation. The text is saved but its reasoning is not automatically graded.' },
 } as const;
 
 export type ChallengeHelpTopic = keyof typeof help;

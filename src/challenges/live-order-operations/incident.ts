@@ -17,7 +17,7 @@ export interface Configuration {
   snapshot: boolean;
   fallback: boolean;
 }
-export const initialConfiguration = (): Configuration => ({ predicate: initialPredicate, source: { envelope: 'UPSERT', key: 'order_id' }, connected: false, helper: 'view', final: 'materialized', indexes: 'both', publication: 'each', snapshot: true, fallback: false });
+export const initialConfiguration = (): Configuration => ({ predicate: initialPredicate, source: { envelope: 'NONE', key: 'order_id' }, connected: false, helper: 'materialized', final: 'materialized', indexes: 'operations', publication: 'each', snapshot: true, fallback: false });
 export interface TraceFrame { time: number; rows: ResultRow[] }
 export const traceTimes = [600000, 601000, 602000, 603000, 604000, 605000, 609999, 610000, 619999, 620000, 622999, 630000, 631000, 631001, 632000, 632001, 840000, 840001] as const;
 
@@ -72,8 +72,8 @@ export const businessRequirements = [
 export const incidentMessage = 'Regional totals disagree with the latest paid orders during the flash sale. Can we trust this dashboard before the next sale wave?';
 export const workspaceHints: Record<Workspace, readonly string[]> = {
   Dashboard: ['Compare the logical timestamp of a result with the time of the order you are checking.', 'A correct query, a recent snapshot, and a complete application update are separate properties.', 'Explore SQL, System, and Client independently; a healthy layer does not establish that the others are healthy.'],
-  Data: ['Compare successive messages for an order with the current source relation.', 'Order 104 arrives long after its business event. How long should it remain eligible?', 'The producer uses stable order IDs and full replacement values. Preserve its UPSERT contract.'],
+  Data: ['Compare successive messages for an order with the current source relation. Are old versions still present?', 'The producer sends full replacement values, rather than independent events. Which envelope keeps only the latest version?', 'Use UPSERT with order_id, apply the source settings, and compare the rebuilt relation with the retained messages.'],
   SQL: ['Find an order that arrived late. Compare its event timestamp with its arrival timestamp.', 'Inspect what determines expiration, including when only the clock advances.', 'Use the event timestamp for both the entry bound and the exclusive five-minute expiration bound.'],
-  System: ['A short query duration and recent data are separate observations.', 'Compare all input frontiers with the output frontier, then inspect the connection history.', 'Resume the paused customer connection, let processing advance, and issue a new normal read.'],
+  System: ['Check freshness, access for both teams, and the eight-unit budget separately.', 'Compare input frontiers and connection history. Does the helper need stored state, and can both teams serve the shared result?', 'Use a regular helper view, shared materialized regional totals, and operations and support indexes. Apply, resume the customer connection, process updates, and request a normal read.'],
   Client: ['Compare the database result with the application after each individual delivery.', 'A retraction and replacement can arrive separately at the same timestamp.', 'Buffer signed full-row changes until progress is strictly greater than their timestamp.'],
 };

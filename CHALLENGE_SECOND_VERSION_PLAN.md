@@ -5,10 +5,10 @@ Status: implemented on `challenge-second-version`. See
 map, execution boundaries, and verification. This document preserves the design
 and implementation gates; facilitated learner timing remains a release follow-up.
 
-Current simplification: manual notebooks, pinned observations, and evidence
-submission have been removed. Handover requires five passing technical checks
-and a short repair explanation. Notebook-related requirements below describe
-the earlier design and are historical.
+Current simplification: manual notebooks, pinned observations, evidence submission,
+and handover notes have been removed. Handover requires only five passing technical
+checks. Requirements below for notebooks or written explanations describe the
+earlier design and are historical.
 
 Starting point: commit `da81e4d` on `challenge-first-version`. Development branch:
 `challenge-second-version`. The first version remains recoverable on its branch.
@@ -34,7 +34,10 @@ SQL execution is a scoped part of the investigation, not a new database IDE.
 Target: 15–20 active minutes for a learner who completed Chapters 1–8. Keep the
 original 10–20 minute product estimate until learner testing supports changing it;
 do not expand the required task to 30–40 minutes to cover every chapter separately.
-Use three connected faults and a supplied codebase to make this feasible.
+Use connected faults and a supplied codebase to make this feasible. The current
+implementation also requires source and serving repairs, and an explicit historical
+snapshot selection before SQL execution. Completing handover celebrates finishing
+the lab in a congratulations dialog with fireworks.
 
 ## 2. What the learner sees first
 
@@ -72,15 +75,15 @@ Do not expose this table as a task list in the product.
 
 | Component | Initial condition | Discoverable evidence | Effective intervention |
 | --- | --- | --- | --- |
-| Order ingestion | Healthy: stable order-ID UPSERT and full replacement values | Retained keyed messages compared with current source rows | No change needed. Wrong changes affect subsequent results. |
+| Order ingestion | Fault: full keyed replacement messages are appended as independent rows | Retained keyed messages compared with duplicate current source rows | Apply UPSERT with order_id so corrections replace earlier values. |
 | Regional query | Fault: expiration uses arrival time instead of event time | Compare the deployed SQL with late arrivals and clock-only expiry | Edit, execute, and deploy the corrected temporal predicate. |
 | Customer input | Fault: connection paused at frontier 623.000 s | Compare wall clock, input/output frontiers, connection history, and query duration | Resume the connection, allow processing to advance, then issue a new read. |
-| Serving objects | Healthy: regular helper view, one final materialized result, two local indexes | Catalog and dependency map; eight-unit state accounting | Preserve the contract. Additional or removed objects have observable consequences. |
+| Serving objects | Fault: a materialized helper and operations-only index use ten units and omit support | Applied serving catalog and state accounting | Use a regular helper view and both local indexes on the shared materialized result, totaling eight units. |
 | Read policy | Healthy: bounded normal request; last complete display is honestly labeled | Request records include selected timestamp, age, and availability | Verify normal service after catch-up. Optional authorized fallback is a mitigation. |
 | Live client | Fault: publishes each received record | Compare the database result with the visible app during a split replacement | Change the client's publication policy to buffer until progress is strictly later. |
 
-The three initial faults are query expiration, stalled input, and partial client
-publication. Correct components are genuine diagnostic alternatives, not decoy
+The initial faults are ingestion semantics, query expiration, stalled input,
+serving design, and partial client publication. Correct components are genuine diagnostic alternatives, not decoy
 cards labeled as suspicious. Do not introduce Debezium configuration, production
 connector setup, arbitrary JavaScript, or additional untaught concepts.
 
@@ -475,7 +478,7 @@ copy. Keep the relational oracle independent of the SQL execution implementation
    repair, autosave, and useful validation feedback. Gate: no quiz/Next checkpoint
    dependency is needed to discover and fix the query.
 4. **Complete investigation:** System and Client workspaces, operational actions,
-   notebook comparisons, undo, and contextual help. Gate: all three faults are
+   notebook comparisons, undo, and contextual help. Gate: all incident faults are
    independently discoverable and the end-to-end repair works in different orders.
 5. **Handover and migration:** versioned validation, evidence submission, assisted
    completion, V1 historical handling, reset, and product copy. Gate: reopening,

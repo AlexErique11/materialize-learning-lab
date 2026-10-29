@@ -25,32 +25,32 @@ export function InvestigationSql({ run, trace, dispatch, mode, setMode, preview,
 }) {
   const fieldId = useId();
   const validPreview = preview?.key === previewKey(run, mode) ? preview : null;
-  const time = traceTimes[run.frame]!;
+  const time = run.frame === null ? null : traceTimes[run.frame]!;
   return <>
     <div className="incident-actions" role="group" aria-label="SQL workspace mode"><Button aria-pressed={mode === 'repair'} onClick={() => setMode('repair')}>Repair deployed query</Button><Button aria-pressed={mode === 'diagnostic'} onClick={() => setMode('diagnostic')}>Diagnostic SELECT</Button></div>
     <WorkspacePair controls={
       <EvidenceCard title={mode === 'repair' ? 'Regional query draft' : 'Read-only diagnostic console'} help={mode === 'repair' ? 'draft' : 'diagnostic'}>
         <Scope>{mode === 'repair' ? run.draft === run.config.predicate ? 'Draft matches applied query' : 'Not applied · query draft' : 'View only · read-only SELECT'}</Scope>
-        <div className="incident-label"><div className="incident-info-heading"><label htmlFor={`${fieldId}-historicalSnapshot`}>Historical replay snapshot</label><ChallengeHelp topic="historicalSnapshot" /></div><select id={`${fieldId}-historicalSnapshot`} value={run.frame} onChange={e => dispatch({ type: 'frame', frame: Number(e.target.value) })}>{traceTimes.map((time, index) => <option key={time} value={index}>{formatTime(time)}</option>)}</select></div>
+        <div className="incident-label"><div className="incident-info-heading"><label htmlFor={`${fieldId}-historicalSnapshot`}>Historical replay snapshot</label><ChallengeHelp topic="historicalSnapshot" /></div><select id={`${fieldId}-historicalSnapshot`} value={run.frame ?? ''} onChange={e => dispatch({ type: 'frame', frame: Number(e.target.value) })}><option value="" disabled>Select a snapshot to investigate</option>{traceTimes.map((time, index) => <option key={time} value={index}>{formatTime(time)}</option>)}</select></div>
         <p className="incident-caption">View only · this cloned snapshot includes ingested records through its selected time. It does not advance the live incident or establish that live serving is current.</p>
         {mode === 'repair' && <pre className="incident-code">{'SELECT c.region, COUNT(*) AS orders, SUM(o.amount) AS total\nFROM orders AS o JOIN customers AS c\n  ON o.customer_id = c.customer_id\nWHERE'}</pre>}
         <label className="incident-label" htmlFor="incident-sql">{mode === 'repair' ? 'Temporal WHERE predicate' : 'Diagnostic SQL'}</label>
         <textarea id="incident-sql" className="incident-editor" spellCheck={false} autoCapitalize="off" autoCorrect="off" rows={mode === 'repair' ? 6 : 9} value={mode === 'repair' ? run.draft : run.diagnostic} maxLength={mode === 'repair' ? 4000 : 12000} onChange={e => dispatch({ type: mode === 'repair' ? 'draft' : 'diagnostic', value: e.target.value })} onKeyDown={event => {
           if (event.ctrlKey && event.key === 'Enter' && !event.nativeEvent.isComposing) {
             event.preventDefault();
-            if (!busy && !event.repeat) onRun();
+            if (!busy && time !== null && !event.repeat) onRun();
           }
         }} aria-describedby="incident-sql-help" />
         {mode === 'repair' && <pre className="incident-code">GROUP BY c.region;</pre>}
         <p id="incident-sql-help" className="incident-caption">{mode === 'repair' ? 'Edit the predicate freely using comparisons, AND, parentheses, and timestamp + INTERVAL. Projection, join, and result columns are supplied. Previewing leaves every workspace unchanged. Apply query changes shared results in SQL, Dashboard, and Client, clears the last read, and resets client deliveries.' : 'Run a single read-only SELECT. Tables: orders and customers. The fixture clock is frozen at the selected snapshot.'} Ctrl+Enter runs the editor.</p>
-        <div className="incident-actions"><Button variant="primary" data-incident-action="run-sql" aria-keyshortcuts="Control+Enter" disabled={busy} onClick={onRun}><Play size={14} aria-hidden="true" />Run query preview</Button>{mode === 'repair' && <Button disabled={busy || !validPreview || run.draft === run.config.predicate} onClick={onDeploy}><Upload size={14} aria-hidden="true" />Apply query</Button>}</div>
+        <div className="incident-actions"><Button variant="primary" data-incident-action="run-sql" aria-keyshortcuts="Control+Enter" disabled={busy || time === null} onClick={onRun}><Play size={14} aria-hidden="true" />Run query preview</Button>{mode === 'repair' && <Button disabled={busy || !validPreview || run.draft === run.config.predicate} onClick={onDeploy}><Upload size={14} aria-hidden="true" />Apply query</Button>}</div>
         {error && <p role="alert" className="incident-notice" data-tone="warning">{error}</p>}
         {mode === 'repair' && <div className="incident-details-with-help"><details className="incident-details"><summary>Inspect deployed and inherited SQL</summary><h3>Deployed predicate · version {run.queryRevision + 1}</h3><pre className="incident-code">{run.config.predicate}</pre><h3>Inherited predicate</h3><pre className="incident-code">{initialPredicate}</pre></details><ChallengeHelp topic="inspectSql" /></div>}
       </EvidenceCard>} >
       <EvidenceCard title="Query observations" help="queryObservations" trailing={<Scope>Read-only · historical snapshot</Scope>}>
-        {validPreview ? <><p>{mode === 'repair' ? 'Executed draft at' : 'Diagnostic result at'} <strong>{formatTime(time)}</strong>. The applied system is unchanged by this preview.</p><SqlResult output={validPreview.output} />{validPreview.inherited && <div className="incident-details-with-help"><details className="incident-details"><summary>Compare inherited query at the same snapshot</summary><SqlResult output={validPreview.inherited} /><p className="incident-caption">Inherited predicate and original UPSERT source, at exactly the same logical time.</p></details><ChallengeHelp topic="compareSql" /></div>}</>
-          : <p>{preview ? 'The editor or replay context changed. Run query preview again to observe this draft.' : 'Run a query to inspect its actual rows. Syntax and execution errors appear beside the editor.'}</p>}
-        {trace && <><div className="incident-section-heading"><h3 className="incident-subheading">Applied query at the same snapshot · {formatTime(time)}</h3><ChallengeHelp topic="deployedQuery" /></div><TotalsTable rows={rowsAt(trace, time)} caption="Deployed historical query result" /></>}
+        {validPreview && time !== null ? <><p>{mode === 'repair' ? 'Executed draft at' : 'Diagnostic result at'} <strong>{formatTime(time)}</strong>. The applied system is unchanged by this preview.</p><SqlResult output={validPreview.output} />{validPreview.inherited && <div className="incident-details-with-help"><details className="incident-details"><summary>Compare inherited query at the same snapshot</summary><SqlResult output={validPreview.inherited} /><p className="incident-caption">Inherited predicate with the same applied source settings, at exactly the same logical time.</p></details><ChallengeHelp topic="compareSql" /></div>}</>
+          : <p>{time === null ? 'Choose a historical replay snapshot, then run a query to inspect its rows.' : preview ? 'The editor or replay context changed. Run query preview again to observe this draft.' : 'Run a query to inspect its actual rows. Syntax and execution errors appear beside the editor.'}</p>}
+        {trace && time !== null && <><div className="incident-section-heading"><h3 className="incident-subheading">Applied query at the same snapshot · {formatTime(time)}</h3><ChallengeHelp topic="deployedQuery" /></div><TotalsTable rows={rowsAt(trace, time)} caption="Deployed historical query result" /></>}
       </EvidenceCard>
     </WorkspacePair>
   </>;

@@ -12,11 +12,11 @@ export interface ChallengeRun {
   scenarioVersion: 2; id: string; revision: number; configurationRevision: number; queryRevision: number;
   settings: Configuration; inspection: Inspection; feedback: string;
   phase: 'briefing' | 'investigating' | 'handover' | 'completed'; workspace: Workspace;
-  config: Configuration; draft: string; diagnostic: string; time: number; frame: number;
+  config: Configuration; draft: string; diagnostic: string; time: number; frame: number | null;
   processed: boolean; processedTime: number; deliveries: number; read: ReadAttempt | null;
   changes: Change[]; undo: Configuration[];
   hints: Partial<Record<Workspace, number>>; worked: Workspace[];
-  note: string; validation: { configuration: number; checks: Check[] } | null; activeDurationMs: number;
+  validation: { configuration: number; checks: Check[] } | null; activeDurationMs: number;
 }
 export type RunAction =
   | { type: 'start' | 'investigate' | 'process' | 'advance' | 'replay-client' | 'undo' | 'handover' | 'complete' }
@@ -25,7 +25,7 @@ export type RunAction =
   | { type: 'inspect'; key: keyof Inspection; value: string | boolean }
   | { type: 'delivery'; timestamp: number }
   | { type: 'workspace'; workspace: Workspace } | { type: 'frame'; frame: number }
-  | { type: 'draft' | 'diagnostic' | 'note'; value: string }
+  | { type: 'draft' | 'diagnostic'; value: string }
   | { type: 'deploy'; predicate: string; runId: string; configuration: number }
   | { type: 'configure'; key: Exclude<keyof Configuration, 'predicate' | 'source'>; value: string | boolean }
   | { type: 'source'; key: 'envelope' | 'key'; value: string }
@@ -36,10 +36,9 @@ export type RunAction =
 export function createRun(id: string): ChallengeRun {
   return { scenarioVersion: 2, id, revision: 0, configurationRevision: 0, queryRevision: 0, settings: initialConfiguration(), inspection: { data: 'orders', order: '', comparison: 'both', fallback: false }, feedback: '', phase: 'briefing', workspace: 'Dashboard',
     config: initialConfiguration(), draft: initialConfiguration().predicate, diagnostic: 'SELECT order_id, status, amount, event_at, arrived_at FROM orders ORDER BY order_id;',
-    time: 630000, frame: 10, processed: false, processedTime: 622999, deliveries: 0, read: null, changes: [], undo: [], hints: {}, worked: [], note: '', validation: null, activeDurationMs: 0 };
+    time: 630000, frame: null, processed: false, processedTime: 622999, deliveries: 0, read: null, changes: [], undo: [], hints: {}, worked: [], validation: null, activeDurationMs: 0 };
 }
 export const assistedRun = (run: ChallengeRun) => run.worked.length > 0;
-export const minimumExplanationLength = 20;
 const checkIds = ['query', 'source', 'service', 'client', 'objects'];
 export const readyForHandover = (run: ChallengeRun) => Boolean(run.validation?.configuration === run.configurationRevision && run.validation.checks.length === 5 && checkIds.every(id => run.validation!.checks.filter(check => check.id === id && check.passed).length === 1));
 export function updateRun(run: ChallengeRun, action: RunAction): ChallengeRun {
@@ -69,7 +68,7 @@ export function updateRun(run: ChallengeRun, action: RunAction): ChallengeRun {
   if (action.type === 'time') return run.phase === 'investigating' && Number.isFinite(action.milliseconds) && action.milliseconds > 0 && action.milliseconds <= 60000 ? revise({ activeDurationMs: run.activeDurationMs + action.milliseconds }) : run;
   if (action.type === 'start') return run.phase === 'briefing' ? revise({ phase: 'investigating' }) : run;
   if (action.type === 'workspace') return workspaces.includes(action.workspace) ? revise({ workspace: action.workspace }) : run;
-  if (action.type === 'note' || action.type === 'diagnostic' || action.type === 'draft') return action.value.length <= (action.type === 'note' ? 4000 : 12000) ? revise({ [action.type]: action.value, ...(action.type === 'note' && run.phase === 'completed' ? { phase: 'handover' as const } : {}) }) : run;
+  if (action.type === 'diagnostic' || action.type === 'draft') return action.value.length <= 12000 ? revise({ [action.type]: action.value }) : run;
   if (run.phase === 'briefing') return run;
   switch (action.type) {
     case 'investigate': return revise({ phase: 'investigating' });
@@ -121,13 +120,14 @@ export function updateRun(run: ChallengeRun, action: RunAction): ChallengeRun {
     case 'worked': {
       const worked = [...new Set([...run.worked, action.workspace])];
       if (action.workspace === 'SQL') return revise({ draft: repairedPredicate, worked });
-      if (action.workspace === 'System') return { ...change({ ...run.config, connected: true }, 'Worked intervention: resumed customer connection'), worked };
+      if (action.workspace === 'Data') return { ...change({ ...run.config, source: { envelope: 'UPSERT', key: 'order_id' } }, 'Worked intervention: latest full keyed order values'), worked };
+      if (action.workspace === 'System') return { ...change({ ...run.config, connected: true, helper: 'view', final: 'materialized', indexes: 'both' }, 'Worked intervention: restored connection and shared serving within budget'), worked };
       if (action.workspace === 'Client') return { ...change({ ...run.config, publication: 'complete', snapshot: true }, 'Worked intervention: complete timestamp publication'), worked };
       return revise({ worked, hints: { ...run.hints, [action.workspace]: 3 } });
     }
     case 'validation': return action.runId === run.id && action.configuration === run.configurationRevision ? revise({ validation: { configuration: action.configuration, checks: action.checks }, ...(run.phase === 'completed' && action.checks.some(check => !check.passed) ? { phase: 'handover' as const } : {}) }) : run;
     case 'handover': return revise({ phase: 'handover' });
-    case 'complete': return run.phase === 'handover' && readyForHandover(run) && run.note.trim().length >= minimumExplanationLength ? revise({ phase: 'completed' }) : run;
+    case 'complete': return run.phase === 'handover' && readyForHandover(run) ? revise({ phase: 'completed' }) : run;
   }
 }
 function configuration(value: unknown): value is Configuration {
@@ -148,16 +148,17 @@ export function parseRun(value: unknown): ChallengeRun | null {
   if (r.processedTime === undefined) r.processedTime = r.processed ? r.time : 622999;
   if (r.inspection === undefined) r.inspection = { data: 'orders', order: '', comparison: 'both', fallback: false };
   if (r.feedback === undefined) r.feedback = '';
-  // Older V2 saves may contain notebook snapshots; keep the investigation and discard those snapshots.
+  // Older V2 saves may contain notebook snapshots and handover notes; retain the investigation.
   delete (r as ChallengeRun & { observations?: unknown }).observations;
+  delete (r as ChallengeRun & { note?: unknown }).note;
   const integer = (v: unknown, max: number) => Number.isSafeInteger(v) && Number(v) >= 0 && Number(v) <= max;
-  if (r.scenarioVersion !== 2 || typeof r.id !== 'string' || !r.id || r.id.length > 100 || !integer(r.revision, 100000000) || !integer(r.configurationRevision, r.revision) || !['briefing', 'investigating', 'handover', 'completed'].includes(r.phase) || !workspaces.includes(r.workspace) || !configuration(r.config) || typeof r.draft !== 'string' || r.draft.length > 12000 || typeof r.diagnostic !== 'string' || r.diagnostic.length > 12000 || typeof r.note !== 'string' || r.note.length > 4000 || ![630000, 631000, 631001, 632000, 632001].includes(r.time) || !integer(r.frame, traceTimes.length - 1) || !integer(r.deliveries, 8) || typeof r.processed !== 'boolean' || !integer(r.activeDurationMs, 31536000000)) return null;
+  if (r.scenarioVersion !== 2 || typeof r.id !== 'string' || !r.id || r.id.length > 100 || !integer(r.revision, 100000000) || !integer(r.configurationRevision, r.revision) || !['briefing', 'investigating', 'handover', 'completed'].includes(r.phase) || !workspaces.includes(r.workspace) || !configuration(r.config) || typeof r.draft !== 'string' || r.draft.length > 12000 || typeof r.diagnostic !== 'string' || r.diagnostic.length > 12000 || ![630000, 631000, 631001, 632000, 632001].includes(r.time) || (r.frame !== null && !integer(r.frame, traceTimes.length - 1)) || !integer(r.deliveries, 8) || typeof r.processed !== 'boolean' || !integer(r.activeDurationMs, 31536000000)) return null;
   if (![622999, 630000, 631000, 631001, 632000, 632001].includes(r.processedTime) || r.processedTime > r.time || (r.processed && r.processedTime !== r.time) || !configuration(r.settings) || r.settings.predicate !== r.config.predicate || r.settings.connected !== r.config.connected || r.settings.fallback !== r.config.fallback || !integer(r.queryRevision, r.configurationRevision) || !validInspection(r.inspection) || typeof r.feedback !== 'string' || r.feedback.length > 1000) return null;
   if (!Array.isArray(r.changes) || r.changes.length > 60 || !r.changes.every(c => c && typeof c.label === 'string' && c.label.length <= 200 && integer(c.time, 1000000) && integer(c.configuration, r.configurationRevision)) || !Array.isArray(r.undo) || r.undo.length > 10 || !r.undo.every(configuration)) return null;
   if (!r.hints || typeof r.hints !== 'object' || !Object.entries(r.hints).every(([key, count]) => workspaces.includes(key as Workspace) && integer(count, 3)) || !Array.isArray(r.worked) || r.worked.length > 5 || !r.worked.every(w => workspaces.includes(w))) return null;
   if (r.read !== null && (!r.read || !['available', 'waiting', 'too-old', 'stale'].includes(r.read.status) || r.read.policy !== 'bounded' || !integer(r.read.timestamp, 1000000) || ![3000, 10000].includes(r.read.bound!) || typeof r.read.rowVisible !== 'boolean')) return null;
   if (r.validation !== null && (!r.validation || r.validation.configuration !== r.configurationRevision || !Array.isArray(r.validation.checks) || r.validation.checks.length !== 5 || !checkIds.every(id => r.validation!.checks.filter(c => c?.id === id).length === 1) || !r.validation.checks.every(c => c && typeof c.id === 'string' && typeof c.label === 'string' && typeof c.detail === 'string' && c.detail.length <= 5000 && typeof c.passed === 'boolean'))) return null;
-  if (r.phase === 'completed' && (!readyForHandover(r) || r.note.trim().length < minimumExplanationLength)) return null;
+  if (r.phase === 'completed' && !readyForHandover(r)) return null;
   r.changes = r.changes.map(change => change.label === 'Applied regional query' ? { ...change, label: 'Applied SQL query' } : change);
   r.feedback = r.feedback.replace(/^Applied regional query\./, 'Applied SQL query.');
   return r;

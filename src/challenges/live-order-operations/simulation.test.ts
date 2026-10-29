@@ -47,7 +47,8 @@ describe('incident world', () => {
     expect(clientState(trace, { ...config, publication: 'equal' }, 6).published.some(r => r.row.region === 'EU')).toBe(false);
   });
   it('uses eight illustrative units for the shared serving contract', () => {
-    expect(objectCost(initialConfiguration())).toBe(8);
-    expect(objectCost({ ...initialConfiguration(), helper: 'materialized' })).toBe(12);
+    expect(objectCost(initialConfiguration())).toBe(10);
+    expect(objectCost({ ...initialConfiguration(), indexes: 'both' })).toBe(12);
+    expect(objectCost({ ...initialConfiguration(), helper: 'view', indexes: 'both' })).toBe(8);
   });
 });

@@ -30,15 +30,16 @@ describe('challenge persistence', () => {
     saveChallengeRun(createRun('session'));
     expect(getChallengeProgress()).toMatchObject({ memoryOnly: true, run: { id: 'session' } });
   });
-  it('resumes an old notebook save and omits its snapshots on the next save', async () => {
+  it('resumes an old save and omits its notes and notebook snapshots on the next save', async () => {
     const run = updateRun(createRun('existing'), { type: 'start' });
     const achievement = { runId: 'past', scenarioVersion: 2, assisted: false, hints: 0, durationMs: 1000, completedAt: 1 };
-    const storage = new Map<string, string>([['materialize-learning-lab-challenge-v2', JSON.stringify({ version: 2, run: { ...run, observations: [{ label: 'Old pin' }] }, achievements: [achievement] })]]);
+    const storage = new Map<string, string>([['materialize-learning-lab-challenge-v2', JSON.stringify({ version: 2, run: { ...run, note: 'Old written submission', observations: [{ label: 'Old pin' }] }, achievements: [achievement] })]]);
     vi.stubGlobal('window', { localStorage: { getItem: (key: string) => storage.get(key) ?? null, setItem: (key: string, value: string) => storage.set(key, value) } });
     const { getChallengeProgress, saveChallengeRun, CHALLENGE_PROGRESS_KEY } = await import('./challengeProgress');
     const resumed = getChallengeProgress();
     expect(resumed).toMatchObject({ run, achievements: [achievement], recovery: false });
     expect(resumed.run).not.toHaveProperty('observations');
+    expect(resumed.run).not.toHaveProperty('note');
     saveChallengeRun(resumed.run!);
     expect(JSON.parse(storage.get(CHALLENGE_PROGRESS_KEY)!)).toEqual({ version: 2, run, achievements: [achievement] });
   });

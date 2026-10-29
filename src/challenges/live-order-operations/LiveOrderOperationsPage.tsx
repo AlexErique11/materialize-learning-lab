@@ -17,6 +17,7 @@ import { SharedIncidentState } from './InvestigationWorkspace';
 import { EvidenceCard } from './ChallengeEvidence';
 import { ChallengeHelp } from './ChallengeHelp';
 import { ChallengeReport } from './ChallengeReport';
+import { ChallengeCompletion } from './ChallengeCompletion';
 import { ClientPanel, DashboardPanel, DataPanel, SystemPanel } from './InvestigationPanels';
 import { InvestigationSql, previewKey, type QueryPreview } from './InvestigationSql';
 import { aggregateSql } from './predicate';
@@ -81,14 +82,14 @@ export function LiveOrderOperationsPage() {
   useEffect(() => { setNotice(''); setError(''); }, [run.workspace, run.id]);
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [run.workspace, run.phase, showOverview]);
   const runSql = async () => {
-    if (operation) return;
+    if (operation || run.frame === null) return;
     const id = ++operationId.current;
     const key = previewKey(run, mode);
     setOperation('Executing SQL…'); setError(''); setNotice('');
     try {
       const sql = mode === 'repair' ? aggregateSql(run.draft) : run.diagnostic;
       const output = (await client.request({ kind: 'query', sql, source: run.config.source, time: traceTimes[run.frame]! })).output!;
-      const inherited = mode === 'repair' ? (await client.request({ kind: 'query', sql: aggregateSql(initialPredicate), source: { envelope: 'UPSERT', key: 'order_id' }, time: traceTimes[run.frame]! })).output : undefined;
+      const inherited = mode === 'repair' ? (await client.request({ kind: 'query', sql: aggregateSql(initialPredicate), source: run.config.source, time: traceTimes[run.frame]! })).output : undefined;
       if (id === operationId.current && previewKey(latest.current.run, latest.current.mode) === key) setPreview({ key, output, inherited });
     } catch (failure) { if (id === operationId.current && previewKey(latest.current.run, latest.current.mode) === key) setError(failure instanceof Error ? failure.message : 'SQL execution failed.'); }
     finally { if (id === operationId.current) setOperation(null); }
@@ -139,7 +140,8 @@ export function LiveOrderOperationsPage() {
       </>}
     </div>
     <Dialog open={dialog === 'reference'} onClose={() => setDialog(null)} title="Incident reference" className="incident-reference"><h3 className="incident-subheading">Schemas and time</h3><pre className="incident-code">{'orders(order_id, customer_id, status, amount, event_at, arrived_at)\ncustomers(customer_id, region)'}</pre><p>Event time records when the business event occurred. Arrival time records ingestion. SQL timestamps use UTC on 1 January 2026; displays show seconds from that same origin. The local mz_now() compatibility function freezes logical time at the selected replay snapshot.</p><p>Materialize supports mz_now() directly compared with a row timestamp expression, combining temporal comparisons with AND. Place interval arithmetic on the row expression.</p><h3 className="incident-subheading">Operating contract</h3><ul className="incident-requirements">{businessRequirements.map(text => <li key={text}>{text}</li>)}</ul><p className="incident-caption">SQL results execute in local PostgreSQL (PGlite). The clock compatibility function models supported timestamp comparisons, not Materialize's full mz_timestamp type. Sources, maintained progress, read policies, state units, and subscriptions are explicitly simulated. Quiet external sources and unsent business changes are separate from a complete ingested snapshot.</p><ul className="incident-reference-links">{documentationLinks.map(link => <li key={link.href}><a href={link.href} target="_blank" rel="noopener noreferrer" className="text-link">{link.label}</a></li>)}</ul><Link className="text-link" to="/labs" target="_blank" rel="noopener noreferrer">Review the lectures (opens a new tab)</Link></Dialog>
-    <Dialog open={dialog === 'help'} onClose={() => setDialog(null)} title="Investigation help" eyebrow={run.workspace}><p>Help is optional. Hints are recorded; a worked repair marks the eventual completion as assisted.</p><ol className="incident-requirements">{workspaceHints[run.workspace].slice(0, hintCount).map(hint => <li key={hint}>{hint}</li>)}</ol><div className="incident-actions"><Button disabled={hintCount >= 3} onClick={() => dispatch({ type: 'hint', workspace: run.workspace })}>Get next hint</Button>{['SQL', 'System', 'Client'].includes(run.workspace) && <Button onClick={() => { dispatch({ type: 'worked', workspace: run.workspace }); setDialog(null); setNotice(run.workspace === 'SQL' ? 'Worked SQL repair placed in the editor. Run a preview and apply it to change the system.' : 'Worked intervention applied. Verify its consequences in the incident.'); }}>Show worked repair</Button>}</div></Dialog>
+    <Dialog open={dialog === 'help'} onClose={() => setDialog(null)} title="Investigation help" eyebrow={run.workspace}><p>Help is optional. Hints are recorded; a worked repair marks the eventual completion as assisted.</p><ol className="incident-requirements">{workspaceHints[run.workspace].slice(0, hintCount).map(hint => <li key={hint}>{hint}</li>)}</ol><div className="incident-actions"><Button disabled={hintCount >= 3} onClick={() => dispatch({ type: 'hint', workspace: run.workspace })}>Get next hint</Button>{['Data', 'SQL', 'System', 'Client'].includes(run.workspace) && <Button onClick={() => { dispatch({ type: 'worked', workspace: run.workspace }); setDialog(null); setNotice(run.workspace === 'SQL' ? 'Worked SQL repair placed in the editor. Run a preview and apply it to change the system.' : 'Worked intervention applied. Verify its consequences in the incident.'); }}>Show worked repair</Button>}</div></Dialog>
     <Dialog open={dialog === 'restart'} onClose={() => setDialog(null)} title="Restart this investigation?"><p>This replaces your active investigation and drafts. Prior achievements, the first version's saved run, and chapter completions stay preserved.</p><div className="incident-actions"><Button onClick={() => setDialog(null)}>Keep this run</Button><Button variant="primary" onClick={() => { client.cancel(); controller.restart(); setDialog(null); setNotice(''); }}>Restart investigation</Button></div></Dialog>
+    <ChallengeCompletion key={run.id} complete={run.phase === 'completed'} />
   </section>;
 }

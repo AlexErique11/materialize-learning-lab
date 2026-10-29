@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { completeInvestigation, handover, predicate, repairClient, repairQuery, restoreServing, start, workspace } from './investigation-flow';
+import { completeInvestigation, handover, predicate, repairClient, repairQuery, repairSource, restoreServing, selectSnapshot, start, workspace } from './investigation-flow';
 
 test('main entry opens one complaint and an independently completed investigation resumes', async ({ page }) => {
   await page.goto('/');
@@ -20,7 +20,7 @@ test('main entry opens one complaint and an independently completed investigatio
 test('repair order is free and equivalent SQL passes the same behavior checks', async ({ page }) => {
   await page.goto('/challenge');
   await start(page);
-  await repairClient(page); await restoreServing(page);
+  await repairClient(page); await restoreServing(page); await repairSource(page);
   await repairQuery(page, "(mz_now() < (event_at + INTERVAL '300 seconds')) AND (status = 'paid' AND mz_now() >= event_at)");
   await restoreServing(page); await handover(page);
   await expect(page.getByText('Completed independently', { exact: true })).toBeVisible();
@@ -30,37 +30,41 @@ test('repair order is free and equivalent SQL passes the same behavior checks', 
   await expect(page.getByRole('button', { name: 'Complete handover', exact: true })).toBeDisabled();
 });
 
-test('all passed checks explain the remaining handover requirement and enable completion at the minimum', async ({ page }, testInfo) => {
+test('all five passing checks enable handover without notes', async ({ page }, testInfo) => {
   await page.goto('/challenge'); await start(page);
-  await repairQuery(page); await repairClient(page); await restoreServing(page);
+  await repairSource(page); await repairQuery(page); await repairClient(page); await restoreServing(page);
   await page.getByRole('button', { name: 'Submit handover', exact: true }).click();
-  await page.getByRole('button', { name: 'Run acceptance checks', exact: true }).click();
-  await expect(page.getByText(/^Passed ·/)).toHaveCount(5, { timeout: 45000 });
   const complete = page.getByRole('button', { name: 'Complete handover', exact: true });
-  const explanation = page.getByRole('textbox', { name: 'Explain what caused the discrepancy and how you repaired it', exact: true });
   const status = page.locator('#incident-completion-requirements');
   await expect(complete).toBeDisabled();
-  await expect(status).toHaveText('All five checks passed. Write a repair explanation of at least 20 characters above to finish.');
-  await expect(explanation).toHaveAccessibleDescription(/Required: at least 20 characters. Written: 0 characters/);
-  await explanation.scrollIntoViewIfNeeded();
-  await page.screenshot({ path: testInfo.outputPath('handover-explanation-required.png') });
-  await explanation.fill('   ');
-  await expect(complete).toBeDisabled();
-  await expect(page.locator('#incident-explanation-requirement')).toContainText('Written: 0 characters');
-  await explanation.fill('Fixed SQL and reads');
-  await expect(complete).toBeDisabled();
-  await expect(page.locator('#incident-explanation-requirement')).toContainText('Written: 19 characters');
-  await explanation.fill('Fixed SQL and reads.');
+  await expect(page.getByRole('textbox')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Run acceptance checks', exact: true }).click();
+  await expect(page.getByText(/^Passed ·/)).toHaveCount(5, { timeout: 45000 });
   await expect(complete).toBeEnabled();
-  await expect(status).toHaveText('All requirements met. You can complete the handover.');
+  await expect(status).toHaveText('All five checks passed. You can complete the handover.');
+  await expect(page.getByRole('dialog', { name: 'Congratulations!', exact: true })).toBeHidden();
+  await page.screenshot({ path: testInfo.outputPath('handover-ready-without-notes.png'), fullPage: true });
+  if (testInfo.project.name === 'mobile') await page.getByRole('button', { name: 'Switch to dark mode', exact: true }).click();
   await complete.click();
+  const celebration = page.getByRole('dialog', { name: 'Congratulations!', exact: true });
+  await expect(celebration).toBeVisible();
+  await expect(celebration).toContainText('Congratulations on finishing the lab!');
+  await expect(celebration.locator('.incident-firework')).toHaveCount(3);
+  await expect.poll(() => celebration.locator('.incident-firework i').first().evaluate(el => el.getAnimations()[0]?.currentTime ?? 0)).toBeGreaterThan(500);
+  await page.screenshot({ path: testInfo.outputPath('completion-fireworks.png') });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  expect(await celebration.locator('.incident-firework i').first().evaluate(el => getComputedStyle(el).animationName)).toBe('none');
+  await page.screenshot({ path: testInfo.outputPath('completion-reduced-motion.png') });
+  await page.keyboard.press('Escape');
+  await expect(celebration).toBeHidden();
   await expect(page.getByText('Completed independently', { exact: true })).toBeVisible();
   await page.reload();
+  await expect(celebration).toBeHidden();
   await expect(page.getByText('Completed independently', { exact: true })).toBeVisible();
 });
 
 test('SQL runs real read-only diagnostics and a wrong valid deployment has observable consequences', async ({ page }) => {
-  await page.goto('/challenge'); await start(page); await workspace(page, 'SQL');
+  await page.goto('/challenge'); await start(page); await repairSource(page); await workspace(page, 'SQL'); await selectSnapshot(page);
   const editor = page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true });
   await editor.fill('TRUE'); await page.getByRole('button', { name: 'Run query preview', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Apply query', exact: true })).toBeEnabled({ timeout: 45000 });
@@ -70,7 +74,7 @@ test('SQL runs real read-only diagnostics and a wrong valid deployment has obser
   await page.getByRole('button', { name: 'Apply query', exact: true }).click();
   await workspace(page, 'Dashboard');
   await expect(page.getByRole('table', { name: 'Regional order totals', exact: true })).toContainText('90');
-  await workspace(page, 'SQL');
+  await workspace(page, 'SQL'); await selectSnapshot(page);
   await page.getByRole('button', { name: 'Diagnostic SELECT', exact: true }).click();
   const diagnostic = page.getByRole('textbox', { name: 'Diagnostic SQL', exact: true });
   await diagnostic.fill('SELECT order_id, amount FROM orders WHERE order_id = 104');
@@ -91,7 +95,7 @@ test('SQL runs real read-only diagnostics and a wrong valid deployment has obser
 
 test('drafts, workspace and optional restart survive refresh and return', async ({ page }) => {
   await page.goto('/challenge'); await start(page);
-  await workspace(page, 'SQL');
+  await workspace(page, 'SQL'); await selectSnapshot(page);
   await page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true }).fill('unfinished predicate');
   await page.getByRole('link', { name: 'Back to main page', exact: true }).click();
   await page.getByRole('link', { name: 'Resume challenge', exact: true }).click();
@@ -109,7 +113,7 @@ test('drafts, workspace and optional restart survive refresh and return', async 
 test('open tabs synchronize automatically without loading prompts', async ({ page, context }) => {
   await page.goto('/challenge'); await start(page);
   const other = await context.newPage(); await other.goto('/challenge');
-  await workspace(page, 'SQL');
+  await workspace(page, 'SQL'); await selectSnapshot(page);
   await expect(other.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true })).toBeVisible();
   await page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true }).fill(predicate);
   await expect(other.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true })).toHaveValue(predicate);
@@ -121,8 +125,8 @@ test('open tabs synchronize automatically without loading prompts', async ({ pag
 });
 
 test('assistance is optional and recorded; syntax errors and stale previews cannot deploy', async ({ page }) => {
-  await page.goto('/challenge'); await start(page);
-  await workspace(page, 'SQL');
+  await page.goto('/challenge'); await start(page); await repairSource(page);
+  await workspace(page, 'SQL'); await selectSnapshot(page);
   await page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true }).fill('DROP TABLE orders');
   await page.getByRole('button', { name: 'Run query preview', exact: true }).click();
   await expect(page.getByRole('alert')).toBeVisible();
@@ -156,7 +160,7 @@ test('corrupt and unavailable storage keep the investigation usable', async ({ p
 });
 
 test('cancel and changed drafts cannot leave a deployable stale SQL preview', async ({ page }) => {
-  await page.goto('/challenge'); await start(page); await workspace(page, 'SQL');
+  await page.goto('/challenge'); await start(page); await workspace(page, 'SQL'); await selectSnapshot(page);
   const editor = page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true });
   await editor.fill(predicate); await page.getByRole('button', { name: 'Run query preview', exact: true }).click();
   await editor.fill('TRUE'); await expect(page.getByRole('button', { name: 'Apply query', exact: true })).toBeDisabled();

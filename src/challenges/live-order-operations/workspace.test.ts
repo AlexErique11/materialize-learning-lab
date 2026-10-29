@@ -6,11 +6,19 @@ import { createRun, parseRun, pendingSettings, updateRun, type RunAction } from 
 const started = () => updateRun(createRun('scopes'), { type: 'start' });
 function ready() {
   let run = started();
-  for (const action of [{ type: 'configure', key: 'connected', value: true }, { type: 'process' }, { type: 'delivery', timestamp: 631000 }] satisfies RunAction[]) run = updateRun(run, action);
+  for (const action of [{ type: 'source', key: 'envelope', value: 'UPSERT' }, { type: 'configure', key: 'helper', value: 'view' }, { type: 'configure', key: 'indexes', value: 'both' }, { type: 'configure', key: 'connected', value: true }, { type: 'process' }, { type: 'delivery', timestamp: 631000 }] satisfies RunAction[]) run = updateRun(run, action);
   return updateRun(run, { type: 'read', attempt: requestRead(run.config, run.time, run.processed) });
 }
 
 describe('explicit workspace scope', () => {
+  it('starts without a historical snapshot and preserves an explicit selection across reload', () => {
+    let run = started();
+    expect(run.frame).toBeNull();
+    expect(parseRun(run)?.frame).toBeNull();
+    run = updateRun(run, { type: 'frame', frame: 10 });
+    expect(parseRun(run)?.frame).toBe(10);
+    expect(parseRun({ ...run, frame: -1 })).toBeNull();
+  });
   it('keeps draft groups unapplied across navigation and saved state, and applies atomically', () => {
     let run = ready();
     const config = run.config;

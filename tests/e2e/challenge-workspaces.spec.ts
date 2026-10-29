@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { predicate, restoreServing, start, workspace } from './investigation-flow';
+import { predicate, repairSource, restoreServing, selectSnapshot, start, workspace } from './investigation-flow';
 const saved = (page: import('@playwright/test').Page) => page.evaluate(() => JSON.parse(localStorage.getItem('materialize-learning-lab-challenge-v2')!).run);
 
 async function activateWithKeyboard(page: import('@playwright/test').Page, name: string) {
@@ -15,8 +15,8 @@ async function activateWithKeyboard(page: import('@playwright/test').Page, name:
 
 test('settings stay as drafts across workspaces and reload until explicitly applied', async ({ page }) => {
   await page.goto('/challenge'); await start(page); await workspace(page, 'Data');
-  await page.getByRole('combobox', { name: 'Order envelope', exact: true }).selectOption('NONE');
-  await expect(page.getByText('Applied source: UPSERT · order_id', { exact: true })).toBeVisible();
+  await page.getByRole('combobox', { name: 'Order envelope', exact: true }).selectOption('UPSERT');
+  await expect(page.getByText('Applied source: NONE · order_id', { exact: true })).toBeVisible();
   await expect(page.getByText('Not applied · your edits are saved as a draft.', { exact: true })).toBeVisible();
   await workspace(page, 'Client');
   await page.getByRole('combobox', { name: 'Publish application updates', exact: true }).selectOption('complete');
@@ -26,18 +26,49 @@ test('settings stay as drafts across workspaces and reload until explicitly appl
   await activateWithKeyboard(page, 'Apply changes');
   expect((await saved(page)).config.publication).toBe('complete');
   await workspace(page, 'Data');
-  await expect(page.getByRole('combobox', { name: 'Order envelope', exact: true })).toHaveValue('NONE');
-  await activateWithKeyboard(page, 'Discard edits');
   await expect(page.getByRole('combobox', { name: 'Order envelope', exact: true })).toHaveValue('UPSERT');
+  await activateWithKeyboard(page, 'Discard edits');
+  await expect(page.getByRole('combobox', { name: 'Order envelope', exact: true })).toHaveValue('NONE');
+  await page.getByRole('combobox', { name: 'Order envelope', exact: true }).selectOption('UPSERT');
   await page.getByRole('combobox', { name: 'Order identity', exact: true }).selectOption('customer_id');
   await page.getByRole('button', { name: 'Apply changes', exact: true }).click();
   await expect(page.getByText('Applied source: UPSERT · customer_id', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Undo last change', exact: true }).click();
-  await expect(page.getByText('Applied source: UPSERT · order_id', { exact: true })).toBeVisible();
+  await expect(page.getByText('Applied source: NONE · order_id', { exact: true })).toBeVisible();
+});
+
+test('new investigations require an applied source repair and an explicit historical snapshot', async ({ page }) => {
+  await page.goto('/challenge'); await start(page); await workspace(page, 'Data');
+  await page.getByRole('textbox', { name: 'Filter by order ID', exact: true }).fill('101');
+  const rows = page.getByRole('table', { name: 'Current source rows', exact: true }).locator('tbody tr');
+  await expect(rows).toHaveCount(3);
+  await page.getByRole('combobox', { name: 'Order envelope', exact: true }).selectOption('UPSERT');
+  await expect(rows).toHaveCount(3);
+  await page.getByRole('button', { name: 'Apply changes', exact: true }).click();
+  await expect(rows).toHaveCount(1);
+  await expect(rows).toContainText('70');
+  await workspace(page, 'SQL');
+  const snapshot = page.getByRole('combobox', { name: 'Historical replay snapshot', exact: true });
+  const preview = page.getByRole('button', { name: 'Run query preview', exact: true });
+  await expect(snapshot).toHaveValue('');
+  await expect(preview).toBeDisabled();
+  await page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true }).press('Control+Enter');
+  await expect(page.getByRole('table', { name: 'Executed SQL result', exact: true })).toHaveCount(0);
+  await page.reload();
+  await expect(snapshot).toHaveValue('');
+  await selectSnapshot(page);
+  await preview.click();
+  await expect(page.getByRole('table', { name: 'Executed SQL result', exact: true })).toContainText('90', { timeout: 45000 });
+  await page.reload();
+  await expect(snapshot).toHaveValue('10');
+  expect((await saved(page)).time).toBe(630000);
+  await workspace(page, 'System');
+  await expect(page.getByRole('table', { name: 'Applied serving objects', exact: true })).toContainText('Operations only');
+  await expect(page.getByText('10 / 8 illustrative state units', { exact: true })).toBeVisible();
 });
 
 test('client and request choices preserve previews and reads; source changes invalidate them', async ({ page }) => {
-  await page.goto('/challenge'); await start(page); await workspace(page, 'SQL');
+  await page.goto('/challenge'); await start(page); await repairSource(page); await workspace(page, 'SQL'); await selectSnapshot(page);
   await page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true }).fill(predicate);
   await page.getByRole('button', { name: 'Run query preview', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Apply query', exact: true })).toBeEnabled({ timeout: 45000 });
@@ -57,13 +88,13 @@ test('client and request choices preserve previews and reads; source changes inv
   await page.getByRole('button', { name: 'Apply changes', exact: true }).click();
   expect((await saved(page)).read).toBeNull();
   expect((await saved(page)).deliveries).toBe(1);
-  await workspace(page, 'SQL');
+  await workspace(page, 'SQL'); await selectSnapshot(page);
   await expect(page.getByRole('button', { name: 'Apply query', exact: true })).toBeEnabled();
   await workspace(page, 'Data');
   await page.getByRole('combobox', { name: 'Order envelope', exact: true }).selectOption('NONE');
   await page.getByRole('button', { name: 'Apply changes', exact: true }).click();
   expect((await saved(page)).deliveries).toBe(0);
-  await workspace(page, 'SQL');
+  await workspace(page, 'SQL'); await selectSnapshot(page);
   await expect(page.getByRole('button', { name: 'Apply query', exact: true })).toBeDisabled();
   await page.getByRole('combobox', { name: 'Historical replay snapshot', exact: true }).selectOption('0');
   expect((await saved(page)).time).toBe(631000);
@@ -96,7 +127,7 @@ test('named events change shared time separately from processing and view select
 test('controls and results retain their layout in both themes and narrow screens', async ({ page }, testInfo) => {
   test.setTimeout(60000);
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/challenge'); await start(page); await workspace(page, 'SQL');
+  await page.goto('/challenge'); await start(page); await repairSource(page); await workspace(page, 'SQL'); await selectSnapshot(page);
   await page.getByRole('button', { name: 'Run query preview', exact: true }).click();
   await expect(page.getByRole('table', { name: 'Executed SQL result', exact: true })).toBeVisible({ timeout: 45000 });
   for (const theme of ['light', 'dark']) {
