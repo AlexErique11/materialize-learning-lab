@@ -1,10 +1,10 @@
-import { challengePath, challenges } from '../challenges/challengeRegistry';
+import { challenge } from '../challenges/challengeRegistry';
 import { chapterContentPath, getChapterPages } from '../chapters/chapterOutline';
 import { chapterPath, chapters } from '../chapters/chapterRegistry';
 
 export const SITE_TITLE = 'Materialize Learning Lab';
 export const SITE_DESCRIPTION =
-  'Build real-time data skills with Materialize Learning Lab. Explore the learning path, guided chapters, and capstones.';
+  'Build real-time data skills with Materialize Learning Lab. Explore the guided chapters and apply them in a complete real-world challenge.';
 
 const SITE_IMAGE = '/materialize-logo-high-resolution.png';
 
@@ -21,9 +21,8 @@ export interface StaticRoute {
 // with a 200 and per-page preview metadata instead of falling through to 404.html.
 export const staticRoutes: readonly StaticRoute[] = [
   { path: '/', description: SITE_DESCRIPTION, image: SITE_IMAGE },
-  { path: '/faq', title: 'FAQ', description: 'Common questions about labs and challenges.', image: SITE_IMAGE },
+  { path: '/faq', title: 'FAQ', description: 'Common questions about the labs and challenge.', image: SITE_IMAGE },
   { path: '/labs', title: 'Guided labs', description: SITE_DESCRIPTION, image: SITE_IMAGE },
-  { path: '/challenges', title: 'Challenges', description: 'Capstone projects.', image: SITE_IMAGE },
   ...chapters.flatMap((chapter) => {
     // Outside Vite, publicAsset() resolves against '/', so this is a path from the site root.
     // Keep raster previews for link-sharing clients that do not accept SVG images.
@@ -38,9 +37,9 @@ export const staticRoutes: readonly StaticRoute[] = [
       })),
     ];
   }),
-  ...challenges.map((challenge) => ({
-    path: challengePath(challenge),
-    title: challenge.title,
+  ...[challenge.path, ...challenge.legacyPaths].map((path) => ({
+    path,
+    title: challenge.pageTitle,
     description: challenge.description,
     image: SITE_IMAGE,
   })),

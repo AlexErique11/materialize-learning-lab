@@ -1,8 +1,8 @@
-import { createBrowserRouter } from 'react-router';
-import { ChallengePage } from '../challenges/ChallengePage';
+import { createBrowserRouter, Navigate } from 'react-router';
+import { challenge } from '../challenges/challengeRegistry';
+import { LiveOrderOperationsPage } from '../challenges/live-order-operations/LiveOrderOperationsPage';
 import { ChapterPage } from '../chapters/ChapterPage';
 import { ChapterContentPage } from '../chapters/ChapterContentPage';
-import { ChallengesPage } from '../pages/ChallengesPage';
 import { FaqPage } from '../pages/FaqPage';
 import { GuidedLabsPage } from '../pages/GuidedLabsPage';
 import { LearningPathPage } from '../pages/LearningPathPage';
@@ -29,8 +29,9 @@ export const router = createBrowserRouter([
           { path: '*', element: <NotFoundPage /> },
         ],
       },
-      { path: 'challenges', element: <ChallengesPage /> },
-      { path: 'challenges/:challengeSlug', element: <ChallengePage /> },
+      { path: challenge.path, element: <LiveOrderOperationsPage /> },
+      ...challenge.legacyPaths.map(path => ({ path, element: <Navigate to={challenge.path} replace /> })),
+      { path: 'challenges/*', element: <NotFoundPage title="Challenge not found" description="Open Challenge on the main page to start Live Order Operations." /> },
       { path: '*', element: <NotFoundPage /> },
     ],
   },

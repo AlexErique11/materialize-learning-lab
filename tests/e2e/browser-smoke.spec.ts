@@ -1,4 +1,15 @@
 import { expect, test } from './fixtures';
+import { completeInvestigation } from './investigation-flow';
+
+test('the open investigation completes with executable SQL and preserved achievements', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('main').getByRole('link', { name: 'Challenge', exact: true }).click();
+  await expect(page).toHaveURL('/challenge');
+  await completeInvestigation(page, true);
+  await expect(page.getByText('Completed independently', { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('Completed independently', { exact: true })).toBeVisible();
+});
 
 test('SUBSCRIBE holds partial changes and publishes complete timestamp groups', async ({ page }) => {
   await page.goto('/labs/live-applications-subscribe/tutorial/lecture-3');
@@ -10,7 +21,7 @@ test('SUBSCRIBE holds partial changes and publishes complete timestamp groups', 
   await expect(page.getByRole('region', { name: 'Pending timestamp tray', exact: true })).toContainText('Open · pending');
   await next.click();
   await expect(row).toContainText('130');
-  await expect(result).toContainText('Showing times < 13');
+  await expect(result).toContainText('Published before 13');
   await page.getByRole('button', { name: 'Diagram key', exact: true }).click();
   await expect(page.getByRole('dialog', { name: 'Timestamp-tray diagram key', exact: true })).toContainText('mz_progressed = true');
   await page.keyboard.press('Escape');

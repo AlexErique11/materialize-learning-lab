@@ -5,10 +5,11 @@ interface PanelHeaderProps {
   titleId?: string;
   icon?: ReactNode;
   eyebrow?: string;
+  help?: ReactNode;
   trailing?: ReactNode;
 }
 
-export function PanelHeader({ title, titleId, icon, eyebrow, trailing }: PanelHeaderProps) {
+export function PanelHeader({ title, titleId, icon, eyebrow, help, trailing }: PanelHeaderProps) {
   return (
     <div className="panel-header">
       <div className="flex min-w-0 items-center gap-3">
@@ -24,6 +25,7 @@ export function PanelHeader({ title, titleId, icon, eyebrow, trailing }: PanelHe
             {title}
           </h2>
         </div>
+        {help}
       </div>
       {trailing && <div className="panel-trailing">{trailing}</div>}
     </div>

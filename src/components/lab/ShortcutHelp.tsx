@@ -14,8 +14,9 @@ function positionPanel(panel: HTMLElement, trigger: HTMLElement) {
   panel.style.top = `${Math.max(12, Math.min(bounds.bottom + 8, innerHeight - panel.offsetHeight - 12))}px`;
 }
 
-export function ShortcutHelp({ lecture, showReference, completionLabel, onOpenChange }: {
-  lecture: boolean; showReference: boolean; completionLabel: string; onOpenChange: (open: boolean) => void;
+export function ShortcutHelp({ lecture, showReference, completionLabel = 'Continue', onOpenChange, challenge = false }: {
+  lecture: boolean; showReference: boolean; completionLabel?: string; onOpenChange: (open: boolean) => void;
+  challenge?: boolean;
 }) {
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -69,9 +70,13 @@ export function ShortcutHelp({ lecture, showReference, completionLabel, onOpenCh
         </button>
       </div>
       <section>
-        <h3>{lecture ? 'Lecture' : 'Exercise'}</h3>
+        <h3>{challenge ? 'Challenge' : lecture ? 'Lecture' : 'Exercise'}</h3>
         <dl>
-          {lecture ? <>
+          {challenge ? <>
+            <ShortcutRow label="Run SQL in the editor" keys="Control+Enter" />
+            <ShortcutRow label="Advance the incident clock" keys="ArrowRight" />
+            <ShortcutRow label="Open investigation help" keys="H" />
+          </> : lecture ? <>
             <ShortcutRow label="Start guided run" keys="Enter" />
             <ShortcutRow label="Run / pause playback" keys="Space" />
             <ShortcutRow label="Previous / next playback step" keys="ArrowLeft ArrowRight" />
@@ -81,20 +86,20 @@ export function ShortcutHelp({ lecture, showReference, completionLabel, onOpenCh
             <ShortcutRow label="Show / hide hint" keys="H" />
             <ShortcutRow label="Show answer" keys="Control+Enter" />
           </>}
-          {showReference && <ShortcutRow label="Open / close SQL & Objectives" keys="S" />}
-          <ShortcutRow label="Reset" keys="R" />
+          {showReference && <ShortcutRow label={challenge ? 'Open / close Reference' : 'Open / close SQL & Objectives'} keys="S" />}
+          <ShortcutRow label={challenge ? 'Restart challenge' : 'Reset'} keys="R" />
         </dl>
-        {!lecture && <p className="shortcut-help-note">*After the answer is accepted. The final button may open the next exercise or complete the chapter.</p>}
+        {challenge ? <p className="shortcut-help-note">Explore workspaces in any order. Running SQL previews a draft; deploying it changes the incident. Restart asks before replacing your run.</p> : !lecture && <p className="shortcut-help-note">*After the answer is accepted. The final button may open the next exercise or complete the chapter.</p>}
       </section>
-      <section>
+      {!challenge && <section>
         <h3>{lecture ? 'During a guided run' : 'Chapter complete'}</h3>
         <dl>
           {lecture ? <ShortcutRow label="Back / next step or effect" keys="ArrowLeft ArrowRight" />
             : <ShortcutRow label={completionLabel} keys="Enter" />}
           <ShortcutRow label={lecture ? 'Close guided run' : 'Close completion window'} keys="Escape" />
         </dl>
-      </section>
-      <p className="shortcut-help-note">Esc closes this reference{showReference ? ' or SQL & Objectives' : ''}. Letter shortcuts pause while you type. Use Tab to focus controls and Enter or Space to activate them.</p>
+      </section>}
+      <p className="shortcut-help-note">Esc closes this reference{showReference ? challenge ? ' or the incident Reference' : ' or SQL & Objectives' : ''}. Letter shortcuts pause while you type. Use Tab to focus controls and Enter or Space to activate them.</p>
     </div>
   </>;
 }

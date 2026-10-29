@@ -162,11 +162,11 @@ test('returning from a scrolled lab preserves the outgoing sidebar position', as
   await expect(page.locator('.lab-intro-screen')).toHaveCount(0);
 });
 
-test('direct home entry is immediate and challenges use the shared return transition', async ({ page }) => {
+test('direct home entry is immediate and the challenge uses the shared return transition', async ({ page }) => {
   await observeReturns(page);
   await page.goto('/');
   expect(await returnCount(page)).toBe(0);
-  await page.goto('/challenges');
+  await page.goto('/challenge');
   await page.getByRole('link', { name: 'Materialize Learning Lab home', exact: true }).click();
   await expect(page).toHaveURL('/');
   await expect.poll(() => returnCount(page)).toBe(1);
@@ -190,7 +190,7 @@ test('a new navigation interrupts the return without delaying the next lab entry
 
 test('changing to reduced motion during a slide restores visibility and interaction', async ({ page }) => {
   await observeReturns(page, true);
-  await page.goto('/challenges');
+  await page.goto('/challenge');
   await page.getByRole('link', { name: 'Materialize Learning Lab home', exact: true }).click();
   await expect(page).toHaveURL('/');
   await expect.poll(() => returnCount(page)).toBe(1);
@@ -200,14 +200,23 @@ test('changing to reduced motion during a slide restores visibility and interact
   await expect(page.locator('#main-content')).not.toHaveAttribute('inert');
   await expect(page.locator('#main-content')).toHaveCSS('opacity', '1');
   await expect(page.locator('.area-transition-layer')).toHaveCount(0);
-  await expect(page.getByRole('main').getByRole('link', { name: 'Challenges', exact: true })).toBeEnabled();
+  await expect(page.getByRole('main').getByRole('link', { name: 'Challenge', exact: true })).toBeEnabled();
 });
 
 test('rapid Back and Forward preserve both outgoing and incoming views at their current positions', async ({ page }) => {
   await observeReturns(page, true);
   await page.goto('/');
-  await page.getByRole('main').getByRole('link', { name: 'Challenges', exact: true }).click();
-  await expect(page).toHaveURL('/challenges');
+  await page.getByRole('main').getByRole('link', { name: 'Challenge', exact: true }).click();
+  await expect(page).toHaveURL('/challenge');
+  // The first entry uses the shared flask. History navigation then uses area slides.
+  await expect(page.locator('.lab-intro-screen')).toHaveCount(0);
+  await page.goBack();
+  await expect.poll(() => returnCount(page)).toBe(1);
+  await finishSlide(page);
+  await expect(page.locator('.area-transition-layer')).toHaveCount(0);
+  await page.evaluate(() => { (window as unknown as { returnProbe: ReturnProbe }).returnProbe.animations = []; });
+  await page.goForward();
+  await expect(page).toHaveURL('/challenge');
   await expect.poll(() => returnCount(page)).toBe(1);
   expect(await page.evaluate(() => ((window as unknown as { returnProbe: ReturnProbe }).returnProbe.animations[0]!.effect as KeyframeEffect).getKeyframes().at(-1)!.transform)).toBe('translateX(-100%)');
   await page.evaluate(() => { (window as unknown as { returnProbe: ReturnProbe }).returnProbe.animations[0]!.currentTime = 160; });
@@ -216,7 +225,7 @@ test('rapid Back and Forward preserve both outgoing and incoming views at their 
   await expect.poll(() => returnCount(page)).toBe(2);
   const snapshot = page.locator('body > .area-transition-viewport > [data-area-transition-view="outgoing"]');
   await expect(snapshot).toHaveCount(1);
-  await expect(snapshot.locator(':scope > main h1')).toHaveText('Challenges');
+  await expect(snapshot.locator(':scope > main h1')).toHaveText('Save the Flash Sale');
   const previous = snapshot.locator(':scope > .area-transition-layer');
   await expect(previous).toHaveCount(1);
   await expect(previous).toHaveCSS('opacity', '1');
@@ -227,7 +236,7 @@ test('rapid Back and Forward preserve both outgoing and incoming views at their 
   const incomingBounds = await incoming.boundingBox();
   const outgoingBounds = await snapshot.boundingBox();
   await page.goForward();
-  await expect(page).toHaveURL('/challenges');
+  await expect(page).toHaveURL('/challenge');
   await expect.poll(() => returnCount(page)).toBe(3);
   expect(await snapshot.locator(':scope > [data-area-transition-view="outgoing"]').boundingBox()).toEqual(outgoingBounds);
   const frozenIncoming = await snapshot.locator(':scope > [data-area-transition-view="incoming"]').boundingBox();

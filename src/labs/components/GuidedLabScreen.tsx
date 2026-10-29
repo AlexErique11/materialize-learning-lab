@@ -21,6 +21,7 @@ import { useLabHelpAlignment } from '../../hooks/useLabHelpAlignment';
 import { useResponsiveLabLayout } from '../../hooks/useResponsiveLabLayout';
 import { useWorkspaceMotion } from '../../motion/useWorkspaceMotion';
 import { ShortcutHelp } from '../../components/lab/ShortcutHelp';
+import { ActivityHeading } from '../../components/lab/ActivityHeading';
 import '../../styles/activity-completion.css';
 import '../../styles/responsive-labs.css';
 
@@ -193,21 +194,12 @@ export function GuidedLabScreen({
         </div>
       </div>
 
-      <div className="guided-lab-heading">
-        <div className="guided-lab-title">
-          <h1 aria-description={activityCompleted ? `${simulation ? 'Tutorial' : 'Exercise'} completed` : undefined}>
-            {title}{activityCompleted && <CheckCircle2 className="activity-title-check" aria-hidden="true" />}
-          </h1>
-
-          <p>{description}</p>
-        </div>
-
-        <div
-          className={`guided-lab-controls${available ? '' : ' reserved-controls'}`}
-          aria-label={available ? 'Lab controls' : undefined}
-          aria-hidden={!available || undefined}
-          inert={!available || undefined}
-        >
+      <ActivityHeading
+        title={<>{title}{activityCompleted && <CheckCircle2 className="activity-title-check" aria-hidden="true" />}</>}
+        titleDescription={activityCompleted ? `${simulation ? 'Tutorial' : 'Exercise'} completed` : undefined}
+        description={description}
+        controlsAvailable={available}
+        controls={<>
           {controls?.progress ??
             (simulation ? (
               <div className="guided-lab-progress">
@@ -269,8 +261,8 @@ export function GuidedLabScreen({
               </Button>
             </>
           )}
-        </div>
-      </div>
+        </>}
+      />
 
       <section
         className="guided-lab-canvas"

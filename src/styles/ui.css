@@ -276,9 +276,6 @@
 .reserved-sql-reference {
   height: 60px;
 }
-.learning-path-challenges p:empty {
-  min-height: 19.6px;
-}
 @media (max-width: 639px) {
   .reserved-lab-progress {
     height: 30.5px;

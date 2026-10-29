@@ -1,4 +1,4 @@
-.app-shell-guided-labs {
+.app-shell-guided-labs, .app-shell-challenge {
   --header-height: 54px;
   --footer-height: 0px;
   --lab-surface: #fff;
@@ -14,7 +14,7 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
-[data-theme='dark'] .app-shell-guided-labs {
+[data-theme='dark'] :is(.app-shell-guided-labs, .app-shell-challenge) {
   --lab-surface: #201d26;
   --lab-sidebar: #25212e;
   --lab-text: #f0edf6;

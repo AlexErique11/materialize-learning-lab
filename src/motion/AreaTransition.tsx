@@ -3,6 +3,7 @@ import { useBlocker, useLocation, type BlockerFunction } from 'react-router';
 import { useWalkthrough } from '../components/walkthrough/WalkthroughProvider';
 import { isLabIntroEntry } from '../components/lab/LabEntryTransition';
 import { motion, reducedMotion } from './motion';
+import { challenge } from '../challenges/challengeRegistry';
 
 interface AreaRun {
   fromKey: string;
@@ -24,12 +25,12 @@ interface AreaRun {
 function area(path: string) {
   if (path === '/') return 'path';
   if (path === '/labs' || path.startsWith('/labs/')) return 'labs';
-  if (path === '/challenges' || path.startsWith('/challenges/')) return 'challenges';
+  if (path === challenge.path || challenge.legacyPaths.some(legacy => path === legacy)) return 'challenge';
   return null;
 }
 
 let snapshotSequence = 0;
-const areaOrder = ['path', 'labs', 'challenges'];
+const areaOrder = ['path', 'labs', 'challenge'];
 
 function captureArea(previous?: HTMLElement) {
   const main = document.getElementById('main-content')!;

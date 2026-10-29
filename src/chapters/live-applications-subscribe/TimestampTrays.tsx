@@ -10,6 +10,7 @@ import { subscriptionText } from './lessonText';
 
 export type SubscriptionRefs = Record<SubscriptionTarget, RefObject<HTMLElement | null>>;
 type Group = ReturnType<typeof timestampGroups>[number];
+type PublicationPolicy = 'complete' | 'each' | 'equal';
 
 const help = {
   diff: 'A signed change to the number of copies of the entire result row. Negative retracts copies; positive adds them. It does not change a currency cell by that amount.',
@@ -37,14 +38,14 @@ function ApplicationTable({ rows }: { rows: readonly RowCount[] }) {
     })}</tbody>
   </table>;
 }
-function Tray({ group, side, state, selected, onSelect, disabled, sectionRef }: {
+function Tray({ group, groups, side, state, selected, onSelect, disabled, sectionRef }: {
   group: Group | undefined; side: 'complete' | 'pending'; state: SubscriptionState;
+  groups: readonly Group[];
   selected: string; onSelect: (value: string) => void; disabled: boolean;
   sectionRef?: RefObject<HTMLElement | null>;
 }) {
-  const groups = timestampGroups(state).filter(item => side === 'complete' ? item.complete : !item.complete);
   const status = !group ? side === 'complete' ? state.knownCompleteBefore === null ? 'Waiting for progress' : 'No completed changes' : !state.snapshot ? 'Changes only · no baseline' : state.ready ? 'Nothing waiting' : `Snapshot starts at ${state.start}`
-    : !state.snapshot ? 'Changes only · no baseline' : group.published ? 'Published' : group.complete ? 'Complete · not published' : 'Open · pending';
+    : !state.snapshot ? 'Changes only · no baseline' : group.published ? group.complete ? 'Published' : 'Published · still open' : group.complete ? 'Complete · not published' : 'Open · pending';
   return <section ref={sectionRef} className="subscribe-tray" data-side={side} data-state={!group ? 'empty' : !state.snapshot ? 'uninitialized' : group.published ? 'published' : group.complete ? 'complete' : 'pending'} aria-label={`${side === 'complete' ? 'Complete' : 'Pending'} timestamp tray`}>
     <div className="subscribe-tray-heading"><strong>{group ? `t = ${group.timestamp}` : side === 'complete' ? 'Completed changes' : 'Incoming changes'}</strong>{groups.length > 1 && <span className="subscribe-tray-picker"><select value={group?.timestamp ?? ''} onChange={event => onSelect(event.target.value)} disabled={disabled} aria-label={`${side === 'complete' ? 'Completed' : 'Pending'} timestamp group`} title={selected ? 'Inspecting received history' : 'Latest received group'}>
       {groups.map(item => <option key={item.timestamp} value={item.timestamp}>{item.timestamp}</option>)}
@@ -57,18 +58,21 @@ export function SubscriptionCaption({ caption }: { caption: string }) {
   return <section className="subscribe-caption" aria-label="Scenario evidence"><Info size={14} aria-hidden="true" /><p><LessonText content={subscriptionText(caption)} /></p></section>;
 }
 
-export function TimestampTrays({ state, refs, completedTime, assessment = false, disabled = false, onInspect }: {
-  state: SubscriptionState; refs?: SubscriptionRefs; completedTime?: number; assessment?: boolean; disabled?: boolean; onInspect?: () => void;
+export function TimestampTrays({ state, refs, completedTime, assessment = false, disabled = false, onInspect, onOpenKey, publicationPolicy = 'complete', executionNote }: {
+  state: SubscriptionState; refs?: SubscriptionRefs; completedTime?: number; assessment?: boolean; disabled?: boolean; onInspect?: () => void; onOpenKey?: () => void;
+  publicationPolicy?: PublicationPolicy; executionNote?: string;
 }) {
   const [keyOpen, setKeyOpen] = useState(false);
   const [selection, setSelection] = useState({ complete: '', pending: '' });
   useEffect(() => { setSelection({ complete: '', pending: '' }); }, [state]);
-  const groups = timestampGroups(state);
+  const groups = timestampGroups(state).map(group => ({ ...group, published: publicationPolicy === 'each' || (publicationPolicy === 'equal' ? group.timestamp <= (state.progress ?? -Infinity) : group.published) }));
   const completed = groups.filter(group => group.complete);
   const pending = groups.filter(group => !group.complete);
   const left = completed.find(group => group.timestamp === completedTime) ?? completed.find(group => String(group.timestamp) === selection.complete) ?? completed.at(-1);
   const right = pending.find(group => String(group.timestamp) === selection.pending) ?? pending.at(-1);
-  const appStatus = !state.connected ? state.ready ? `Stale · published before ${state.publishedBefore}` : 'Disconnected · no complete baseline' : !state.snapshot ? 'No initial baseline' : state.ready ? `${state.published.length ? '' : 'Ready · no rows · '}Published before ${state.publishedBefore}` : 'Waiting for full snapshot';
+  const policyStatus = publicationPolicy === 'each' ? 'Publishing each received record' : publicationPolicy === 'equal' ? `Publishing times ≤ ${state.progress ?? 'no progress'}` : `Published before ${state.publishedBefore}`;
+  const appStatus = !state.connected ? state.ready ? `Stale · published before ${state.publishedBefore}` : 'Disconnected · no complete baseline' : !state.snapshot ? 'No initial baseline' : state.ready ? publicationPolicy === 'complete' ? `${state.published.length ? '' : 'Ready · no rows · '}${policyStatus}` : state.published.length ? policyStatus : 'Ready · no rows' : 'Waiting for full snapshot';
+  const publicationDescription = publicationPolicy === 'each' ? 'This client publishes each signed change as soon as it arrives, including changes at timestamps that are still open.' : publicationPolicy === 'equal' ? 'This client publishes received changes at timestamps less than or equal to the latest progress record. The timestamp equal to progress is still open.' : 'This client applies buffered changes only when a progress record P(T) arrives, and only for timestamps less than T.';
   const boundaryText = state.knownCompleteBefore === null ? 'Waiting for progress' : `Complete before ${state.knownCompleteBefore}`;
   const boundaryDetail = state.knownCompleteBefore === null ? state.snapshot ? 'The snapshot is still loading' : 'The initial snapshot is disabled' : `Time ${state.knownCompleteBefore} is still open`;
   const streamStatus = !state.connected ? 'Connection stopped' : state.progress === null ? state.snapshot ? 'Snapshot, then updates' : 'Updates only · no snapshot' : `P(${state.progress}) received${state.snapshot ? '' : ' · no snapshot'}`;
@@ -86,16 +90,16 @@ export function TimestampTrays({ state, refs, completedTime, assessment = false,
       <section className="subscribe-boundary-label" aria-label="Completeness boundary">
         {assessment && <span className="subscribe-assessment-source"><Database size={15} aria-hidden="true" />{state.name}</span>}
         <strong ref={refs?.boundary} className="subscribe-boundary-value">{boundaryText}<RelationHelp label="Complete before" text={help.complete} /></strong><span>{boundaryDetail}</span>
-        {!assessment && <span className="subscribe-key-control"><RelationHelp label="Diagram key" text={help.key} /><Button className="subscribe-key-button" variant="ghost" aria-haspopup="dialog" onClick={event => { event.currentTarget.focus(); onInspect?.(); setKeyOpen(true); }}>Diagram key</Button></span>}
+        {!assessment && <span className="subscribe-key-control"><RelationHelp label="Diagram key" text={help.key} /><Button className="subscribe-key-button" variant="ghost" aria-haspopup="dialog" onClick={event => { event.currentTarget.focus(); onInspect?.(); onOpenKey?.(); setKeyOpen(true); }}>Diagram key</Button></span>}
       </section>
       <section className="subscribe-trays" aria-label="Received changes grouped by timestamp">
-        <Tray sectionRef={refs?.complete} group={left} side="complete" state={state} selected={completedTime === undefined ? selection.complete : String(completedTime)} onSelect={value => setSelection(previous => ({ ...previous, complete: value }))} disabled={disabled} />
+        <Tray sectionRef={refs?.complete} group={left} groups={completed} side="complete" state={state} selected={completedTime === undefined ? selection.complete : String(completedTime)} onSelect={value => setSelection(previous => ({ ...previous, complete: value }))} disabled={disabled} />
         <div className="subscribe-divider" aria-hidden="true" />
-        <Tray sectionRef={refs?.pending} group={right} side="pending" state={state} selected={selection.pending} onSelect={value => setSelection(previous => ({ ...previous, pending: value }))} disabled={disabled} />
+        <Tray sectionRef={refs?.pending} group={right} groups={pending} side="pending" state={state} selected={selection.pending} onSelect={value => setSelection(previous => ({ ...previous, pending: value }))} disabled={disabled} />
       </section>
-      <div className="subscribe-publication-arrow" role="img" aria-label="Completed changes flow into the application on progress"><span aria-hidden="true" /></div>
+      <div className="subscribe-publication-arrow" role="img" aria-label={publicationPolicy === 'complete' ? 'Completed changes flow into the application on progress' : publicationPolicy === 'each' ? 'Received changes flow into the application immediately' : 'Changes flow into the application at or below progress'}><span aria-hidden="true" /></div>
       <section ref={refs?.application} className="subscribe-application" aria-label="Published application" aria-live="polite" data-testid="subscribe-application">
-        <div className="subscribe-application-heading"><div><strong>Your live result</strong><span className="subscribe-publication-status">{appStatus}<RelationHelp label="Published before" text={help.published} /></span></div>{!state.connected && <Unplug size={16} aria-hidden="true" />}</div>
+        <div className="subscribe-application-heading"><div><strong>Your live result</strong><span className="subscribe-publication-status">{appStatus}<RelationHelp label="Published before" text={publicationPolicy === 'complete' ? help.published : publicationDescription} /></span></div>{!state.connected && <Unplug size={16} aria-hidden="true" />}</div>
         <ApplicationTable rows={state.ready ? state.published : []} />
       </section>
       <div className="subscribe-diagram-footer"><span>Illustrative delivery · not packet or FETCH boundaries</span></div>
@@ -103,11 +107,11 @@ export function TimestampTrays({ state, refs, completedTime, assessment = false,
     <Dialog open={keyOpen} onClose={() => setKeyOpen(false)} title="Timestamp-tray diagram key">
       <dl className="subscribe-key"><div><dt>Signed full rows</dt><dd>A diff changes the number of copies of the entire row. Orders counts open orders in a region; Copies counts identical result rows. A retraction removes row copies, not currency from a total cell.</dd></div>
         <div><dt>Complete before T</dt><dd>The dotted divider separates completed older timestamps from open ones. Timestamp T itself stays open. A later data timestamp also supplies this evidence.</dd></div>
-        <div><dt>Complete versus published</dt><dd>Publishing means updating the application’s visible result. A complete group can still wait for publication. This client applies buffered changes only when a progress record P(T) arrives, and only for timestamps less than T.</dd></div>
+        <div><dt>Complete versus published</dt><dd>Publishing means updating the application’s visible result. A complete group can still wait for publication. {publicationDescription}</dd></div>
         <div><dt>Tray history</dt><dd>The selectors inspect already received groups without rewinding the connection. The same two tray slots are reused; empty slots are not business rows.</dd></div>
         <div><dt>Progress is not a data row</dt><dd>P(T) abbreviates a progress record with mz_timestamp = T and mz_progressed = true. Ignore its other fields: it is not an order or a diff. Quiet progress advances the boundary without changing totals. A FETCH timeout supplies no timestamp guarantee.</dd></div>
         <div><dt>Connection and freshness</dt><dd>Connected does not mean current with an external source. Disconnected retains the last known display as stale. Durable recovery needs additional history and checkpoint coordination.</dd></div></dl>
-      <p>This deterministic simulation executes no SQL. Playback steps are delivery checkpoints, not logical timestamps or wall-clock seconds.</p>
+      <p>{executionNote ?? 'This deterministic simulation executes no SQL.'} Playback steps are delivery checkpoints, not logical timestamps or wall-clock seconds.</p>
     </Dialog>
   </div>;
 }

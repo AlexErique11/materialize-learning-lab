@@ -11,6 +11,73 @@ and shared CSS, not independently maintained mockup files.
 | `LectureScreen`, `layout="with-tip"` | Chapter 1 lectures 1–2 | Chapter 1 reference frame, metrics, visualization, playback, and bottom tip when it fits. |
 | `LectureScreen`, `layout="without-tip"` | Chapter 2 lectures 1–4; Chapter 3 lectures 1–3; Chapter 4 lectures 1–4; Chapter 5 lectures 1–4; Chapters 6–8 lectures 1–3 | Shared upper controls, no tip, chapter-owned visualization, and playback lower in the available viewport. |
 | `ExerciseFrame` through `GuidedLabScreen` | Chapter 1–8 exercises | Shared progress and action controls, SQL reference, question flow, and chapter-owned visualization; no lecture tip. |
+| `LiveOrderOperationsPage` | The single course challenge | Open investigation at `/challenge`: one complaint, five freely accessible workspaces, executable SQL, and handover. |
+
+`src/challenges/live-order-operations/challenge.css` owns the incident-specific
+layout. It reuses `ActivityHeading`, the white lab theme, relation panels/tables,
+buttons, dialogs, `ShortcutHelp`, `useChangeMotion`, and `useWorkspaceMotion`.
+There is no numbered fault checklist or repair progress bar. Dashboard, Data,
+SQL, System, and Client tabs change the selected view without applying repairs.
+Challenge overview in the investigation toolbar reopens the complete opening page at
+`/challenge?view=overview`. Continue investigation returns to the saved workspace;
+handover and completed runs instead show Return to investigation in the toolbar.
+The handover footer places Back to main page before Complete handover. Handover
+shows the required repair explanation length and trimmed character count. A status
+beside completion explains pending checks, a missing explanation, or ongoing
+execution; it confirms when the handover is ready to complete. Overview navigation
+does not reset the run or apply drafts. Undo last change and Investigation help
+sit beside the other activity toolbar actions during investigation. The toolbar
+wraps beneath the title when needed, retaining standard control sizes. Footer
+navigation and restart reuse the standard bordered secondary button styles,
+including navigation links.
+`InvestigationWorkspace.tsx` owns the shared applied-state bar, scope labels,
+settings actions, and `WorkspacePair`: tinted controls on the left and read-only
+observations on the right. System pairs connection, snapshot-request, and serving controls
+with their results. Narrow windows stack controls above results in normal flow.
+Source settings belong in Data. Source, serving, and client settings are saved
+drafts until Apply changes; Discard edits restores applied values. SQL uses Run
+query preview and Apply query. View selectors and fallback authorization never
+apply configuration. Drafts survive navigation and refresh.
+
+The shared bar shows applied query version, live time, connection, processing,
+and client position. Advance incident names the next event and changes time and
+available input. Process pending updates separately advances complete output;
+the previous complete snapshot remains visible until then. Receive next delivery
+names its record and timestamp, warning if it will advance shared time. Replay
+resets deliveries without rewinding time. There is no activity Pause button;
+the simulation advances manually. Feedback names each action's effects. Client
+settings preserve SQL previews and reads; serving settings preserve deliveries;
+source/query changes clear dependent reads and reset deliveries. Preview keys
+depend on source, editor, mode, and historical frame, independently of unrelated
+configuration revisions.
+
+Chapter 7's `ReadableWindow` and Chapter 8's `TimestampTrays` retain their
+existing semantics and styles. The incident supplies their model state without
+changing chapter geometry. `TimestampTrays` accepts an explicit publication policy
+and execution note for the incident; its default lecture behavior is unchanged.
+The incident uses the full tray layout so mobile tables stack at readable widths.
+Query results execute in a lazy browser SQL worker;
+streaming/progress remain explicit simulations. Loading and recovery appear
+locally in the workspace without replaying the global intro for each query.
+Stale previews cannot deploy, and stale validation responses cannot complete a
+changed run. SQL execution, previews, deployment, operational processing, and
+client publication are distinct actions.
+
+Keyboard controls activate existing visible buttons: Ctrl+Enter runs SQL; S
+opens Reference; H opens optional help; R opens Restart; ArrowRight advances an
+available incident clock event. Native text inputs keep typing behavior and dialogs own
+focus. Motion respects reduced-motion preferences. Reference contains schema and
+concept help; full worked repairs require explicit optional assistance.
+
+The main page's singular Challenge card opens the incident directly and shares
+its feature-list styling with Guided labs. Start/Resume/Review uses
+`LabEntryTransition` and the flask animation, without a chapter tour. Direct URL
+entry and refresh restore work immediately. No catalog, chapter-sidebar entry,
+or chapter-completion credit is added. Autosave and cross-tab synchronization use
+`materialize-learning-lab-challenge-v2`. Restart preserves chapter progress and
+historical achievements. The first version's store remains untouched, and its
+completions are labeled First version rather than completing the investigation.
+No saved-status label or manual Load saved run step is displayed.
 
 `src/labs/components/LectureScreen.tsx` accepts `metrics`, `visualization`, and
 `playback` slots plus the common screen props. Chapter 2 supplies them through
@@ -539,6 +606,10 @@ management. Only the visible activity owns the browser title, including on resiz
   after a short pointer grace period; focus, Escape, and outside clicks retain
   their existing behavior.
   `logicalTimestampHelp.ts` contains the cross-chapter timestamp definition.
+  Challenge panels, settings, metrics, and change history reuse this component through
+  `src/challenges/live-order-operations/ChallengeHelp.tsx`. `PanelHeader` accepts
+  an optional help slot beside its title, keeping heading names and trailing
+  controls separate.
 - `src/hooks/useExerciseStages.ts` owns exercise-stage state, grading types and integer parsing.
 - `src/styles/lesson.css` owns common lesson typography, metrics, panels, tables and help.
 - `src/styles/exercise.css` owns the shared question frame and controls. Chapter 1
@@ -547,7 +618,8 @@ management. Only the visible activity owns the browser title, including on resiz
   controls, excluded from focus and accessibility. The learning-path page
   uses saved activity progress for Guided labs. Planned chapters and challenges
   display Coming soon and a useful return link, including direct section URLs.
-  Challenge achievement indicators stay absent until completion is implemented.
+  The single Live Order Operations challenge shows Start, Resume, or Review on
+  the main page from its separate saved run and opens directly at `/challenge`.
   All eight core chapters contribute to the progress denominator. Existing saved
   activity completions remain valid when new chapter paths are registered.
 

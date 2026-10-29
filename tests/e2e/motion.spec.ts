@@ -198,12 +198,12 @@ for (const mode of ['keyboard', 'reduced motion']) {
   });
 }
 
-test('learning path and challenges share directional slides and retain history', async ({ page }) => {
+test('the main page and challenge share directional slides and retain history', async ({ page }) => {
   await observeMotion(page);
   await page.goto('/');
   const header = await page.getByRole('banner').boundingBox();
-  await page.getByRole('main').getByRole('link', { name: 'Challenges', exact: true }).click();
-  await expect(page).toHaveURL('/challenges');
+  await page.getByRole('main').getByRole('link', { name: 'Challenge', exact: true }).click();
+  await expect(page).toHaveURL('/challenge');
   await expect(page.locator('#main-content')).not.toHaveAttribute('data-area-transition');
   expect(await page.getByRole('banner').boundingBox()).toEqual(header);
   await page.goBack();

@@ -116,7 +116,7 @@ test('compact landing cards and overviews switch before their copy becomes crowd
     const second = (await cards[1]!.boundingBox())!;
     expect(second.x).toBe(first.x);
     expect(second.y).toBeGreaterThanOrEqual(first.y + first.height);
-    for (const heading of await page.locator('.learning-path-challenges h3').all()) {
+    for (const heading of await page.locator('.learning-path-challenge-features h3').all()) {
       const box = (await heading.boundingBox())!;
       expect(box.width).toBeGreaterThan(300);
     }
