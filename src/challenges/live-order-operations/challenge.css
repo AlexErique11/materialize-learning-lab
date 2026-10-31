@@ -190,9 +190,19 @@
 .incident-workspace-pair { display: grid; grid-template-columns: minmax(280px, .7fr) minmax(0, 1.7fr); gap: 22px; align-items: start; }
 .incident-controls, .incident-results { display: grid; align-content: start; gap: 18px; min-width: 0; }
 .incident-secondary-controls { display: grid; gap: 18px; min-width: 0; }
-.incident-controls .incident-card, .incident-controls .incident-card > .panel-header { background: var(--surface-muted); }
+.incident-controls .incident-card { background: var(--lab-surface); }
+.incident-controls .incident-card > .panel-header, .incident-results .incident-card > .panel-header {
+  background: color-mix(in srgb, var(--lab-tint) 75%, var(--lab-surface));
+}
 .incident-controls .incident-card > .panel-header { border-bottom-color: var(--lab-border); }
-.incident-results .incident-card { background: var(--lab-surface); }
+.incident-results .incident-card {
+  border-color: var(--lab-purple);
+  background: var(--lab-surface);
+}
+.incident-results .incident-card > .panel-header {
+  border-radius: 4px 4px 0 0;
+  border-bottom-color: color-mix(in srgb, var(--lab-purple) 25%, var(--lab-border));
+}
 .incident-controls .incident-card-body > .incident-scope { margin-bottom: 14px; }
 .incident-controls .incident-card-body > p { margin-top: 14px; }
 .incident-controls .incident-actions { margin-bottom: 14px; }
