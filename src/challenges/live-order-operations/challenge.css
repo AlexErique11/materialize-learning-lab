@@ -12,8 +12,11 @@
 .incident-page:not([data-phase='briefing']) .guided-lab-heading { flex-wrap: wrap; }
 .incident-page:not([data-phase='briefing']) .guided-lab-title { min-width: min(100%, 360px); }
 .incident-page:not([data-phase='briefing']) .guided-lab-controls { max-width: 100%; flex-wrap: wrap; }
+.incident-page:not([data-phase='briefing']) .guided-lab-heading { gap: 12px 22px; }
+.incident-tool-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.incident-tools-toggle, .incident-state-toggle, .incident-state-compact { display: none; }
 .incident-page .guided-lab-controls .button:disabled { opacity: .5; }
-.incident-content { margin-top: 24px; min-width: 0; }
+.incident-content { margin-top: 16px; min-width: 0; }
 .incident-content > *, .incident-workspace > * { min-width: 0; }
 .incident-workspace { display: grid; gap: 18px; }
 .incident-brief-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 22px; }
@@ -72,7 +75,7 @@
 .incident-tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-bottom: 18px; }
 .incident-tabs button { padding: 12px 16px; border: 1px solid var(--lab-border); border-radius: 5px; color: var(--lab-muted); background: var(--lab-surface); font-size: 13px; font-weight: 600; transition: color 120ms ease, background-color 120ms ease, border-color 120ms ease; }
 .incident-tabs button:hover, .incident-tabs button[aria-current] { color: var(--lab-purple); background: var(--lab-tint); border-color: color-mix(in srgb, var(--lab-purple) 35%, var(--lab-border)); }
-.incident-workspace-bar { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 15px 18px; border: 1px solid var(--lab-border); border-left: 3px solid var(--lab-purple); border-radius: 5px; background: var(--surface-muted); margin-bottom: 18px; }
+.incident-workspace-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 12px; border-left: 3px solid var(--lab-purple); background: var(--surface-muted); margin-bottom: 12px; font-size: 12px; }
 .incident-workspace-bar p { font-size: 13px; margin-top: 5px; line-height: 1.5; }
 .incident-workspace-bar > .button { flex-shrink: 0; }
 .incident-tag { display: inline-block; padding: 3px 6px; border: 1px solid var(--lab-border); border-radius: 4px; color: var(--lab-muted); font-size: 10px; }
@@ -81,6 +84,7 @@
 .incident-actions[role='group'] { margin: 0; }
 .incident-actions [aria-pressed='true'] { color: var(--lab-purple); border-color: var(--lab-purple); background: var(--lab-tint); }
 .incident-label, .incident-fields > label { display: grid; gap: 8px; margin-block: 0 12px; font-size: 12px; font-weight: 600; }
+.incident-card-body > :is(select, input) + .incident-label { margin-top: 16px; }
 .incident-page textarea, .incident-page select { width: 100%; min-width: 0; border: 1px solid var(--border-strong); border-radius: 4px; color: var(--lab-text); background: var(--lab-surface); padding: 10px 12px; font: inherit; font-size: 13px; }
 .incident-page textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
 .incident-page .incident-editor { font-family: var(--font-mono); font-size: 13px; line-height: 1.7; }
@@ -99,7 +103,6 @@
 .incident-change-history { margin-top: 22px; }
 .incident-footer { justify-content: flex-end; margin-top: 16px; }
 .incident-footer > a { margin-right: auto; display: inline-flex; gap: 6px; align-items: center; }
-.incident-reset { display: flex; justify-content: flex-end; margin-top: 12px; }
 .incident-runtime { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-block: 14px; font-size: 12px; color: var(--lab-muted); }
 .incident-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--lab-border); border-top-color: var(--lab-purple); border-radius: 50%; animation: incident-spin .8s linear infinite; flex-shrink: 0; }
 @keyframes incident-spin { to { transform: rotate(360deg); } }
@@ -170,7 +173,7 @@
   .incident-page .shortcut-help-trigger { flex-shrink: 0; }
   .incident-tabs { gap: 4px; }
   .incident-tabs button { padding: 10px 2px; font-size: 11px; }
-  .incident-workspace-bar { flex-direction: column; gap: 10px; padding: 12px; }
+  .incident-workspace-bar { gap: 6px; padding: 8px 10px; }
   .incident-workspace-bar > .button { min-height: 28px; padding-block: 4px; }
   .incident-card-body { padding: 14px 12px; }
   .incident-card > .panel-header { padding-inline: 12px; }
@@ -180,12 +183,13 @@
   .incident-page textarea { font-size: 16px; }
   .incident-page .incident-editor { font-size: 14px; }
   .incident-footer { justify-content: flex-start; }
-  .incident-footer > a { flex-basis: 100%; margin-bottom: 8px; }
+  .incident-footer > a { margin-right: 0; }
   .incident-flow { justify-content: flex-start; }
 }
 /* Investigation workspaces share one controls → observations pattern. */
 .incident-workspace-pair { display: grid; grid-template-columns: minmax(280px, .7fr) minmax(0, 1.7fr); gap: 22px; align-items: start; }
 .incident-controls, .incident-results { display: grid; align-content: start; gap: 18px; min-width: 0; }
+.incident-secondary-controls { display: grid; gap: 18px; min-width: 0; }
 .incident-controls .incident-card, .incident-controls .incident-card > .panel-header { background: var(--surface-muted); }
 .incident-controls .incident-card > .panel-header { border-bottom-color: var(--lab-border); }
 .incident-results .incident-card { background: var(--lab-surface); }
@@ -204,35 +208,48 @@
 .incident-snapshot-metrics strong { color: var(--lab-text); font-variant-numeric: tabular-nums; }
 .incident-shared { border: 1px solid var(--lab-border); border-radius: 5px; margin-bottom: 18px; background: var(--lab-surface); overflow-wrap: anywhere; }
 .incident-shared-heading { display: flex; align-items: center; gap: 8px; padding: 12px 18px 0; font-size: 13px; }
-.incident-shared-heading > span { margin-left: auto; font-size: 11px; color: var(--lab-muted); }
-.incident-state-values { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 14px 18px; }
+.incident-shared-description { margin-left: auto; font-size: 11px; color: var(--lab-muted); }
+.incident-state-values { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 10px 18px; }
 .incident-state-values dt { font-size: 11px; color: var(--lab-muted); margin-bottom: 5px; }
 .incident-state-values dd { margin: 0; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.incident-replay-controls { display: flex; gap: 18px; justify-content: space-between; align-items: center; padding: 12px 18px; border-top: 1px solid var(--lab-border); background: var(--surface-muted); }
+.incident-replay-controls { display: flex; gap: 12px; justify-content: space-between; align-items: center; padding: 8px 18px; border-top: 1px solid var(--lab-border); background: var(--surface-muted); }
 .incident-replay-controls > div { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .incident-replay-controls svg { flex-shrink: 0; color: var(--lab-purple); }
 .incident-replay-controls strong { display: block; font-size: 12px; font-weight: 600; }
 .incident-replay-controls small { display: block; margin-top: 4px; font-size: 11px; line-height: 1.5; color: var(--lab-muted); }
 .incident-replay-controls > .button { flex-shrink: 0; }
-.incident-feedback { margin-top: 0; border-left: 3px solid var(--lab-purple); }
+.incident-feedback { margin-block: 0 14px; padding: 8px 12px; border-left: 3px solid var(--lab-purple); background: var(--surface-muted); font-size: 12px; line-height: 1.5; }
+.incident-feedback summary { cursor: pointer; }
+.incident-feedback p { margin-top: 8px; }
 .incident-page input[type='text'] { width: 100%; min-width: 0; border: 1px solid var(--border-strong); border-radius: 4px; color: var(--lab-text); background: var(--lab-surface); padding: 10px 12px; font: inherit; font-size: 13px; }
 .incident-page input:disabled { opacity: .55; }
-.incident-workspace-pair:has(.incident-editor) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.incident-workspace-pair:has(.incident-editor) { grid-template-columns: minmax(0, 1fr); }
 .incident-workspace-pair .panel-header { flex-wrap: wrap; gap: 8px; }
 .incident-workspace-pair .panel-trailing { margin-left: auto; }
 @media (max-width: 1050px) {
   .incident-workspace-pair, .incident-workspace-pair:has(.incident-editor) { grid-template-columns: minmax(0, 1fr); }
   .incident-state-values { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .incident-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .incident-controls > :only-child { grid-column: 1 / -1; }
+  .incident-controls { display: contents; }
+  .incident-controls > .incident-card { order: 1; }
+  .incident-results { order: 2; }
+  .incident-secondary-controls { order: 3; }
 }
 @media (max-width: 639px) {
-  .incident-controls { grid-template-columns: minmax(0, 1fr); }
+  .incident-tool-actions { display: none; }
+  .incident-tool-actions[data-open='true'] { display: flex; flex-basis: 100%; order: 4; }
+  .incident-tools-toggle, .incident-state-toggle { display: inline-flex; }
+  .incident-state-toggle { margin-left: auto; }
+  .incident-state-compact { display: block; margin: 8px 12px; font-size: 12px; font-weight: 600; }
+  .incident-shared-description { display: none; }
+  .incident-shared:not([data-expanded='true']) .incident-state-values { display: none; }
   .incident-state-values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .incident-shared-heading { flex-wrap: wrap; }
-  .incident-shared-heading > span { flex-basis: 100%; margin: 0; }
-  .incident-replay-controls { align-items: flex-start; flex-direction: column; gap: 12px; }
-  .incident-workspace-bar { align-items: flex-start; gap: 10px; }
+  .incident-shared-heading { padding: 8px 12px 0; flex-wrap: nowrap; }
+  .incident-replay-controls { align-items: flex-start; flex-direction: column; gap: 8px; padding: 8px 12px; }
+  .incident-replay-controls small { display: none; }
+  .incident-workspace-bar { align-items: center; }
   .incident-workspace-bar .eyebrow { font-size: 11px; }
+  .incident-workspace-bar > span:last-child { max-width: 24ch; }
+  .incident-page { --read-label-width: 108px; --read-track-gap: 8px; }
+  .incident-page .read-axis > div > span:not([data-edge]) { display: none; }
 }
 .incident-shared-heading > .relation-help { margin-left: 0; }

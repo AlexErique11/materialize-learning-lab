@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { start, workspace } from './investigation-flow';
+import { start, workspace, openTools } from './investigation-flow';
 
 test('workspaces and handover have no notebook or pin controls', async ({ page }) => {
   await page.goto('/challenge');
@@ -10,7 +10,7 @@ test('workspaces and handover have no notebook or pin controls', async ({ page }
     await expect(page.getByText(/incident notebook/i)).toHaveCount(0);
     await expect(page.getByRole('textbox', { name: 'Working hypothesis and handover notes', exact: true })).toHaveCount(0);
   }
-  await page.getByRole('button', { name: 'Submit handover', exact: true }).click();
+  await page.getByRole('button', { name: 'Review handover', exact: true }).click();
   await expect(page.getByRole('textbox')).toHaveCount(0);
   await expect(page.getByText(/attach observations|before.and.after evidence/i)).toHaveCount(0);
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('materialize-learning-lab-challenge-v2')!).run)).not.toHaveProperty('observations');
@@ -52,8 +52,8 @@ test('context help works across challenge workspaces without changing the invest
   await showHelp('Retained producer messages', 'including earlier versions of orders', true);
   await workspace(page, 'SQL');
   await showHelp('Regional query draft', 'Apply query makes a successfully tested draft live');
-  await showHelp('Historical replay snapshot', 'does not advance the live incident', true);
-  await expect(page.getByRole('combobox', { name: 'Historical replay snapshot', exact: true })).toBeVisible();
+  await showHelp('Scenario replay snapshot', 'does not advance the live incident', true);
+  await expect(page.getByRole('combobox', { name: 'Scenario replay snapshot', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Diagnostic SELECT', exact: true }).click();
   await showHelp('Read-only diagnostic console', 'Diagnostic queries cannot be deployed');
   await workspace(page, 'System');
@@ -63,16 +63,17 @@ test('context help works across challenge workspaces without changing the invest
   await showHelp('Order envelope', 'latest full value for each key', true);
   await expect(page.getByRole('combobox', { name: 'Order envelope', exact: true })).toHaveValue('NONE');
   await workspace(page, 'Client');
-  await showHelp('Application subscription', 'Receive next delivery receives one batch');
+  await showHelp('Application subscription', 'processes upstream output through the delivery timestamp');
   await showHelp('Publish application updates', 'Chooses when received changes become visible', true);
   await expect(page.getByRole('combobox', { name: 'Publish application updates', exact: true })).toHaveValue('each');
   await expect(page.getByRole('checkbox', { name: 'Initialize with a coordinated snapshot', exact: true })).toBeChecked();
   await showHelp('Coordinated starting snapshot', 'consistent complete result', true);
-  await page.getByRole('button', { name: 'Submit handover', exact: true }).click();
+  await page.getByRole('button', { name: 'Review handover', exact: true }).click();
   await showHelp('End-to-end acceptance', 'Run acceptance checks tests the deployed system');
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('materialize-learning-lab-challenge-v2')!));
   expect(saved.run.hints).toEqual({});
   expect(saved.run.worked).toEqual([]);
+  await openTools(page);
   await page.getByRole('button', { name: 'Return to investigation', exact: true }).click();
   await page.setViewportSize({ width: 320, height: 740 });
   await showHelp('Publish application updates', 'Chooses when received changes become visible', true);
@@ -126,11 +127,13 @@ test('investigation shares lecture chrome while exposing free workspaces and no 
   await page.goto('/challenge'); await start(page); expect(await appearance()).toEqual(reference);
   await expect(page.locator('.chapter-sidebar')).toHaveCount(0);
   await expect(page.getByRole('navigation', { name: 'Investigation workspaces' }).getByRole('button')).toHaveCount(5);
+  await openTools(page);
   for (const name of ['Undo last change', 'Investigation help']) {
     await expect(page.locator('.guided-lab-controls').getByRole('button', { name, exact: true })).toHaveCount(1);
     await expect(page.locator('.incident-footer').getByRole('button', { name, exact: true })).toHaveCount(0);
   }
   await expect(page.getByRole('progressbar')).toHaveCount(0);
+  await openTools(page);
   await page.getByRole('button', { name: 'Reference', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Incident reference', exact: true });
   await expect(dialog).not.toContainText('o.event_at + INTERVAL');
@@ -169,6 +172,7 @@ test('challenge overview can be reopened without losing drafts, workspace, or ha
   await page.goto('/challenge'); await start(page); await workspace(page, 'SQL');
   await page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true }).fill('unfinished query to preserve');
   const before = await page.evaluate(() => JSON.parse(localStorage.getItem('materialize-learning-lab-challenge-v2')!).run);
+  await openTools(page);
   await page.getByRole('button', { name: 'Challenge overview', exact: true }).click();
   await expect(page).toHaveURL('/challenge?view=overview');
   await expect(page.getByRole('heading', { name: 'Your working environment', exact: true })).toBeVisible();
@@ -183,20 +187,24 @@ test('challenge overview can be reopened without losing drafts, workspace, or ha
   await expect(page.getByRole('button', { name: 'Continue investigation', exact: true })).toBeVisible();
   await page.goForward();
   await expect(page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true })).toBeVisible();
+  await openTools(page);
   for (const action of [page.getByRole('link', { name: 'Back to main page', exact: true }), page.getByRole('button', { name: 'Investigation help', exact: true }), page.getByRole('button', { name: 'Undo last change', exact: true }), page.getByRole('button', { name: 'Restart challenge', exact: true })]) {
     await expect(action).toHaveClass(/button-secondary/);
     await expect(action).not.toHaveClass(/button-ghost|text-link/);
   }
-  await page.getByRole('button', { name: 'Submit handover', exact: true }).click();
+  await page.getByRole('button', { name: 'Review handover', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Challenge overview', exact: true })).toHaveCount(0);
   await expect(page.locator('.incident-report').getByRole('button', { name: 'Return to investigation', exact: true })).toHaveCount(0);
-  await expect(page.locator('.incident-report > .incident-actions').locator('a, button')).toHaveText(['Back to main page', 'Complete handover']);
+  await expect(page.locator('.incident-report > .incident-actions').locator('a, button')).toHaveText(['Complete handover']);
   await page.screenshot({ path: testInfo.outputPath('handover-navigation.png'), fullPage: true });
+  await openTools(page);
   await page.locator('.guided-lab-controls').getByRole('button', { name: 'Return to investigation', exact: true }).click();
   await expect(page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true })).toHaveValue('unfinished query to preserve');
-  await page.getByRole('button', { name: 'Submit handover', exact: true }).click();
+  await page.getByRole('button', { name: 'Review handover', exact: true }).click();
+  await openTools(page);
   await page.getByRole('button', { name: 'Return to investigation', exact: true }).click();
   await page.screenshot({ path: testInfo.outputPath('challenge-standard-buttons.png'), fullPage: true });
+  await openTools(page);
   await page.getByRole('button', { name: 'Challenge overview', exact: true }).click();
   await page.screenshot({ path: testInfo.outputPath('challenge-overview-return.png'), fullPage: true });
 });

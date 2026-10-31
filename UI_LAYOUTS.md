@@ -21,19 +21,24 @@ SQL, System, and Client tabs change the selected view without applying repairs.
 Challenge overview in the investigation toolbar reopens the complete opening page at
 `/challenge?view=overview`. Continue investigation returns to the saved workspace;
 handover and completed runs instead show Return to investigation in the toolbar.
-The handover footer places Back to main page before Complete handover. All five
+Review handover opens the acceptance screen; Complete handover records completion.
+Back to main page and Restart challenge share one footer row. All five
 current acceptance checks must pass to enable completion; there is no notes field
 or written submission. A status beside completion explains pending checks or ongoing
 execution and confirms when the handover is ready to complete. Overview navigation
 does not reset the run or apply drafts. Undo last change and Investigation help
 sit beside the other activity toolbar actions during investigation. The toolbar
-wraps beneath the title when needed, retaining standard control sizes. Footer
+wraps beneath the title when needed, retaining standard control sizes. On phones,
+secondary toolbar actions expand through Tools, and applied-state details expand
+through Show details; incident time and connection/processing remain visible. Footer
 navigation and restart reuse the standard bordered secondary button styles,
 including navigation links.
 `InvestigationWorkspace.tsx` owns the shared applied-state bar, scope labels,
 settings actions, and `WorkspacePair`: tinted controls on the left and read-only
 observations on the right. System pairs connection, snapshot-request, and serving controls
-with their results. Narrow windows stack controls above results in normal flow.
+with their results. Narrow windows place primary controls before their results,
+then secondary settings, in normal flow. SQL uses one full-width editor/result
+column at all sizes, avoiding an empty results column before the first execution.
 Source settings belong in Data. Source, serving, and client settings are saved
 drafts until Apply changes; Discard edits restores applied values. SQL uses Run
 query preview and Apply query. View selectors and fallback authorization never
@@ -42,19 +47,23 @@ apply configuration. Drafts survive navigation and refresh.
 The shared bar shows applied query version, live time, connection, processing,
 and client position. Advance incident names the next event and changes time and
 available input. Process pending updates separately advances complete output;
-the previous complete snapshot remains visible until then. Receive next delivery
-names its record and timestamp, warning if it will advance shared time. Replay
+the previous complete snapshot remains visible until then. Receive and process delivery
+names its record and timestamp, explicitly describing upstream processing and any
+advance of shared time. Replay
 resets deliveries without rewinding time. There is no activity Pause button;
 the simulation advances manually. Feedback names each action's effects. Client
 settings preserve SQL previews and reads; serving settings preserve deliveries;
 source/query changes clear dependent reads and reset deliveries. Preview keys
-depend on source, editor, mode, and historical frame, independently of unrelated
+depend on source, editor, mode, and scenario frame, independently of unrelated
 configuration revisions.
 
 Chapter 7's `ReadableWindow` and Chapter 8's `TimestampTrays` retain their
 existing semantics and styles. The incident supplies their model state without
 changing chapter geometry. `TimestampTrays` accepts an explicit publication policy
-and execution note for the incident; its default lecture behavior is unchanged.
+and execution note for the incident, plus timestamp formatting and business-count
+description. The incident uses seconds consistently; chapter defaults remain unchanged.
+The publication connector originates from incoming changes for immediate/equal-time
+publication and completed changes for strict-progress publication.
 The incident uses the full tray layout so mobile tables stack at readable widths.
 Query results execute in a lazy browser SQL worker;
 streaming/progress remain explicit simulations. Loading and recovery appear
@@ -81,7 +90,7 @@ No saved-status label or manual Load saved run step is displayed.
 
 New investigations require repairing append ingestion of keyed replacements and
 the serving design (materialized helper, operations-only index, ten-unit cost).
-SQL opens with an unselected historical snapshot; execution requires an explicit
+SQL opens with an unselected scenario snapshot; execution requires an explicit
 choice, which persists across navigation and refresh. Inherited-query comparison
 uses the same applied source and timestamp as the draft.
 Successful Complete handover opens `ChallengeCompletion` using the shared Dialog:

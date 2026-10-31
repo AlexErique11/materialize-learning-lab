@@ -63,13 +63,29 @@ export function parsePredicate(source: string): Predicate {
     return left;
   };
   const atom = (): Predicate => {
-    if (peek() === '(') { take(); const result = conjunction(); expect(')'); return result; }
+    // A leading parenthesis may wrap a scalar expression or an entire condition.
+    // Inspect the token after its matching close before choosing the grammar.
+    if (peek() === '(') {
+      let nesting = 0;
+      let end = index;
+      do {
+        const token = tokens[end++];
+        if (!token) throw new Error('Close the parenthesized expression.');
+        if (token.text === '(') nesting++;
+        if (token.text === ')') nesting--;
+      } while (nesting > 0);
+      if (!['<', '>', '<=', '>=', '=', '!=', '<>', '+'].includes(tokens[end]?.text ?? '')) {
+        if (++depth > 24) throw new Error('Use fewer nested parentheses.');
+        take(); const result = conjunction(); expect(')'); depth--; return result;
+      }
+    }
     if (peek() === 'true' || peek() === 'false') return { kind: 'boolean', value: take().text.toLowerCase() === 'true' };
     const left = arithmetic();
     const operator = take().text;
     if (!['<', '>', '<=', '>=', '=', '!=', '<>'].includes(operator)) throw new Error('Use a comparison operator, with AND between conditions.');
     const right = arithmetic();
     if (left.kind === 'clock' && right.kind === 'clock') throw new Error('Compare mz_now() with a row expression, not another clock call.');
+    if ((left.kind === 'clock' || right.kind === 'clock') && ['!=', '<>'].includes(operator)) throw new Error('Materialize temporal filters support =, <, <=, >, and >= with mz_now(); != and <> are not supported.');
     return { kind: 'compare', left, operator, right };
   };
   const conjunction = (): Predicate => {

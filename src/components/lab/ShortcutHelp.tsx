@@ -14,9 +14,10 @@ function positionPanel(panel: HTMLElement, trigger: HTMLElement) {
   panel.style.top = `${Math.max(12, Math.min(bounds.bottom + 8, innerHeight - panel.offsetHeight - 12))}px`;
 }
 
-export function ShortcutHelp({ lecture, showReference, completionLabel = 'Continue', onOpenChange, challenge = false }: {
+export function ShortcutHelp({ lecture, showReference, completionLabel = 'Continue', onOpenChange, challenge = false, challengeInvestigating = true }: {
   lecture: boolean; showReference: boolean; completionLabel?: string; onOpenChange: (open: boolean) => void;
   challenge?: boolean;
+  challengeInvestigating?: boolean;
 }) {
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -72,7 +73,7 @@ export function ShortcutHelp({ lecture, showReference, completionLabel = 'Contin
       <section>
         <h3>{challenge ? 'Challenge' : lecture ? 'Lecture' : 'Exercise'}</h3>
         <dl>
-          {challenge ? <>
+          {challenge ? challengeInvestigating && <>
             <ShortcutRow label="Run SQL in the editor" keys="Control+Enter" />
             <ShortcutRow label="Advance the incident clock" keys="ArrowRight" />
             <ShortcutRow label="Open investigation help" keys="H" />

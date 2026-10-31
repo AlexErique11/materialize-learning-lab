@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { predicate, repairSource, restoreServing, selectSnapshot, start, workspace } from './investigation-flow';
+import { predicate, repairSource, restoreServing, selectSnapshot, start, workspace, openTools } from './investigation-flow';
 const saved = (page: import('@playwright/test').Page) => page.evaluate(() => JSON.parse(localStorage.getItem('materialize-learning-lab-challenge-v2')!).run);
 
 async function activateWithKeyboard(page: import('@playwright/test').Page, name: string) {
@@ -33,6 +33,7 @@ test('settings stay as drafts across workspaces and reload until explicitly appl
   await page.getByRole('combobox', { name: 'Order identity', exact: true }).selectOption('customer_id');
   await page.getByRole('button', { name: 'Apply changes', exact: true }).click();
   await expect(page.getByText('Applied source: UPSERT · customer_id', { exact: true })).toBeVisible();
+  await openTools(page);
   await page.getByRole('button', { name: 'Undo last change', exact: true }).click();
   await expect(page.getByText('Applied source: NONE · order_id', { exact: true })).toBeVisible();
 });
@@ -48,7 +49,7 @@ test('new investigations require an applied source repair and an explicit histor
   await expect(rows).toHaveCount(1);
   await expect(rows).toContainText('70');
   await workspace(page, 'SQL');
-  const snapshot = page.getByRole('combobox', { name: 'Historical replay snapshot', exact: true });
+  const snapshot = page.getByRole('combobox', { name: 'Scenario replay snapshot', exact: true });
   const preview = page.getByRole('button', { name: 'Run query preview', exact: true });
   await expect(snapshot).toHaveValue('');
   await expect(preview).toBeDisabled();
@@ -78,7 +79,7 @@ test('client and request choices preserve previews and reads; source changes inv
   await page.getByRole('combobox', { name: 'Publish application updates', exact: true }).selectOption('complete');
   await page.getByRole('button', { name: 'Apply changes', exact: true }).click();
   expect((await saved(page)).read).toEqual(original.read);
-  await page.getByRole('button', { name: 'Receive next delivery', exact: true }).click();
+  await page.getByRole('button', { name: 'Receive and process delivery', exact: true }).click();
   await workspace(page, 'System');
   await page.getByRole('checkbox', { name: 'Authorize labeled ten-second fallback', exact: true }).check();
   expect((await saved(page)).read).toEqual(original.read);
@@ -96,7 +97,7 @@ test('client and request choices preserve previews and reads; source changes inv
   expect((await saved(page)).deliveries).toBe(0);
   await workspace(page, 'SQL'); await selectSnapshot(page);
   await expect(page.getByRole('button', { name: 'Apply query', exact: true })).toBeDisabled();
-  await page.getByRole('combobox', { name: 'Historical replay snapshot', exact: true }).selectOption('0');
+  await page.getByRole('combobox', { name: 'Scenario replay snapshot', exact: true }).selectOption('0');
   expect((await saved(page)).time).toBe(631000);
 });
 
@@ -140,8 +141,13 @@ test('controls and results retain their layout in both themes and narrow screens
         const pair = page.locator('.incident-workspace-pair').first();
         const controls = (await pair.locator('.incident-controls').boundingBox())!;
         const results = (await pair.locator('.incident-results').boundingBox())!;
-        if (viewport.width >= 1280) expect(controls.x + controls.width).toBeLessThan(results.x);
-        else expect(controls.y + controls.height).toBeLessThan(results.y);
+        if (viewport.width >= 1280 && name !== 'SQL') expect(controls.x + controls.width).toBeLessThan(results.x);
+        else {
+          const card = (await pair.locator('.incident-controls > .incident-card').first().boundingBox())!;
+          expect(card.y + card.height).toBeLessThan(results.y);
+          const secondary = pair.locator('.incident-secondary-controls');
+          if (await secondary.count()) expect((await secondary.boundingBox())!.y).toBeGreaterThan(results.y);
+        }
         if (viewport.width === 1440 || viewport.width === 390) await page.screenshot({ path: testInfo.outputPath(`${name}-${theme}-${viewport.width}.png`), fullPage: true });
       }
     }

@@ -44,6 +44,8 @@
 .subscribe-publication-arrow::before { content: ''; position: absolute; left: calc((100% - var(--subscribe-tray-gap)) / 4 - 1px); right: calc(50% - 1px); top: 0; height: calc(50% + 1px); border-left: 2px solid currentColor; border-bottom: 2px solid currentColor; border-bottom-left-radius: 8px; }
 .subscribe-publication-arrow::after { content: ''; position: absolute; left: calc(50% - 1px); top: 50%; bottom: 2px; border-left: 2px solid currentColor; }
 .subscribe-publication-arrow > span { position: absolute; left: calc(50% - 4px); bottom: 2px; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); }
+.subscribe-workspace[data-publication='each'] .subscribe-publication-arrow::before,
+.subscribe-workspace[data-publication='equal'] .subscribe-publication-arrow::before { left: calc(50% - 1px); right: calc((100% - var(--subscribe-tray-gap)) / 4 - 1px); border-left: 0; border-right: 2px solid currentColor; border-bottom-left-radius: 0; border-bottom-right-radius: 8px; }
 .subscribe-application { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,2fr); gap: 24px; align-items: center; padding: 12px; border: 1px solid var(--lab-border); border-radius: 6px; background: color-mix(in srgb, var(--lab-tint) 15%, var(--lab-surface)); }
 .subscribe-application-heading { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .subscribe-application-heading > div { display: grid; gap: 6px; min-width: 0; }
@@ -188,6 +190,8 @@
   .subscribe-table :is(th,td) { padding-inline: 6px; }
   .subscribe-publication-arrow { height: 36px; }
   .subscribe-publication-arrow::before { left: 0; }
+  .subscribe-workspace:is([data-publication='each'], [data-publication='equal']) .subscribe-trays::after { display: none; }
+  .subscribe-workspace:is([data-publication='each'], [data-publication='equal']) .subscribe-publication-arrow::before { left: calc(50% - 1px); right: auto; width: 0; border-right: 0; border-left: 2px solid currentColor; border-bottom: 0; border-radius: 0; }
   .subscribe-application { grid-template-columns: minmax(0,1fr); gap: 12px; padding: 10px; }
   .subscribe-application-heading { min-height: 40px; }
   .subscribe-application-heading > div { gap: 4px; }

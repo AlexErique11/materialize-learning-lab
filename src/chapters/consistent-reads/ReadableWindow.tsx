@@ -13,9 +13,10 @@ const percent = (value: number, snapshot: ReadSnapshot) => `${Math.max(0, Math.m
 const position = (value: number, snapshot: ReadSnapshot): CSSProperties => ({ left: percent(value, snapshot) });
 export type ReadRefs = Record<ReadTarget, RefObject<HTMLElement | null>>;
 
-export function ReadableWindow({ snapshot: s, refs, caption, revealOutcome = true, onSelectTime, onInspect, disabled = false, assessment = false }: {
+export function ReadableWindow({ snapshot: s, refs, caption, revealOutcome = true, onSelectTime, onInspect, disabled = false, assessment = false, waitingReason }: {
   snapshot: ReadSnapshot; refs?: ReadRefs; caption: string; revealOutcome?: boolean;
   onSelectTime?: (timestamp: number) => void; onInspect?: () => void; disabled?: boolean; assessment?: boolean;
+  waitingReason?: string;
 }) {
   const [keyOpen, setKeyOpen] = useState(false);
   const window = sharedWindow(s);
@@ -27,7 +28,7 @@ export function ReadableWindow({ snapshot: s, refs, caption, revealOutcome = tru
   const detail = !revealOutcome ? caption
     : s.attempt?.status === 'available' ? `Both inputs retain and complete snapshot time ${formatReadTime(s, s.attempt.timestamp)}.${s.row ? ` Order ${s.row.id}: ${s.attempt.rowVisible ? 'present' : 'absent'} in this read.` : ''}`
       : s.attempt?.status === 'too-old' ? 'At least one input no longer retains this snapshot. Waiting for progress cannot restore discarded history.'
-        : s.attempt?.status === 'waiting' ? 'The selected snapshot is not complete across all inputs. The cursor stays here while the read waits.'
+        : s.attempt?.status === 'waiting' ? waitingReason ?? 'The selected snapshot is not complete across all inputs. The cursor stays here while the read waits.'
           : s.attempt?.status === 'stale' ? 'No shared snapshot meets the freshness bound. This request errors without waiting for input progress.'
             : s.observed ? `T1 completed first at time ${formatReadTime(s, s.observed.timestamp)}; order 42 was present. T2 starts afterwards.` : 'Each input has a retained boundary and a write frontier. One read uses one logical moment across both.';
   return <div className="read-workspace" data-testid="read-workspace" data-assessment={assessment || undefined}>

@@ -32,6 +32,7 @@ export function expectedAt(time: number, variant = 0) {
 }
 export function rowsAt(trace: readonly TraceFrame[], time: number): readonly ResultRow[] { return trace.find(frame => frame.time === time)?.rows ?? []; }
 export const objectCost = (config: Configuration) => (config.helper === 'materialized' ? 4 : 0) + (config.final === 'materialized' ? 4 : 0) + (config.indexes === 'both' ? 4 : config.indexes === 'operations' ? 2 : 0);
+export const hasServingPath = (config: Configuration) => config.final === 'materialized' && config.indexes !== 'none';
 export function frontiers(config: Configuration, time: number, processed: boolean | number) {
   const orders = time + 1;
   const completeTime = typeof processed === 'number' ? processed : processed ? time : 622999;
@@ -45,7 +46,7 @@ export function readWindow(config: Configuration, time: number, processed: boole
 }
 export function requestRead(config: Configuration, time: number, processed: boolean | number, fallback = false) {
   const attempt = applyRead(readWindow(config, time, processed), { type: 'request', request: { policy: 'bounded', bound: fallback ? 10000 : 3000 } }).attempt!;
-  return config.final === 'materialized' && config.indexes !== 'none' ? attempt : { ...attempt, status: 'waiting' as const, rowVisible: false };
+  return hasServingPath(config) ? attempt : { ...attempt, status: 'waiting' as const, rowVisible: false };
 }
 export function streamFor(trace: readonly TraceFrame[], snapshot: boolean): StreamRecord[] {
   const baseline = rowsAt(trace, 631000);

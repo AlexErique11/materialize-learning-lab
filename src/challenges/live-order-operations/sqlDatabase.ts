@@ -1,7 +1,7 @@
 import { PGlite } from '@electric-sql/pglite';
 import type { Order } from './simulation';
 
-export interface SqlOutput { rows: Record<string, unknown>[]; fields: { name: string; dataTypeID: number }[]; truncated: boolean }
+export interface SqlOutput { rows: Record<string, unknown>[]; values?: unknown[][]; fields: { name: string; dataTypeID: number }[]; truncated: boolean }
 const origin = Date.UTC(2026, 0, 1);
 export const sqlTimestamp = (offset: number) => new Date(origin + offset).toISOString();
 
@@ -34,8 +34,9 @@ export class IncidentDatabase {
       await this.db.query(`EXPLAIN (FORMAT JSON) ${sql}`);
       // A cursor bounds transfer/materialization even for an unbounded diagnostic SELECT.
       await this.db.query(`DECLARE incident_result NO SCROLL CURSOR FOR ${sql}`);
-      const result = await this.db.query<Record<string, unknown>>('FETCH FORWARD 201 FROM incident_result');
-      return { rows: result.rows.slice(0, 200), fields: result.fields, truncated: result.rows.length > 200 };
+      const result = await this.db.query<unknown[]>('FETCH FORWARD 201 FROM incident_result', [], { rowMode: 'array' });
+      const values = result.rows.slice(0, 200);
+      return { values, rows: values.map(row => Object.fromEntries(result.fields.map((field, index) => [field.name, row[index]]))), fields: result.fields, truncated: result.rows.length > 200 };
     } finally { await this.db.exec('ROLLBACK'); }
   }
   close() { return this.db.close(); }

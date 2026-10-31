@@ -49,7 +49,8 @@ appears before handover. The design and build rationale is in
   time, processing and read context. Obsolete responses are discarded.
 - `InvestigationSql.tsx`: predicate editor, read-only diagnostic console, complete
   query execution preview, real errors, deployed/inherited comparison, deployment.
-  New runs have no historical snapshot selected; learners choose one before execution.
+  New runs have no scenario snapshot selected; learners choose one before execution.
+  The scenario includes past and future test cases without moving the live clock.
   Inherited and draft previews use identical applied source settings.
 - `InvestigationWorkspace.tsx`: shared applied-state bar, controls/results pairs,
   scope labels, and staged settings actions. Drafts persist across tabs/reloads;
@@ -73,13 +74,14 @@ than remaining fixed at the first version's 630.001 s fixture.
 
 Advance incident exposes named clock events independently of Process pending
 updates. The last complete snapshot remains visible until processing catches up.
-Client deliveries can advance shared time, as labeled before the action. The
+Receive and process delivery explicitly processes upstream output through its
+timestamp and can advance shared time, as labeled before the action. The
 manual simulation has no activity Pause button. Source settings are in Data,
 serving settings in System, and publication settings in Client. These are saved
 drafts until Apply changes; Discard edits restores applied values. View filters
 and fallback authorization never change configuration.
 
-Historical SQL snapshots are cloned diagnostic contexts. They do not rewind the
+Scenario SQL snapshots are cloned diagnostic contexts. They do not rewind the
 live clock or apply a draft. Deliveries from the session starting at 631 s advance
 the live clock without rewinding it during replay. Equal-time progress leaves a
 timestamp open. Only strictly later progress publishes it in the correct client.

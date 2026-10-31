@@ -5,7 +5,7 @@ type ShortcutKey = 'ArrowLeft' | 'ArrowRight' | ' ' | 'Enter' | 'r' | 's' | 'h' 
 export type Shortcuts = Partial<Record<ShortcutKey, string>>;
 
 /** Activate existing controls so shortcuts share their validation and disabled state. */
-export function useLabShortcuts(scopeRef: RefObject<HTMLElement | null>, shortcuts: Shortcuts, enabled = true) {
+export function useLabShortcuts(scopeRef: RefObject<HTMLElement | null>, shortcuts: Shortcuts, enabled = true, activateCollapsedActions = false) {
   useEffect(() => {
     if (!enabled) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -23,6 +23,8 @@ export function useLabShortcuts(scopeRef: RefObject<HTMLElement | null>, shortcu
       const inMain = scope.closest('main')?.contains(target);
       if (modal ? modal !== scope && !scope.contains(modal) : !inPage && (isTabNavigation(scope) || !inMain)) return;
       if (target.closest('textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"], [role="combobox"], [role="slider"], [role="listbox"], [role="menu"], [role="tree"], [role="tablist"]')) return;
+      // Arrow keys belong to a focused scrollable region, including relation tables.
+      if (event.key.startsWith('Arrow') && target.closest('.table-scroll, [role="region"][tabindex]')) return;
       const input = target.closest('input');
       if (input && (event.key !== 'Enter' || !['text', 'number', 'email', 'search', 'tel', 'url', 'password', 'checkbox', 'radio'].includes(input.type))) return;
       if (window.getSelection()?.isCollapsed === false) return;
@@ -39,7 +41,7 @@ export function useLabShortcuts(scopeRef: RefObject<HTMLElement | null>, shortcu
       // Within a modal, only its own controls can respond to shortcuts.
       const button = (modal ?? scope).querySelector<HTMLButtonElement>(selector);
       if (!button || button.matches(':disabled') || button.closest('[inert], [aria-hidden="true"]')
-        || !button.getClientRects().length || getComputedStyle(button).visibility === 'hidden') {
+        || (!activateCollapsedActions && (!button.getClientRects().length || getComputedStyle(button).visibility === 'hidden'))) {
         if (nativeActivation) {
           event.preventDefault();
           focusLabContext();
@@ -56,5 +58,5 @@ export function useLabShortcuts(scopeRef: RefObject<HTMLElement | null>, shortcu
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [scopeRef, shortcuts, enabled]);
+  }, [scopeRef, shortcuts, enabled, activateCollapsedActions]);
 }

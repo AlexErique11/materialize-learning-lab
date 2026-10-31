@@ -5,6 +5,11 @@ import { queryCheck, systemChecks } from './grading';
 import { assistedRun, createRun, parseRun, readyForHandover, updateRun } from './run';
 const trace = traceTimes.map(time => ({ time, rows: [...expectedAt(time)] }));
 describe('free investigation and validation', () => {
+  it('accepts scalar parentheses and rejects unsupported clock inequalities on either side', () => {
+    for (const predicate of ["(mz_now()) >= (o.event_at)", "((mz_now())) < (o.event_at + INTERVAL '5 minutes')", "((status = 'paid') AND ((mz_now()) >= o.event_at))"]) expect(() => aggregateSql(predicate)).not.toThrow();
+    for (const predicate of ["mz_now() != o.event_at", "(o.event_at) <> (mz_now())"]) expect(() => aggregateSql(predicate)).toThrow('not supported');
+    expect(() => aggregateSql("o.status != 'cancelled'")).not.toThrow();
+  });
   it('accepts equivalent predicates by grammar, without an answer-key comparison', () => {
     for (const text of [initialPredicate, repairedPredicate, "(mz_now() < (event_at + INTERVAL '300 seconds')) AND (status = 'paid' AND mz_now() >= event_at)", "TRUE", "o.amount > 50 AND o.status <> 'cancelled'"]) expect(() => aggregateSql(text)).not.toThrow();
   });

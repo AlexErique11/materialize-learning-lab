@@ -6,6 +6,11 @@ let db: IncidentDatabase;
 beforeAll(async () => { db = await IncidentDatabase.create(); }, 30000);
 afterAll(async () => { await db?.close(); });
 describe('actual PostgreSQL execution', () => {
+  it('preserves separate values for duplicate diagnostic column names', async () => {
+    const result = await db.execute('SELECT 1 AS x, 2 AS x', [], 630000);
+    expect(result.fields.map(field => field.name)).toEqual(['x', 'x']);
+    expect(result.values).toEqual([[1, 2]]);
+  });
   it('executes equivalent SQL over every canonical and additional snapshot', async () => {
     for (const variant of [0, 1]) for (const time of traceTimes) {
       const result = await db.execute(aggregateSql(repairedPredicate), ordersAt(time, { envelope: 'UPSERT', key: 'order_id' }, variant), time);

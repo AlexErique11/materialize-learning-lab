@@ -1,5 +1,5 @@
 import { expect, test } from './fixtures';
-import { completeInvestigation, handover, predicate, repairClient, repairQuery, repairSource, restoreServing, selectSnapshot, start, workspace } from './investigation-flow';
+import { completeInvestigation, handover, predicate, repairClient, repairQuery, repairSource, restoreServing, selectSnapshot, start, workspace, openTools } from './investigation-flow';
 
 test('main entry opens one complaint and an independently completed investigation resumes', async ({ page }) => {
   await page.goto('/');
@@ -10,6 +10,7 @@ test('main entry opens one complaint and an independently completed investigatio
   await completeInvestigation(page);
   await expect(page.getByText('Completed independently', { exact: true })).toBeVisible();
   await page.reload(); await expect(page.getByText('Completed independently', { exact: true })).toBeVisible();
+  await openTools(page);
   await expect(page.locator('.guided-lab-controls').getByRole('button', { name: 'Return to investigation', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Challenge overview', exact: true })).toHaveCount(0);
   await page.getByRole('link', { name: 'Back to main page', exact: true }).click();
@@ -24,16 +25,18 @@ test('repair order is free and equivalent SQL passes the same behavior checks', 
   await repairQuery(page, "(mz_now() < (event_at + INTERVAL '300 seconds')) AND (status = 'paid' AND mz_now() >= event_at)");
   await restoreServing(page); await handover(page);
   await expect(page.getByText('Completed independently', { exact: true })).toBeVisible();
+  await openTools(page);
   await page.getByRole('button', { name: 'Return to investigation', exact: true }).click();
+  await openTools(page);
   await page.getByRole('button', { name: 'Undo last change', exact: true }).click();
-  await page.getByRole('button', { name: 'Submit handover', exact: true }).click();
+  await page.getByRole('button', { name: 'Review handover', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Complete handover', exact: true })).toBeDisabled();
 });
 
 test('all five passing checks enable handover without notes', async ({ page }, testInfo) => {
   await page.goto('/challenge'); await start(page);
   await repairSource(page); await repairQuery(page); await repairClient(page); await restoreServing(page);
-  await page.getByRole('button', { name: 'Submit handover', exact: true }).click();
+  await page.getByRole('button', { name: 'Review handover', exact: true }).click();
   const complete = page.getByRole('button', { name: 'Complete handover', exact: true });
   const status = page.locator('#incident-completion-requirements');
   await expect(complete).toBeDisabled();
@@ -48,7 +51,7 @@ test('all five passing checks enable handover without notes', async ({ page }, t
   await complete.click();
   const celebration = page.getByRole('dialog', { name: 'Congratulations!', exact: true });
   await expect(celebration).toBeVisible();
-  await expect(celebration).toContainText('Congratulations on finishing the lab!');
+  await expect(celebration).toContainText('Congratulations on finishing the challenge!');
   await expect(celebration.locator('.incident-firework')).toHaveCount(3);
   await expect.poll(() => celebration.locator('.incident-firework i').first().evaluate(el => el.getAnimations()[0]?.currentTime ?? 0)).toBeGreaterThan(500);
   await page.screenshot({ path: testInfo.outputPath('completion-fireworks.png') });
@@ -85,8 +88,8 @@ test('SQL runs real read-only diagnostics and a wrong valid deployment has obser
   await diagnostic.fill('SELECT missing_column FROM orders'); await page.getByRole('button', { name: 'Run query preview', exact: true }).click();
   await expect(page.getByRole('alert')).toContainText('missing_column');
   await restoreServing(page); await workspace(page, 'Client');
-  await page.getByRole('button', { name: 'Receive next delivery', exact: true }).click();
-  await page.getByRole('button', { name: 'Receive next delivery', exact: true }).click();
+  await page.getByRole('button', { name: 'Receive and process delivery', exact: true }).click();
+  await page.getByRole('button', { name: 'Receive and process delivery', exact: true }).click();
   await expect(page.getByTestId('subscribe-application')).toContainText('Publishing each received record');
   await expect(page.getByRole('region', { name: 'Pending timestamp tray', exact: true })).toContainText('Published · still open');
   await page.getByRole('button', { name: 'Diagram key', exact: true }).click();
@@ -131,9 +134,10 @@ test('assistance is optional and recorded; syntax errors and stale previews cann
   await page.getByRole('button', { name: 'Run query preview', exact: true }).click();
   await expect(page.getByRole('alert')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Apply query', exact: true })).toBeDisabled();
+  await openTools(page);
   await page.getByRole('button', { name: 'Investigation help', exact: true }).click();
   await page.getByRole('button', { name: 'Get next hint', exact: true }).click();
-  await page.getByRole('button', { name: 'Show worked repair', exact: true }).click();
+  await page.getByRole('button', { name: 'Use worked SQL draft', exact: true }).click();
   await page.getByRole('button', { name: 'Run query preview', exact: true }).click();
   await page.getByRole('button', { name: 'Apply query', exact: true }).click();
   await repairClient(page); await restoreServing(page); await handover(page);
