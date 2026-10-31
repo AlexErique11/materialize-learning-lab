@@ -37,8 +37,9 @@ including navigation links.
 settings actions, and `WorkspacePair`: tinted controls on the left and read-only
 observations on the right. System pairs connection, snapshot-request, and serving controls
 with their results. Narrow windows place primary controls before their results,
-then secondary settings, in normal flow. SQL uses one full-width editor/result
-column at all sizes, avoiding an empty results column before the first execution.
+then secondary settings, in normal flow. SQL uses equal-width columns on laptops
+and desktops: the editor on the left and observations on the right, aligned at the
+top. It stacks controls above observations on narrow screens with the other workspaces.
 Source settings belong in Data. Source, serving, and client settings are saved
 drafts until Apply changes; Discard edits restores applied values. SQL uses Run
 query preview and Apply query. View selectors and fallback authorization never

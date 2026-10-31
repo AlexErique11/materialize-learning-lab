@@ -141,7 +141,13 @@ test('controls and results retain their layout in both themes and narrow screens
         const pair = page.locator('.incident-workspace-pair').first();
         const controls = (await pair.locator('.incident-controls').boundingBox())!;
         const results = (await pair.locator('.incident-results').boundingBox())!;
-        if (viewport.width >= 1280 && name !== 'SQL') expect(controls.x + controls.width).toBeLessThan(results.x);
+        if (viewport.width >= 1280) {
+          expect(controls.x + controls.width).toBeLessThan(results.x);
+          if (name === 'SQL') {
+            expect(Math.abs(controls.width - results.width)).toBeLessThan(1);
+            expect(Math.abs(controls.y - results.y)).toBeLessThan(1);
+          }
+        }
         else {
           const card = (await pair.locator('.incident-controls > .incident-card').first().boundingBox())!;
           expect(card.y + card.height).toBeLessThan(results.y);

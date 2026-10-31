@@ -223,7 +223,7 @@
 .incident-feedback p { margin-top: 8px; }
 .incident-page input[type='text'] { width: 100%; min-width: 0; border: 1px solid var(--border-strong); border-radius: 4px; color: var(--lab-text); background: var(--lab-surface); padding: 10px 12px; font: inherit; font-size: 13px; }
 .incident-page input:disabled { opacity: .55; }
-.incident-workspace-pair:has(.incident-editor) { grid-template-columns: minmax(0, 1fr); }
+.incident-workspace-pair:has(.incident-editor) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 .incident-workspace-pair .panel-header { flex-wrap: wrap; gap: 8px; }
 .incident-workspace-pair .panel-trailing { margin-left: auto; }
 @media (max-width: 1050px) {
