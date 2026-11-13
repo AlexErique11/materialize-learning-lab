@@ -8,6 +8,7 @@ import { chapterTourSteps, chapterTourWelcome, getLectureWalkthrough, type Walkt
 import { rememberChapterTour } from './walkthroughStorage';
 import { useWalkthroughInteractionLock } from './useWalkthroughInteractionLock';
 import { WalkthroughPageTransition, type PointerPosition } from './WalkthroughPageTransition';
+import { normalizePathname } from '../../app/routePath';
 
 const walkthroughShortcuts = {
   ArrowLeft: '[data-walkthrough-action="back"]',
@@ -53,7 +54,8 @@ function pointerOrigin(): PointerPosition | undefined {
 }
 
 export function WalkthroughProvider({ children }: { children: ReactNode }) {
-  const { pathname, key: locationKey } = useLocation();
+  const { pathname: locationPath, key: locationKey } = useLocation();
+  const pathname = normalizePathname(locationPath);
   const navigate = useNavigate();
   const [session, setSession] = useState<WalkthroughSession | null>(null);
   const sessionRef = useRef(session); sessionRef.current = session;

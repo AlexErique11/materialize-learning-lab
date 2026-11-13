@@ -33,6 +33,7 @@ jobs:
         env:
           GITHUB_PAGES: 'true'
           SITE_URL: ${{ steps.pages.outputs.base_url }}
+      - run: npx playwright test --config=playwright.pages.config.ts --workers=2
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

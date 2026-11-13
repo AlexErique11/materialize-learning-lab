@@ -6,10 +6,12 @@ import { LabEntryTransition } from '../../components/lab/LabEntryTransition';
 import { AreaTransition } from '../../motion/AreaTransition';
 import { UiMotion } from '../../motion/UiMotion';
 import { challenge } from '../../challenges/challengeRegistry';
+import { normalizePathname } from '../routePath';
 
 export function AppShell() {
   const mainRef = useRef<HTMLElement>(null);
-  const { pathname } = useLocation();
+  const { pathname: locationPath } = useLocation();
+  const pathname = normalizePathname(locationPath);
   const isLearningPath = pathname === '/';
   const isGuidedLab = pathname.startsWith('/labs/');
   const isChallenge = pathname === challenge.path;

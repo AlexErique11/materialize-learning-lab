@@ -6,6 +6,7 @@ import { shouldStartChapterTour } from '../walkthrough/walkthroughStorage';
 import { LabIntroScreen } from './LabIntroScreen';
 import { motion } from '../../motion/motion';
 import { challenge } from '../../challenges/challengeRegistry';
+import { normalizePathname } from '../../app/routePath';
 
 type IntroPhase = 'reacting' | 'revealing';
 
@@ -24,8 +25,9 @@ interface IntroRun {
 
 export function isLabIntroEntry(location: { pathname: string; state: unknown }) {
   if (typeof location.state !== 'object' || location.state === null) return false;
-  return (location.pathname === '/labs' && 'labIntro' in location.state && location.state.labIntro === true)
-    || (location.pathname === challenge.path && 'challengeIntro' in location.state && location.state.challengeIntro === true);
+  const pathname = normalizePathname(location.pathname);
+  return (pathname === '/labs' && 'labIntro' in location.state && location.state.labIntro === true)
+    || (pathname === challenge.path && 'challengeIntro' in location.state && location.state.challengeIntro === true);
 }
 
 function cancelRun(run: IntroRun | null) {
@@ -36,6 +38,7 @@ function cancelRun(run: IntroRun | null) {
 
 export function LabEntryTransition({ children }: { children: ReactNode }) {
   const location = useLocation();
+  const pathname = normalizePathname(location.pathname);
   const navigate = useNavigate();
   const { startChapterTour } = useWalkthrough();
   const requested = isLabIntroEntry(location);
@@ -56,9 +59,9 @@ export function LabEntryTransition({ children }: { children: ReactNode }) {
       if (!firstChapter) throw new Error('The guided labs need a first core chapter.');
       const run: IntroRun = {
         entryKey: location.key,
-        challenge: location.pathname === challenge.path,
-        targetPath: location.pathname === challenge.path ? challenge.path : chapterPath(firstChapter),
-        showTour: location.pathname !== challenge.path && shouldStartChapterTour(),
+        challenge: pathname === challenge.path,
+        targetPath: pathname === challenge.path ? challenge.path : chapterPath(firstChapter),
+        showTour: pathname !== challenge.path && shouldStartChapterTour(),
         reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         awaitingDestination: false,
         revealing: false,
@@ -76,7 +79,7 @@ export function LabEntryTransition({ children }: { children: ReactNode }) {
 
     const run = runRef.current;
     if (!run) return;
-    if (!run.awaitingDestination || location.pathname !== run.targetPath) {
+    if (!run.awaitingDestination || pathname !== run.targetPath) {
       cancelRun(run);
       runRef.current = null;
       setPhase(null);
@@ -95,7 +98,7 @@ export function LabEntryTransition({ children }: { children: ReactNode }) {
         setPhase(null);
       }, run.reducedMotion ? 0 : motion.areaDuration);
     });
-  }, [location.key, location.pathname, requested, navigate, startChapterTour]);
+  }, [location.key, pathname, requested, navigate, startChapterTour]);
 
   const active = requested || phase !== null;
   useLayoutEffect(() => {
@@ -123,7 +126,7 @@ export function LabEntryTransition({ children }: { children: ReactNode }) {
       >
         {children}
       </div>
-      {active && <LabIntroScreen phase={phase ?? 'reacting'} challenge={runRef.current?.challenge ?? location.pathname === challenge.path} />}
+      {active && <LabIntroScreen phase={phase ?? 'reacting'} challenge={runRef.current?.challenge ?? pathname === challenge.path} />}
     </>
   );
 }

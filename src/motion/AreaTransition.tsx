@@ -4,6 +4,7 @@ import { useWalkthrough } from '../components/walkthrough/WalkthroughProvider';
 import { isLabIntroEntry } from '../components/lab/LabEntryTransition';
 import { motion, reducedMotion } from './motion';
 import { challenge } from '../challenges/challengeRegistry';
+import { normalizePathname } from '../app/routePath';
 
 interface AreaRun {
   fromKey: string;
@@ -22,7 +23,8 @@ interface AreaRun {
   finish: () => void;
 }
 
-function area(path: string) {
+function area(pathname: string) {
+  const path = normalizePathname(pathname);
   if (path === '/') return 'path';
   if (path === '/labs' || path.startsWith('/labs/')) return 'labs';
   if (path === challenge.path || challenge.legacyPaths.some(legacy => path === legacy)) return 'challenge';

@@ -81,6 +81,12 @@ and [implementation map](./src/challenges/live-order-operations/README.md).
 Run `npm test` for the unit checks and `npm run build` for type checking and the
 production build. Browser tests use the production preview on port 4173.
 
+The Pages deployment also tests its final build under `/materialize-learning-lab/`
+before upload. `npx playwright test --config=playwright.pages.config.ts --workers=2`
+checks direct challenge URLs with and without trailing slashes, light/dark styling,
+refresh, and both walkthrough modes in Chromium, Firefox, and WebKit. Run this
+configuration locally after building with `GITHUB_PAGES=true`.
+
 Install test browsers with `npx playwright install chromium firefox webkit`, then
 run `npx playwright test tests/e2e/browser-smoke.spec.ts --workers=2` for the
 representative Chromium desktop/phone, Firefox desktop, and WebKit phone checks.

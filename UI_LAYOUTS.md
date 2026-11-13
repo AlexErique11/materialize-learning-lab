@@ -18,6 +18,10 @@ layout. It reuses `ActivityHeading`, the white lab theme, relation panels/tables
 buttons, dialogs, `ShortcutHelp`, `useChangeMotion`, and `useWorkspaceMotion`.
 There is no numbered fault checklist or repair progress bar. Dashboard, Data,
 SQL, System, and Client tabs change the selected view without applying repairs.
+`normalizePathname` in `src/app/routePath.ts` treats a trailing slash as the same
+route for shell styling, walkthroughs, and entry/area transitions. Static hosts
+serve directory URLs such as `/challenge/`; the theme must apply equally after
+direct loading and refresh, without rewriting the URL or saved progress.
 Challenge overview in the investigation toolbar reopens the complete opening page at
 `/challenge?view=overview`. Continue investigation returns to the saved workspace;
 handover and completed runs instead show Return to investigation in the toolbar.
