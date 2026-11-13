@@ -14,6 +14,7 @@
 .incident-page:not([data-phase='briefing']) .guided-lab-controls { max-width: 100%; flex-wrap: wrap; }
 .incident-page:not([data-phase='briefing']) .guided-lab-heading { gap: 12px 22px; }
 .incident-tool-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.incident-page-help { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .incident-tools-toggle, .incident-state-toggle, .incident-state-compact { display: none; }
 .incident-page .guided-lab-controls .button:disabled { opacity: .5; }
 .incident-content { margin-top: 16px; min-width: 0; }

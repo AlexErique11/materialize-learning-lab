@@ -43,7 +43,8 @@ through Show details; incident time and connection/processing remain visible. Fo
 navigation and restart reuse the standard bordered secondary button styles,
 including navigation links.
 
-The purple question-circle `IconButton` is labeled Explain this page. It starts
+The purple question-circle `IconButton` is labeled Explain this page and sits
+beside Shortcuts in the top row, outside the collapsible Tools actions. It starts
 immediately with help filtered to the displayed workspace or handover.
 It has no cross-page section picker, closes after that page's final
 explanation, and never changes full-tour resume preferences. The overview heading
