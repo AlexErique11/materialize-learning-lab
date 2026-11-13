@@ -117,10 +117,14 @@
 .incident-log-entry { padding: 12px; border-left: 2px solid var(--lab-border); background: var(--surface-muted); }
 .incident-change-log { display: grid; gap: 8px; padding-left: 18px; list-style: decimal; }
 .incident-report { display: grid; gap: 18px; }
-.incident-report-heading { display: flex; gap: 16px; align-items: center; padding-block: 8px; }
+.incident-report-heading { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 16px; align-items: center; padding-block: 8px; }
 .incident-report-heading svg { color: var(--lab-purple); flex-shrink: 0; }
 .incident-report-heading h2 { font-size: 24px; font-weight: 700; margin-block: 5px; }
 .incident-report-heading p { color: var(--lab-muted); font-size: 13px; }
+.incident-complete-handover.button { --handover-color: var(--danger); background: color-mix(in srgb, var(--handover-color) 8%, var(--lab-surface)); border-color: color-mix(in srgb, var(--handover-color) 55%, var(--lab-border)); color: var(--handover-color); opacity: 1; }
+.incident-complete-handover:disabled { color: color-mix(in srgb, var(--danger) 75%, var(--lab-muted)); }
+.incident-complete-handover[data-ready='true'] { --handover-color: var(--success); }
+.incident-complete-handover:hover:not(:disabled) { background: color-mix(in srgb, var(--handover-color) 14%, var(--lab-surface)); filter: none; }
 .incident-checks { display: grid; gap: 14px; margin-top: 20px; }
 .incident-checks > li { display: flex; gap: 12px; border-top: 1px solid var(--lab-border); padding-top: 14px; }
 .incident-checks svg { color: var(--warning); flex-shrink: 0; margin-top: 3px; }
@@ -168,6 +172,8 @@
 @media (max-width: 959px) { .incident-brief-grid { grid-template-columns: 1fr; } }
 @media (max-width: 800px) { .incident-page { padding-inline: 16px; } .incident-workspace-bar { align-items: flex-start; } }
 @media (max-width: 639px) {
+  .incident-report-heading { grid-template-columns: 30px minmax(0, 1fr); }
+  .incident-complete-handover { grid-column: 2; justify-self: start; }
   .incident-brief-grid .incident-card > .panel-header { padding: 16px 12px; gap: 8px; }
   .incident-brief-grid .panel-header > :first-child { gap: 10px; }
   .incident-brief-grid .panel-icon { width: 38px; height: 38px; }

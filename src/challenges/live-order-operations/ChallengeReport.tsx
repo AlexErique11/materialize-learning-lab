@@ -13,7 +13,11 @@ export function ChallengeReport({ run, dispatch, busy, onValidate, touring = fal
   const minutes = Math.floor(run.activeDurationMs / 60000);
   const pending = (['source', 'serving', 'client'] as const).filter(group => pendingSettings(run, group));
   return <div className="incident-report">
-    <div className="incident-report-heading"><ShieldCheck size={30} aria-hidden="true" /><div><span className="eyebrow">Incident handover</span><h2>{completed ? 'Ready for the next sale wave' : 'Demonstrate the repair'}</h2><p>{completed ? 'The deployed system passed all five checks and the handover is complete.' : 'Run the acceptance checks. When all five pass, complete the handover.'}</p></div></div>
+    <div className="incident-report-heading">
+      <ShieldCheck size={30} aria-hidden="true" />
+      <div><span className="eyebrow">Incident handover</span><h2>{completed ? 'Ready for the next sale wave' : 'Demonstrate the repair'}</h2><p>{completed ? 'The deployed system passed all five checks and the handover is complete.' : 'Run the acceptance checks. When all five pass, complete the handover.'}</p></div>
+      {!completed && <Button variant="primary" className="incident-complete-handover" data-ready={ready} aria-describedby={requirementsId} disabled={!ready || busy} onClick={() => dispatch({ type: 'complete' })}>Complete handover</Button>}
+    </div>
     <EvidenceCard walkthrough="challenge-acceptance" title="End-to-end acceptance" help="acceptance">
       <p>Checks run the deployed query against the incident and an additional order fixture, inspect current serving, and replay the supplied client through split timestamp deliveries.</p>
       {(pending.length > 0 || run.draft !== run.config.predicate) && <p className="incident-notice">You have unapplied edits: {[...(run.draft !== run.config.predicate ? ['SQL query'] : []), ...pending.map(group => `${group} settings`)].join(', ')}. Checks use the applied system. Return to the investigation to apply or discard those edits.</p>}
@@ -22,6 +26,5 @@ export function ChallengeReport({ run, dispatch, busy, onValidate, touring = fal
     </EvidenceCard>
     {completed && <div className="incident-notice" data-tone="success" role="status"><strong>{assistedRun(run) ? 'Completed with worked repair' : 'Completed independently'}</strong><p>Technical behavior verified · {hints} {hints === 1 ? 'hint' : 'hints'} · {minutes} active {minutes === 1 ? 'minute' : 'minutes'}.</p><p>Your deployed system preserves keyed order replacements, expires orders by event time, serves fresh results to both teams within budget, and publishes complete application timestamps.</p></div>}
     {!completed && <p id={requirementsId} role="status" className="incident-caption">{completionMessage}</p>}
-    <div className="incident-actions incident-footer">{!completed && <Button variant="primary" aria-describedby={requirementsId} disabled={!ready || busy} onClick={() => dispatch({ type: 'complete' })}>Complete handover</Button>}</div>
   </div>;
 }

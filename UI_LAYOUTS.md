@@ -26,13 +26,17 @@ Challenge overview in the investigation toolbar reopens the complete opening pag
 `/challenge?view=overview`. Continue investigation returns to the saved workspace;
 handover and completed runs instead show Return to investigation in the toolbar.
 Review handover opens the acceptance screen; Complete handover records completion.
+The completion button sits to the right of Demonstrate the repair, wrapping below
+the heading on phones. It uses a soft tinted fill and colored border: faded red
+and disabled until all five current checks pass, then green and enabled when
+execution is idle.
 Back to main page and Restart challenge share one footer row. All five
 current acceptance checks must pass to enable completion; there is no notes field
-or written submission. A status beside completion explains pending checks or ongoing
+or written submission. A status below the checks explains pending checks or ongoing
 execution and confirms when the handover is ready to complete. Overview navigation
 does not reset the run or apply drafts. Undo last change and Investigation help
 sit beside the other activity toolbar actions during investigation. Omit the
-Investigating status badge. The compact toolbar sits beside the title on desktop
+Investigating and Handover status badges. The compact toolbar sits beside the title on desktop
 and wraps only when space requires, retaining standard control sizes. On phones,
 secondary toolbar actions expand through Tools, and applied-state details expand
 through Show details; incident time and connection/processing remain visible. Footer
