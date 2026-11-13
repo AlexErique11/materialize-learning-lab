@@ -44,10 +44,12 @@ navigation and restart reuse the standard bordered secondary button styles,
 including navigation links.
 
 The purple question-circle `IconButton` is labeled Explain this page. It starts
-immediately with help filtered to the displayed page, including overview and
-handover. It has no cross-page section picker, closes after that page's final
+immediately with help filtered to the displayed workspace or handover.
+It has no cross-page section picker, closes after that page's final
 explanation, and never changes full-tour resume preferences. The overview heading
-has a separate Full walkthrough action. These modes reuse `WalkthroughProvider`,
+has a primary Full walkthrough button, without duration or chapter metadata.
+The overview's bottom navigation has no question-mark button.
+These modes reuse `WalkthroughProvider`,
 `Dialog`, `Spotlight`, and the modal interaction lock. A dismissible invitation
 offers orientation without automatically opening the tour. Start walkthrough
 in the full-tour welcome visits all workspaces in one

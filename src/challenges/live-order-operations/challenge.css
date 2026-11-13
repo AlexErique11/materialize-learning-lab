@@ -21,8 +21,6 @@
 .incident-tour-invitation .button { margin-left: auto; }
 .incident-page .button.incident-walkthrough-button { flex-shrink: 0; width: 42px; padding: 0; color: var(--lab-purple); border-color: transparent; background: transparent; }
 .incident-page .button.incident-walkthrough-button:hover:not(:disabled) { background: var(--lab-tint); }
-.incident-page .button.incident-full-walkthrough-button { color: var(--lab-purple); border-color: transparent; background: transparent; }
-.incident-page .button.incident-full-walkthrough-button:hover:not(:disabled) { background: var(--lab-tint); }
 .incident-content > *, .incident-workspace > * { min-width: 0; }
 .incident-workspace { display: grid; gap: 18px; }
 .incident-brief-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 22px; }
@@ -48,7 +46,7 @@
 .incident-card .data-table tbody th { color: var(--lab-text); background: transparent; }
 .incident-page .incident-subheading { margin: 22px 0 10px; font-size: 15px; font-weight: 700; }
 .incident-page .incident-caption { font-size: 11px; color: var(--lab-muted); line-height: 1.6; }
-.incident-duration, .incident-status { display: inline-flex; align-items: center; gap: 7px; color: var(--lab-muted); font-size: 12px; white-space: nowrap; }
+.incident-status { display: inline-flex; align-items: center; gap: 7px; color: var(--lab-muted); font-size: 12px; white-space: nowrap; }
 .incident-status { padding: 6px 9px; border: 1px solid var(--lab-border); border-radius: 4px; }
 .incident-quotation { color: var(--lab-purple); font-size: 17px !important; line-height: 1.6; }
 .incident-requirements { padding-left: 20px; list-style: disc; display: grid; gap: 10px; margin-block: 14px 20px; font-size: 13px; line-height: 1.6; }

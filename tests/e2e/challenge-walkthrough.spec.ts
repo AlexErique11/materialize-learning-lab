@@ -52,17 +52,16 @@ test('question-mark help explains only the current workspace and preserves the f
   }
 });
 
-test('overview question-mark help stays on the overview while the full walkthrough remains separate', async ({ page }) => {
-  await page.goto('/challenge'); await open(page, true);
-  const steps = challengeTourSteps.filter(step => step.page === 'overview');
-  for (let index = 0; index < steps.length; index++) {
-    await expect(tour(page).getByRole('heading', { level: 2 })).toHaveText(steps[index]!.title);
-    await expect(page.locator('[data-challenge-tour] .incident-tabs')).toHaveCount(0);
-    await tour(page).getByRole('button', { name: index === steps.length - 1 ? 'Finish walkthrough' : 'Next', exact: true }).click();
-  }
-  await expect(tour(page)).toHaveCount(0);
+test('overview offers a full walkthrough button without bottom help or duration metadata', async ({ page }) => {
+  await page.goto('/challenge');
+  await expect(page.getByRole('button', { name: 'Explain this page', exact: true })).toHaveCount(0);
+  await expect(page.getByText('10–20 minutes · Chapters 1–8', { exact: true })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Full walkthrough', exact: true })).toHaveClass(/button-primary/);
+  await open(page);
+  await tour(page).getByRole('button', { name: 'Start walkthrough', exact: true }).click();
+  await expect(tour(page).getByRole('heading', { level: 2 })).toHaveText(challengeTourSteps[0]!.title);
+  await page.keyboard.press('Escape');
   expect(await saved(page)).toBeNull();
-  await expect(page.getByRole('button', { name: 'Full walkthrough', exact: true })).toBeVisible();
 });
 
 test('page changes unblur, navigate, click, and explain the page title at 700 ms intervals', async ({ page }) => {

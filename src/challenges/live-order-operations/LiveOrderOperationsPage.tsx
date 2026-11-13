@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router';
-import { ArrowLeft, ArrowRight, BookOpen, CircleHelp, Clock3, Flag, Lightbulb, RotateCcw, Undo2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, BookOpen, CircleHelp, Flag, Lightbulb, RotateCcw, Undo2 } from 'lucide-react';
 import { Breadcrumbs } from '../../components/layout/Breadcrumbs';
 import { publicAsset } from '../../app/publicAsset';
 import { ActivityHeading } from '../../components/lab/ActivityHeading';
@@ -223,7 +223,7 @@ export function LiveOrderOperationsPage() {
     const brief = <><p className="incident-quotation">“{incidentMessage}”</p><p>You have inherited Northstar Shop’s dashboard. Investigate the system, make reversible changes, and verify that it meets the operating contract. Choose where to look and what to test.</p><div className="incident-section-heading" data-walkthrough="challenge-contract"><h3 className="incident-subheading">Operating contract</h3><ChallengeHelp topic="contract" /></div><ul className="incident-requirements">{businessRequirements.map(requirement => <li key={requirement}>{requirement}</li>)}</ul></>;
     return <>
       <div className="guided-lab-top-row"><Breadcrumbs items={[{ label: 'Learning path', to: '/' }, { label: 'Challenge' }]} />{!showOverview && <ShortcutHelp lecture={false} challenge challengeInvestigating={active} showReference onOpenChange={setShortcutsOpen} />}</div>
-      <ActivityHeading title="Save the Flash Sale" description={showOverview ? 'Investigate the discrepancy. Repair the system. Prove it is ready for the next sale wave.' : 'Repair the system and verify the operating contract.'} controlsLabel="Challenge controls" controls={showOverview ? <><Button variant="ghost" className="incident-full-walkthrough-button" disabled={Boolean(operation)} onClick={() => { setDialog(null); tour.start(); }}>Full walkthrough</Button><span className="incident-duration"><Clock3 size={15} aria-hidden="true" />10–20 minutes · Chapters 1–8</span></> : <>
+      <ActivityHeading title="Save the Flash Sale" description={showOverview ? 'Investigate the discrepancy. Repair the system. Prove it is ready for the next sale wave.' : 'Repair the system and verify the operating contract.'} controlsLabel="Challenge controls" controls={showOverview ? <><Button variant="primary" disabled={Boolean(operation)} onClick={() => { setDialog(null); tour.start(); }}>Full walkthrough</Button></> : <>
         {run.phase === 'completed' && <span className="incident-status">Handed over</span>}
         <Button className="incident-tools-toggle" aria-expanded={toolsOpen || touring} onClick={() => setToolsOpen(value => !value)}>Tools</Button>
         <div className="incident-tool-actions" data-open={toolsOpen || touring}>
@@ -245,7 +245,6 @@ export function LiveOrderOperationsPage() {
               <Button data-walkthrough="challenge-start" variant="primary" onClick={continueChallenge}>
                 {run.phase === 'briefing' ? 'Start investigation' : run.phase === 'investigating' ? 'Continue investigation' : 'Return to handover'}<ArrowRight size={16} aria-hidden="true" />
               </Button>
-              {tourButton}
               {restartButton}
             </div>
           </EvidenceCard>
