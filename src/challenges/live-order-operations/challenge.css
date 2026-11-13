@@ -122,7 +122,7 @@
 .incident-report-heading h2 { font-size: 24px; font-weight: 700; margin-block: 5px; }
 .incident-report-heading p { color: var(--lab-muted); font-size: 13px; }
 .incident-complete-handover.button { --handover-color: var(--danger); background: color-mix(in srgb, var(--handover-color) 8%, var(--lab-surface)); border-color: color-mix(in srgb, var(--handover-color) 55%, var(--lab-border)); color: var(--handover-color); opacity: 1; }
-.incident-complete-handover:disabled { color: color-mix(in srgb, var(--danger) 75%, var(--lab-muted)); }
+.incident-complete-handover:disabled { color: color-mix(in srgb, var(--danger) 75%, var(--lab-muted)); opacity: .45; }
 .incident-complete-handover[data-ready='true'] { --handover-color: var(--success); }
 .incident-complete-handover:hover:not(:disabled) { background: color-mix(in srgb, var(--handover-color) 14%, var(--lab-surface)); filter: none; }
 .incident-checks { display: grid; gap: 14px; margin-top: 20px; }
