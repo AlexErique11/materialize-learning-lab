@@ -14,6 +14,7 @@ export function useChallengeRun(paused: boolean) {
     const current = getChallengeProgress().run ?? initialRun;
     const next = updateRun(current, action);
     if (next !== current) persistRun(next);
+    return { before: current, after: next };
   }, [initialRun]);
   const restart = () => { persistRun(newRun()); };
   useEffect(() => {

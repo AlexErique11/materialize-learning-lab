@@ -40,7 +40,8 @@
 .incident-details-with-help > details > summary { padding-right: 26px; }
 .incident-card-body { padding: 16px 18px; min-width: 0; }
 .incident-card-body > p, .incident-details > p { margin-block: 0 14px; font-size: 13px; line-height: 1.65; }
-.incident-card-body > p:last-child { margin-bottom: 0; }
+.incident-card-body > p:is(:last-child, :has(+ .incident-environment-art)) { margin-bottom: 0; }
+.incident-serving-design > p { margin-block: 0; font-size: 13px; line-height: 1.65; }
 .incident-card .table-scroll { margin-block: 12px; }
 .incident-card .data-table { min-width: 0; }
 .incident-card .data-table th, .incident-card .data-table td { white-space: normal; }
@@ -73,6 +74,27 @@
 .incident-brief-logo { display: block; width: 68px; height: 56px; opacity: .14; }
 [data-theme='dark'] .incident-brief-logo { filter: brightness(0) invert(1); opacity: .12; }
 .incident-brief-grid .incident-card-body { padding: 22px; color: var(--lab-muted); }
+.incident-brief-grid > .incident-card:has(.incident-environment-art),
+.incident-card-body:has(> .incident-environment-art) {
+  display: flex;
+  flex-direction: column;
+}
+.incident-card-body:has(> .incident-environment-art) { flex: 1; }
+.incident-environment-art {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin-top: 12px;
+  color: color-mix(in srgb, var(--lab-purple) 21%, var(--lab-surface));
+}
+.incident-environment-art > svg {
+  position: absolute;
+  inset: auto 0 0;
+  width: min(520px, 100%);
+  height: 100%;
+  max-height: 84px;
+  margin-inline: auto;
+}
 .incident-brief-grid .incident-card-body > p,
 .incident-brief-grid .incident-requirements { font-size: 15px; }
 .incident-brief-grid .incident-quotation,
@@ -87,6 +109,12 @@
 .incident-tag { display: inline-block; padding: 3px 6px; border: 1px solid var(--lab-border); border-radius: 4px; color: var(--lab-muted); font-size: 10px; }
 .incident-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-block: 16px 0; font-size: 12px; }
 .incident-actions .button { font-family: inherit; font-size: 12px; }
+.incident-brief-actions > .incident-restart { margin-inline-start: auto; }
+.incident-restart.button-secondary { border-color: var(--danger); color: var(--danger); }
+.incident-restart.button-secondary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 8%, var(--lab-surface));
+}
+.incident-restart.button-primary { border-color: var(--danger); background: var(--danger); color: var(--lab-surface); }
 .incident-actions[role='group'] { margin: 0; }
 .incident-actions [aria-pressed='true'] { color: var(--lab-purple); border-color: var(--lab-purple); background: var(--lab-tint); }
 .incident-label, .incident-fields > label { display: grid; gap: 8px; margin-block: 0 12px; font-size: 12px; font-weight: 600; }
@@ -94,6 +122,7 @@
 .incident-page textarea, .incident-page select { width: 100%; min-width: 0; border: 1px solid var(--border-strong); border-radius: 4px; color: var(--lab-text); background: var(--lab-surface); padding: 10px 12px; font: inherit; font-size: 13px; }
 .incident-page textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
 .incident-page .incident-editor { font-family: var(--font-mono); font-size: 13px; line-height: 1.7; }
+.incident-page:has(.incident-repair-guide[open]) .incident-editor { max-height: 35dvh; }
 .incident-page select { min-height: 40px; font-weight: 400; text-overflow: ellipsis; }
 .incident-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; margin-block: 16px; }
 .incident-check { display: flex !important; align-items: center; gap: 9px; font-weight: 400 !important; font-size: 12px; line-height: 1.6; }
@@ -169,7 +198,10 @@
   .incident-brief-grid .incident-card-body > p,
   .incident-brief-grid .incident-requirements { font-size: 15px; }
 }
-@media (max-width: 959px) { .incident-brief-grid { grid-template-columns: 1fr; } }
+@media (max-width: 959px) {
+  .incident-brief-grid { grid-template-columns: 1fr; }
+  .incident-environment-art { min-height: 96px; }
+}
 @media (max-width: 800px) { .incident-page { padding-inline: 16px; } .incident-workspace-bar { align-items: flex-start; } }
 @media (max-width: 639px) {
   .incident-report-heading { grid-template-columns: 30px minmax(0, 1fr); }
@@ -191,6 +223,9 @@
   .incident-card > .panel-header { padding-inline: 12px; }
   .incident-card .panel-title { font-size: 17px; }
   .incident-card .data-table th, .incident-card .data-table td { padding: 7px; font-size: 11px; }
+  .incident-card .data-table:has([data-repair-target='source-rows']) { table-layout: fixed; }
+  .incident-card .data-table:has([data-repair-target='source-rows']) :is(th, td) { padding-inline: 4px; overflow-wrap: anywhere; }
+  .incident-card .data-table:has([data-repair-target='source-rows']) .relation-column-label { display: inline; white-space: normal; }
   .incident-fields { grid-template-columns: 1fr; }
   .incident-page textarea { font-size: 16px; }
   .incident-page .incident-editor { font-size: 14px; }
@@ -243,6 +278,20 @@
 .incident-feedback { margin-block: 0 14px; padding: 8px 12px; border-left: 3px solid var(--lab-purple); background: var(--surface-muted); font-size: 12px; line-height: 1.5; }
 .incident-feedback summary { cursor: pointer; }
 .incident-feedback p { margin-top: 8px; }
+.incident-repair-comparisons {
+  display: grid;
+  gap: 7px;
+  margin: 10px 0 0;
+  padding: 8px 10px;
+  border: 1px solid var(--lab-border);
+  border-radius: 4px;
+  background: var(--surface-muted);
+  font-size: 12px;
+}
+.incident-repair-comparisons > div { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 3px 10px; }
+.incident-repair-comparisons dt { color: var(--lab-muted); }
+.incident-repair-comparisons dd { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; }
+.incident-repair-comparisons strong { color: var(--lab-purple); }
 .incident-page input[type='text'] { width: 100%; min-width: 0; border: 1px solid var(--border-strong); border-radius: 4px; color: var(--lab-text); background: var(--lab-surface); padding: 10px 12px; font: inherit; font-size: 13px; }
 .incident-page input:disabled { opacity: .55; }
 .incident-workspace-pair:has(.incident-editor) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }

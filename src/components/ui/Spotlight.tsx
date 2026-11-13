@@ -22,7 +22,7 @@ interface SpotlightProps {
   onFocusChange?: (index: number) => void;
   navigation?: { onBack: () => void; onNext: () => void; backDisabled: boolean; nextLabel: string };
   closeLabel?: string;
-  placement?: 'auto' | 'above-first';
+  placement?: 'auto' | 'above-first' | 'keep-target-visible';
   className?: string;
   shortcuts?: Shortcuts;
   onClose: () => void;
@@ -35,6 +35,36 @@ interface SpotlightGeometry {
   holes: readonly { top: number; left: number; width: number; height: number; id: string }[];
   grouped: boolean;
   shadePath: string;
+}
+
+function placeAroundTarget(target: HTMLElement, rect: DOMRect, card: HTMLElement, height: number, padding: number, gap: number) {
+  const margin = 12;
+  const separation = padding + gap;
+  const bottom = height - margin;
+  const headerBottom = document.querySelector('.app-header')?.getBoundingClientRect().bottom ?? 0;
+  const scroller = document.scrollingElement!;
+  const remainingScroll = Math.max(0, scroller.scrollHeight - scroller.clientHeight - scroller.scrollTop);
+  const minTop = Math.max(margin, headerBottom + padding, rect.top - remainingScroll);
+  const maxTop = Math.min(bottom - padding - rect.height, rect.top + scroller.scrollTop);
+  // Measure the full card even when the previous step left it scrollable.
+  const cardHeight = card.scrollHeight + card.offsetHeight - card.clientHeight;
+  const clampTop = (top: number) => Math.max(minTop, Math.min(top, maxTop));
+  const aboveTop = clampTop(Math.max(rect.top, margin + cardHeight + separation));
+  const belowTop = clampTop(Math.min(rect.top, bottom - cardHeight - separation - rect.height));
+  const aboveSpace = aboveTop - separation - margin;
+  const belowSpace = bottom - belowTop - rect.height - separation;
+  const above = aboveSpace >= cardHeight && belowSpace >= cardHeight
+    ? Math.abs(aboveTop - rect.top) < Math.abs(belowTop - rect.top)
+    : aboveSpace > belowSpace;
+  const scrollBy = rect.top - (above ? aboveTop : belowTop);
+  if (Math.abs(scrollBy) >= 1) {
+    window.scrollBy({ top: scrollBy, behavior: 'instant' });
+    rect = target.getBoundingClientRect();
+  }
+
+  const space = above ? rect.top - separation - margin : bottom - rect.bottom - separation;
+  card.style.maxHeight = `${Math.max(0, space)}px`;
+  return { rect, cardTop: above ? rect.top - separation - card.offsetHeight : rect.bottom + separation };
 }
 
 export function Spotlight({ open, targetRef, step, total, title, description, phaseLabel, visual, children, focusTargets, focusIndex = 0, onFocusChange, navigation, closeLabel = 'Close guided run', placement = 'auto', className = '', shortcuts, onClose }: SpotlightProps) {
@@ -62,7 +92,9 @@ export function Spotlight({ open, targetRef, step, total, title, description, ph
     const target = targetRef.current;
     const card = cardRef.current;
     if (!target || !card) return;
+    const keepTargetVisible = placement === 'keep-target-visible';
     const revealWhenHidden = focusTargets?.find(item => item.ref.current === target)?.revealWhenHidden;
+    const dialog = dialogRef.current;
     const measure = () => {
       // Compact frames hide some summaries. Inspect the same element above the
       // page without inserting another row or changing its simulation state.
@@ -73,14 +105,18 @@ export function Spotlight({ open, targetRef, step, total, title, description, ph
       let rect = target.getBoundingClientRect();
       const padding = 6;
       const gap = 14;
-      const preferredWidth = Math.min(480, innerWidth - 24);
+      const viewportHeight = (keepTargetVisible && dialog?.clientHeight) || innerHeight;
+      const viewportWidth = (keepTargetVisible && dialog?.clientWidth) || innerWidth;
+      const preferredWidth = Math.min(480, viewportWidth - 24);
       card.style.width = `${preferredWidth}px`;
       let cardWidth = preferredWidth;
       let cardHeight = card.offsetHeight;
-      let cardLeft = Math.max(12, Math.min(rect.right + padding - cardWidth, innerWidth - cardWidth - 12));
+      let cardLeft = Math.max(12, Math.min(rect.right + padding - cardWidth, viewportWidth - cardWidth - 12));
       let cardTop = rect.bottom + padding + gap;
       const above = rect.top - padding - gap - cardHeight;
-      if (placement === 'above-first' && above >= 12) cardTop = above;
+      if (keepTargetVisible) {
+        ({ rect, cardTop } = placeAroundTarget(target, rect, card, viewportHeight, padding, gap));
+      } else if (placement === 'above-first' && above >= 12) cardTop = above;
       else if (cardTop + cardHeight > innerHeight - 12) {
         if (above >= 12) cardTop = above;
         else {
@@ -113,8 +149,8 @@ export function Spotlight({ open, targetRef, step, total, title, description, ph
       }
       const top = Math.max(8, rect.top - padding);
       const left = Math.max(8, rect.left - padding);
-      const width = Math.min(rect.width + padding * 2, innerWidth - left - 8);
-      const height = Math.min(rect.height + padding * 2, innerHeight - top - 8);
+      const width = Math.min(rect.width + padding * 2, viewportWidth - left - 8);
+      const height = Math.min(rect.height + padding * 2, viewportHeight - top - 8);
       const primary = { top, left, width, height, id: focusTargets?.[focusIndex]?.id ?? 'primary' };
       let holes = [primary];
       let grouped = false;
@@ -147,20 +183,26 @@ export function Spotlight({ open, targetRef, step, total, title, description, ph
         }
       }
       // Separate openings keep unrelated panels dimmed, even when targets are far apart.
-      const shadePath = `M0 0H${innerWidth}V${innerHeight}H0Z ` + holes.map(hole =>
+      const shadePath = `M0 0H${viewportWidth}V${viewportHeight}H0Z ` + holes.map(hole =>
         `M${hole.left} ${hole.top}h${hole.width}v${hole.height}h${-hole.width}Z`).join(' ');
       setGeometry({ cardTop, cardLeft, cardWidth, holes, grouped, shadePath });
     };
-    target.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+    if (!keepTargetVisible) target.scrollIntoView({ block: 'nearest', behavior: 'instant' });
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(target);
     observer.observe(card);
+    if (keepTargetVisible) {
+      if (dialog) observer.observe(dialog);
+      const main = target.closest('main');
+      if (main) observer.observe(main);
+    }
     for (const item of focusTargets ?? []) if (item.ref.current) observer.observe(item.ref.current);
     window.addEventListener('resize', measure);
     window.addEventListener('scroll', measure, true);
     return () => {
       target.classList.remove('relation-guide-detached-target');
+      if (keepTargetVisible) card.style.removeProperty('max-height');
       observer.disconnect();
       window.removeEventListener('resize', measure);
       window.removeEventListener('scroll', measure, true);
