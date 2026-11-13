@@ -141,7 +141,7 @@ test('assistance is optional and recorded; syntax errors and stale previews cann
   await page.getByRole('button', { name: 'Run query preview', exact: true }).click();
   await page.getByRole('button', { name: 'Apply query', exact: true }).click();
   await repairClient(page); await restoreServing(page); await handover(page);
-  await expect(page.getByText('Completed with walkthrough', { exact: true })).toBeVisible();
+  await expect(page.getByText('Completed with worked repair', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Restart challenge', exact: true }).click(); await page.getByRole('button', { name: 'Restart investigation', exact: true }).click();
   await expect(page.getByText(/Previous investigation completion saved/)).toBeVisible();
 });

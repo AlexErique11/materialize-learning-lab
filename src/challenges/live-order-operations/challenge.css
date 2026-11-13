@@ -17,6 +17,12 @@
 .incident-tools-toggle, .incident-state-toggle, .incident-state-compact { display: none; }
 .incident-page .guided-lab-controls .button:disabled { opacity: .5; }
 .incident-content { margin-top: 16px; min-width: 0; }
+.incident-tour-invitation { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; margin-top: 14px; color: var(--lab-muted); font-size: 13px; }
+.incident-tour-invitation .button { margin-left: auto; }
+.incident-page .button.incident-walkthrough-button { flex-shrink: 0; width: 42px; padding: 0; color: var(--lab-purple); border-color: transparent; background: transparent; }
+.incident-page .button.incident-walkthrough-button:hover:not(:disabled) { background: var(--lab-tint); }
+.incident-page .button.incident-full-walkthrough-button { color: var(--lab-purple); border-color: transparent; background: transparent; }
+.incident-page .button.incident-full-walkthrough-button:hover:not(:disabled) { background: var(--lab-tint); }
 .incident-content > *, .incident-workspace > * { min-width: 0; }
 .incident-workspace { display: grid; gap: 18px; }
 .incident-brief-grid { display: grid; grid-template-columns: 1.7fr 1fr; gap: 22px; }
@@ -246,6 +252,7 @@
 }
 @media (max-width: 639px) {
   .incident-tool-actions { display: none; }
+  .incident-page .guided-lab-controls .incident-walkthrough-button { width: 36px; }
   .incident-tool-actions[data-open='true'] { display: flex; flex-basis: 100%; order: 4; }
   .incident-tools-toggle, .incident-state-toggle { display: inline-flex; }
   .incident-state-toggle { margin-left: auto; }

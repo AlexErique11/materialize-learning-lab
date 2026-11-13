@@ -27,11 +27,11 @@ export function SettingsActions({ run, dispatch, group }: { run: ChallengeRun; d
   </>;
 }
 
-export function SharedIncidentState({ run, dispatch }: { run: ChallengeRun; dispatch: (action: RunAction) => void }) {
+export function SharedIncidentState({ run, dispatch, touring = false }: { run: ChallengeRun; dispatch: (action: RunAction) => void; touring?: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const next = run.time < 631000 ? '631 s · subscription baseline; order values unchanged' : run.time < 632000 ? '632 s · order 101 amount changes from 70 to 90' : null;
-  return <section className="incident-shared" aria-label="Shared incident state" data-expanded={expanded}>
-    <div className="incident-shared-heading"><strong>Shared system</strong><ChallengeHelp topic="sharedState" /><span className="incident-shared-description">Applied values across all workspaces</span><Button className="incident-state-toggle" size="compact" aria-expanded={expanded} onClick={() => setExpanded(value => !value)}>{expanded ? 'Hide details' : 'Show details'}</Button></div>
+  return <section className="incident-shared" aria-label="Shared incident state" data-expanded={touring || expanded}>
+    <div className="incident-shared-heading" data-walkthrough="challenge-shared"><strong>Shared system</strong><ChallengeHelp topic="sharedState" /><span className="incident-shared-description">Applied values across all workspaces</span><Button className="incident-state-toggle" size="compact" aria-expanded={expanded} onClick={() => setExpanded(value => !value)}>{expanded ? 'Hide details' : 'Show details'}</Button></div>
     <p className="incident-state-compact">{formatTime(run.time)} · {run.config.connected ? 'Running' : 'Paused'} · {run.processed ? 'Caught up' : run.config.connected ? 'Updates pending' : 'Waiting for connection'}</p>
     <dl className="incident-state-values">
       <div><dt>Incident time</dt><dd data-motion-value>{formatTime(run.time)}</dd></div>
@@ -42,7 +42,7 @@ export function SharedIncidentState({ run, dispatch }: { run: ChallengeRun; disp
     </dl>
     <div className="incident-replay-controls">
       <div><Clock3 size={16} aria-hidden="true" /><span><strong>{next ? `Next: ${next}` : 'All incident events are available.'}</strong><small>Manual replay · time moves forward only. Reading and editing do not advance it.</small></span></div>
-      <Button size="compact" data-incident-action="advance" disabled={!next} onClick={() => dispatch({ type: 'advance' })}>Advance incident<ArrowRight size={14} aria-hidden="true" /></Button>
+      <Button size="compact" data-walkthrough="challenge-advance" data-incident-action="advance" disabled={!next} onClick={() => dispatch({ type: 'advance' })}>Advance incident<ArrowRight size={14} aria-hidden="true" /></Button>
     </div>
   </section>;
 }

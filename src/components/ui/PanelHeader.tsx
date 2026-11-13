@@ -7,11 +7,12 @@ interface PanelHeaderProps {
   eyebrow?: string;
   help?: ReactNode;
   trailing?: ReactNode;
+  walkthrough?: string;
 }
 
-export function PanelHeader({ title, titleId, icon, eyebrow, help, trailing }: PanelHeaderProps) {
+export function PanelHeader({ title, titleId, icon, eyebrow, help, trailing, walkthrough }: PanelHeaderProps) {
   return (
-    <div className="panel-header">
+    <div className="panel-header" data-walkthrough={walkthrough}>
       <div className="flex min-w-0 items-center gap-3">
         {!icon && <span className="panel-heading-mark" aria-hidden="true" />}
         {icon && (

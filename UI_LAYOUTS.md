@@ -27,12 +27,40 @@ current acceptance checks must pass to enable completion; there is no notes fiel
 or written submission. A status beside completion explains pending checks or ongoing
 execution and confirms when the handover is ready to complete. Overview navigation
 does not reset the run or apply drafts. Undo last change and Investigation help
-sit beside the other activity toolbar actions during investigation. The toolbar
-wraps beneath the title when needed, retaining standard control sizes. On phones,
+sit beside the other activity toolbar actions during investigation. Omit the
+Investigating status badge. The compact toolbar sits beside the title on desktop
+and wraps only when space requires, retaining standard control sizes. On phones,
 secondary toolbar actions expand through Tools, and applied-state details expand
 through Show details; incident time and connection/processing remain visible. Footer
 navigation and restart reuse the standard bordered secondary button styles,
 including navigation links.
+
+The purple question-circle `IconButton` is labeled Explain this page. It starts
+immediately with help filtered to the displayed page, including overview and
+handover. It has no cross-page section picker, closes after that page's final
+explanation, and never changes full-tour resume preferences. The overview heading
+has a separate Full walkthrough action. These modes reuse `WalkthroughProvider`,
+`Dialog`, `Spotlight`, and the modal interaction lock. A dismissible invitation
+offers orientation without automatically opening the tour. Start walkthrough
+in the full-tour welcome visits all workspaces in one
+continuous 32-stop sequence; explicit resume continues that same sequence.
+Each workspace begins by highlighting its tab title and explaining its purpose.
+Page transitions keep the previous surface visible while unblurring, move a
+visible pointer to the next navigation control, then show a click and switch
+surfaces before restoring the spotlight. Each automatic stage lasts 700 ms.
+`WalkthroughPageTransition` owns the visual pointer and click cue. These cues
+never dispatch a real investigation action. A transparent modal keeps background
+actions blocked throughout navigation and still allows Exit or Escape.
+Section navigation and More detail stay inside the tour card. Missing targets
+use an unanchored dialog.
+`challengeWalkthroughContent.ts` owns the storyboard, and
+`useChallengeWalkthrough.ts` owns temporary challenge presentation and separate
+tour preferences. `LiveOrderOperationsPage` keeps the live surface mounted and
+hidden while rendering the same panels for the tour; local state and saved run
+state survive. Tour actions never dispatch investigation changes, and the active
+timer pauses. A meaningful cross-tab change dismisses the tour without restoring
+old state. Tour completion and worked-repair attribution remain separate.
+
 `InvestigationWorkspace.tsx` owns the shared applied-state bar, scope labels,
 settings actions, and `WorkspacePair`: tinted controls on the left and read-only
 observations on the right. System pairs connection, snapshot-request, and serving controls

@@ -54,10 +54,18 @@ operational changes, and verify the full system.
 There is no checklist revealing the faulty components or required repair order.
 Previous `/challenges` URLs redirect to the same incident.
 
+The purple **?** button explains only the page you are viewing. **Full walkthrough**
+on the overview explains all five workspaces, shared controls, SQL previews, and
+handover in 32 guided stops. Take the full tour, choose a section, or resume where
+you left off. Page help preserves the full tour's saved position. Touring
+preserves the investigation and does not count as a worked repair. See the
+[walkthrough plan and implementation notes](./CHALLENGE_WALKTHROUGH_PLAN.md).
+
 SQL executes in a lazy, isolated PGlite browser worker. Materialize-specific
 source, cluster, progress, read-policy, and subscription behavior is simulated.
 Chapter 7/8 semantics are reused. The SQL runtime's WASM/data assets load only
-when an investigation starts, and are bundled locally for static deployment.
+when an investigation or challenge walkthrough starts, and are bundled locally
+for static deployment.
 
 Drafts, deployed configuration, workspace, replay position, and assistance save
 automatically. Handover requires five passing checks with no written submission.

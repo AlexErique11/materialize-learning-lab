@@ -47,6 +47,19 @@ appears before handover. The design and build rationale is in
   dialogs, free workspace composition, optional help and automatic change history. SQL previews
   are bound to run/source/draft/mode/frame. Validation is also bound to
   time, processing and read context. Obsolete responses are discarded.
+- `challengeWalkthroughContent.ts`, `challengeWalkthroughStorage.ts`, and
+  `useChallengeWalkthrough.ts`: 32 interface explanations, section selection,
+  explicit resume, and temporary presentation overrides through the shared
+  WalkthroughProvider. The question-mark button opens only the current page's
+  help and closes at its final explanation. Full walkthrough on the overview
+  starts the complete tour; local help never changes its resume position.
+  The original surface stays mounted, active time pauses, and tour navigation
+  never dispatches challenge actions. Workspace-title introductions precede the
+  controls. Navigation unblurs the old page, moves a pointer to the next tab,
+  shows a click, and switches pages in 700 ms stages before focusing again.
+  Cross-tab investigation changes close the
+  tour instead of restoring old data. Tour preferences have their own versioned
+  key and in-memory fallback; interface help never marks a run assisted.
 - `InvestigationSql.tsx`: predicate editor, read-only diagnostic console, complete
   query execution preview, real errors, deployed/inherited comparison, deployment.
   New runs have no scenario snapshot selected; learners choose one before execution.
@@ -102,6 +115,13 @@ Unit tests cover actual PostgreSQL results across canonical and additional
 fixtures, read-only rejection and rollback, syntax errors, temporal grammar,
 immutable oracle behavior, boundary times, free repair order, stale validation,
 undo, assistance, malformed storage, and preserved achievements.
+
+`tests/e2e/challenge-walkthrough.spec.ts` covers the full tour in both themes on
+desktop and phone, target geometry, saved/local state and timer preservation,
+sections and explicit resume, missing targets, cross-tab changes, completed runs,
+browser Back from the overview, unavailable storage, keyboard exit, and short
+windows. Existing chapter tour and challenge journey suites cover
+shared-infrastructure regressions.
 
 `tests/e2e/live-order-operations.spec.ts` covers independent/assisted completion,
 equivalent SQL, wrong deployments, diagnostic SQL, drafts, refresh, automatic

@@ -2,11 +2,17 @@ import { chapterPath, findChapter } from '../../chapters/chapterRegistry';
 import { chapterContentPath, findChapterContent } from '../../chapters/chapterOutline';
 
 export interface WalkthroughStep {
+  id?: string;
+  section?: string;
+  page?: string;
+  navigationTarget?: string;
+  navigationFallbackTarget?: string;
   path: string;
   target?: string;
   title: string;
   description: string;
   unavailable?: string;
+  detail?: string;
 }
 
 export const chapterTourWelcome = {

@@ -22,7 +22,7 @@ export function useWalkthroughInteractionLock(active: boolean, onClose: () => vo
       if (event.altKey || event.metaKey || (event.ctrlKey && event.key !== 'Enter')) return;
       const dialog = document.querySelector<HTMLDialogElement>('.walkthrough-dialog:modal');
       if (event.key === 'Tab' && dialog) {
-        const buttons = [...dialog.querySelectorAll<HTMLButtonElement>('button:not(:disabled)')]
+        const buttons = [...dialog.querySelectorAll<HTMLElement>('button:not(:disabled), select:not(:disabled), summary, a[href], [tabindex="0"]')]
           .filter(button => button.getClientRects().length > 0);
         const first = buttons[0];
         const last = buttons.at(-1);
