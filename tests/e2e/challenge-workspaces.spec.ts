@@ -68,6 +68,37 @@ test('new investigations require an applied source repair and an explicit histor
   await expect(page.getByText('10 / 8 illustrative state units', { exact: true })).toBeVisible();
 });
 
+test('serving view definitions show the applied view types and deployed filter', async ({ page }) => {
+  await page.goto('/challenge'); await start(page); await workspace(page, 'System');
+  const definitions = page.locator('details').filter({ hasText: 'View definitions (SQL)' });
+  const helperSql = definitions.locator('pre').filter({ hasText: 'recent_paid_orders AS' });
+  const totalsSql = definitions.locator('pre').filter({ hasText: 'regional_totals AS' });
+  await expect(helperSql).toBeHidden();
+  await definitions.locator('summary').click();
+  await expect(helperSql).toBeVisible();
+  await expect(helperSql).toContainText('CREATE MATERIALIZED VIEW recent_paid_orders');
+  await expect(helperSql).toContainText('o.arrived_at +');
+  await expect(totalsSql).toContainText('CREATE MATERIALIZED VIEW regional_totals');
+  await expect(totalsSql).toContainText('FROM recent_paid_orders');
+
+  await page.getByRole('combobox', { name: 'Recent-orders helper', exact: true }).selectOption('view');
+  await expect(helperSql).toContainText('CREATE MATERIALIZED VIEW recent_paid_orders');
+  await page.getByRole('button', { name: 'Apply changes', exact: true }).click();
+  await expect(helperSql).toContainText('CREATE VIEW recent_paid_orders');
+  await expect(totalsSql).toContainText('CREATE MATERIALIZED VIEW regional_totals');
+
+  await workspace(page, 'SQL'); await selectSnapshot(page);
+  await page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true }).fill(predicate);
+  await page.getByRole('button', { name: 'Run query preview', exact: true }).click();
+  const applyQuery = page.getByRole('button', { name: 'Apply query', exact: true });
+  await expect(applyQuery).toBeEnabled({ timeout: 45000 });
+  await applyQuery.click();
+  await workspace(page, 'System');
+  await definitions.locator('summary').click();
+  await expect(helperSql).toBeVisible();
+  await expect(helperSql).toContainText('o.event_at +');
+});
+
 test('client and request choices preserve previews and reads; source changes invalidate them', async ({ page }) => {
   await page.goto('/challenge'); await start(page); await repairSource(page); await workspace(page, 'SQL'); await selectSnapshot(page);
   await page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true }).fill(predicate);

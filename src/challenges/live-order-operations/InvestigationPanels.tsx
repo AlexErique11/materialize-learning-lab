@@ -7,7 +7,7 @@ import { ReadableWindow } from '../../chapters/consistent-reads/ReadableWindow';
 import { TimestampTrays } from '../../chapters/live-applications-subscribe/TimestampTrays';
 import { EvidenceCard, OrdersTable, TotalsTable } from './ChallengeEvidence';
 import { Scope, SettingsActions, WorkspacePair } from './InvestigationWorkspace';
-import { clientState, frontiers, hasServingPath, objectCost, ordersAt, readWindow, requestRead, rowsAt, streamFor, type TraceFrame } from './incident';
+import { clientState, frontiers, hasServingPath, objectCost, ordersAt, readWindow, requestRead, rowsAt, streamFor, type Configuration, type TraceFrame } from './incident';
 import { displayedRows } from './grading';
 import { events, formatTime, producerHistory } from './simulation';
 import type { ChallengeRun, RunAction } from './run';
@@ -68,6 +68,31 @@ export function DataPanel({ run, dispatch, showRebuiltOrders = false }: Props & 
   </WorkspacePair>;
 }
 
+function ServingViewDefinitions({ config }: { config: Configuration }) {
+  const helperType = config.helper === 'materialized' ? 'MATERIALIZED VIEW' : 'VIEW';
+  const finalType = config.final === 'materialized' ? 'MATERIALIZED VIEW' : 'VIEW';
+  const helper = `CREATE ${helperType} recent_paid_orders AS
+SELECT o.order_id, c.region, o.amount
+FROM orders AS o
+JOIN customers AS c ON o.customer_id = c.customer_id
+WHERE ${config.predicate};`;
+  const totals = `CREATE ${finalType} regional_totals AS
+SELECT region, COUNT(*) AS orders, SUM(amount) AS total
+FROM recent_paid_orders
+GROUP BY region;`;
+
+  return <details className="incident-details">
+    <summary>View definitions (SQL)</summary>
+    <p>These definitions show how the lab models the two views using the applied serving settings and deployed filter.</p>
+    <h3>Recent-orders helper</h3>
+    <p>Lists individual orders that match the deployed filter, along with their customer region and amount.</p>
+    <pre className="incident-code"><code>{helper}</code></pre>
+    <h3>Regional totals</h3>
+    <p>Uses the helper to count orders and add up their amounts for each region.</p>
+    <pre className="incident-code"><code>{totals}</code></pre>
+  </details>;
+}
+
 export function SystemPanel({ run, trace, dispatch }: Props) {
   const id = useId();
   const f = frontiers(run.config, run.time, processedAt(run));
@@ -92,7 +117,10 @@ export function SystemPanel({ run, trace, dispatch }: Props) {
       <div className="incident-label"><div className="incident-info-heading"><label htmlFor={id + '-final'}>Regional totals</label><ChallengeHelp topic="regionalTotals" /></div><select data-repair-action="serving-result" id={id + '-final'} value={run.settings.final} onChange={e => dispatch({ type: 'stage', key: 'final', value: e.target.value })}><option value="view">Regular view · 0 units</option><option value="materialized">Materialized result · 4 units</option></select></div>
       <div className="incident-label"><div className="incident-info-heading"><label htmlFor={id + '-indexes'}>Serving indexes</label><ChallengeHelp topic="indexes" /></div><select data-repair-action="serving-indexes" id={id + '-indexes'} value={run.settings.indexes} onChange={e => dispatch({ type: 'stage', key: 'indexes', value: e.target.value })}><option value="both">Operations and support · 4 units</option><option value="operations">Operations only · 2 units</option><option value="none">None · 0 units</option></select></div><p>Draft budget: {objectCost(run.settings)} / 8 illustrative state units.</p><SettingsActions run={run} dispatch={dispatch} group="serving" />
     </EvidenceCard>}>
-      <EvidenceCard title="Applied serving design" help="configuration" trailing={<Scope>Read-only result</Scope>}><div className="incident-serving-design" data-repair-target="serving-design"><Table caption="Applied serving objects"><thead><tr><th scope="col">Object</th><th scope="col">Applied setting</th></tr></thead><tbody><tr><th scope="row">Recent-orders helper</th><td>{run.config.helper === 'view' ? 'Regular view' : 'Materialized view'}</td></tr><tr><th scope="row">Regional totals</th><td>{run.config.final === 'view' ? 'Regular view' : 'One shared materialized result'}</td></tr><tr><th scope="row">Local serving indexes</th><td>{run.config.indexes === 'both' ? 'Operations and support' : run.config.indexes === 'operations' ? 'Operations only' : 'None'}</td></tr></tbody></Table><p><strong>{objectCost(run.config)} / 8 illustrative state units</strong>. Units are a teaching budget, not memory measurements. Operations and support need local indexes on one durable shared result.</p></div></EvidenceCard>
+      <EvidenceCard title="Applied serving design" help="configuration" trailing={<Scope>Read-only result</Scope>}>
+        <div className="incident-serving-design" data-repair-target="serving-design"><Table caption="Applied serving objects"><thead><tr><th scope="col">Object</th><th scope="col">Applied setting</th></tr></thead><tbody><tr><th scope="row">Recent-orders helper</th><td>{run.config.helper === 'view' ? 'Regular view' : 'Materialized view'}</td></tr><tr><th scope="row">Regional totals</th><td>{run.config.final === 'view' ? 'Regular view' : 'One shared materialized result'}</td></tr><tr><th scope="row">Local serving indexes</th><td>{run.config.indexes === 'both' ? 'Operations and support' : run.config.indexes === 'operations' ? 'Operations only' : 'None'}</td></tr></tbody></Table><p><strong>{objectCost(run.config)} / 8 illustrative state units</strong>. Units are a teaching budget, not memory measurements. Operations and support need local indexes on one durable shared result.</p></div>
+        <ServingViewDefinitions config={run.config} />
+      </EvidenceCard>
     </WorkspacePair>
   </>;
 }
