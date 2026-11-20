@@ -21,7 +21,7 @@ export function SettingsActions({ run, dispatch, group }: { run: ChallengeRun; d
   return <>
     <p className="incident-draft-status" data-pending={pending}>{pending ? 'Not applied · your edits are saved as a draft.' : 'Settings match the applied system.'}</p>
     <div className="incident-actions">
-      <Button variant="primary" disabled={!pending} onClick={() => dispatch({ type: 'apply-settings', group })}>Apply changes</Button>
+      <Button data-repair-action={`apply-${group}`} variant="primary" disabled={!pending} onClick={() => dispatch({ type: 'apply-settings', group })}>Apply changes</Button>
       <Button disabled={!pending} onClick={() => dispatch({ type: 'discard-settings', group })}>Discard edits</Button>
     </div>
   </>;

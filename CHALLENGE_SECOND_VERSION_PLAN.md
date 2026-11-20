@@ -530,3 +530,60 @@ capabilities, not a claim that PostgreSQL implements Materialize streaming:
 Recheck exact dependency/runtime APIs during the spike and record the selected
 version. No claims about bundle cost, startup speed, or cancellation support are
 considered verified until measured in this repository.
+
+## 14. Client hint and coordinated snapshot worked repair
+
+Status: implemented. The Client acceptance replay expects a coordinated starting
+snapshot. The setting starts enabled. Investigation help explains how to apply
+it, and the Client worked repair enables it alongside the publication policy.
+The worked repair guide highlights the applied snapshot status when it changes.
+
+### Investigation help and application
+
+- Keep the Client workspace’s three-step hint sequence in
+  `src/challenges/live-order-operations/incident.ts`. Update it to read:
+  1. “Compare the database result with the application before the first order
+     change. Where do the rows already in the result come from?”
+  2. “The coordinated snapshot supplies the starting rows. Later, a retraction
+     and replacement can arrive separately at the same timestamp.”
+  3. “Enable Initialize with a coordinated snapshot and set Publish application
+     updates to When progress is strictly beyond the timestamp. Select Apply
+     changes.”
+- Keep hint reveals informational. Learners can apply the settings themselves
+  through **Client settings → Apply changes** and confirm that the subscription
+  panel reports **Coordinated snapshot: On**.
+- Use the Client workspace’s existing **Apply worked repair** action to apply
+  both settings and open the worked repair guide. Reuse its single change
+  history entry, undo, delivery reset, and assisted-completion tracking.
+
+### Show the applied snapshot
+
+- Give the applied coordinated snapshot status in `InvestigationPanels.tsx`
+  a dedicated spotlight target and keep the publication status as a separate
+  target in the same panel. Highlight the applied status so learners can verify
+  what the subscription is using even if the Client settings contain a draft.
+- In `workedRepairSteps.ts`, add an **Initialize with a coordinated snapshot**
+  step when the applied flag changes. Spotlight the status and show **Off → On**
+  using the existing before-and-after comparison. Explain that the snapshot
+  supplies the rows already in the result when the subscription starts.
+- Show the existing publication step when its policy changes. If both settings
+  change, show the snapshot step first, then publication, then the existing
+  delivery reset step if deliveries were received. When both settings are
+  already applied, use the guide’s existing already-applied feedback.
+- After closing the guide, learners can use **Receive and process delivery**
+  to watch the baseline become visible once progress passes its timestamp.
+
+### Verification
+
+- Extend `tests/e2e/live-order-operations.spec.ts` to reveal the Client hints,
+  confirm that revealing them leaves applied settings unchanged, and verify
+  manual application through **Apply changes**.
+- Test the worked repair on desktop and mobile with the snapshot disabled.
+  Confirm the spotlight targets the live applied status and shows **Off → On**.
+  Cover a snapshot-only repair with the correct publication policy already
+  applied, a repair that changes both settings, and the default snapshot-on case
+  where only the publication step is needed. Verify the delivery reset with
+  a replay already in progress and confirm undo restores the previous settings.
+- Use the existing grading test to verify that the publication check fails with
+  the snapshot off and passes when both Client settings are correct. Keep the
+  starting snapshot enabled and reuse the saved-run format.

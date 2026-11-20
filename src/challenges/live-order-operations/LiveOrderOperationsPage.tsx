@@ -30,6 +30,7 @@ import { SqlClient } from './sqlClient';
 import { validateIncident } from './grading';
 import { documentationLinks } from './scenario';
 import { WorkedRepairGuide } from './WorkedRepairGuide';
+import { workedRepairReplays } from './workedRepairReplay';
 import { workedRepairSteps, type WorkedRepairStep } from './workedRepairSteps';
 import '../../styles/lesson.css';
 import './challenge.css';
@@ -105,7 +106,8 @@ export function LiveOrderOperationsPage() {
   const [dialog, setDialog] = useState<'reference' | 'restart' | 'help' | null>(null);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
-  const [repair, setRepair] = useState<{ applied: ChallengeRun; steps: WorkedRepairStep[] } | null>(null);
+  const [repair, setRepair] = useState<{ applied: ChallengeRun; beforeTrace: TraceFrame[] | null; steps: WorkedRepairStep[]; replays: ReturnType<typeof workedRepairReplays> } | null>(null);
+  const [repairDisplay, setRepairDisplay] = useState<ChallengeRun | null>(null);
   const controller = useChallengeRun(Boolean(dialog) || shortcutsOpen || overviewRequested || walkthrough.challengeOpen || Boolean(repair));
   const { run, progress, dispatch } = controller;
   const [client] = useState(() => new SqlClient());
@@ -131,10 +133,14 @@ export function LiveOrderOperationsPage() {
     && (run.workspace !== 'SQL' || repair.applied.draft === run.draft) ? repair : null;
   const view = showOverview ? 'overview' : `${run.phase}-${run.workspace}`;
   useEffect(() => {
-    if (repair && !currentRepair) setRepair(null);
+    if (repair && !currentRepair) {
+      setRepair(null);
+      setRepairDisplay(null);
+    }
   }, [repair, currentRepair]);
   const closeRepair = useCallback(() => {
     setRepair(null);
+    setRepairDisplay(null);
     requestAnimationFrame(() => {
       const help = pageRef.current?.querySelector<HTMLButtonElement>('[data-incident-action="hint"]');
       if (help?.getClientRects().length && !isShortcutInteraction(help)) help.focus({ preventScroll: true });
@@ -142,13 +148,17 @@ export function LiveOrderOperationsPage() {
     });
   }, []);
   const applyWorkedRepair = () => {
+    // Save the actual repair once. The guide only renders snapshots of its actions.
     const { before, after } = dispatch({ type: 'worked', workspace: run.workspace });
-    if (run.workspace === 'SQL') setMode('repair');
+    if (run.workspace === 'SQL') {
+      setMode('repair');
+      setPreview(null);
+      setError('');
+    }
     setDialog(null);
-    setNotice(run.workspace === 'SQL'
-      ? 'Worked SQL repair placed in the editor. Run a preview and apply it to change the system.'
-      : 'Worked intervention applied. Verify its consequences in the incident.');
-    setRepair({ applied: after, steps: workedRepairSteps(before, after) });
+    setNotice('Worked intervention applied. Review the changes in the walkthrough.');
+    setRepairDisplay(null);
+    setRepair({ applied: after, beforeTrace: trace, steps: workedRepairSteps(before, after), replays: workedRepairReplays(before, after) });
   };
   const continueChallenge = () => {
     if (run.phase === 'briefing') dispatch({ type: 'start' });
@@ -202,7 +212,7 @@ export function LiveOrderOperationsPage() {
   const cancel = () => { operationId.current++; client.cancel(); setOperation(null); setPreview(null); setError('Execution cancelled. Drafts and applied changes are preserved.'); setRetry(value => value + 1); };
   const hintCount = run.hints[run.workspace] ?? 0;
   // Reuse the panels for the tour while keeping the live tree's local selections mounted.
-  const renderSurface = (run: ChallengeRun, touring = false) => {
+  const renderSurface = (run: ChallengeRun, touring = false, repairing = false, displayedTrace = trace) => {
     const showOverview = touring ? tour.step?.surface === 'overview' : run.phase === 'briefing' || overviewRequested;
     const active = touring ? tour.step?.surface === 'workspace' : run.phase === 'investigating' && !showOverview;
     const tourButton = <IconButton label="Explain this page" className="incident-walkthrough-button" disabled={Boolean(operation)} onClick={() => { setDialog(null); tour.start(showOverview ? 'overview' : active ? run.workspace : 'handover'); }}><CircleHelp size={18} aria-hidden="true" /></IconButton>;
@@ -218,8 +228,8 @@ export function LiveOrderOperationsPage() {
         <RotateCcw size={14} aria-hidden="true" />Restart challenge
       </Button>
     );
-    const dispatch = touring ? ignoreTourAction : controller.dispatch;
-    const props = { run, trace, dispatch };
+    const dispatch = touring || repairing ? ignoreTourAction : controller.dispatch;
+    const props = { run, trace: displayedTrace, dispatch };
     const brief = <><p className="incident-quotation">“{incidentMessage}”</p><p>You have inherited Northstar Shop’s dashboard. Investigate the system, make reversible changes, and verify that it meets the operating contract. Choose where to look and what to test.</p><div className="incident-section-heading" data-walkthrough="challenge-contract"><h3 className="incident-subheading">Operating contract</h3><ChallengeHelp topic="contract" /></div><ul className="incident-requirements">{businessRequirements.map(requirement => <li key={requirement}>{requirement}</li>)}</ul></>;
     return <>
       <div className="guided-lab-top-row"><Breadcrumbs items={[{ label: 'Learning path', to: '/' }, { label: 'Challenge' }]} />{!showOverview && <div className="incident-page-help">{tourButton}<ShortcutHelp lecture={false} challenge challengeInvestigating={active} showReference onOpenChange={setShortcutsOpen} /></div>}</div>
@@ -262,14 +272,14 @@ export function LiveOrderOperationsPage() {
           {active && <div className="incident-workspace-bar"><span className="eyebrow">{run.workspace} workspace</span><span>Apply drafts to update the shared system.</span></div>}
           <>
             {operation && <div className="incident-runtime" role="status"><span className="incident-spinner" aria-hidden="true" />{operation}<Button size="compact" onClick={cancel}>Cancel execution</Button></div>}
-            {!trace && <div className="incident-runtime" role="status">{traceError ? <><span>{traceError}</span><Button onClick={() => { client.cancel(); setRetry(n => n + 1); }}>Retry SQL engine</Button></> : <><span className="incident-spinner" aria-hidden="true" />Preparing the local SQL workspace… You can inspect data and configuration while it starts.</>}</div>}
+            {!displayedTrace && <div className="incident-runtime" role="status">{traceError ? <><span>{traceError}</span><Button onClick={() => { client.cancel(); setRetry(n => n + 1); }}>Retry SQL engine</Button></> : <><span className="incident-spinner" aria-hidden="true" />Preparing the local SQL workspace… You can inspect data and configuration while it starts.</>}</div>}
             {run.feedback && <div role="status" className="incident-feedback"><details data-repair-target="feedback"><summary>Last action · {run.feedback.split('. ')[0]}</summary><p>{run.feedback}</p></details></div>}
             {notice && <p role="status" className="incident-notice" data-repair-target="repair-notice">{notice}</p>}
             {error && (!active || run.workspace !== 'SQL') && <p role="alert" className="incident-notice" data-tone="warning">{error}</p>}
             {active ? <div className="incident-workspace" aria-label={`${run.workspace} workspace`}>
               {run.workspace === 'Dashboard' && <DashboardPanel {...props} />}
               {run.workspace === 'Data' && <DataPanel {...props} showRebuiltOrders={!touring && Boolean(currentRepair)} />}
-              {run.workspace === 'SQL' && <InvestigationSql {...props} touring={touring} mode={touring ? 'repair' : mode} setMode={next => { if (!touring) { setMode(next); setError(''); } }} preview={preview} busy={Boolean(operation)} error={error} onRun={() => { if (!touring) void runSql(); }} onDeploy={() => { if (!touring && preview?.key === previewKey(run, 'repair') && !operation) { dispatch({ type: 'deploy', runId: run.id, configuration: run.configurationRevision, predicate: run.draft }); } }} />}
+              {run.workspace === 'SQL' && <InvestigationSql {...props} touring={touring} showWorkedApply={repairing && run.draft === currentRepair?.applied.config.predicate} mode={touring ? 'repair' : mode} setMode={next => { if (!touring && !repairing) { setMode(next); setError(''); } }} preview={preview} busy={Boolean(operation)} error={error} onRun={() => { if (!touring && !repairing) void runSql(); }} onDeploy={() => { if (!touring && !repairing && preview?.key === previewKey(run, 'repair') && !operation) { dispatch({ type: 'deploy', runId: run.id, configuration: run.configurationRevision, predicate: run.draft }); } }} />}
               {run.workspace === 'System' && <SystemPanel {...props} />}
               {run.workspace === 'Client' && <ClientPanel {...props} />}
             </div> : <ChallengeReport run={run} dispatch={dispatch} busy={Boolean(operation)} touring={touring} onValidate={() => { if (!touring) void validate(); }} />}
@@ -280,22 +290,24 @@ export function LiveOrderOperationsPage() {
       </div>
     </>;
   };
+  const displayed = currentRepair ? repairDisplay ?? currentRepair.applied : run;
+  const displayingEarlierQuery = displayed.config.predicate !== run.config.predicate || displayed.config.source !== run.config.source
+    && JSON.stringify(displayed.config.source) !== JSON.stringify(run.config.source);
+  const displayedTrace = displayingEarlierQuery ? currentRepair?.beforeTrace ?? null : trace;
   return <section ref={pageRef} className="guided-lab-page incident-page" data-phase={tour.step?.surface === 'overview' || (!tour.step && showOverview) ? 'briefing' : tour.step?.surface === 'workspace' ? 'investigating' : run.phase}>
     {tour.interrupted && <p role="status" className="incident-notice">The investigation changed in another tab. The walkthrough closed to show the current saved system.</p>}
-    <div hidden={Boolean(tour.step)} inert={tour.open || undefined} data-challenge-live>{renderSurface(run)}</div>
+    <div hidden={Boolean(tour.step)} inert={tour.open || Boolean(currentRepair) || undefined} data-challenge-live>{renderSurface(displayed, false, Boolean(currentRepair && displayed !== currentRepair.applied), displayedTrace)}</div>
     {tour.step && <div data-challenge-tour>{renderSurface(tour.displayRun, true)}</div>}
     <Dialog open={dialog === 'reference'} onClose={() => setDialog(null)} title="Incident reference" className="incident-reference"><h3 className="incident-subheading">Schemas and time</h3><pre className="incident-code">{'orders(order_id, customer_id, status, amount, event_at, arrived_at)\ncustomers(customer_id, region)'}</pre><p>Event time records when the business event occurred. Arrival time records ingestion. SQL timestamps use UTC on 1 January 2026; displays show seconds from that same origin. The local mz_now() compatibility function freezes logical time at the selected replay snapshot.</p><p>Materialize supports mz_now() directly compared with a row timestamp expression, combining temporal comparisons with AND. Place interval arithmetic on the row expression.</p><h3 className="incident-subheading">Operating contract</h3><ul className="incident-requirements">{businessRequirements.map(text => <li key={text}>{text}</li>)}</ul><p className="incident-caption">SQL results execute in local PostgreSQL (PGlite). The clock compatibility function models supported timestamp comparisons, not Materialize's full mz_timestamp type. Sources, maintained progress, read policies, state units, and subscriptions are explicitly simulated. Quiet external sources and unsent business changes are separate from a complete ingested snapshot.</p><ul className="incident-reference-links">{documentationLinks.map(link => <li key={link.href}><a href={link.href} target="_blank" rel="noopener noreferrer" className="text-link">{link.label}</a></li>)}</ul><Link className="text-link" to="/labs" target="_blank" rel="noopener noreferrer">Review the lectures (opens a new tab)</Link></Dialog>
     <Dialog open={dialog === 'help'} onClose={() => setDialog(null)} title="Investigation help" eyebrow={run.workspace}>
-      <p>Help is optional. Hints are recorded. A worked repair marks completion as assisted. SQL fills a draft for preview; other repairs apply immediately to the shared system.</p>
+      <p>Hints are recorded. Apply worked repair makes the fixes for this workspace and shows you what changed. It marks completion as assisted.</p>
       <ol className="incident-requirements">{workspaceHints[run.workspace].slice(0, hintCount).map(hint => <li key={hint}>{hint}</li>)}</ol>
       <div className="incident-actions">
         <Button disabled={hintCount >= 3} onClick={() => dispatch({ type: 'hint', workspace: run.workspace })}>Get next hint</Button>
-        {run.workspace !== 'Dashboard' && <Button onClick={applyWorkedRepair}>
-          {run.workspace === 'SQL' ? 'Use worked SQL draft' : 'Apply worked repair'}
-        </Button>}
+        {run.workspace !== 'Dashboard' && <Button disabled={Boolean(operation)} onClick={applyWorkedRepair}>Apply worked repair</Button>}
       </div>
     </Dialog>
-    {currentRepair && <WorkedRepairGuide steps={currentRepair.steps} pageRef={pageRef} onClose={closeRepair} />}
+    {currentRepair && <WorkedRepairGuide steps={currentRepair.steps} replays={currentRepair.replays} applied={currentRepair.applied} displayed={displayed} onDisplay={setRepairDisplay} pageRef={pageRef} onClose={closeRepair} />}
     <Dialog open={dialog === 'restart'} onClose={() => setDialog(null)} title="Restart this investigation?"><p>This replaces your active investigation and drafts. Prior achievements, the first version's saved run, and chapter completions stay preserved.</p><div className="incident-actions"><Button onClick={() => setDialog(null)}>Keep this run</Button><Button variant="primary" className="incident-restart" onClick={() => { client.cancel(); controller.restart(); setDialog(null); setNotice(''); }}>Restart investigation</Button></div></Dialog>
     <ChallengeCompletion key={run.id} complete={run.phase === 'completed'} />
   </section>;

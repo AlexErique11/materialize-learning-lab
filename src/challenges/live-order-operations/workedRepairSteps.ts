@@ -1,10 +1,12 @@
 import { objectCost, ordersAt, type Configuration } from './incident';
 import type { ChallengeRun } from './run';
+import { formatTime } from './simulation';
 
 export interface RepairComparison {
   label: string;
   before: string | number;
   after: string | number;
+  code?: boolean;
 }
 
 export interface WorkedRepairStep {
@@ -46,32 +48,34 @@ export function workedRepairSteps(before: ChallengeRun, after: ChallengeRun): Wo
         steps.push({
           target: 'source-rows', title: 'Inspect the rebuilt orders',
           description: `Order ${rebuiltOrderExample} shows the latest value for its key. The row count covers the entire relation rebuilt from the retained messages at the same incident time.`,
-          comparisons: [{ label: 'Current source rows', before: oldRows.length, after: newRows.length }]
+          comparisons: [
+            { label: `Versions of order ${rebuiltOrderExample}`, before: oldRows.filter(row => row.orderId === rebuiltOrderExample).length, after: newRows.filter(row => row.orderId === rebuiltOrderExample).length },
+            { label: 'Current source rows', before: oldRows.length, after: newRows.length },
+          ]
             .filter(change => change.before !== change.after),
         });
       }
       break;
     }
     case 'SQL':
-      steps.push({
-        target: 'sql-draft',
-        title: before.draft === after.draft ? 'The worked draft is already in the editor' : 'Use event time in the SQL draft',
-        description: 'The draft uses the order’s event time for both entry and the exclusive five-minute expiry. The deployed query is unchanged.',
-      }, {
-        target: after.frame === null ? 'sql-snapshot' : 'sql-preview', title: 'Preview before applying',
-        description: [
-          after.frame === null ? 'Choose a scenario replay snapshot, then run the query preview.' : 'Run the query preview at the selected snapshot.',
-          after.draft === applied.predicate
-            ? 'This draft already matches the deployed query.'
-            : 'Review the returned rows before using Apply query to deploy the draft.',
-        ].join(' '),
-      });
+      if (previous.predicate !== applied.predicate || before.draft !== after.draft) {
+        steps.push({
+          target: 'sql-draft',
+          title: 'Apply the event-time query',
+          description: 'The deployed query now uses the order’s event time for entry and the exclusive five-minute expiry. The editor shows the applied predicate.',
+          comparisons: [
+            { label: 'Deployed WHERE predicate', before: previous.predicate, after: applied.predicate, code: true },
+            { label: 'Deployed query version', before: before.queryRevision + 1, after: after.queryRevision + 1 },
+          ]
+            .filter(change => change.before !== change.after),
+        });
+      }
       break;
     case 'System': {
       if (previous.connected !== applied.connected) {
         steps.push({
           target: 'connection', title: 'Resume the customer connection',
-          description: 'Customer input can make progress again. The last complete result is preserved until you use Process pending updates.',
+          description: 'Customer input can make progress again, allowing pending updates to reach the serving result.',
           comparisons: [{ label: 'Customer connection', before: 'Paused', after: 'Running' }],
         });
       }
@@ -88,18 +92,29 @@ export function workedRepairSteps(before: ChallengeRun, after: ChallengeRun): Wo
           comparisons,
         });
       }
+      if (before.processedTime !== after.processedTime || !before.processed && after.processed) {
+        steps.push({
+          target: 'processing', title: 'Process pending updates',
+          description: `The serving result has caught up to the incident time of ${formatTime(after.processedTime)}.`,
+          comparisons: [{ label: 'Processed through', before: formatTime(before.processedTime), after: formatTime(after.processedTime) }]
+            .filter(change => change.before !== change.after),
+        });
+      }
       break;
     }
     case 'Client': {
-      const comparisons = [
-        { label: 'Publication', before: publicationLabels[previous.publication], after: publicationLabels[applied.publication] },
-        { label: 'Coordinated snapshot', before: previous.snapshot ? 'On' : 'Off', after: applied.snapshot ? 'On' : 'Off' },
-      ].filter(change => change.before !== change.after);
-      if (comparisons.length) {
+      if (previous.snapshot !== applied.snapshot) {
+        steps.push({
+          target: 'coordinated-snapshot', title: 'Initialize with a coordinated snapshot',
+          description: 'The snapshot supplies the rows already in the result when the subscription starts. Receive deliveries to see those rows appear once progress passes the snapshot timestamp.',
+          comparisons: [{ label: 'Coordinated snapshot', before: previous.snapshot ? 'On' : 'Off', after: applied.snapshot ? 'On' : 'Off' }],
+        });
+      }
+      if (previous.publication !== applied.publication) {
         steps.push({
           target: 'publication', title: 'Publish only complete timestamps',
-          description: 'The coordinated snapshot gives the client a starting result. Subsequent changes are buffered until progress is strictly beyond their timestamp.',
-          comparisons,
+          description: 'Buffer signed changes until progress is strictly beyond their timestamp, then publish the complete result.',
+          comparisons: [{ label: 'Publication', before: publicationLabels[previous.publication], after: publicationLabels[applied.publication] }],
         });
       }
       break;
@@ -114,7 +129,15 @@ export function workedRepairSteps(before: ChallengeRun, after: ChallengeRun): Wo
       comparisons: [{ label: 'Deliveries received', before: before.deliveries, after: after.deliveries }],
     });
   }
-  if (before.read && !after.read) {
+  if (after.read?.status === 'available' && after.read.bound === 3000 && before.read !== after.read) {
+    steps.push({
+      target: after.workspace === 'System' ? 'snapshot-request' : 'feedback',
+      title: 'Verify the normal read',
+      description: `The repair recorded a successful three-second normal read at snapshot ${formatTime(after.read.timestamp)}.`,
+      comparisons: [{ label: 'Normal read', before: before.read?.status === 'available' && before.read.bound === 3000 ? formatTime(before.read.timestamp) : 'No successful normal read', after: formatTime(after.read.timestamp) }]
+        .filter(change => change.before !== change.after),
+    });
+  } else if (before.read && !after.read) {
     steps.push({
       target: after.workspace === 'System' ? 'snapshot-request' : 'feedback',
       title: 'Request a new snapshot',

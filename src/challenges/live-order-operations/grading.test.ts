@@ -102,13 +102,13 @@ it('requires source replacement semantics and both serving repairs independently
   expect(passes('objects')).toBe(true);
 });
 
-it('offers complete worked repairs for Data and System and records their assistance', () => {
+it.each([['System', 'Data', 'SQL', 'Client'], ['SQL', 'Data', 'Client', 'System']] as const)('keeps all worked repairs effective in order %s, %s, %s, %s', (...workspaces) => {
   let run = updateRun(createRun('assisted'), { type: 'start' });
-  run = updateRun(run, { type: 'worked', workspace: 'Data' });
-  run = updateRun(run, { type: 'worked', workspace: 'System' });
-  expect(systemChecks(run, trace).filter(check => ['source', 'objects'].includes(check.id)).every(check => check.passed)).toBe(true);
-  expect(run.config.connected).toBe(true);
-  expect(run.worked).toEqual(['Data', 'System']);
+  for (const workspace of workspaces) run = updateRun(run, { type: 'worked', workspace });
+  expect(systemChecks(run, trace).every(check => check.passed)).toBe(true);
+  expect(run.config.predicate).toBe(repairedPredicate);
+  expect(run).toMatchObject({ processed: true, read: { status: 'available', bound: 3000 }, worked: workspaces });
+  expect(run.hints).toEqual({});
   expect(parseRun(run)).toEqual(run);
 });
 

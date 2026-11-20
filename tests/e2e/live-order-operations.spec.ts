@@ -151,8 +151,25 @@ test('open tabs synchronize automatically without loading prompts', async ({ pag
   await other.close();
 });
 
-test('assistance is optional and recorded; syntax errors and stale previews cannot deploy', async ({ page }) => {
-  await page.goto('/challenge'); await start(page); await repairSource(page);
+test('worked repairs pass handover without manual follow-up and record assistance', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto('/challenge'); await start(page);
+  const applyWorked = async () => {
+    await openTools(page);
+    await page.getByRole('button', { name: 'Investigation help', exact: true }).click();
+    await page.getByRole('button', { name: 'Apply worked repair', exact: true }).click();
+  };
+  const completeGuide = async (steps: number) => {
+    const guide = page.locator('dialog.relation-guide[open]');
+    for (let step = 1; step < steps; step++) await guide.getByRole('button', { name: 'Next', exact: true }).click();
+    await guide.getByRole('button', { name: 'Finish', exact: true }).click();
+  };
+
+  await workspace(page, 'System');
+  await applyWorked();
+  await completeGuide(4);
+  await expect(page.getByText('Normal read available', { exact: true })).toBeVisible();
+
   await workspace(page, 'SQL'); await selectSnapshot(page);
   await page.getByRole('textbox', { name: 'Temporal WHERE predicate', exact: true }).fill('DROP TABLE orders');
   await page.getByRole('button', { name: 'Run query preview', exact: true }).click();
@@ -161,18 +178,20 @@ test('assistance is optional and recorded; syntax errors and stale previews cann
   await openTools(page);
   await page.getByRole('button', { name: 'Investigation help', exact: true }).click();
   await page.getByRole('button', { name: 'Get next hint', exact: true }).click();
-  await page.getByRole('button', { name: 'Use worked SQL draft', exact: true }).click();
-  const guide = page.getByRole('dialog', { name: 'Use event time in the SQL draft', exact: true });
-  await expect(guide).toContainText('The deployed query is unchanged.');
+  await page.getByRole('button', { name: 'Apply worked repair', exact: true }).click();
+  const guide = page.getByRole('dialog', { name: 'Apply the event-time query', exact: true });
+  await expect(guide).toContainText(/Deployed query version\s*1.*2/);
   await expect(page.locator('[data-repair-target="sql-draft"]')).toHaveValue(/mz_now\(\) < o\.event_at/);
   await expectRepairHighlight(page, 'sql-draft');
   await expect(page.getByRole('button', { name: 'Apply query', exact: true, includeHidden: true })).toBeDisabled();
-  await guide.getByRole('button', { name: 'Next', exact: true }).click();
-  await expectRepairHighlight(page, 'sql-preview');
-  await page.getByRole('dialog', { name: 'Preview before applying', exact: true }).getByRole('button', { name: 'Finish', exact: true }).click();
-  await page.getByRole('button', { name: 'Run query preview', exact: true }).click();
-  await page.getByRole('button', { name: 'Apply query', exact: true }).click();
-  await repairClient(page); await restoreServing(page); await handover(page);
+  await completeGuide(2);
+  await workspace(page, 'Data');
+  await applyWorked();
+  await completeGuide(3);
+  await workspace(page, 'Client');
+  await applyWorked();
+  await completeGuide(1);
+  await handover(page);
   await expect(page.getByText('Completed with worked repair', { exact: true })).toBeVisible();
   const achievements = await page.evaluate(() => JSON.parse(localStorage.getItem('materialize-learning-lab-challenge-v2')!).achievements);
   expect(achievements).toEqual([expect.objectContaining({ scenarioVersion: 2, assisted: true })]);
@@ -183,6 +202,7 @@ test('assistance is optional and recorded; syntax errors and stale previews cann
 });
 
 test('worked repair guides point to the live source, serving, and client changes', async ({ page, isMobile }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   test.setTimeout(60_000);
   await page.setViewportSize(isMobile ? { width: 320, height: 568 } : { width: 1280, height: 640 });
   await page.goto('/challenge');
@@ -242,11 +262,14 @@ test('worked repair guides point to the live source, serving, and client changes
     await expectRepairHighlight(page, 'serving-design');
   }
   await next.click();
-  await expect(guide.getByRole('heading', { name: 'Request a new snapshot' })).toBeVisible();
+  await expect(guide.getByRole('heading', { name: 'Process pending updates' })).toBeVisible();
+  await expectRepairHighlight(page, 'processing');
+  await next.click();
+  await expect(guide.getByRole('heading', { name: 'Verify the normal read' })).toBeVisible();
   await expectRepairHighlight(page, 'snapshot-request');
   await finish.click();
-  await expect(page.getByText('No request recorded.', { exact: false })).toBeVisible();
-  await page.getByRole('button', { name: 'Process pending updates', exact: true }).click();
+  await expect(page.getByText('Normal read available', { exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Process pending updates', exact: true })).toBeDisabled();
 
   await workspace(page, 'Client');
   await page.getByRole('button', { name: 'Receive and process delivery', exact: true }).click();
@@ -282,18 +305,161 @@ test('worked repair guides point to the live source, serving, and client changes
   await expectRepairHighlight(page, 'feedback');
   await expect(page.locator('[data-repair-target="feedback"]')).toHaveAttribute('open', '');
   await next.click();
-  await expect(guide).toContainText('Request a new snapshot');
+  await expect(guide).toContainText('Verify the normal read');
   await expectRepairHighlight(page, 'feedback');
   await finish.click();
   await expect(page.locator('[data-repair-target="feedback"]')).not.toHaveAttribute('open');
 
   await workspace(page, 'SQL');
   await openHelp();
-  await help.getByRole('button', { name: 'Use worked SQL draft', exact: true }).click();
+  await help.getByRole('button', { name: 'Apply worked repair', exact: true }).click();
   await expectRepairHighlight(page, 'sql-draft');
   await next.click();
-  await expectRepairHighlight(page, 'sql-snapshot');
+  await expect(guide).toContainText('Verify the normal read');
+  await expectRepairHighlight(page, 'feedback');
   await finish.click();
+});
+
+test('Client hints guide manual application and worked repair spotlights the coordinated snapshot', async ({ page, isMobile }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  test.setTimeout(60_000);
+  await page.setViewportSize(isMobile ? { width: 320, height: 568 } : { width: 1280, height: 640 });
+  await page.goto('/challenge');
+  await start(page);
+  await restoreServing(page);
+  await workspace(page, 'Client');
+
+  const snapshot = page.getByRole('checkbox', { name: 'Initialize with a coordinated snapshot' });
+  const publication = page.getByRole('combobox', { name: 'Publish application updates' });
+  const apply = page.getByRole('button', { name: 'Apply changes', exact: true });
+  const appliedSnapshot = page.locator('[data-repair-target="coordinated-snapshot"]');
+  const appliedPublication = page.locator('[data-repair-target="publication"]');
+  const receive = page.getByRole('button', { name: 'Receive and process delivery', exact: true });
+  const help = page.getByRole('dialog', { name: 'Investigation help', exact: true });
+  const guide = page.locator('dialog.relation-guide[open]');
+  const next = guide.getByRole('button', { name: 'Next', exact: true });
+  const finish = guide.getByRole('button', { name: 'Finish', exact: true });
+  const openHelp = async () => {
+    await openTools(page);
+    await page.getByRole('button', { name: 'Investigation help', exact: true }).click();
+  };
+  const undo = async () => {
+    await openTools(page);
+    await page.getByRole('button', { name: 'Undo last change', exact: true }).click();
+  };
+  const expectSnapshotSpotlight = async () => {
+    await expect(guide.getByRole('heading', { name: 'Initialize with a coordinated snapshot' })).toBeVisible();
+    await expect(guide).toContainText(/Coordinated snapshot\s*Off.*On/);
+    await expect(appliedSnapshot).toHaveText('Coordinated snapshot: On');
+    await expectRepairHighlight(page, 'coordinated-snapshot');
+  };
+
+  await expect(snapshot).toBeChecked();
+  await snapshot.uncheck();
+  await expect(appliedSnapshot).toHaveText('Coordinated snapshot: On');
+  await apply.click();
+  await openHelp();
+  const hint = help.getByRole('button', { name: 'Get next hint', exact: true });
+  await hint.click();
+  await expect(help).toContainText('Where do the rows already in the result come from?');
+  await hint.click();
+  await expect(help).toContainText('The coordinated snapshot supplies the starting rows.');
+  await hint.click();
+  await expect(help).toContainText('Enable Initialize with a coordinated snapshot');
+  await expect(hint).toBeDisabled();
+  await expect(appliedSnapshot).toHaveText('Coordinated snapshot: Off');
+  await expect(appliedPublication).toHaveText('Applied publication: Every received record');
+
+  await help.getByRole('button', { name: 'Apply worked repair', exact: true }).click();
+  await expectSnapshotSpotlight();
+  await next.click();
+  await expect(guide).toContainText('Progress strictly beyond timestamp');
+  await expectRepairHighlight(page, 'publication');
+  await finish.click();
+  await undo();
+  await expect(appliedSnapshot).toHaveText('Coordinated snapshot: Off');
+  await expect(appliedPublication).toHaveText('Applied publication: Every received record');
+
+  await publication.selectOption('complete');
+  await apply.click();
+  await receive.click();
+  await openHelp();
+  await help.getByRole('button', { name: 'Apply worked repair', exact: true }).click();
+  await expectSnapshotSpotlight();
+  await next.click();
+  await expect(guide).toContainText(/Deliveries received\s*1.*0/);
+  await expectRepairHighlight(page, 'received-deliveries');
+  await finish.click();
+  await expect(page.getByRole('button', { name: 'Replay deliveries', exact: true })).toBeDisabled();
+  await undo();
+  await expect(appliedSnapshot).toHaveText('Coordinated snapshot: Off');
+  await expect(appliedPublication).toHaveText('Applied publication: Progress strictly beyond timestamp');
+
+  await snapshot.check();
+  await expect(appliedSnapshot).toHaveText('Coordinated snapshot: Off');
+  await apply.click();
+  await expect(appliedSnapshot).toHaveText('Coordinated snapshot: On');
+  const application = page.getByTestId('subscribe-application');
+  for (let delivery = 0; delivery < 3; delivery++) await receive.click();
+  await expect(application).toContainText('Waiting for full snapshot');
+  await receive.click();
+  await expect(application).toContainText('Published before 631.001 s');
+  await expect(application.getByRole('cell', { name: 'US', exact: true })).toBeVisible();
+});
+
+test('the worked repair replays the control changes between before and after spotlights', async ({ page, isMobile }, testInfo) => {
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.clock.install();
+  await page.goto('/challenge');
+  await start(page);
+  await workspace(page, 'Data');
+  await openTools(page);
+  await page.getByRole('button', { name: 'Investigation help', exact: true }).click();
+  await page.clock.pauseAt(new Date(Date.now() + 60_000));
+  await page.getByRole('button', { name: 'Apply worked repair', exact: true }).click();
+
+  const source = page.locator('[data-repair-target="source-settings"]');
+  const envelope = page.locator('[data-repair-action="source-envelope"]');
+  const before = page.getByRole('dialog', { name: 'Before · Apply keyed replacements', exact: true });
+  await expect(before).toBeVisible();
+  await expect(source).toContainText('Applied source: NONE');
+  await expect(envelope).toHaveValue('NONE');
+  await page.clock.runFor(10_000);
+  await expect(before).toBeVisible();
+  await expect(envelope).toHaveValue('NONE');
+  await before.getByRole('button', { name: 'Show fix', exact: true }).click();
+
+  const moving = page.locator('dialog.walkthrough-page-preview[open][data-transition-phase="navigate"]');
+  const click = page.locator('dialog.walkthrough-page-preview[open][data-transition-phase="page"]');
+  const advanceUntil = async (locator: ReturnType<Page['locator']>) => {
+    for (let tick = 0; tick < 30 && !(await locator.count()); tick++) await page.clock.runFor(50);
+    await expect(locator).toBeVisible();
+  };
+  await advanceUntil(moving);
+  await page.clock.runFor(50);
+  await expect(moving).toContainText('Set order envelope to UPSERT');
+  await expect(moving.locator('.walkthrough-navigation-cursor')).toHaveCSS('opacity', '1');
+  await expect(moving.locator('.relation-guide-shade')).toHaveCount(0);
+  await advanceUntil(click.locator('.walkthrough-navigation-click'));
+  await expect(envelope).toHaveValue('UPSERT');
+  await expect(source).toContainText('Applied source: NONE');
+  if (!isMobile) await page.screenshot({ path: testInfo.outputPath('worked-repair-pointer.png') });
+  await advanceUntil(moving);
+  await expect(moving).toContainText('Apply the source settings');
+  await advanceUntil(click);
+  await expect(click).toContainText('Apply the source settings');
+  const result = page.getByRole('dialog', { name: 'Apply keyed replacements', exact: true });
+  await advanceUntil(result);
+  await expect(result).toContainText(/Order envelope\s*NONE.*UPSERT/);
+  await expect(source).toContainText('Applied source: UPSERT');
+  await expectRepairHighlight(page, 'source-settings');
+  await result.getByRole('button', { name: 'Next', exact: true }).click();
+  const rebuilt = page.getByRole('dialog', { name: 'Inspect the rebuilt orders', exact: true });
+  await expect(rebuilt).toContainText(/Versions of order 101\s*3.*1/);
+  await rebuilt.getByRole('button', { name: 'Finish', exact: true }).click();
+  await page.reload();
+  await expect(page.getByRole('combobox', { name: 'Order envelope', exact: true })).toHaveValue('UPSERT');
+  await expect(page.locator('.incident-change-log').getByText(/Worked intervention: latest full keyed order values/)).toHaveCount(1);
 });
 
 test('first-version history is preserved without migrating its active checkpoint', async ({ page }) => {

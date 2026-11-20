@@ -1,4 +1,4 @@
-import { initialConfiguration, repairedPredicate, traceTimes, workspaces, type Configuration, type Workspace } from './incident';
+import { initialConfiguration, repairedPredicate, requestRead, traceTimes, workspaces, type Configuration, type Workspace } from './incident';
 import type { ReadAttempt } from '../../chapters/consistent-reads/simulation';
 import { parsePredicate } from './predicate';
 
@@ -65,6 +65,13 @@ export function updateRun(run: ChallengeRun, action: RunAction): ChallengeRun {
       undo: [...run.undo, run.config].slice(-10),
       changes: [...run.changes, { label, time: run.time, configuration: run.configurationRevision + 1 }].slice(-60) });
   };
+  const recordNormalRead = (next: ChallengeRun): ChallengeRun => {
+    const attempt = requestRead(next.config, next.time, next.processed ? next.time : next.processedTime);
+    return updateRun(next, { type: 'read', attempt });
+  };
+  const renewNormalRead = (next: ChallengeRun) => next.processed && run.read?.status === 'available' && run.read.bound === 3000 && !next.read
+    ? recordNormalRead(next)
+    : next;
   if (action.type === 'time') return run.phase === 'investigating' && Number.isFinite(action.milliseconds) && action.milliseconds > 0 && action.milliseconds <= 60000 ? revise({ activeDurationMs: run.activeDurationMs + action.milliseconds }) : run;
   if (action.type === 'start') return run.phase === 'briefing' ? revise({ phase: 'investigating' }) : run;
   if (action.type === 'workspace') return workspaces.includes(action.workspace) ? revise({ workspace: action.workspace }) : run;
@@ -119,9 +126,21 @@ export function updateRun(run: ChallengeRun, action: RunAction): ChallengeRun {
     case 'hint': return revise({ hints: { ...run.hints, [action.workspace]: Math.min(3, (run.hints[action.workspace] ?? 0) + 1) } });
     case 'worked': {
       const worked = [...new Set([...run.worked, action.workspace])];
-      if (action.workspace === 'SQL') return revise({ draft: repairedPredicate, worked });
-      if (action.workspace === 'Data') return { ...change({ ...run.config, source: { envelope: 'UPSERT', key: 'order_id' } }, 'Worked intervention: latest full keyed order values'), worked };
-      if (action.workspace === 'System') return { ...change({ ...run.config, connected: true, helper: 'view', final: 'materialized', indexes: 'both' }, 'Worked intervention: restored connection and shared serving within budget'), worked };
+      if (action.workspace === 'SQL') {
+        const next = run.config.predicate === repairedPredicate ? revise({})
+          : change({ ...run.config, predicate: repairedPredicate }, 'Worked intervention: applied event-time SQL query');
+        return { ...renewNormalRead(next), draft: repairedPredicate, worked };
+      }
+      if (action.workspace === 'Data') {
+        const next = change({ ...run.config, source: { envelope: 'UPSERT', key: 'order_id' } }, 'Worked intervention: latest full keyed order values');
+        return { ...renewNormalRead(next), worked };
+      }
+      if (action.workspace === 'System') {
+        const { connected, helper, final, indexes } = run.config;
+        const next = connected && helper === 'view' && final === 'materialized' && indexes === 'both' ? run
+          : change({ ...run.config, connected: true, helper: 'view', final: 'materialized', indexes: 'both' }, 'Worked intervention: restored connection and shared serving within budget');
+        return { ...recordNormalRead(updateRun(next, { type: 'process' })), worked };
+      }
       if (action.workspace === 'Client') return { ...change({ ...run.config, publication: 'complete', snapshot: true }, 'Worked intervention: complete timestamp publication'), worked };
       return revise({ worked, hints: { ...run.hints, [action.workspace]: 3 } });
     }

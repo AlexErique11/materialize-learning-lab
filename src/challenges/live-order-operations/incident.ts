@@ -74,7 +74,11 @@ export const incidentMessage = 'Regional totals disagree with the latest paid or
 export const workspaceHints: Record<Workspace, readonly string[]> = {
   Dashboard: ['Compare the logical timestamp of a result with the time of the order you are checking.', 'A correct query, a recent snapshot, and a complete application update are separate properties.', 'Explore SQL, System, and Client independently; a healthy layer does not establish that the others are healthy.'],
   Data: ['Compare successive messages for an order with the current source relation. Are old versions still present?', 'The producer sends full replacement values, rather than independent events. Which envelope keeps only the latest version?', 'Use UPSERT with order_id, apply the source settings, and compare the rebuilt relation with the retained messages.'],
-  SQL: ['Find an order that arrived late. Compare its event timestamp with its arrival timestamp.', 'Inspect what determines expiration, including when only the clock advances.', 'Use the event timestamp for both the entry bound and the exclusive five-minute expiration bound.'],
+  SQL: ['Find an order that arrived late. Compare its event timestamp with its arrival timestamp.', 'Inspect what determines expiration, including when only the clock advances.', 'Use the event timestamp for both the entry bound and the exclusive five-minute expiration bound. Choose a scenario snapshot, run the query preview, and apply the query.'],
   System: ['Check freshness, access for both teams, and the eight-unit budget separately.', 'Compare input frontiers and connection history. Does the helper need stored state, and can both teams serve the shared result?', 'Use a regular helper view, shared materialized regional totals, and operations and support indexes. Apply, resume the customer connection, process updates, and request a normal read.'],
-  Client: ['Compare the database result with the application after each individual delivery.', 'A retraction and replacement can arrive separately at the same timestamp.', 'Buffer signed full-row changes until progress is strictly greater than their timestamp.'],
+  Client: [
+    'Compare the database result with the application before the first order change. Where do the rows already in the result come from?',
+    'The coordinated snapshot supplies the starting rows. Later, a retraction and replacement can arrive separately at the same timestamp.',
+    'Enable Initialize with a coordinated snapshot and set Publish application updates to When progress is strictly beyond the timestamp. Select Apply changes.',
+  ],
 };

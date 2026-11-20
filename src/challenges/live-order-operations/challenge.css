@@ -291,6 +291,13 @@
 .incident-repair-comparisons dt { color: var(--lab-muted); }
 .incident-repair-comparisons dd { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; }
 .incident-repair-comparisons strong { color: var(--lab-purple); }
+.incident-repair-comparisons [data-code] { display: grid; }
+.incident-repair-comparisons [data-code] dd { display: grid; }
+.incident-repair-comparisons [data-code] dd > :is(span:first-child, strong) {
+  font-family: var(--font-mono, monospace);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 .incident-page input[type='text'] { width: 100%; min-width: 0; border: 1px solid var(--border-strong); border-radius: 4px; color: var(--lab-text); background: var(--lab-surface); padding: 10px 12px; font: inherit; font-size: 13px; }
 .incident-page input:disabled { opacity: .55; }
 .incident-workspace-pair:has(.incident-editor) { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
