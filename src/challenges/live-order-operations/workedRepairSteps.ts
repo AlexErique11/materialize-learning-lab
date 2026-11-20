@@ -144,11 +144,5 @@ export function workedRepairSteps(before: ChallengeRun, after: ChallengeRun): Wo
       description: 'The previous snapshot request was cleared. Use System to request a fresh read against the repaired configuration.',
     });
   }
-  if (!steps.length) {
-    steps.push({
-      target: 'feedback', title: 'The worked settings are already applied',
-      description: 'This repair left the applied settings unchanged. You can continue investigating from here.',
-    });
-  }
   return steps;
 }

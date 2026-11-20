@@ -1,5 +1,5 @@
 import { clientState, expectedAt, frontiers, objectCost, ordersAt, requestRead, rowsAt, streamFor, type TraceFrame } from './incident';
-import type { ChallengeRun, Check } from './run';
+import { hasFreshNormalRead, type ChallengeRun, type Check } from './run';
 import type { SqlClient } from './sqlClient';
 import type { ResultRow } from '../../chapters/live-applications-subscribe/simulation';
 const normalized = (rows: readonly ResultRow[]) => JSON.stringify([...rows].sort((a, b) => a.region.localeCompare(b.region)).map(row => [row.region, Number(row.orders), Number(row.total)]));
@@ -12,7 +12,7 @@ export function systemChecks(run: ChallengeRun, trace: readonly TraceFrame[]): C
   const actualSource = ordersAt(run.time, run.config.source);
   const sourceOK = JSON.stringify(actualSource) === JSON.stringify(expectedSource);
   const read = requestRead(run.config, run.time, run.processed ? run.time : run.processedTime);
-  const serviceOK = run.config.connected && run.processed && read.status === 'available' && run.read?.status === 'available' && run.read.bound === 3000 && run.time - run.read.timestamp <= 3000 && run.read.timestamp >= 630000 && run.read.timestamp <= read.timestamp;
+  const serviceOK = hasFreshNormalRead(run, read);
   const reference = { ...run.config, publication: 'complete' as const, snapshot: true };
   const length = streamFor(trace, true).length;
   let publicationOK = true;

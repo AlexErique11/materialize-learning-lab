@@ -50,6 +50,7 @@ describe('free investigation and validation', () => {
   });
   it('completes without pinned observations, invalidates stale checks, and preserves assistance on undo', () => {
     let run = updateRun(createRun('checks'), { type: 'start' });
+    for (let hint = 0; hint < 3; hint++) run = updateRun(run, { type: 'hint', workspace: 'Client' });
     run = updateRun(run, { type: 'worked', workspace: 'Client' });
     expect(assistedRun(run)).toBe(true);
     const repaired = { ...run.config, source: { envelope: 'UPSERT' as const, key: 'order_id' as const }, helper: 'view' as const, indexes: 'both' as const, connected: true };
@@ -104,11 +105,19 @@ it('requires source replacement semantics and both serving repairs independently
 
 it.each([['System', 'Data', 'SQL', 'Client'], ['SQL', 'Data', 'Client', 'System']] as const)('keeps all worked repairs effective in order %s, %s, %s, %s', (...workspaces) => {
   let run = updateRun(createRun('assisted'), { type: 'start' });
-  for (const workspace of workspaces) run = updateRun(run, { type: 'worked', workspace });
+  for (const workspace of workspaces) {
+    const repair = { type: 'worked', workspace } as const;
+    for (let hint = 0; hint < 3; hint++) {
+      expect(updateRun(run, repair)).toBe(run);
+      run = updateRun(run, { type: 'hint', workspace });
+    }
+    run = updateRun(run, repair);
+    expect(updateRun(run, repair)).toBe(run);
+  }
   expect(systemChecks(run, trace).every(check => check.passed)).toBe(true);
   expect(run.config.predicate).toBe(repairedPredicate);
   expect(run).toMatchObject({ processed: true, read: { status: 'available', bound: 3000 }, worked: workspaces });
-  expect(run.hints).toEqual({});
+  expect(run.hints).toEqual({ Data: 3, SQL: 3, System: 3, Client: 3 });
   expect(parseRun(run)).toEqual(run);
 });
 

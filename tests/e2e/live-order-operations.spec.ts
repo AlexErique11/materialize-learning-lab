@@ -2,6 +2,11 @@ import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { completeInvestigation, handover, predicate, repairClient, repairQuery, repairSource, restoreServing, selectSnapshot, start, workspace, openTools } from './investigation-flow';
 
+async function revealRepairHints(page: Page) {
+  const hint = page.getByRole('button', { name: 'Get next hint', exact: true });
+  for (let count = 0; count < 3 && await hint.isEnabled(); count++) await hint.click();
+}
+
 async function expectRepairHighlight(page: Page, target: string) {
   await expect.poll(() => page.locator(`[data-repair-target="${target}"]`).evaluate(element => {
     const dialog = document.querySelector<HTMLDialogElement>('dialog.relation-guide[open]');
@@ -157,6 +162,7 @@ test('worked repairs pass handover without manual follow-up and record assistanc
   const applyWorked = async () => {
     await openTools(page);
     await page.getByRole('button', { name: 'Investigation help', exact: true }).click();
+    await revealRepairHints(page);
     await page.getByRole('button', { name: 'Apply worked repair', exact: true }).click();
   };
   const completeGuide = async (steps: number) => {
@@ -166,7 +172,19 @@ test('worked repairs pass handover without manual follow-up and record assistanc
   };
 
   await workspace(page, 'System');
-  await applyWorked();
+  await openTools(page);
+  await page.getByRole('button', { name: 'Investigation help', exact: true }).click();
+  const help = page.getByRole('dialog', { name: 'Investigation help', exact: true });
+  const applyRepair = help.getByRole('button', { name: 'Apply worked repair', exact: true });
+  await applyRepair.click();
+  await expect(help.getByRole('status')).toContainText('Reveal 3 more hints');
+  await expect(page.locator('dialog.relation-guide[open]')).toHaveCount(0);
+  await help.getByRole('button', { name: 'Get next hint', exact: true }).click();
+  await applyRepair.click();
+  await expect(help.getByRole('status')).toContainText('Reveal 2 more hints');
+  expect(await page.evaluate(() => JSON.parse(localStorage.getItem('materialize-learning-lab-challenge-v2')!).run.worked)).toEqual([]);
+  await revealRepairHints(page);
+  await applyRepair.click();
   await completeGuide(4);
   await expect(page.getByText('Normal read available', { exact: true })).toBeVisible();
 
@@ -177,7 +195,7 @@ test('worked repairs pass handover without manual follow-up and record assistanc
   await expect(page.getByRole('button', { name: 'Apply query', exact: true })).toBeDisabled();
   await openTools(page);
   await page.getByRole('button', { name: 'Investigation help', exact: true }).click();
-  await page.getByRole('button', { name: 'Get next hint', exact: true }).click();
+  await revealRepairHints(page);
   await page.getByRole('button', { name: 'Apply worked repair', exact: true }).click();
   const guide = page.getByRole('dialog', { name: 'Apply the event-time query', exact: true });
   await expect(guide).toContainText(/Deployed query version\s*1.*2/);
@@ -217,6 +235,7 @@ test('worked repair guides point to the live source, serving, and client changes
   const finish = guide.getByRole('button', { name: 'Finish', exact: true });
   const apply = async () => {
     await openHelp();
+    await revealRepairHints(page);
     await help.getByRole('button', { name: 'Apply worked repair', exact: true }).click();
     await expect(guide).toBeVisible();
   };
@@ -282,11 +301,11 @@ test('worked repair guides point to the live source, serving, and client changes
   await finish.click();
   await expect(page.getByRole('button', { name: 'Replay deliveries', exact: true })).toBeDisabled();
 
-  await apply();
-  await expect(guide).toContainText('The worked settings are already applied');
-  await expectRepairHighlight(page, 'feedback');
-  await finish.click();
-  await expect(page.locator('[data-repair-target="feedback"]')).not.toHaveAttribute('open');
+  await openHelp();
+  await expect(help.getByRole('button', { name: 'Apply worked repair', exact: true })).toBeDisabled();
+  await expect(help.getByRole('status')).toContainText('This workspace already meets the worked repair requirements.');
+  await expect(guide).toHaveCount(0);
+  await page.keyboard.press('Escape');
 
   await workspace(page, 'Data');
   await relation.selectOption('orders');
@@ -312,6 +331,7 @@ test('worked repair guides point to the live source, serving, and client changes
 
   await workspace(page, 'SQL');
   await openHelp();
+  await revealRepairHints(page);
   await help.getByRole('button', { name: 'Apply worked repair', exact: true }).click();
   await expectRepairHighlight(page, 'sql-draft');
   await next.click();
@@ -415,6 +435,7 @@ test('the worked repair replays the control changes between before and after spo
   await workspace(page, 'Data');
   await openTools(page);
   await page.getByRole('button', { name: 'Investigation help', exact: true }).click();
+  await revealRepairHints(page);
   await page.clock.pauseAt(new Date(Date.now() + 60_000));
   await page.getByRole('button', { name: 'Apply worked repair', exact: true }).click();
 

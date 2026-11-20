@@ -1,6 +1,6 @@
-import { initialConfiguration, repairedPredicate, requestRead, traceTimes, workspaces, type Configuration, type Workspace } from './incident';
+import { initialConfiguration, repairedPredicate, requestRead, traceTimes, workspaces, workspaceHints, type Configuration, type Workspace } from './incident';
 import type { ReadAttempt } from '../../chapters/consistent-reads/simulation';
-import { parsePredicate } from './predicate';
+import { aggregateSql, parsePredicate } from './predicate';
 
 export interface Check { id: string; label: string; passed: boolean; detail: string }
 interface Change { label: string; time: number; configuration: number }
@@ -41,6 +41,35 @@ export function createRun(id: string): ChallengeRun {
 export const assistedRun = (run: ChallengeRun) => run.worked.length > 0;
 const checkIds = ['query', 'source', 'service', 'client', 'objects'];
 export const readyForHandover = (run: ChallengeRun) => Boolean(run.validation?.configuration === run.configurationRevision && run.validation.checks.length === 5 && checkIds.every(id => run.validation!.checks.filter(check => check.id === id && check.passed).length === 1));
+
+export function hasFreshNormalRead(run: ChallengeRun, currentRead: ReadAttempt) {
+  const { read } = run;
+  return run.config.connected && run.processed && currentRead.status === 'available' && read?.status === 'available'
+    && read.bound === 3000 && read.timestamp >= 630000 && read.timestamp <= currentRead.timestamp && run.time - read.timestamp <= 3000;
+}
+
+const workedQuery = aggregateSql(repairedPredicate);
+
+export function workedRepairStatus(run: ChallengeRun, workspace: Workspace) {
+  const { config, validation } = run;
+  let needsRepair: boolean;
+  switch (workspace) {
+    case 'Dashboard': return 'unavailable';
+    case 'Data': needsRepair = config.source.envelope !== 'UPSERT' || config.source.key !== 'order_id'; break;
+    case 'SQL':
+      needsRepair = aggregateSql(config.predicate) !== workedQuery
+        && !(validation?.configuration === run.configurationRevision && validation.checks.some(check => check.id === 'query' && check.passed));
+      break;
+    case 'System':
+      needsRepair = config.helper !== 'view' || config.final !== 'materialized' || config.indexes !== 'both'
+        || !hasFreshNormalRead(run, requestRead(config, run.time, run.processed ? run.time : run.processedTime));
+      break;
+    case 'Client': needsRepair = config.publication !== 'complete' || !config.snapshot; break;
+  }
+  if (!needsRepair) return 'already-fixed';
+  return (run.hints[workspace] ?? 0) < workspaceHints[workspace].length ? 'needs-hints' : 'ready';
+}
+
 export function updateRun(run: ChallengeRun, action: RunAction): ChallengeRun {
   const revise = (patch: Partial<ChallengeRun>) => ({ ...run, ...patch, revision: run.revision + 1 });
   const change = (config: Configuration, label: string) => {
@@ -123,12 +152,12 @@ export function updateRun(run: ChallengeRun, action: RunAction): ChallengeRun {
       const next = change(previous, 'Undid last configuration change; incident time preserved');
       return { ...next, draft: previous.predicate !== run.config.predicate ? previous.predicate : run.draft, undo: run.undo.slice(0, -1) };
     }
-    case 'hint': return revise({ hints: { ...run.hints, [action.workspace]: Math.min(3, (run.hints[action.workspace] ?? 0) + 1) } });
+    case 'hint': return revise({ hints: { ...run.hints, [action.workspace]: Math.min(workspaceHints[action.workspace].length, (run.hints[action.workspace] ?? 0) + 1) } });
     case 'worked': {
+      if (workedRepairStatus(run, action.workspace) !== 'ready') return run;
       const worked = [...new Set([...run.worked, action.workspace])];
       if (action.workspace === 'SQL') {
-        const next = run.config.predicate === repairedPredicate ? revise({})
-          : change({ ...run.config, predicate: repairedPredicate }, 'Worked intervention: applied event-time SQL query');
+        const next = change({ ...run.config, predicate: repairedPredicate }, 'Worked intervention: applied event-time SQL query');
         return { ...renewNormalRead(next), draft: repairedPredicate, worked };
       }
       if (action.workspace === 'Data') {
@@ -142,7 +171,7 @@ export function updateRun(run: ChallengeRun, action: RunAction): ChallengeRun {
         return { ...recordNormalRead(updateRun(next, { type: 'process' })), worked };
       }
       if (action.workspace === 'Client') return { ...change({ ...run.config, publication: 'complete', snapshot: true }, 'Worked intervention: complete timestamp publication'), worked };
-      return revise({ worked, hints: { ...run.hints, [action.workspace]: 3 } });
+      return run;
     }
     case 'validation': return action.runId === run.id && action.configuration === run.configurationRevision ? revise({ validation: { configuration: action.configuration, checks: action.checks }, ...(run.phase === 'completed' && action.checks.some(check => !check.passed) ? { phase: 'handover' as const } : {}) }) : run;
     case 'handover': return revise({ phase: 'handover' });

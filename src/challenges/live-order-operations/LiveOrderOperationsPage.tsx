@@ -17,7 +17,7 @@ import { businessRequirements, initialPredicate, incidentMessage, traceTimes, wo
 import { useChallengeRun } from './useChallengeRun';
 import { useWalkthrough } from '../../components/walkthrough/WalkthroughProvider';
 import { useChallengeWalkthrough } from './useChallengeWalkthrough';
-import type { ChallengeRun, RunAction } from './run';
+import { workedRepairStatus, type ChallengeRun, type RunAction } from './run';
 import { SharedIncidentState } from './InvestigationWorkspace';
 import { EvidenceCard } from './ChallengeEvidence';
 import { ChallengeHelp } from './ChallengeHelp';
@@ -104,6 +104,7 @@ export function LiveOrderOperationsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const overviewRequested = searchParams.get('view') === 'overview';
   const [dialog, setDialog] = useState<'reference' | 'restart' | 'help' | null>(null);
+  const [repairRequested, setRepairRequested] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
   const [repair, setRepair] = useState<{ applied: ChallengeRun; beforeTrace: TraceFrame[] | null; steps: WorkedRepairStep[]; replays: ReturnType<typeof workedRepairReplays> } | null>(null);
@@ -150,6 +151,10 @@ export function LiveOrderOperationsPage() {
   const applyWorkedRepair = () => {
     // Save the actual repair once. The guide only renders snapshots of its actions.
     const { before, after } = dispatch({ type: 'worked', workspace: run.workspace });
+    if (before === after) {
+      setRepairRequested(true);
+      return;
+    }
     if (run.workspace === 'SQL') {
       setMode('repair');
       setPreview(null);
@@ -211,6 +216,9 @@ export function LiveOrderOperationsPage() {
   };
   const cancel = () => { operationId.current++; client.cancel(); setOperation(null); setPreview(null); setError('Execution cancelled. Drafts and applied changes are preserved.'); setRetry(value => value + 1); };
   const hintCount = run.hints[run.workspace] ?? 0;
+  const hints = workspaceHints[run.workspace];
+  const hintsRemaining = hints.length - hintCount;
+  const repairStatus = dialog === 'help' ? workedRepairStatus(run, run.workspace) : 'unavailable';
   // Reuse the panels for the tour while keeping the live tree's local selections mounted.
   const renderSurface = (run: ChallengeRun, touring = false, repairing = false, displayedTrace = trace) => {
     const showOverview = touring ? tour.step?.surface === 'overview' : run.phase === 'briefing' || overviewRequested;
@@ -239,7 +247,7 @@ export function LiveOrderOperationsPage() {
         <div className="incident-tool-actions" data-open={toolsOpen || touring}>
           {active ? <Button data-walkthrough="challenge-overview-link" onClick={() => setSearchParams(current => { const next = new URLSearchParams(current); next.set('view', 'overview'); return next; })}><ArrowLeft size={14} aria-hidden="true" />Challenge overview</Button> : <Button onClick={() => dispatch({ type: 'investigate' })}><ArrowLeft size={14} aria-hidden="true" />Return to investigation</Button>}
           <Button data-walkthrough="challenge-reference" data-incident-action="reference" onClick={() => setDialog('reference')} aria-keyshortcuts="S">Reference</Button>
-          {active && <><Button disabled={!run.undo.length} onClick={() => dispatch({ type: 'undo' })}><Undo2 size={14} aria-hidden="true" />Undo last change</Button><Button data-incident-action="hint" aria-keyshortcuts="H" onClick={() => setDialog('help')}><Lightbulb size={14} aria-hidden="true" />Investigation help</Button></>}
+          {active && <><Button disabled={!run.undo.length} onClick={() => dispatch({ type: 'undo' })}><Undo2 size={14} aria-hidden="true" />Undo last change</Button><Button data-incident-action="hint" aria-keyshortcuts="H" onClick={() => { setRepairRequested(false); setDialog('help'); }}><Lightbulb size={14} aria-hidden="true" />Investigation help</Button></>}
         </div>
         {active && <Button data-walkthrough="challenge-handover-link" variant="primary" onClick={() => dispatch({ type: 'handover' })}>Review handover<ArrowRight size={14} aria-hidden="true" /></Button>}
       </>} />
@@ -300,11 +308,15 @@ export function LiveOrderOperationsPage() {
     {tour.step && <div data-challenge-tour>{renderSurface(tour.displayRun, true)}</div>}
     <Dialog open={dialog === 'reference'} onClose={() => setDialog(null)} title="Incident reference" className="incident-reference"><h3 className="incident-subheading">Schemas and time</h3><pre className="incident-code">{'orders(order_id, customer_id, status, amount, event_at, arrived_at)\ncustomers(customer_id, region)'}</pre><p>Event time records when the business event occurred. Arrival time records ingestion. SQL timestamps use UTC on 1 January 2026; displays show seconds from that same origin. The local mz_now() compatibility function freezes logical time at the selected replay snapshot.</p><p>Materialize supports mz_now() directly compared with a row timestamp expression, combining temporal comparisons with AND. Place interval arithmetic on the row expression.</p><h3 className="incident-subheading">Operating contract</h3><ul className="incident-requirements">{businessRequirements.map(text => <li key={text}>{text}</li>)}</ul><p className="incident-caption">SQL results execute in local PostgreSQL (PGlite). The clock compatibility function models supported timestamp comparisons, not Materialize's full mz_timestamp type. Sources, maintained progress, read policies, state units, and subscriptions are explicitly simulated. Quiet external sources and unsent business changes are separate from a complete ingested snapshot.</p><ul className="incident-reference-links">{documentationLinks.map(link => <li key={link.href}><a href={link.href} target="_blank" rel="noopener noreferrer" className="text-link">{link.label}</a></li>)}</ul><Link className="text-link" to="/labs" target="_blank" rel="noopener noreferrer">Review the lectures (opens a new tab)</Link></Dialog>
     <Dialog open={dialog === 'help'} onClose={() => setDialog(null)} title="Investigation help" eyebrow={run.workspace}>
-      <p>Hints are recorded. Apply worked repair makes the fixes for this workspace and shows you what changed. It marks completion as assisted.</p>
-      <ol className="incident-requirements">{workspaceHints[run.workspace].slice(0, hintCount).map(hint => <li key={hint}>{hint}</li>)}</ol>
+      <p>{repairStatus === 'needs-hints' || repairStatus === 'ready' ? 'Reveal all the hints in this workspace to unlock its worked repair. Applying a repair shows what changed and marks completion as assisted.' : 'Hints are recorded.'}</p>
+      <ol className="incident-requirements">{hints.slice(0, hintCount).map(hint => <li key={hint}>{hint}</li>)}</ol>
       <div className="incident-actions">
-        <Button disabled={hintCount >= 3} onClick={() => dispatch({ type: 'hint', workspace: run.workspace })}>Get next hint</Button>
-        {run.workspace !== 'Dashboard' && <Button disabled={Boolean(operation)} onClick={applyWorkedRepair}>Apply worked repair</Button>}
+        <Button disabled={hintsRemaining <= 0} onClick={() => dispatch({ type: 'hint', workspace: run.workspace })}>Get next hint</Button>
+        {repairStatus !== 'unavailable' && <Button disabled={Boolean(operation) || repairStatus === 'already-fixed'} onClick={applyWorkedRepair}>Apply worked repair</Button>}
+      </div>
+      <div role="status">
+        {repairStatus === 'already-fixed' && <p className="incident-notice">This workspace already meets the worked repair requirements.</p>}
+        {repairRequested && repairStatus === 'needs-hints' && <p className="incident-notice">Reveal {hintsRemaining} more {hintsRemaining === 1 ? 'hint' : 'hints'} in this workspace before applying the worked repair.</p>}
       </div>
     </Dialog>
     {currentRepair && <WorkedRepairGuide steps={currentRepair.steps} replays={currentRepair.replays} applied={currentRepair.applied} displayed={displayed} onDisplay={setRepairDisplay} pageRef={pageRef} onClose={closeRepair} />}
